@@ -178,13 +178,6 @@ export function SkillLinker({
           </div>
         )}
       </AdminCard>
-
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Skill identifiers are stable keys
-        (e.g. <code>grammar.past_simple.forms</code>). The backend enforces
-        that every published lesson must have at least one skill link. This UI
-        calls backend APIs and does not bypass backend content authority.
-      </div>
     </div>
   );
 }

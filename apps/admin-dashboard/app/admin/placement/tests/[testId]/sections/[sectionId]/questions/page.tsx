@@ -82,21 +82,8 @@ export default async function AdminPlacementQuestionsPage({ params }: Props) {
         )}
       </header>
 
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Question order, type, and skill attribution are
-        backend-managed. <strong>correct_answer is never fetched or displayed</strong> —
-        it is backend-only and never returned to the admin UI. No placement scoring,
-        mastery values, or AIM Engine runtime logic is present here.
-      </div>
-
       {/* Backend not yet available */}
       {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement questions endpoint (
-          <code>GET /admin/placement/questions</code>) is not yet deployed. This page is
-          ready and will display questions automatically once the backend endpoint is available.
-        </div>
       )}
 
       {/* Error banner */}

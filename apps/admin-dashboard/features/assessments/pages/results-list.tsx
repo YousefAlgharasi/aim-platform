@@ -93,11 +93,6 @@ export function AssessmentResultsList({
         buildHref={buildPageHref}
         label="Results pagination"
       />
-
-      <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Scores and pass/fail are computed by the
-        backend only. This UI displays backend-approved data.
-      </div>
     </div>
   );
 }

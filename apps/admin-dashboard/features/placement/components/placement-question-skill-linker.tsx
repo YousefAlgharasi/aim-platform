@@ -235,17 +235,6 @@ export function PlacementQuestionSkillLinker({
           </p>
         )}
       </section>
-
-      {/* Backend authority note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Skill links and the primary-skill constraint
-        are enforced by the backend. The{' '}
-        <strong>is_primary</strong> flag drives scoring attribution — the backend
-        requires exactly one primary skill link before a question can be activated in a
-        live placement test. This UI calls backend APIs and does not bypass backend
-        authority. Placement scores, skill maps, and weakness maps are always computed
-        server-side.
-      </div>
     </div>
   );
 }

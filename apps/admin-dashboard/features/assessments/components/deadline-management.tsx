@@ -170,11 +170,6 @@ export function DeadlineManagement({
           </div>
         )}
 
-        <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
-          <strong>Backend authority:</strong> Deadline enforcement, late penalty
-          calculation, and window status are determined by the backend only.
-        </div>
-
         <style>{`
           .aim-deadline-grid {
             display: grid;
@@ -288,11 +283,6 @@ export function DeadlineManagement({
             />
           </AdminFormField>
         )}
-      </div>
-
-      <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-        <strong>Backend authority:</strong> Deadline enforcement and late penalty
-        calculations are performed by the backend only.
       </div>
 
       <div style={{ display: 'flex', gap: 'var(--space-12)' }}>

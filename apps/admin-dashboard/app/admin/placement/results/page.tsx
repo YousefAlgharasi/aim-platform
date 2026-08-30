@@ -66,11 +66,6 @@ export default async function AdminPlacementResultsPage({ searchParams }: Props)
       </header>
 
       {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement results endpoint (
-          <code>GET /admin/placement/results</code>) is not yet deployed. This page is ready and
-          will display results automatically once the backend endpoint is available.
-        </div>
       )}
 
       {fetchError && (

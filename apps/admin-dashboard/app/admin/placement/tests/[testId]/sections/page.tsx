@@ -80,20 +80,8 @@ export default async function AdminPlacementSectionsPage({ params }: Props) {
         )}
       </header>
 
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Section order, question counts, and skill codes
-        are backend-managed. This view is read-only — no placement scoring, mastery values,
-        or AIM Engine runtime logic is present here.
-      </div>
-
       {/* Backend not yet available */}
       {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement sections endpoint (
-          <code>GET /admin/placement/sections</code>) is not yet deployed. This page is ready
-          and will display sections automatically once the backend endpoint is available.
-        </div>
       )}
 
       {/* Error banner */}

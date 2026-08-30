@@ -178,12 +178,6 @@ export default async function LessonContentBlocksPage({ params }: Props) {
         </div>
       )}
 
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Content blocks are managed by backend
-        curriculum APIs. Block ordering and content validation are enforced
-        server-side.
-      </div>
-
       {lessonError && <AdminApiErrorState message={lessonError} />}
       {blocksError && <AdminApiErrorState message={blocksError} />}
 

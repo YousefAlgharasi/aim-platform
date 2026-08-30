@@ -166,11 +166,6 @@ export function AssessmentSettings({
           </div>
         )}
 
-        <div className="admin-boundary-note" style={{ marginBlockStart: 'var(--space-16)' }}>
-          <strong>Backend authority:</strong> Grading, scoring, pass/fail determination,
-          and attempt limits are enforced by the backend only.
-        </div>
-
         <style>{`
           .aim-settings-grid {
             display: grid;
@@ -304,12 +299,6 @@ export function AssessmentSettings({
             </AdminSelect>
           )}
         </AdminFormField>
-
-        <div className="admin-boundary-note" style={{ marginBlock: 'var(--space-16)' }}>
-          <strong>Backend authority:</strong> Grading, scoring, pass/fail determination,
-          and attempt limits are enforced by the backend only. These settings are sent
-          to the backend for enforcement.
-        </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-12)' }}>
           <AdminButton type="submit" variant="primary" disabled={isPending} loading={isPending}>

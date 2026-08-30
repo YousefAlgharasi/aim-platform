@@ -98,11 +98,6 @@ export default async function AdminPlacementTestsPage({ searchParams }: Props) {
 
       {/* Backend not yet available */}
       {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement tests endpoint (
-          <code>GET /admin/placement/tests</code>) is not yet deployed. This page is ready
-          and will display tests automatically once the backend endpoint is available.
-        </div>
       )}
 
       {/* Error banner */}

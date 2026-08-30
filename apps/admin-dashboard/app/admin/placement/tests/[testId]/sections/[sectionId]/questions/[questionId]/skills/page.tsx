@@ -179,24 +179,8 @@ export default async function AdminPlacementQuestionSkillsPage({ params }: Props
         )}
       </header>
 
-      {/* Security boundary note */}
-      <div className="admin-boundary-note">
-        <strong>Backend authority:</strong> Skill links are managed by the backend.{' '}
-        <strong>correct_answer is never fetched or displayed</strong> — it is
-        backend-only. The backend requires exactly one{' '}
-        <strong>primary</strong> skill link before a question can be activated in a live
-        placement test. Placement scores, skill maps, and weakness maps are always
-        computed server-side — never by this UI.
-      </div>
-
       {/* Backend not yet available */}
       {backendUnavailable && (
-        <div className="admin-boundary-note" role="status">
-          <strong>Notice:</strong> The admin placement question skills endpoint (
-          <code>GET /admin/placement/questions/:questionId/skills</code>) is not yet
-          deployed. This page is ready and will display skill links automatically once
-          the backend endpoint is available.
-        </div>
       )}
 
       {/* Error banners */}

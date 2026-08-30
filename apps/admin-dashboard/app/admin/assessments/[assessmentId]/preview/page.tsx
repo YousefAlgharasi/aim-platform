@@ -76,13 +76,6 @@ export default async function AssessmentPreviewPage({ params }: Props) {
         )}
       </header>
 
-      {/* admin-boundary-note */}
-      <div className="admin-boundary-note">
-        <strong>Read-only preview:</strong> This shows questions as a student would see them.
-        Correct answers, explanations, and scoring data are intentionally hidden.
-        No answer submission is possible from this view.
-      </div>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
