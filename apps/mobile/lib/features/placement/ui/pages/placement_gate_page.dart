@@ -46,13 +46,13 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       if (context.mounted) {
         if (next is PlacementGateDecided && context.mounted) {
           if (next.decision == 'take_placement') {
-            context.push(AppRoutePaths.placementStart);
+            context.go(AppRoutePaths.placementStart);
           } else {
             context.go(AppRoutePaths.home);
           }
         } else if (next is PlacementGateError && context.mounted) {
           if (_selectedStartMode == 'take_placement') {
-            context.push(AppRoutePaths.placementStart);
+            context.go(AppRoutePaths.placementStart);
           } else {
             context.go(AppRoutePaths.home);
           }

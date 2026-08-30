@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -147,10 +148,13 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);
 
     return PopScope(
-      canPop: selectedIndex == 0,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && selectedIndex != 0) {
+        if (didPop) return;
+        if (selectedIndex != 0) {
           ref.read(mainShellTabIndexProvider.notifier).state = 0;
+        } else {
+          SystemNavigator.pop();
         }
       },
       child: Stack(
