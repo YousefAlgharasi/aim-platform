@@ -42,9 +42,11 @@ class _PlacementSpeakingAnswerInputState
 
   bool _isRecording = false;
   bool _hasRecorded = false;
+  bool _recorderStarted = false;
   int _elapsedSeconds = 0;
   Timer? _ticker;
   String? _error;
+  Future<void>? _startFuture;
 
   // Standard WAV header bytes for web & mock audio recording payload
   static const List<int> _dummyWavBytes = [
@@ -93,21 +95,36 @@ class _PlacementSpeakingAnswerInputState
     });
 
     if (!kIsWeb) {
-      try {
-        final hasPermission = await _recorder.hasPermission();
-        if (hasPermission) {
-          final dir = await getTemporaryDirectory();
-          final path = '${dir.path}/speaking_answer.wav';
-          await _recorder.start(path);
+      // Recorder init (permission check, path resolution, native start) is
+      // async, but the mic button fires start/stop from raw pointer down/up
+      // events with no minimum hold time. Without tracking this future,
+      // a quick tap can call recorder.stop() before recorder.start() has
+      // actually begun capturing, producing a near-empty audio file that
+      // the STT provider rejects as "too short". _stopRecording awaits
+      // this future before stopping so start always completes first.
+      _startFuture = () async {
+        try {
+          final hasPermission = await _recorder.hasPermission();
+          if (hasPermission) {
+            final dir = await getTemporaryDirectory();
+            final path = '${dir.path}/speaking_answer.wav';
+            await _recorder.start(path);
+            _recorderStarted = true;
+          }
+        } catch (_) {
+          // Fallback simulation when platform recorder is unsupported
         }
-      } catch (_) {
-        // Fallback simulation when platform recorder is unsupported
-      }
+      }();
+      await _startFuture;
     }
   }
 
   Future<void> _stopRecording() async {
     if (!_isRecording) return;
+
+    // Never stop before start has actually reached the native recorder —
+    // otherwise recorder.stop() either no-ops or captures ~0 audio.
+    await _startFuture;
 
     _ticker?.cancel();
     _pulseCtrl.stop();
@@ -120,7 +137,8 @@ class _PlacementSpeakingAnswerInputState
 
     List<int> bytes = _dummyWavBytes;
 
-    if (!kIsWeb) {
+    if (!kIsWeb && _recorderStarted) {
+      _recorderStarted = false;
       try {
         final path = await _recorder.stop();
         if (path != null) {
