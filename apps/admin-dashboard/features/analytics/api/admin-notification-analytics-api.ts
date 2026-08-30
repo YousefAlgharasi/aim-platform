@@ -62,7 +62,7 @@ export async function fetchNotificationAuditLogs(
 ): Promise<NotificationAuditLog[]> {
   const query: Record<string, string | number> = { limit, offset };
   if (eventType) query.eventType = eventType;
-  const envelope = await adminApiClient.get('/api/v1/admin/notifications/audit-logs', decodeAuditLogList, {
+  const envelope = await adminApiClient.get('/admin/notifications/audit-logs', decodeAuditLogList, {
     headers: { authorization: `Bearer ${token}` },
     query,
   });
@@ -72,7 +72,7 @@ export async function fetchNotificationAuditLogs(
 export async function fetchNotificationTemplates(
   token: string,
 ): Promise<NotificationTemplate[]> {
-  const envelope = await adminApiClient.get('/api/v1/admin/notifications/templates', decodeTemplateList, {
+  const envelope = await adminApiClient.get('/admin/notifications/templates', decodeTemplateList, {
     headers: { authorization: `Bearer ${token}` },
   });
   return envelope.data;
