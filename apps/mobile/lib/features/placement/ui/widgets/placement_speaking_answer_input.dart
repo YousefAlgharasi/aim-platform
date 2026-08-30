@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:aim_mobile/core/theme/theme.dart';
 import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_recorder_client_impl.dart';
@@ -95,7 +96,9 @@ class _PlacementSpeakingAnswerInputState
       try {
         final hasPermission = await _recorder.hasPermission();
         if (hasPermission) {
-          await _recorder.start('speaking_answer.wav');
+          final dir = await getTemporaryDirectory();
+          final path = '${dir.path}/speaking_answer.wav';
+          await _recorder.start(path);
         }
       } catch (_) {
         // Fallback simulation when platform recorder is unsupported
