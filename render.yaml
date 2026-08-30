@@ -53,7 +53,7 @@ services:
     plan: starter
     dockerfilePath: services/aim-engine/Dockerfile
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: AIM_ENGINE_ENV
         value: production
