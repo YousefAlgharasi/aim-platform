@@ -34,9 +34,6 @@ const ALL_NAV_GROUPS: NavGroup[] = [
     label: 'Content',
     items: [
       { label: 'Courses', href: '/admin/content/courses', icon: 'book' },
-      { label: 'Levels', href: '/admin/content/levels', icon: 'layers' },
-      { label: 'Chapters', href: '/admin/content/chapters', icon: 'layers' },
-      { label: 'Lessons', href: '/admin/content/lessons', icon: 'academic' },
       { label: 'Skills', href: '/admin/content/skills', icon: 'puzzle' },
       { label: 'Objectives', href: '/admin/content/objectives', icon: 'target' },
       { label: 'Question Bank', href: '/admin/content/question-bank', icon: 'question' },
@@ -86,7 +83,6 @@ const ALLOWED_PATHS_BY_ROLE: Record<string, string[]> = {
   content_editor: [
     '/admin',
     '/admin/content/courses',
-    '/admin/content/chapters',
     '/admin/content/lessons',
     '/admin/content/skills',
     '/admin/content/question-bank',
@@ -95,7 +91,6 @@ const ALLOWED_PATHS_BY_ROLE: Record<string, string[]> = {
   reviewer: [
     '/admin',
     '/admin/content/courses',
-    '/admin/content/chapters',
     '/admin/content/lessons',
     '/admin/content/skills',
     '/admin/content/question-bank',
