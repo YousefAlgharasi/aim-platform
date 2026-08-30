@@ -734,7 +734,16 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
             questionId: widget.questionId,
           );
       if (bytes.isNotEmpty) {
-        await _audioPlayer.play(BytesSource(Uint8List.fromList(bytes)));
+        // The backend always synthesizes listening audio as MP3
+        // (TtsAudioGenerationService hardcodes contentType 'audio/mpeg'),
+        // but getBytes() only returns the raw bytes, not the response's
+        // Content-Type header. Without an explicit mimeType, BytesSource
+        // can't determine the audio format on some platforms (notably web
+        // and Android), which surfaces to the student as "failed to open
+        // audio" even though valid bytes were received.
+        await _audioPlayer.play(
+          BytesSource(Uint8List.fromList(bytes), mimeType: 'audio/mpeg'),
+        );
         if (mounted) {
           setState(() {
             _isLoading = false;
