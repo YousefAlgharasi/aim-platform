@@ -94,11 +94,24 @@ export class AiTeacherProviderOpenAiService extends AiTeacherProviderGateway {
         { role: 'system', content: MODERATION_SYSTEM_PROMPT },
         { role: 'user', content: request.content },
       ],
-      max_tokens: 10,
+      // Reasoning models (e.g. Groq's gpt-oss-*) emit chain-of-thought
+      // tokens before the final SAFE/UNSAFE word. max_tokens: 10 truncated
+      // that reasoning before the verdict was ever produced, so the reply
+      // never started with "SAFE" and every message was fail-closed
+      // blocked even though the provider call itself succeeded (billed
+      // tokens, no thrown error). reasoning_effort keeps reasoning short
+      // on models that support it; the raised max_tokens budget is a
+      // safety margin for models that don't honor it.
+      reasoning_effort: 'low',
+      max_tokens: 200,
     });
 
-    const verdict = (response.choices?.[0]?.message?.content ?? '').trim().toUpperCase();
-    const flagged = !verdict.startsWith('SAFE');
+    // Reasoning output can still precede the verdict despite the above, so
+    // search the full reply for a whole-word SAFE/UNSAFE rather than
+    // requiring the verdict to be the first token. UNSAFE is checked first
+    // since it contains "SAFE" as a substring.
+    const verdict = (response.choices?.[0]?.message?.content ?? '').toUpperCase();
+    const flagged = /\bUNSAFE\b/.test(verdict) || !/\bSAFE\b/.test(verdict);
 
     return {
       flagged,
