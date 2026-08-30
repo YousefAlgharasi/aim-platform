@@ -34,7 +34,7 @@ export default async function AdminLessonEditorPage({ params }: Props) {
           <nav className="admin-breadcrumb" aria-label="Breadcrumb">
             <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
             <span aria-hidden="true"> / </span>
-            <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+            <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
             <span aria-hidden="true"> / </span>
             <span>Not Found</span>
           </nav>
@@ -74,7 +74,7 @@ export default async function AdminLessonEditorPage({ params }: Props) {
       <nav className="admin-breadcrumb" aria-label="Breadcrumb">
         <Link href="/admin/content" className="admin-breadcrumb-link">Content</Link>
         <span aria-hidden="true"> / </span>
-        <Link href="/admin/content/lessons" className="admin-breadcrumb-link">Lessons</Link>
+        <Link href="/admin/content/courses" className="admin-breadcrumb-link">Courses</Link>
         <span aria-hidden="true"> / </span>
         <span>{lesson?.title ?? lessonId}</span>
       </nav>
