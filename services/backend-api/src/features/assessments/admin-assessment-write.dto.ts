@@ -1,13 +1,30 @@
 // Admin assessment write DTOs.
 //
 // Scope: Metadata and lifecycle only (title/description, course/chapter
-// link, timing/attempt settings, status). Grading, scoring, and pass/fail
-// remain entirely backend-computed elsewhere and are never accepted here.
-// Question attachment/reordering is a separate, not-yet-built feature —
-// this DTO does not accept questionIds.
+// link, timing/attempt settings, status, and question attachment/ordering
+// via questionIds). Grading, scoring, points, and pass/fail remain entirely
+// backend-computed/owned elsewhere and are never accepted here — questionIds
+// only carries which questions are attached and in what order; per-question
+// points stay at their table default and are never client-supplied.
 
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
+import { ArrayUnique, IsArray, IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export class CreateAssessmentDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly title!: string;
+
+  @IsIn(['quiz', 'exam'])
+  readonly type!: 'quiz' | 'exam';
+
+  // Accepted but ignored at creation time -- question attachment happens
+  // via PATCH /admin/assessments/:id (questionIds) once the assessment
+  // exists, same as the create-then-link pattern used for course/chapter.
+  @IsOptional()
+  @IsArray()
+  readonly questionIds?: string[];
+}
 
 export class UpdateAssessmentSettingsDto {
   @IsOptional()
@@ -54,4 +71,12 @@ export class UpdateAssessmentDto {
   @ValidateNested()
   @Type(() => UpdateAssessmentSettingsDto)
   readonly settings?: UpdateAssessmentSettingsDto;
+
+  // Full replacement list of attached question IDs, in display order.
+  // Undefined leaves existing attachments untouched; [] detaches all.
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID(undefined, { each: true })
+  readonly questionIds?: string[];
 }
