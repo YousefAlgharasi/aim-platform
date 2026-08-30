@@ -4,6 +4,14 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AdminLessonSkillLink } from '../api/admin-lesson-skills-api';
 import type { AdminSkillSummary } from '../api/admin-skills-api';
+import {
+  AdminCard,
+  AdminBadge,
+  AdminButton,
+  AdminSelect,
+  AdminFormField,
+} from '../../../shared/components/Misc';
+import { AdminErrorBanner } from '../../../shared/layouts/DashboardLayout';
 
 type SkillLinkerProps = {
   readonly lessonId: string;
@@ -71,96 +79,105 @@ export function SkillLinker({
   }));
 
   return (
-    <div className="skill-linker">
-      <div className="skill-linker-meta">
-        <span className="skill-linker-lesson-title">{lessonTitle}</span>
-        <span className={`status-badge status-${lessonStatus}`}>{lessonStatus}</span>
-      </div>
-
-      {hasNoSkills && (
-        <div className="skill-linker-warning" role="alert">
-          <strong>⚠ No skills linked.</strong> This lesson cannot be published until at
-          least one skill is linked. The AIM Engine requires skill links to track
-          what each lesson develops in the student.
+    <div className="flex flex-col gap-4">
+      <AdminCard>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-base font-semibold text-[var(--text-primary)]">{lessonTitle}</span>
+          <AdminBadge variant={isPublished ? 'success' : 'default'}>{lessonStatus.replace('_', ' ')}</AdminBadge>
         </div>
-      )}
 
-      {isPublished && hasNoSkills && (
-        <div className="skill-linker-error" role="alert">
-          <strong>Critical:</strong> This lesson is published but has no skill links.
-          The backend should have blocked this — contact your administrator.
-        </div>
-      )}
+        {hasNoSkills && (
+          <div className="mt-3">
+            <AdminErrorBanner
+              variant="warning"
+              title="No skills linked"
+              message="This lesson cannot be published until at least one skill is linked. The AIM Engine requires skill links to track what each lesson develops in the student."
+            />
+          </div>
+        )}
 
-      <section className="skill-linker-section">
-        <h2>Linked Skills ({linkedSkills.length})</h2>
+        {isPublished && hasNoSkills && (
+          <div className="mt-3">
+            <AdminErrorBanner
+              title="Critical"
+              message="This lesson is published but has no skill links. The backend should have blocked this — contact your administrator."
+            />
+          </div>
+        )}
+      </AdminCard>
+
+      {actionError && <AdminErrorBanner message={actionError} />}
+
+      <AdminCard title={`Linked Skills (${linkedSkills.length})`}>
         {linkedSkills.length === 0 ? (
-          <p className="skill-linker-empty">No skills linked yet.</p>
+          <p className="text-sm text-[var(--text-muted)]">No skills linked yet.</p>
         ) : (
-          <ul className="skill-link-list">
+          <ul className="flex flex-col gap-2">
             {linkedSkillDetails.map(({ link, skill }) => (
-              <li key={link.skillId} className="skill-link-item">
-                <div className="skill-link-info">
-                  <code className="skill-key">{skill?.key ?? link.skillId}</code>
-                  {skill && (
-                    <span className="skill-title">{skill.title}</span>
-                  )}
-                  <span className={`skill-domain-badge domain-${skill?.domain ?? 'grammar'}`}>
-                    {skill?.domain ?? '—'}
-                  </span>
+              <li
+                key={link.skillId}
+                className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)]"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <code className="text-xs font-mono px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)]">
+                    {skill?.key ?? link.skillId}
+                  </code>
+                  {skill && <span className="text-sm text-[var(--text-primary)]">{skill.title}</span>}
+                  <AdminBadge variant="primary">{skill?.domain ?? '—'}</AdminBadge>
                 </div>
-                <button
-                  className="btn-danger btn-sm"
+                <AdminButton
+                  variant="destructive"
+                  size="sm"
                   onClick={() => handleRemove(link.skillId)}
                   disabled={isPending}
                   aria-label={`Remove skill ${skill?.key ?? link.skillId}`}
                 >
                   Remove
-                </button>
+                </AdminButton>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </AdminCard>
 
-      <section className="skill-linker-section">
-        <h2>Add Skill</h2>
+      <AdminCard title="Add Skill">
         {unlinkedSkills.length === 0 ? (
-          <p className="skill-linker-empty">
+          <p className="text-sm text-[var(--text-muted)]">
             {availableSkills.length === 0
               ? 'No published skills available. Create and publish skills first.'
               : 'All available skills are already linked.'}
           </p>
         ) : (
-          <div className="skill-add-row">
-            <select
-              className="skill-select"
-              value={selectedSkillId}
-              onChange={(e) => setSelectedSkillId(e.target.value)}
-              disabled={isPending}
-              aria-label="Select skill to link"
-            >
-              <option value="">— Select a skill —</option>
-              {unlinkedSkills.map((skill) => (
-                <option key={skill.id} value={skill.id}>
-                  {skill.key} — {skill.title}
-                </option>
-              ))}
-            </select>
-            <button
-              className="btn-primary"
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[240px]">
+              <AdminFormField id="skill-linker-select" label="Skill">
+                <AdminSelect
+                  id="skill-linker-select"
+                  value={selectedSkillId}
+                  onChange={(e) => setSelectedSkillId(e.target.value)}
+                  disabled={isPending}
+                  aria-label="Select skill to link"
+                >
+                  <option value="">— Select a skill —</option>
+                  {unlinkedSkills.map((skill) => (
+                    <option key={skill.id} value={skill.id}>
+                      {skill.key} — {skill.title}
+                    </option>
+                  ))}
+                </AdminSelect>
+              </AdminFormField>
+            </div>
+            <AdminButton
+              variant="primary"
               onClick={handleAdd}
               disabled={isPending || !selectedSkillId}
+              loading={isPending}
             >
-              {isPending ? 'Saving…' : 'Link Skill'}
-            </button>
+              Link Skill
+            </AdminButton>
           </div>
         )}
-
-        {actionError && (
-          <p className="course-form-error" role="alert">{actionError}</p>
-        )}
-      </section>
+      </AdminCard>
 
       <div className="admin-boundary-note">
         <strong>Backend authority:</strong> Skill identifiers are stable keys

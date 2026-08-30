@@ -135,7 +135,7 @@ export function CoursesList({
           <CourseForm mode="edit" initial={selected} onSubmit={handleUpdate} onCancel={() => setSelected(null)} />
         )}
         {activeTab === 'curriculum' && (
-          <CurriculumTree courseId={selected.id} actions={curriculumActions} />
+          <CurriculumTree courseId={selected.id} courseTitle={selected.title} actions={curriculumActions} />
         )}
         {activeTab === 'status' && (
           <ContentStatusWorkflow
