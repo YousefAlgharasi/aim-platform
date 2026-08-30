@@ -4,8 +4,14 @@ import Link from 'next/link';
 import { ADMIN_AUTH_TOKEN_COOKIE } from '../../../../../core/auth';
 import { AdminApiClientError } from '../../../../../core/api';
 import {
+  createAdminQuestionChoice,
+  deleteAdminQuestionChoice,
   fetchAdminQuestion,
+  fetchAdminQuestionChoices,
+  reorderAdminQuestionChoices,
   updateAdminQuestion,
+  updateAdminQuestionChoice,
+  type AdminQuestionChoice,
   type AdminQuestionDetail,
   type QuestionDifficulty,
 } from '../../../../../features/content/api/admin-question-bank-api';
@@ -25,6 +31,7 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
   let question: AdminQuestionDetail | null = null;
   let fetchError: string | null = null;
   let hasSkillLinks = false;
+  let choices: AdminQuestionChoice[] = [];
 
   try {
     question = await fetchAdminQuestion(token, questionId);
@@ -44,6 +51,16 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
       // backend call fails, fall back to "no links" rather than blocking
       // the page.
       hasSkillLinks = false;
+    }
+
+    try {
+      const choiceData = await fetchAdminQuestionChoices(token, questionId);
+      choices = choiceData.choices;
+    } catch {
+      // Choice data is advisory for the editor/validation panel; if the
+      // backend call fails, fall back to an empty list rather than blocking
+      // the page.
+      choices = [];
     }
   }
 
@@ -65,6 +82,79 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
         err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update question.';
+      return { error: msg };
+    }
+  }
+
+  async function handleAddChoice(input: {
+    text: string;
+    isCorrect: boolean;
+    explanation?: string | null;
+  }): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      const existing = await fetchAdminQuestionChoices(token, questionId);
+      const nextOrder = existing.choices.reduce((max, c) => Math.max(max, c.order), 0) + 1;
+      await createAdminQuestionChoice(token, questionId, { ...input, order: nextOrder });
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to add choice.';
+      return { error: msg };
+    }
+  }
+
+  async function handleUpdateChoice(
+    choiceId: string,
+    input: { text?: string; isCorrect?: boolean; explanation?: string | null },
+  ): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await updateAdminQuestionChoice(token, questionId, choiceId, input);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to update choice.';
+      return { error: msg };
+    }
+  }
+
+  async function handleRemoveChoice(choiceId: string): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await deleteAdminQuestionChoice(token, questionId, choiceId);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to remove choice.';
+      return { error: msg };
+    }
+  }
+
+  async function handleReorderChoices(orderedChoiceIds: string[]): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await reorderAdminQuestionChoices(token, questionId, orderedChoiceIds);
+      return {};
+    } catch (err) {
+      const msg =
+        err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to reorder choices.';
       return { error: msg };
     }
   }
@@ -92,7 +182,12 @@ export default async function AdminQuestionDetailPage({ params }: Props) {
         <QuestionEditorClient
           question={question}
           hasSkillLinks={hasSkillLinks}
+          choices={choices}
           onUpdate={handleUpdate}
+          onAddChoice={handleAddChoice}
+          onUpdateChoice={handleUpdateChoice}
+          onRemoveChoice={handleRemoveChoice}
+          onReorderChoices={handleReorderChoices}
         />
       )}
     </section>
