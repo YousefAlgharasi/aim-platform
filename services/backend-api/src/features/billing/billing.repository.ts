@@ -796,4 +796,48 @@ export class BillingRepository {
     );
     return result.rows;
   }
+
+  // --- Overview (admin billing monitor KPIs) ---
+
+  async countActiveSubscriptions(): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM subscriptions WHERE status IN ('active', 'trialing')`,
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /**
+   * Revenue for the current month-to-date, grouped by currency since payments.amount
+   * (integer minor units) cannot be summed across currencies. Only 'succeeded' payments
+   * are counted as revenue.
+   */
+  async getRevenueMtdByCurrency(): Promise<Array<{ currency: string; amount: number }>> {
+    const result = await this.db.query<{ currency: string; amount: string }>(
+      `SELECT currency, SUM(amount)::text AS amount
+       FROM payments
+       WHERE status = 'succeeded'
+         AND created_at >= date_trunc('month', now())
+       GROUP BY currency
+       ORDER BY currency`,
+    );
+    return result.rows.map((row) => ({
+      currency: row.currency,
+      amount: parseInt(row.amount, 10),
+    }));
+  }
+
+  async countPendingRefunds(): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM refunds WHERE status = 'pending'`,
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  async countRecentFailedPayments(sinceDays: number = 7): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM payments WHERE status = 'failed' AND created_at >= now() - ($1 || ' days')::interval`,
+      [sinceDays],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
 }

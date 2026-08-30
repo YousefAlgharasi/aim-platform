@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   QUESTION_DIFFICULTIES,
+  type AdminQuestionChoice,
   type AdminQuestionDetail,
   type QuestionDifficulty,
 } from '../api/admin-question-bank-api';
@@ -42,6 +43,7 @@ const DIFFICULTY_LABELS: Record<QuestionDifficulty, string> = {
 type Props = {
   readonly question: AdminQuestionDetail;
   readonly hasSkillLinks: boolean;
+  readonly choices: AdminQuestionChoice[];
   readonly onUpdate: (data: {
     stem: string;
     difficulty: QuestionDifficulty;
@@ -49,9 +51,25 @@ type Props = {
     hint: string | null;
     tags: string[];
   }) => Promise<{ error?: string }>;
+  readonly onAddChoice: (input: { text: string; isCorrect: boolean; explanation?: string | null }) => Promise<{ error?: string }>;
+  readonly onUpdateChoice: (
+    choiceId: string,
+    input: { text?: string; isCorrect?: boolean; explanation?: string | null },
+  ) => Promise<{ error?: string }>;
+  readonly onRemoveChoice: (choiceId: string) => Promise<{ error?: string }>;
+  readonly onReorderChoices: (orderedChoiceIds: string[]) => Promise<{ error?: string }>;
 };
 
-export function QuestionEditorClient({ question, hasSkillLinks, onUpdate }: Props) {
+export function QuestionEditorClient({
+  question,
+  hasSkillLinks,
+  choices,
+  onUpdate,
+  onAddChoice,
+  onUpdateChoice,
+  onRemoveChoice,
+  onReorderChoices,
+}: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [stem, setStem] = useState(question.stem);
@@ -162,11 +180,20 @@ export function QuestionEditorClient({ question, hasSkillLinks, onUpdate }: Prop
           )}
         </AdminCard>
 
-        <QuestionValidationPanel question={question} hasSkillLinks={hasSkillLinks} />
+        <QuestionValidationPanel question={question} hasSkillLinks={hasSkillLinks} choices={choices} />
 
         <QuestionPreview question={question} />
 
-        <QuestionChoiceEditor questionType={question.type} questionId={question.id} />
+        <QuestionChoiceEditor
+          questionType={question.type}
+          questionId={question.id}
+          questionStatus={question.status}
+          choices={choices}
+          onAddChoice={onAddChoice}
+          onUpdateChoice={onUpdateChoice}
+          onRemoveChoice={onRemoveChoice}
+          onReorderChoices={onReorderChoices}
+        />
 
         <style>{`
           .aim-detail-grid {

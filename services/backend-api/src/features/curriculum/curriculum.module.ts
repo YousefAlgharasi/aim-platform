@@ -10,6 +10,7 @@ import { LevelsModule } from './levels/levels.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { ObjectivesModule } from './objectives/objectives.module';
 import { QuestionBankModule } from './question-bank/question-bank.module';
+import { QuestionChoicesModule } from './question-choices/question-choices.module';
 import { QuestionSkillsModule } from './question-skills/question-skills.module';
 import { SkillsModule } from './skills/skills.module';
 
@@ -26,6 +27,7 @@ import { SkillsModule } from './skills/skills.module';
     LessonObjectivesModule,
     LessonSkillsModule,
     QuestionBankModule,
+    QuestionChoicesModule,
     QuestionSkillsModule,
     ContentStatusWorkflowModule,
   ],
@@ -41,6 +43,7 @@ import { SkillsModule } from './skills/skills.module';
     LessonObjectivesModule,
     LessonSkillsModule,
     QuestionBankModule,
+    QuestionChoicesModule,
     QuestionSkillsModule,
     ContentStatusWorkflowModule,
   ],

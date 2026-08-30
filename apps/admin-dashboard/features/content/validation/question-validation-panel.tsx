@@ -1,11 +1,12 @@
 'use client';
 
-import type { AdminQuestionDetail, QuestionType } from '../api/admin-question-bank-api';
+import type { AdminQuestionChoice, AdminQuestionDetail, QuestionType } from '../api/admin-question-bank-api';
 import { AdminCard, AdminBadge } from '../../../shared/components/Misc';
 
 type Props = {
   readonly question: AdminQuestionDetail;
   readonly hasSkillLinks: boolean;
+  readonly choices?: AdminQuestionChoice[];
 };
 
 type ValidationIssue = {
@@ -22,7 +23,65 @@ const CHOICE_REQUIRED_TYPES: QuestionType[] = [
   'matching',
 ];
 
-function validateQuestion(question: AdminQuestionDetail, hasSkillLinks: boolean): ValidationIssue[] {
+function validateChoices(question: AdminQuestionDetail, choices: AdminQuestionChoice[]): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const typeLabel = question.type.replace(/_/g, ' ');
+
+  if (choices.length === 0) {
+    issues.push({
+      field: 'Choices',
+      message: `${typeLabel} questions require answer choices. Add at least one choice below.`,
+      severity: 'error',
+    });
+    return issues;
+  }
+
+  const correctCount = choices.filter((c) => c.isCorrect).length;
+
+  switch (question.type) {
+    case 'multiple_choice':
+      if (correctCount !== 1) {
+        issues.push({
+          field: 'Choices',
+          message: 'Exactly one choice must be marked correct for multiple choice questions.',
+          severity: 'error',
+        });
+      }
+      break;
+    case 'multiple_select':
+      if (correctCount < 1) {
+        issues.push({
+          field: 'Choices',
+          message: 'At least one choice must be marked correct for multiple select questions.',
+          severity: 'error',
+        });
+      }
+      break;
+    case 'true_false':
+      if (choices.length !== 2 || correctCount !== 1) {
+        issues.push({
+          field: 'Choices',
+          message: 'True/false questions must have exactly two choices, one marked correct.',
+          severity: 'error',
+        });
+      }
+      break;
+    case 'ordering':
+    case 'matching':
+      // Correct order/pairings are defined separately from is_correct.
+      break;
+    default:
+      break;
+  }
+
+  return issues;
+}
+
+function validateQuestion(
+  question: AdminQuestionDetail,
+  hasSkillLinks: boolean,
+  choices: AdminQuestionChoice[],
+): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   if (!question.stem.trim()) {
@@ -34,11 +93,7 @@ function validateQuestion(question: AdminQuestionDetail, hasSkillLinks: boolean)
   }
 
   if (CHOICE_REQUIRED_TYPES.includes(question.type)) {
-    issues.push({
-      field: 'Choices',
-      message: `${question.type.replace(/_/g, ' ')} questions require answer choices. Choice management is pending backend API support.`,
-      severity: 'warning',
-    });
+    issues.push(...validateChoices(question, choices));
   }
 
   if (!hasSkillLinks) {
@@ -68,8 +123,8 @@ function validateQuestion(question: AdminQuestionDetail, hasSkillLinks: boolean)
   return issues;
 }
 
-export function QuestionValidationPanel({ question, hasSkillLinks }: Props) {
-  const issues = validateQuestion(question, hasSkillLinks);
+export function QuestionValidationPanel({ question, hasSkillLinks, choices = [] }: Props) {
+  const issues = validateQuestion(question, hasSkillLinks, choices);
   const errors = issues.filter((i) => i.severity === 'error');
   const warnings = issues.filter((i) => i.severity === 'warning');
 
