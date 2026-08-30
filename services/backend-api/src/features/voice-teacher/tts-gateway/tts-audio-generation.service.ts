@@ -43,8 +43,10 @@ export class TtsAudioGenerationService extends TtsGateway {
       raw = await this.callProvider(apiKey, baseUrl, resultsUrl, completionRequest);
     } catch (error: unknown) {
       errorCategory = this.classifyError(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `TtsAudioGenerationService.synthesize: provider call failed, errorCategory=${errorCategory}`,
+        `TtsAudioGenerationService.synthesize: provider call failed, ` +
+          `errorCategory=${errorCategory}, message=${errorMessage}`,
       );
     }
 
@@ -120,7 +122,9 @@ export class TtsAudioGenerationService extends TtsGateway {
     });
 
     if (!response.ok) {
-      throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
+      throw new BadGatewayException(
+        `TTS provider returned HTTP ${response.status}: ${await this.safeReadBody(response)}`,
+      );
     }
 
     const submitted = (await response.json()) as { uuid?: string };
@@ -143,7 +147,9 @@ export class TtsAudioGenerationService extends TtsGateway {
       const response = await fetch(pollUrl, { signal });
 
       if (!response.ok) {
-        throw new BadGatewayException(`TTS provider returned HTTP ${response.status}`);
+        throw new BadGatewayException(
+          `TTS provider returned HTTP ${response.status}: ${await this.safeReadBody(response)}`,
+        );
       }
 
       const poll = (await response.json()) as {
@@ -178,6 +184,21 @@ export class TtsAudioGenerationService extends TtsGateway {
     }
 
     return Buffer.from(await response.arrayBuffer());
+  }
+
+  /**
+   * Best-effort read of an error response body for diagnostics (e.g.
+   * tts.ai's "insufficient credits"/"invalid api key" JSON payloads),
+   * truncated so a large/unexpected body can't blow up the log line.
+   * Never throws — a body read failure falls back to a placeholder.
+   */
+  private async safeReadBody(response: Response): Promise<string> {
+    try {
+      const text = await response.text();
+      return text.length > 500 ? `${text.slice(0, 500)}...` : text || '(empty body)';
+    } catch {
+      return '(failed to read response body)';
+    }
   }
 
   private sleep(ms: number): Promise<void> {
