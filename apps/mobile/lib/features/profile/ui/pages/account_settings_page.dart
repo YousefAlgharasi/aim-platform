@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/app_locale.dart';
+import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -563,7 +565,52 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
           const SizedBox(height: 24),
 
-          // 3. Notification Preferences
+          // 3. App Language
+          Padding(
+            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
+            child: Text(
+              l10n.profileLabelLanguage,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: surfaces.textPrimary,
+                fontWeight: AimFontWeights.extrabold,
+              ),
+            ),
+          ),
+          _buildCard(
+            surfaces,
+            child: Column(
+              children: [
+                _buildLanguageOption(
+                  title: 'English',
+                  subtitle: l10n.profileLanguageEnglish,
+                  localeCode: AppLocale.english,
+                  currentLocaleCode: ref.watch(localeProvider).languageCode,
+                  icon: Icons.language_rounded,
+                  surfaces: surfaces,
+                  onTap: () {
+                    ref.read(localeProvider.notifier).state =
+                        const Locale(AppLocale.english);
+                  },
+                ),
+                const SizedBox(height: 10),
+                _buildLanguageOption(
+                  title: 'العربية',
+                  subtitle: l10n.profileLanguageArabic,
+                  localeCode: AppLocale.arabic,
+                  currentLocaleCode: ref.watch(localeProvider).languageCode,
+                  icon: Icons.translate_rounded,
+                  surfaces: surfaces,
+                  onTap: () {
+                    ref.read(localeProvider.notifier).state =
+                        const Locale(AppLocale.arabic);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 4. Notification Preferences
           Padding(
             padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
             child: Text(
@@ -760,6 +807,93 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         ],
       ),
       child: child,
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required String title,
+    required String subtitle,
+    required String localeCode,
+    required String currentLocaleCode,
+    required IconData icon,
+    required AimSurfaceTheme surfaces,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = localeCode == currentLocaleCode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AimRadius.borderLg,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AimColors.primary500.withValues(alpha: isDark ? 0.15 : 0.08)
+                : surfaces.border.withValues(alpha: 0.15),
+            borderRadius: AimRadius.borderLg,
+            border: Border.all(
+              color: isSelected ? AimColors.primary500 : surfaces.border.withValues(alpha: 0.3),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AimColors.primary500.withValues(alpha: 0.2)
+                      : (isDark ? AimColors.neutral800 : AimColors.neutral100),
+                  borderRadius: AimRadius.borderMd,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? AimColors.primary500 : surfaces.textSecondary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AimTextStyles.bodyMd.copyWith(
+                        color: isSelected ? AimColors.primary500 : surfaces.textPrimary,
+                        fontWeight: isSelected ? AimFontWeights.bold : AimFontWeights.semibold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AimTextStyles.caption.copyWith(
+                        color: surfaces.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AimColors.primary500,
+                  size: 22,
+                )
+              else
+                Icon(
+                  Icons.radio_button_unchecked_rounded,
+                  color: surfaces.textMuted.withValues(alpha: 0.5),
+                  size: 22,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

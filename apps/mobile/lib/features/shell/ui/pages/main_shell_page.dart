@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/core/localization/app_locale.dart';
-import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
@@ -484,117 +482,6 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-
-/// English/Arabic segmented toggle wired to the app's real [localeProvider].
-/// Switching languages also switches text direction (LTR/RTL) app-wide,
-/// since [AppLocale.directionFor] derives direction from the same locale.
-class _AIMLanguageToggleRow extends ConsumerWidget {
-  const _AIMLanguageToggleRow();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-    final locale = ref.watch(localeProvider);
-    final l10n = AppLocalizations.of(context);
-
-    return Row(
-      children: [
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellLanguageEnglish,
-            icon: Icons.language,
-            selected: locale.languageCode == AppLocale.english,
-            surfaces: surfaces,
-            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageEnglish),
-            onTap: () => ref.read(localeProvider.notifier).state =
-                const Locale(AppLocale.english),
-          ),
-        ),
-        const SizedBox(width: AimSpacing.componentGap),
-        Expanded(
-          child: _ThemeToggleButton(
-            label: l10n.shellLanguageArabic,
-            icon: Icons.translate,
-            selected: locale.languageCode == AppLocale.arabic,
-            surfaces: surfaces,
-            semanticLabel: l10n.shellLanguageSemantic(l10n.shellLanguageArabic),
-            onTap: () => ref.read(localeProvider.notifier).state =
-                const Locale(AppLocale.arabic),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  const _ThemeToggleButton({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.surfaces,
-    required this.onTap,
-    this.semanticLabel,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final AimSurfaceTheme surfaces;
-  final VoidCallback onTap;
-
-  /// Accessibility label override. Defaults to the theme-toggle semantic
-  /// (`"$label theme"`) for backward compatibility with [_AIMThemeToggleRow];
-  /// [_AIMLanguageToggleRow] passes its own language-toggle semantic.
-  final String? semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final soft = aimSoftFillsOf(context);
-    final l10n = AppLocalizations.of(context);
-    final background = selected ? soft.primary : surfaces.surfaceSunken;
-    final foreground = selected ? soft.onPrimary : surfaces.textSecondary;
-
-    return Material(
-      color: background,
-      borderRadius: AimRadius.borderMd,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AimRadius.borderMd,
-        splashColor: surfaces.statePressed,
-        highlightColor: surfaces.statePressed,
-        child: Semantics(
-          button: true,
-          selected: selected,
-          label: semanticLabel ?? l10n.shellThemeSemantic(label),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: AimSizes.iconSm, color: foreground),
-                const SizedBox(width: AimSpacing.space8),
-                Flexible(
-                  child: Text(
-                    label,
-                    overflow: TextOverflow.ellipsis,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: foreground,
-                      fontWeight: selected
-                          ? AimFontWeights.semibold
-                          : AimFontWeights.regular,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
