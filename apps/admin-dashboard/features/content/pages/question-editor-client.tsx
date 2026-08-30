@@ -41,6 +41,7 @@ const DIFFICULTY_LABELS: Record<QuestionDifficulty, string> = {
 
 type Props = {
   readonly question: AdminQuestionDetail;
+  readonly hasSkillLinks: boolean;
   readonly onUpdate: (data: {
     stem: string;
     difficulty: QuestionDifficulty;
@@ -50,7 +51,7 @@ type Props = {
   }) => Promise<{ error?: string }>;
 };
 
-export function QuestionEditorClient({ question, onUpdate }: Props) {
+export function QuestionEditorClient({ question, hasSkillLinks, onUpdate }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [stem, setStem] = useState(question.stem);
@@ -161,7 +162,7 @@ export function QuestionEditorClient({ question, onUpdate }: Props) {
           )}
         </AdminCard>
 
-        <QuestionValidationPanel question={question} hasSkillLinks={false} />
+        <QuestionValidationPanel question={question} hasSkillLinks={hasSkillLinks} />
 
         <QuestionPreview question={question} />
 
