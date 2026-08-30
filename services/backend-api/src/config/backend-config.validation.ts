@@ -82,29 +82,34 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
   );
   // P9-059 — TTS provider settings for Group G's TTS Gateway.
   // TTS_PROVIDER_API_KEY is a secret: never logged, never returned to clients.
-  // Confirmed against tts.ai's real published API docs: POST /v1/tts/ is an
-  // async job submission (returns a uuid), the result is fetched by polling
-  // GET /v1/speech/results/?uuid=... until status=completed, then the actual
-  // audio bytes are downloaded from the returned result_url. See
-  // tts-audio-generation.service.ts for the full request/poll/download flow.
+  // Migrated from tts.ai (async job: submit -> poll -> download) to Groq's
+  // Orpheus TTS models (Canopy Labs), which is synchronous: POST
+  // /openai/v1/audio/speech with { model, input, voice, response_format }
+  // returns the complete WAV audio directly in one call. Orpheus caps each
+  // request at ~200 input characters; tts-audio-generation.service.ts
+  // splits a longer reply into chunks and stitches the resulting WAV files
+  // back into one clip (wav-audio.util.ts). See
+  // https://console.groq.com/docs/text-to-speech/orpheus for the full
+  // request contract and available voices.
   const ttsProviderApiKey = readRequiredString(env, 'TTS_PROVIDER_API_KEY', issues);
   const ttsProviderModel = readRequiredString(env, 'TTS_PROVIDER_MODEL', issues);
   const ttsProviderBaseUrl = readOptionalUrl(
     env,
     'TTS_PROVIDER_BASE_URL',
-    'https://api.tts.ai/v1/tts/',
+    'https://api.groq.com/openai/v1/audio/speech',
     issues,
   );
-  // Required — tts.ai's /v1/tts/ request requires a voice id (e.g. "af_bella",
-  // see GET /v1/voices/ on tts.ai for the full list).
+  // Required — e.g. "hannah" for canopylabs/orpheus-v1-english, or an
+  // Arabic Saudi voice (e.g. "noura") for canopylabs/orpheus-arabic-saudi.
+  // See the Orpheus docs above for the full voice list per model.
   const ttsProviderVoice = readRequiredString(env, 'TTS_PROVIDER_VOICE', issues);
-  // Optional — defaults to tts.ai's job-results polling endpoint. Only set
-  // TTS_PROVIDER_RESULTS_URL if you point TTS_PROVIDER_BASE_URL at a
-  // different, non-tts.ai provider with its own polling endpoint.
+  // Unused by Groq's synchronous endpoint — kept only so a future
+  // job-based provider (like tts.ai was) doesn't need a config shape
+  // change. Safe to leave unset.
   const ttsProviderResultsUrl = readOptionalUrl(
     env,
     'TTS_PROVIDER_RESULTS_URL',
-    'https://api.tts.ai/v1/speech/results/',
+    'https://api.groq.com/openai/v1/audio/speech',
     issues,
   );
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
