@@ -9,26 +9,8 @@ export const adminCurriculumNavigationItems: readonly AdminCurriculumNavigationI
   {
     label: 'Courses',
     href: '/admin/content/courses',
-    description: 'Top-level curriculum containers.',
-    backendBoundary: 'Course records and status changes must come from backend curriculum APIs.',
-  },
-  {
-    label: 'Levels',
-    href: '/admin/content/levels',
-    description: 'Course progression bands.',
-    backendBoundary: 'Level ordering and course membership must be validated by the backend.',
-  },
-  {
-    label: 'Chapters',
-    href: '/admin/content/chapters',
-    description: 'Lesson grouping within curriculum structure.',
-    backendBoundary: 'Chapter hierarchy belongs to backend-approved curriculum data.',
-  },
-  {
-    label: 'Lessons',
-    href: '/admin/content/lessons',
-    description: 'Skill-linked lesson records.',
-    backendBoundary: 'Published lessons must be validated by backend lesson-skill rules.',
+    description: 'Courses and their full Levels → Chapters → Lessons curriculum tree.',
+    backendBoundary: 'Course, level, chapter, and lesson records and status changes must come from backend curriculum APIs.',
   },
   {
     label: 'Skills',
