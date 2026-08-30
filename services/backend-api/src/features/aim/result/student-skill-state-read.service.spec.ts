@@ -5,7 +5,8 @@
 //   - Queries student_skill_states by student_id ordered by skill_id
 //   - Maps DB row numbers to JS floats
 //   - Maps null previous_mastery_score correctly
-//   - Returns empty skillStates array when no rows
+//   - Returns empty skillStates array when no rows (never fabricates
+//     placeholder skills/scores, even when lessons are completed)
 //   - Returns studentId in response
 //   - Never calls AIM Engine
 //
@@ -83,6 +84,23 @@ describe('StudentSkillStateReadService', () => {
     const svc = new StudentSkillStateReadService(db);
     const result = await svc.getSkillStatesForStudent(STUDENT_ID);
     expect(result.skillStates).toHaveLength(0);
+    expect(result.studentId).toBe(STUDENT_ID);
+  });
+
+  it('never fabricates skill states even when the student has completed lessons', async () => {
+    // Regression guard: student_skill_states has no rows for this student,
+    // but the student has completed lessons and passed assessments. This
+    // must NOT synthesize placeholder skills/scores — it must honestly
+    // report no skill state yet.
+    const db = makeMockDb(async (sql) => {
+      if (sql.includes('lesson_progress')) {
+        return { rows: [{ completed_count: '5', avg_score: '82' }], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
+    });
+    const svc = new StudentSkillStateReadService(db);
+    const result = await svc.getSkillStatesForStudent(STUDENT_ID);
+    expect(result.skillStates).toEqual([]);
     expect(result.studentId).toBe(STUDENT_ID);
   });
 
