@@ -16,6 +16,13 @@ import type { AdminLevelSummary } from '../api/admin-levels-api';
 import type { AdminChapterSummary } from '../api/admin-chapters-api';
 import type { AdminLessonSummary } from '../api/admin-lessons-api';
 
+export type LessonSkillBadge = {
+  readonly id: string;
+  readonly key: string;
+  readonly title: string;
+  readonly domain: string;
+};
+
 type ActionResult = { error?: string };
 type TransitionAction = 'publish' | 'archive' | 'restore';
 
@@ -53,6 +60,8 @@ export type CurriculumTreeActions = {
     data: { title: string; description: string },
   ) => Promise<ActionResult>;
   readonly transitionLesson: (lessonId: string, action: TransitionAction) => Promise<ActionResult>;
+
+  readonly fetchLessonSkills: (lessonId: string) => Promise<{ data?: LessonSkillBadge[]; error?: string }>;
 };
 
 type Props = {
@@ -161,6 +170,22 @@ export function CurriculumTree({ courseId, actions }: Props) {
         .ctree-node-link { text-decoration: none; }
         .ctree-node-body { padding: 0 10px 10px 30px; display: flex; flex-direction: column; gap: 8px; }
         .ctree-node-edit { padding: 10px; }
+
+        .ctree-skills-row {
+          display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+          padding: 0 10px 8px 32px;
+        }
+        .ctree-skill-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+        .ctree-skill-badge {
+          font-size: 10px; font-family: var(--font-mono, monospace);
+          background: color-mix(in srgb, var(--color-primary-500) 10%, transparent);
+          color: var(--color-primary-600, #4f46e5);
+          padding: 1px 6px; border-radius: 4px;
+        }
+        .ctree-skills-warning { font-size: 11px; color: var(--color-warning-700, #b45309); font-weight: 500; }
+        .ctree-skills-error { font-size: 11px; color: var(--text-muted); }
+        .ctree-skills-manage { font-size: 11px; color: var(--text-link); font-weight: 500; margin-left: auto; }
+        .ctree-skills-manage:hover { text-decoration: underline; }
       `}</style>
     </div>
   );
@@ -430,6 +455,19 @@ function LessonNode({
   readonly onChanged: () => void;
 }) {
   const [mode, setMode] = useState<'view' | 'edit' | 'status'>('view');
+  const [skills, setSkills] = useState<LessonSkillBadge[] | null>(null);
+  const [skillsError, setSkillsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    actions.fetchLessonSkills(lesson.id).then((result) => {
+      if (cancelled) return;
+      if (result.error) setSkillsError(result.error);
+      else setSkills(result.data ?? []);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
 
   async function handleUpdate(data: { title: string; description: string }) {
     const result = await actions.updateLesson(lesson.id, data);
@@ -485,6 +523,23 @@ function LessonNode({
           <button type="button" className="ctree-node-btn" onClick={() => setMode('status')}>Status</button>
           <button type="button" className="ctree-node-btn" onClick={() => setMode('edit')}>Edit</button>
         </div>
+      </div>
+      <div className="ctree-skills-row">
+        {skillsError && <span className="ctree-skills-error">Skills unavailable</span>}
+        {!skillsError && skills === null && <span className="ctree-hint">Loading skills…</span>}
+        {!skillsError && skills !== null && skills.length === 0 && (
+          <span className="ctree-skills-warning">No skills linked — required before publish</span>
+        )}
+        {!skillsError && skills !== null && skills.length > 0 && (
+          <div className="ctree-skill-badges">
+            {skills.map((skill) => (
+              <span key={skill.id} className="ctree-skill-badge" title={skill.title}>{skill.key}</span>
+            ))}
+          </div>
+        )}
+        <Link href={`/admin/content/lessons/${lesson.id}/skills`} className="ctree-node-link">
+          <span className="ctree-skills-manage">Manage Skills</span>
+        </Link>
       </div>
     </li>
   );
