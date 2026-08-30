@@ -118,7 +118,7 @@ describe('AdminAssessmentWriteService', () => {
       if (sql.includes('FROM assessment_questions')) return { rows: [{ question_id: 'q1' }, { question_id: 'q2' }] };
       return undefined;
     });
-    (db as { withClient: (cb: (client: unknown) => Promise<void>) => Promise<void> }).withClient = (cb) => cb(client);
+    (db as unknown as { withClient: (cb: (client: unknown) => Promise<void>) => Promise<void> }).withClient = (cb) => cb(client);
 
     const service = new AdminAssessmentWriteService(db as never);
     const result = await service.update('a1', { questionIds: ['q1', 'q2'] });
