@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:aim_mobile/core/services/aim_audio_speech.dart';
 import '../voice_player_client.dart';
 
 enum PlaybackState { idle, loading, playing, paused, completed, error }
@@ -61,13 +62,19 @@ class VoicePlaybackNotifier extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (fallbackText != null && fallbackText.trim().isNotEmpty) {
-        final encoded = Uri.encodeComponent(fallbackText.trim());
-        final ttsUrl =
-            'https://translate.google.com/translate_tts?ie=UTF-8&q=$encoded&tl=en&client=tw-ob';
         try {
-          await _player.playUrl(ttsUrl);
           _state = PlaybackState.playing;
           notifyListeners();
+          await AimAudioSpeech.speak(
+            text: fallbackText.trim(),
+            lang: 'en-US',
+            onComplete: () {
+              complete();
+            },
+            onError: () {
+              complete();
+            },
+          );
           return;
         } catch (_) {}
       }
@@ -147,10 +154,11 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     // a pending onFinished continuation (e.g. "start listening next") for
     // audio that was deliberately cut off instead of allowed to end.
     _onFinished = null;
+    unawaited(AimAudioSpeech.stop());
     unawaited(_player.stop());
     _state = PlaybackState.idle;
-    _currentAudioRef = null;
     _progress = 0.0;
+    _currentAudioRef = null;
     _duration = null;
     notifyListeners();
   }

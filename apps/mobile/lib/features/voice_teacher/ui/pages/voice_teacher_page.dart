@@ -48,13 +48,15 @@
 // their turn starts and ends instead of the app guessing from amplitude.
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/services/aim_audio_speech.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -201,8 +203,9 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
       return;
     }
 
-    final tempPath =
-        '${Directory.systemTemp.path}/voice_turn_${DateTime.now().microsecondsSinceEpoch}.wav';
+    final tempPath = kIsWeb
+        ? ''
+        : '${Directory.systemTemp.path}/voice_turn_${DateTime.now().microsecondsSinceEpoch}.wav';
 
     try {
       await _audioRecorder.start(tempPath);
@@ -235,15 +238,20 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
       final recordNotifier = ref.read(voiceRecordSubmitProvider);
 
       Uint8List audioBytes = Uint8List(0);
-      const mimeType = 'audio/wav';
+      const mimeType = kIsWeb ? 'audio/webm' : 'audio/wav';
 
       try {
         final path = await _audioRecorder.stop();
-        if (path != null) {
-          final file = File(path);
-          if (await file.exists()) {
-            audioBytes = await file.readAsBytes();
-            unawaited(file.delete());
+        if (path != null && path.isNotEmpty) {
+          if (kIsWeb || path.startsWith('blob:') || path.startsWith('http')) {
+            final response = await http.get(Uri.parse(path));
+            audioBytes = response.bodyBytes;
+          } else {
+            final file = File(path);
+            if (await file.exists()) {
+              audioBytes = await file.readAsBytes();
+              unawaited(file.delete());
+            }
           }
         }
       } catch (error) {
@@ -367,13 +375,12 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
       onFinished?.call();
       return;
     }
-    final encoded = Uri.encodeComponent(text.trim());
-    final ttsUrl =
-        'https://translate.google.com/translate_tts?ie=UTF-8&q=$encoded&tl=en&client=tw-ob';
-    await ref.read(voicePlaybackProvider).loadAndPlayUrl(
-          url: ttsUrl,
-          onFinished: onFinished,
-        );
+    await AimAudioSpeech.speak(
+      text: text.trim(),
+      lang: 'en-US',
+      onComplete: onFinished,
+      onError: onFinished,
+    );
   }
 
   @override

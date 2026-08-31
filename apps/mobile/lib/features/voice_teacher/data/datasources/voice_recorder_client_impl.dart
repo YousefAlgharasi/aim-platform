@@ -4,6 +4,7 @@
 // an infrastructure concern. The abstract interface [VoiceRecorderClient]
 // remains in logic/ (domain) so that notifiers and tests can depend only
 // on the interface without touching any plugin.
+import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 
 import '../../logic/voice_recorder_client.dart';
@@ -16,10 +17,18 @@ class RealVoiceRecorderClient implements VoiceRecorderClient {
   Future<bool> hasPermission() => _instance.hasPermission();
 
   @override
-  Future<void> start(String path) => _instance.start(
-        const RecordConfig(encoder: AudioEncoder.wav),
-        path: path,
+  Future<void> start(String path) {
+    if (kIsWeb) {
+      return _instance.start(
+        const RecordConfig(encoder: AudioEncoder.opus),
+        path: '',
       );
+    }
+    return _instance.start(
+      const RecordConfig(encoder: AudioEncoder.wav),
+      path: path,
+    );
+  }
 
   @override
   Future<String?> stop() => _instance.stop();
