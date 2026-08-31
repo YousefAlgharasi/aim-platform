@@ -92,26 +92,30 @@ export class ChapterCompletionService {
     );
     const chapterTitle = chapterResult.rows[0]?.title ?? '';
 
-    for (const assessment of assessments.rows) {
-      const variables = { assessment_title: assessment.title, chapter_title: chapterTitle };
-      await this.notificationQueue.enqueue({
-        userId: studentId,
-        recipientType: 'student',
-        templateKey: 'assessment_unlocked',
-        channel: 'in_app',
-        category: 'assessment_result',
-        locale: 'en',
-        variables,
-      });
-      await this.notificationQueue.enqueue({
-        userId: studentId,
-        recipientType: 'student',
-        templateKey: 'assessment_unlocked',
-        channel: 'push',
-        category: 'assessment_result',
-        locale: 'en',
-        variables,
-      });
+    try {
+      for (const assessment of assessments.rows) {
+        const variables = { assessment_title: assessment.title, chapter_title: chapterTitle };
+        await this.notificationQueue.enqueue({
+          userId: studentId,
+          recipientType: 'student',
+          templateKey: 'assessment_unlocked',
+          channel: 'in_app',
+          category: 'assessment_result',
+          locale: 'en',
+          variables,
+        });
+        await this.notificationQueue.enqueue({
+          userId: studentId,
+          recipientType: 'student',
+          templateKey: 'assessment_unlocked',
+          channel: 'push',
+          category: 'assessment_result',
+          locale: 'en',
+          variables,
+        });
+      }
+    } catch (err) {
+      this.logger.warn('Failed to enqueue assessment unlock notifications', { err });
     }
 
     this.logger.log('chapter_assessment_unlocked', { studentId, chapterId });

@@ -42,6 +42,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
+import 'package:aim_mobile/core/services/aim_audio_speech.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -709,6 +710,7 @@ class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
 
   @override
   void dispose() {
+    AimAudioSpeech.stop();
     _player?.dispose();
     super.dispose();
   }
@@ -718,29 +720,28 @@ class _KeyPhrasesCardState extends State<_KeyPhrasesCard> {
     if (index >= phrases.length) return;
 
     if (_playingIndex == index) {
-      await _player?.stop();
+      await AimAudioSpeech.stop();
       if (mounted) setState(() => _playingIndex = null);
       return;
     }
 
     setState(() => _playingIndex = index);
-    try {
-      _player ??= AudioPlayer();
-      await _player!.stop();
-      final phraseText = phrases[index].phrase;
-      final ttsUrl =
-          'https://translate.google.com/translate_tts?ie=UTF-8&q=${Uri.encodeComponent(phraseText)}&tl=en&client=tw-ob';
-      await _player!.play(UrlSource(ttsUrl));
-      _player!.onPlayerComplete.first.then((_) {
+    final phraseText = phrases[index].phrase;
+
+    await AimAudioSpeech.speak(
+      text: phraseText,
+      lang: 'en-US',
+      onComplete: () {
         if (mounted && _playingIndex == index) {
           setState(() => _playingIndex = null);
         }
-      });
-    } catch (_) {
-      if (mounted && _playingIndex == index) {
-        setState(() => _playingIndex = null);
-      }
-    }
+      },
+      onError: () {
+        if (mounted && _playingIndex == index) {
+          setState(() => _playingIndex = null);
+        }
+      },
+    );
   }
 
   @override
