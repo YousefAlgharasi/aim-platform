@@ -49,9 +49,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
   Future<void> _onCourseTap(StudentCourseModel course) async {
     final l10n = AppLocalizations.of(context);
     if (course.locked) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.lessonsCourseLockedMessage)),
-      );
+      AIMToast.showInfo(context, l10n.lessonsCourseLockedMessage);
       return;
     }
 
@@ -94,10 +92,12 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
               bearerToken: token,
               courseId: course.courseId,
             );
-      } catch (_) {
+      } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.lessonsStartCourseFailedMessage)),
+        AIMToast.showError(
+          context,
+          e,
+          customMessage: l10n.lessonsStartCourseFailedMessage,
         );
         return;
       }

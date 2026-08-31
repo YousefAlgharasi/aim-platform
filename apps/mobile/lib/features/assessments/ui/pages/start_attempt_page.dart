@@ -71,12 +71,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
             _onStartSuccess(data);
           case AppAsyncFailure(:final message):
             setState(() => _starting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: AimColors.error500,
-              ),
-            );
+            AIMToast.showError(context, message);
           case _:
             break;
         }

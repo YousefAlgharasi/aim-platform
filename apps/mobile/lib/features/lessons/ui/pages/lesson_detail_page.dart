@@ -151,36 +151,11 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         setState(() => _practiceUnlocked = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.commonDone,
-                    style: const TextStyle(color: AimColors.neutral0),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        AIMToast.showSuccess(context, l10n.commonDone);
       }
     } catch (e) {
       if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(
-              '${l10n.commonError}: $e',
-              style: const TextStyle(color: AimColors.neutral0),
-            ),
-          ),
-        );
+        AIMToast.showError(context, e);
       }
     }
   }

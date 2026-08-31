@@ -97,27 +97,11 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Text(l10n.settingsSaveSuccess),
-              ],
-            ),
-          ),
-        );
+        AIMToast.showSuccess(context, l10n.settingsSaveSuccess);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(l10n.profileSaveFailed(e.toString())),
-          ),
-        );
+        AIMToast.showError(context, e);
       }
     } finally {
       if (mounted) {
@@ -153,32 +137,14 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           _newPasswordController.clear();
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.mark_email_read, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(l10n.profilePasswordResetSuccess),
-                ),
-              ],
-            ),
-          ),
-        );
+        AIMToast.showSuccess(context, l10n.profilePasswordResetSuccess);
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isUpdatingPassword = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(l10n.profilePasswordResetFailed(e.toString())),
-          ),
-        );
+        AIMToast.showError(context, e);
       }
     }
   }

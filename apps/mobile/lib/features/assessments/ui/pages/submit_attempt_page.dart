@@ -100,9 +100,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
             _onSubmitSuccess(data);
           case AppAsyncFailure(:final message):
             setState(() => _submitting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
+            AIMToast.showError(context, message);
           case _:
             break;
         }
