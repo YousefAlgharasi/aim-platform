@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../logic/provider/login_provider.dart';
 import '../../logic/provider/register_notifier.dart';
 import '../../logic/provider/register_provider.dart';
 
@@ -61,10 +62,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     await ref.read(registerProvider.notifier).submit(l10n);
   }
 
+  // Google sign-up uses the same backend flow (and the same notifier) as
+  // Google sign-in on the login page: the backend creates the account on
+  // first use, so there is no separate "register with Google" call.
+  Future<void> _continueWithGoogle() async {
+    final l10n = AppLocalizations.of(context);
+    await ref.read(loginProvider.notifier).submitWithGoogle(l10n);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
+    final googleFormState = ref.watch(loginProvider);
     final notifier = ref.read(registerProvider.notifier);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -166,6 +176,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   AIMAlertBanner(
                     tone: AIMAlertTone.error,
                     child: Text(formState.errorMessage!),
+                  ),
+                  const SizedBox(height: AimSpacing.formFieldGap),
+                ] else if (googleFormState.errorMessage != null) ...[
+                  AIMAlertBanner(
+                    tone: AIMAlertTone.error,
+                    child: Text(googleFormState.errorMessage!),
                   ),
                   const SizedBox(height: AimSpacing.formFieldGap),
                 ],
@@ -308,7 +324,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       child: _RegFigmaSocialButton(
                         icon: const _RegGoogleLogo(),
                         label: 'Google',
-                        onPressed: () {},
+                        onPressed: googleFormState.isSubmitting
+                            ? () {}
+                            : _continueWithGoogle,
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),

@@ -17,6 +17,14 @@ abstract class AuthRepository {
     required String password,
   });
 
+  /// Exchanges a Google ID token for a backend session. Also serves as
+  /// "register with Google" — the backend creates the account on first
+  /// sign-in.
+  Future<AuthLoginResult> googleLogin({
+    required String idToken,
+    String? nonce,
+  });
+
   Future<AuthRefreshResult> refresh({required String refreshToken});
 
   Future<AuthRegisterResult> register({

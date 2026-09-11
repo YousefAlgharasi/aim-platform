@@ -12,6 +12,7 @@ class BackendApiPaths {
   static const String authSyncUser = '/auth/bootstrap';
   static const String authLogout = '/auth/logout';
   static const String authLogin = '/auth/login';
+  static const String authGoogle = '/auth/google';
   static const String authRefresh = '/auth/refresh';
   static const String authRegister = '/auth/register';
   static const String authForgotPassword = '/auth/forgot-password';

@@ -52,6 +52,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     await ref.read(loginProvider.notifier).submitTestLogin(role, l10n);
   }
 
+  Future<void> _continueWithGoogle() async {
+    final l10n = AppLocalizations.of(context);
+    await ref.read(loginProvider.notifier).submitWithGoogle(l10n);
+  }
+
   void _openRegister() => context.push(AppRoutePaths.register);
   void _openEndpointTester() => context.push(AppRoutePaths.endpointTester);
 
@@ -287,7 +292,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: _FigmaSocialButton(
                         icon: const _GoogleLogo(),
                         label: 'Google',
-                        onPressed: () {},
+                        onPressed:
+                            formState.isSubmitting ? () {} : _continueWithGoogle,
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),

@@ -22,6 +22,15 @@ abstract class AuthRemoteDatasource {
     required String password,
   });
 
+  /// POST /auth/google — unauthenticated. Exchanges a Google ID token
+  /// (obtained on-device via the Google Sign-In SDK) for a backend session.
+  /// The backend verifies the token with Supabase and creates the account
+  /// on first sign-in, so this also serves as "register with Google".
+  Future<LoginResult> googleLogin({
+    required String idToken,
+    String? nonce,
+  });
+
   /// POST /auth/refresh — unauthenticated (uses the refresh token, not a
   /// bearer access token).
   Future<RefreshResult> refresh({required String refreshToken});
