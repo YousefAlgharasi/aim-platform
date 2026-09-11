@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -36,19 +35,12 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   LoginNotifier({
     required AuthRepository repository,
     required Ref ref,
-    required String googleWebClientId,
   })  : _repository = repository,
         _ref = ref,
-        _googleSignIn = GoogleSignIn(
-          serverClientId:
-              googleWebClientId.isEmpty ? null : googleWebClientId,
-          scopes: const ['email'],
-        ),
         super(const AppFormState());
 
   final AuthRepository _repository;
   final Ref _ref;
-  final GoogleSignIn _googleSignIn;
 
   String _email = '';
   String _password = '';
@@ -177,78 +169,6 @@ class LoginNotifier extends StateNotifier<AppFormState> {
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: l10n.authTestLoginFailedGeneric,
-      );
-    }
-  }
-
-  /// Signs in (or registers, on first use) with Google.
-  ///
-  /// 1. Runs the on-device Google Sign-In flow to obtain an ID token.
-  /// 2. Exchanges it via the backend's `POST /auth/google` → session tokens.
-  /// 3. Follows the same post-login flow as [submit] (sync + load context,
-  ///    persist session, transition [authFlowProvider]).
-  Future<void> submitWithGoogle(AppLocalizations l10n) async {
-    if (state.isSubmitting) return;
-
-    state = state.copyWith(isSubmitting: true, clearError: true);
-
-    try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // User cancelled the Google account picker.
-        state = state.copyWith(isSubmitting: false);
-        return;
-      }
-
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      if (idToken == null) {
-        state = state.copyWith(
-          isSubmitting: false,
-          errorMessage: l10n.authSignInFailedGeneric,
-        );
-        return;
-      }
-
-      final login = await _repository.googleLogin(idToken: idToken);
-
-      final didLoadContext = await _ref
-          .read(authContextProvider.notifier)
-          .syncAndLoadUser(login.accessToken, l10n: l10n);
-
-      if (!didLoadContext) {
-        final contextState = _ref.read(authContextProvider);
-        final errorMessage = contextState is AppAsyncFailure<AuthContext>
-            ? contextState.message
-            : l10n.authSignInFailedGeneric;
-        state = state.copyWith(
-          isSubmitting: false,
-          errorMessage: errorMessage,
-        );
-        return;
-      }
-
-      await _ref.read(sessionStoreProvider).save(
-            accessToken: login.accessToken,
-            refreshToken: login.refreshToken,
-            expiresAt: login.expiresAt,
-            email: login.userEmail,
-          );
-
-      _ref.read(authFlowProvider.notifier).signIn(
-            login.userEmail,
-            accessToken: login.accessToken,
-          );
-
-      // State stays isSubmitting=true after success; the UI navigates away.
-    } on AppException catch (e) {
-      log('Google sign-in failed: ${e.message}');
-      state = state.copyWith(isSubmitting: false, errorMessage: e.message);
-    } catch (e) {
-      log('Google sign-in failed: Unknown error');
-      state = state.copyWith(
-        isSubmitting: false,
-        errorMessage: l10n.authSignInFailedGeneric,
       );
     }
   }

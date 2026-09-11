@@ -73,25 +73,6 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   }
 
   @override
-  Future<LoginResult> googleLogin({
-    required String idToken,
-    String? nonce,
-  }) async {
-    final envelope = await _apiClient.post<LoginResult>(
-      BackendApiPaths.authGoogle,
-      body: {
-        'idToken': idToken,
-        if (nonce != null) 'nonce': nonce,
-      },
-      requiresAuth: false,
-      decodeData: (json) =>
-          LoginResult.fromJson(json as Map<String, dynamic>),
-    );
-
-    return envelope.data!;
-  }
-
-  @override
   Future<RefreshResult> refresh({required String refreshToken}) async {
     final envelope = await _apiClient.post<RefreshResult>(
       BackendApiPaths.authRefresh,

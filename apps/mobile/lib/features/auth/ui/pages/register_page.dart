@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
+import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../logic/provider/login_provider.dart';
+import '../../logic/google_oauth_launcher.dart';
 import '../../logic/provider/register_notifier.dart';
 import '../../logic/provider/register_provider.dart';
 
@@ -62,19 +63,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     await ref.read(registerProvider.notifier).submit(l10n);
   }
 
-  // Google sign-up uses the same backend flow (and the same notifier) as
-  // Google sign-in on the login page: the backend creates the account on
-  // first use, so there is no separate "register with Google" call.
+  // Google sign-up goes through the same backend redirect flow as Google
+  // sign-in: the backend creates the account on first use, so there is no
+  // separate "register with Google" call — just the same browser launch.
   Future<void> _continueWithGoogle() async {
-    final l10n = AppLocalizations.of(context);
-    await ref.read(loginProvider.notifier).submitWithGoogle(l10n);
+    final backendApiBaseUrl = ref.read(appConfigProvider).backendApiBaseUrl;
+    await launchGoogleOAuth(backendApiBaseUrl);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(registerProvider);
-    final googleFormState = ref.watch(loginProvider);
     final notifier = ref.read(registerProvider.notifier);
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -176,12 +176,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   AIMAlertBanner(
                     tone: AIMAlertTone.error,
                     child: Text(formState.errorMessage!),
-                  ),
-                  const SizedBox(height: AimSpacing.formFieldGap),
-                ] else if (googleFormState.errorMessage != null) ...[
-                  AIMAlertBanner(
-                    tone: AIMAlertTone.error,
-                    child: Text(googleFormState.errorMessage!),
                   ),
                   const SizedBox(height: AimSpacing.formFieldGap),
                 ],
@@ -324,9 +318,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       child: _RegFigmaSocialButton(
                         icon: const _RegGoogleLogo(),
                         label: 'Google',
-                        onPressed: googleFormState.isSubmitting
-                            ? () {}
-                            : _continueWithGoogle,
+                        onPressed:
+                            formState.isSubmitting ? () {} : _continueWithGoogle,
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),

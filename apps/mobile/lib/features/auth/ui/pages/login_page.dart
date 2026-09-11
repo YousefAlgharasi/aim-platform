@@ -7,6 +7,7 @@ import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/config/app_config_provider.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../logic/google_oauth_launcher.dart';
 import '../../logic/provider/login_provider.dart';
 
 /// Login screen — Student Mobile App.
@@ -53,8 +54,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _continueWithGoogle() async {
-    final l10n = AppLocalizations.of(context);
-    await ref.read(loginProvider.notifier).submitWithGoogle(l10n);
+    final backendApiBaseUrl = ref.read(appConfigProvider).backendApiBaseUrl;
+    await launchGoogleOAuth(backendApiBaseUrl);
   }
 
   void _openRegister() => context.push(AppRoutePaths.register);

@@ -1,7 +1,8 @@
 // Phase 2 — P2-025 (bootstrap endpoint added)
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { GoogleUserProfile } from './google.strategy';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OPENAPI_TAGS } from '../openapi/openapi.tags';
 import { AuthenticatedUser } from './authenticated-user';
@@ -28,6 +29,10 @@ import { UsersService } from '../features/users/users.service';
 import { StudentsService } from '../features/students/students.service';
 import { isAuthorizedRole } from './authorization';
 import { AuthMeProfile } from './auth-me.types';
+
+// Same deep link Supabase itself redirects to for email-confirmation and
+// password-reset links (see AuthLoginService.MOBILE_EMAIL_CONFIRMATION_REDIRECT_URL).
+const MOBILE_LOGIN_CALLBACK_URL = 'aimapp://login-callback';
 
 @ApiTags(OPENAPI_TAGS.auth)
 @Controller('auth')
@@ -86,16 +91,29 @@ export class AuthController {
   /**
    * GET /auth/google/callback
    *
-   * Handles Google OAuth 2.0 callback, validates identity, creates/updates profile,
-   * and returns signed session tokens.
+   * Handles Google OAuth 2.0 callback, validates identity, creates/updates
+   * profile, and redirects to the mobile app's deep link with session
+   * tokens in the URL fragment — mirroring how Supabase itself delivers
+   * email-confirmation and password-reset tokens to the app.
    */
   @Get('google/callback')
   @PublicRoute()
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth 2.0 redirect callback endpoint.' })
-  @ApiOkResponse({ description: 'Session tokens for the authenticated account.' })
-  async googleAuthCallback(@Req() req: { user: GoogleUserProfile }): Promise<AuthGoogleLoginResult> {
-    return this.authLogin.processGoogleUser(req.user);
+  async googleAuthCallback(
+    @Req() req: { user: GoogleUserProfile },
+    @Res() res: Response,
+  ): Promise<void> {
+    const result = await this.authLogin.processGoogleUser(req.user);
+
+    const fragment = new URLSearchParams({
+      access_token: result.accessToken,
+      refresh_token: result.refreshToken,
+      expires_in: String(result.expiresAt - Math.floor(Date.now() / 1000)),
+      type: 'google',
+    });
+
+    res.redirect(`${MOBILE_LOGIN_CALLBACK_URL}#${fragment.toString()}`);
   }
 
   /**

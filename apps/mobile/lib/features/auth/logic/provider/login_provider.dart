@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'auth_context_provider.dart';
 import 'login_notifier.dart';
@@ -16,7 +15,6 @@ final loginProvider =
     return LoginNotifier(
       repository: ref.watch(authRepositoryProvider),
       ref: ref,
-      googleWebClientId: ref.watch(appConfigProvider).googleWebClientId,
     );
   },
 );

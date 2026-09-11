@@ -75,8 +75,7 @@ jobs:
             --dart-define=AIM_ENV=production \
             --dart-define=BACKEND_API_BASE_URL=${{ secrets.BACKEND_API_BASE_URL }} \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
-            --dart-define=GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Rename APK
         run: |
