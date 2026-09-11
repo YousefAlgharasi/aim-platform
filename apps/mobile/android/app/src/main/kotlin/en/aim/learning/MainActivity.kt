@@ -1,4 +1,4 @@
-package aim.learn.en
+package en.aim.learning
 
 import io.flutter.embedding.android.FlutterActivity
 
