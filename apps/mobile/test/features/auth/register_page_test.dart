@@ -58,6 +58,13 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> logout(String bearerToken) async => throw UnimplementedError();
 
   @override
+  Future<AuthLoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
   Future<AuthLoginResult> login({
     required String email,
     required String password,

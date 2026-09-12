@@ -62,6 +62,14 @@ class _StubAuthRepo implements AuthRepository {
       throw UnimplementedError();
 
   @override
+  Future<AuthLoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+
   Future<AuthRefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError();
 

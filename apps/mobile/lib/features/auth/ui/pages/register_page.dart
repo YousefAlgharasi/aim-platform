@@ -308,7 +308,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       child: _RegFigmaSocialButton(
                         icon: const _RegGoogleLogo(),
                         label: 'Google',
-                        onPressed: () {},
+                        onPressed: formState.isSubmitting
+                            ? null
+                            : () => ref
+                                .read(registerProvider.notifier)
+                                .submitGoogleLogin(l10n),
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),
@@ -474,12 +478,12 @@ class _RegFigmaSocialButton extends StatelessWidget {
   const _RegFigmaSocialButton({
     required this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
   });
 
   final Widget icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

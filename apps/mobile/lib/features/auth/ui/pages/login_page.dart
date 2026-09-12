@@ -287,7 +287,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: _FigmaSocialButton(
                         icon: const _GoogleLogo(),
                         label: 'Google',
-                        onPressed: () {},
+                        onPressed: formState.isSubmitting
+                            ? null
+                            : () => ref
+                                .read(loginProvider.notifier)
+                                .submitGoogleLogin(l10n),
                       ),
                     ),
                     const SizedBox(width: AimSpacing.componentGap),
@@ -462,12 +466,12 @@ class _FigmaSocialButton extends StatelessWidget {
   const _FigmaSocialButton({
     required this.icon,
     required this.label,
-    required this.onPressed,
+    this.onPressed,
   });
 
   final Widget icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

@@ -1,10 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth_context_provider.dart';
+
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
 
@@ -149,4 +154,83 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   void clearError() {
     state = state.copyWith(clearError: true);
   }
+
+  /// Triggers real Google Sign-In SDK, gets ID token, calls `POST /auth/google`,
+  /// bootstraps user context, saves session, and transitions to signedIn state.
+  Future<void> submitGoogleLogin(
+    AppLocalizations l10n, {
+    GoogleSignIn? googleSignInOverride,
+  }) async {
+    if (state.isSubmitting) return;
+
+    state = state.copyWith(isSubmitting: true, clearError: true);
+    _outcome = null;
+
+    try {
+      final googleSignIn =
+          googleSignInOverride ?? GoogleSignIn(scopes: ['email', 'profile']);
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled Google Sign-In flow
+        state = state.copyWith(isSubmitting: false);
+        return;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null || idToken.isEmpty) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: l10n.authRegistrationFailedGeneric,
+        );
+        return;
+      }
+
+      final login = await _repository.loginWithGoogle(idToken: idToken);
+
+      final didLoadContext = await _ref
+          .read(authContextProvider.notifier)
+          .syncAndLoadUser(login.accessToken, l10n: l10n);
+
+      if (!didLoadContext) {
+        final contextState = _ref.read(authContextProvider);
+        final errorMessage = contextState is AppAsyncFailure<AuthContext>
+            ? contextState.message
+            : l10n.authRegistrationFailedGeneric;
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: errorMessage,
+        );
+        return;
+      }
+
+      final userEmail =
+          login.userEmail.isNotEmpty ? login.userEmail : googleUser.email;
+
+      await _ref.read(sessionStoreProvider).save(
+            accessToken: login.accessToken,
+            refreshToken: login.refreshToken,
+            expiresAt: login.expiresAt,
+            email: userEmail,
+          );
+
+      _ref.read(authFlowProvider.notifier).signIn(
+            userEmail,
+            accessToken: login.accessToken,
+          );
+      _outcome = RegisterOutcome.signedIn;
+    } on AppException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: e.message,
+      );
+    } catch (_) {
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: l10n.authRegistrationFailedGeneric,
+      );
+    }
+  }
 }
+

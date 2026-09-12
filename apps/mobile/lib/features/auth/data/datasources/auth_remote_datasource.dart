@@ -22,6 +22,12 @@ abstract class AuthRemoteDatasource {
     required String password,
   });
 
+  /// POST /auth/google — unauthenticated. Authenticates using a Google ID token.
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  });
+
   /// POST /auth/refresh — unauthenticated (uses the refresh token, not a
   /// bearer access token).
   Future<RefreshResult> refresh({required String refreshToken});

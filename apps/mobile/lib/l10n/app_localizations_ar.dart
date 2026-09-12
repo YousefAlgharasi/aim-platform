@@ -136,8 +136,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authContinueWithGoogle => 'المتابعة باستخدام Google';
 
   @override
-  String get authContinueWithGoogleSemantic =>
-      'المتابعة باستخدام Google (قريبًا)';
+  String get authContinueWithGoogleSemantic => 'المتابعة باستخدام Google';
 
   @override
   String get authAppleButton => 'Apple';
@@ -197,7 +196,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authSignUpWithGoogle => 'التسجيل باستخدام Google';
 
   @override
-  String get authSignUpWithGoogleSemantic => 'التسجيل باستخدام Google (قريبًا)';
+  String get authSignUpWithGoogleSemantic => 'التسجيل باستخدام Google';
 
   @override
   String get authSignUpWithAppleSemantic => 'التسجيل باستخدام Apple (قريبًا)';

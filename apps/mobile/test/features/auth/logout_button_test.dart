@@ -41,6 +41,13 @@ class _NoOpAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
   Future<RefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError();
 

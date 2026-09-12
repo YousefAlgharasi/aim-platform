@@ -338,16 +338,16 @@ abstract class AppLocalizations {
   /// **'OR CONTINUE WITH'**
   String get authOrContinueWith;
 
-  /// Label for the (visual-only) Google sign-in button on the login page.
+  /// Label for the Google sign-in button on the login page.
   ///
   /// In en, this message translates to:
   /// **'Continue with Google'**
   String get authContinueWithGoogle;
 
-  /// Accessibility label for the disabled Google sign-in button on the login page.
+  /// Accessibility label for the Google sign-in button on the login page.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Google (coming soon)'**
+  /// **'Continue with Google'**
   String get authContinueWithGoogleSemantic;
 
   /// Label for the (visual-only) Apple sign-in/sign-up button.
@@ -452,16 +452,16 @@ abstract class AppLocalizations {
   /// **'OR SIGN UP WITH'**
   String get authOrSignUpWith;
 
-  /// Label for the (visual-only) Google sign-up button on the register page.
+  /// Label for the Google sign-up button on the register page.
   ///
   /// In en, this message translates to:
   /// **'Sign up with Google'**
   String get authSignUpWithGoogle;
 
-  /// Accessibility label for the disabled Google sign-up button on the register page.
+  /// Accessibility label for the Google sign-up button on the register page.
   ///
   /// In en, this message translates to:
-  /// **'Sign up with Google (coming soon)'**
+  /// **'Sign up with Google'**
   String get authSignUpWithGoogleSemantic;
 
   /// Accessibility label for the disabled Apple sign-up button on the register page.

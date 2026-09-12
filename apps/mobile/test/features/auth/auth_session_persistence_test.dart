@@ -72,6 +72,13 @@ class _NoOpAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
   Future<RefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError();
 
@@ -303,6 +310,13 @@ class _ThrowingAuthRepository implements AuthRepository {
   Future<LoginResult> login({
     required String email,
     required String password,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
   }) async =>
       throw UnimplementedError();
 

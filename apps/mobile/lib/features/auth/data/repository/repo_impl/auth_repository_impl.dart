@@ -59,6 +59,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<AuthLoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async {
+    try {
+      return await _datasource.loginWithGoogle(
+        idToken: idToken,
+        nonce: nonce,
+      );
+    } on ApiClientException catch (e) {
+      throw AppException(code: e.code, message: e.message);
+    }
+  }
+
+  @override
+
   Future<AuthRefreshResult> refresh({required String refreshToken}) async {
     try {
       return await _datasource.refresh(refreshToken: refreshToken);

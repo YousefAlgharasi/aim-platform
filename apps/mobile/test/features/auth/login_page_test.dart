@@ -82,6 +82,13 @@ class _FakeAuthRepository implements AuthRepository {
       throw UnimplementedError('not called in UI-only tests');
 
   @override
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) async =>
+      throw UnimplementedError('not called in UI-only tests');
+
+  @override
   Future<RefreshResult> refresh({required String refreshToken}) async =>
       throw UnimplementedError('not called in UI-only tests');
 

@@ -227,6 +227,13 @@ class _UnusedAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
+  Future<LoginResult> loginWithGoogle({
+    required String idToken,
+    String? nonce,
+  }) =>
+      throw UnimplementedError();
+
+  @override
   Future<LoginResult> loginAsTestUser({required String role}) =>
       throw UnimplementedError();
 

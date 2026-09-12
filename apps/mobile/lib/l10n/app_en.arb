@@ -115,11 +115,11 @@
   },
   "authContinueWithGoogle": "Continue with Google",
   "@authContinueWithGoogle": {
-    "description": "Label for the (visual-only) Google sign-in button on the login page."
+    "description": "Label for the Google sign-in button on the login page."
   },
-  "authContinueWithGoogleSemantic": "Continue with Google (coming soon)",
+  "authContinueWithGoogleSemantic": "Continue with Google",
   "@authContinueWithGoogleSemantic": {
-    "description": "Accessibility label for the disabled Google sign-in button on the login page."
+    "description": "Accessibility label for the Google sign-in button on the login page."
   },
   "authAppleButton": "Apple",
   "@authAppleButton": {
@@ -191,11 +191,11 @@
   },
   "authSignUpWithGoogle": "Sign up with Google",
   "@authSignUpWithGoogle": {
-    "description": "Label for the (visual-only) Google sign-up button on the register page."
+    "description": "Label for the Google sign-up button on the register page."
   },
-  "authSignUpWithGoogleSemantic": "Sign up with Google (coming soon)",
+  "authSignUpWithGoogleSemantic": "Sign up with Google",
   "@authSignUpWithGoogleSemantic": {
-    "description": "Accessibility label for the disabled Google sign-up button on the register page."
+    "description": "Accessibility label for the Google sign-up button on the register page."
   },
   "authSignUpWithAppleSemantic": "Sign up with Apple (coming soon)",
   "@authSignUpWithAppleSemantic": {
