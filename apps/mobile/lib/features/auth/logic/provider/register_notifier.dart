@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/core/state/app_form_state.dart';
@@ -167,11 +169,20 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
     _outcome = null;
 
     try {
-      final googleSignIn =
-          googleSignInOverride ?? GoogleSignIn(scopes: ['email', 'profile']);
+      final serverClientId =
+          _ref.read(appConfigProvider).googleServerClientId?.trim();
+      final googleSignIn = googleSignInOverride ??
+          GoogleSignIn(
+            scopes: ['email', 'profile'],
+            serverClientId:
+                (serverClientId != null && serverClientId.isNotEmpty)
+                    ? serverClientId
+                    : null,
+          );
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         // User cancelled Google Sign-In flow
+        AppLogger.i('RegisterNotifier', 'User cancelled Google Sign-In dialog.');
         state = state.copyWith(isSubmitting: false);
         return;
       }
@@ -180,6 +191,10 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       final idToken = googleAuth.idToken;
 
       if (idToken == null || idToken.isEmpty) {
+        AppLogger.e(
+          'RegisterNotifier',
+          'Google Sign-In returned null or empty idToken. Ensure Google Web OAuth Client ID is passed via GOOGLE_SERVER_CLIENT_ID or configured in Android google-services.json / strings.xml.',
+        );
         state = state.copyWith(
           isSubmitting: false,
           errorMessage: l10n.authRegistrationFailedGeneric,
@@ -220,12 +235,14 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
             accessToken: login.accessToken,
           );
       _outcome = RegisterOutcome.signedIn;
-    } on AppException catch (e) {
+    } on AppException catch (e, st) {
+      AppLogger.e('RegisterNotifier', 'Google Register failed with AppException: ${e.message}', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: e.message,
       );
-    } catch (_) {
+    } catch (e, st) {
+      AppLogger.e('RegisterNotifier', 'Google Register failed with unknown error', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: l10n.authRegistrationFailedGeneric,
@@ -233,4 +250,5 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
     }
   }
 }
+
 

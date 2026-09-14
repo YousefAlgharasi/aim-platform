@@ -3,8 +3,11 @@ import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
+
 import 'package:aim_mobile/core/state/app_form_state.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
@@ -189,11 +192,20 @@ class LoginNotifier extends StateNotifier<AppFormState> {
     state = state.copyWith(isSubmitting: true, clearError: true);
 
     try {
-      final googleSignIn =
-          googleSignInOverride ?? GoogleSignIn(scopes: ['email', 'profile']);
+      final serverClientId =
+          _ref.read(appConfigProvider).googleServerClientId?.trim();
+      final googleSignIn = googleSignInOverride ??
+          GoogleSignIn(
+            scopes: ['email', 'profile'],
+            serverClientId:
+                (serverClientId != null && serverClientId.isNotEmpty)
+                    ? serverClientId
+                    : null,
+          );
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         // User cancelled Google Sign-In flow
+        AppLogger.i('LoginNotifier', 'User cancelled Google Sign-In dialog.');
         state = state.copyWith(isSubmitting: false);
         return;
       }
@@ -202,6 +214,10 @@ class LoginNotifier extends StateNotifier<AppFormState> {
       final idToken = googleAuth.idToken;
 
       if (idToken == null || idToken.isEmpty) {
+        AppLogger.e(
+          'LoginNotifier',
+          'Google Sign-In returned null or empty idToken. Ensure Google Web OAuth Client ID is passed via GOOGLE_SERVER_CLIENT_ID or configured in Android google-services.json / strings.xml.',
+        );
         state = state.copyWith(
           isSubmitting: false,
           errorMessage: l10n.authSignInFailedGeneric,
@@ -241,14 +257,14 @@ class LoginNotifier extends StateNotifier<AppFormState> {
             userEmail,
             accessToken: login.accessToken,
           );
-    } on AppException catch (e) {
-      log('Google Login failed: ${e.message}');
+    } on AppException catch (e, st) {
+      AppLogger.e('LoginNotifier', 'Google Login failed with AppException: ${e.message}', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: e.message,
       );
-    } catch (e) {
-      log('Google Login failed: $e');
+    } catch (e, st) {
+      AppLogger.e('LoginNotifier', 'Google Login failed with unknown error', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: l10n.authSignInFailedGeneric,
@@ -256,4 +272,5 @@ class LoginNotifier extends StateNotifier<AppFormState> {
     }
   }
 }
+
 

@@ -5,6 +5,7 @@ class AppConfig {
   const AppConfig({
     required this.environment,
     required this.backendApiBaseUrl,
+    this.googleServerClientId,
   });
 
   factory AppConfig.fromEnvironment() {
@@ -17,11 +18,17 @@ class AppConfig {
         'BACKEND_API_BASE_URL',
         defaultValue: 'http://localhost:3000',
       ),
+      googleServerClientId: String.fromEnvironment(
+        'GOOGLE_SERVER_CLIENT_ID',
+        defaultValue: '',
+      ),
     );
   }
 
   final String environment;
   final String backendApiBaseUrl;
+  final String? googleServerClientId;
 
   bool get isProduction => environment == 'production';
 }
+
