@@ -99,7 +99,7 @@ export class PlacementAttemptCompleteService {
     //    student's "I'm done" signal and the timer both converge on
     //    'submitted', so this call is idempotent in that case.
     // -----------------------------------------------------------------------
-    if (attempt.status === 'submitted') {
+    if (attempt.status === 'submitted' || attempt.status === 'completed') {
       return {
         id: attempt.id,
         placement_test_id: attempt.placement_test_id,
@@ -108,14 +108,6 @@ export class PlacementAttemptCompleteService {
         submitted_at: attempt.submitted_at as string,
         completed_at: null,
       };
-    }
-
-    if (attempt.status === 'completed') {
-      throw new AppError({
-        code: PlacementErrorCode.ATTEMPT_ALREADY_SUBMITTED,
-        message: `Placement attempt has already been submitted (status: ${attempt.status}).`,
-        statusCode: HttpStatus.CONFLICT,
-      });
     }
 
     if (attempt.status !== 'active') {

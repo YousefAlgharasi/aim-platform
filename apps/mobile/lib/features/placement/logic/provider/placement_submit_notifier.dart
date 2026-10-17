@@ -1,4 +1,5 @@
 import 'package:aim_mobile/core/logging/app_logger.dart';
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
@@ -64,7 +65,15 @@ class PlacementSubmitNotifier extends StateNotifier<PlacementSubmitState> {
       await _repository.completeAttempt(bearerToken, attemptId: attemptId);
       state = PlacementSubmitSuccess(attemptId: attemptId);
     } catch (e, st) {
-      AppLogger.e('PlacementSubmitNotifier', 'Failed to complete placement attempt $attemptId', e, st);
+      if (e is ApiClientException &&
+          (e.code == 'ATTEMPT_ALREADY_SUBMITTED' || e.statusCode == 409)) {
+        AppLogger.i('PlacementSubmitNotifier',
+            'Attempt $attemptId already submitted/completed; advancing to result');
+        state = PlacementSubmitSuccess(attemptId: attemptId);
+        return;
+      }
+      AppLogger.e('PlacementSubmitNotifier',
+          'Failed to complete placement attempt $attemptId', e, st);
       state = PlacementSubmitError(
         message: e is Exception
             ? e.toString().replaceFirst('Exception: ', '')
