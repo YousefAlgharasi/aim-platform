@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../data/models/placement_question_model.dart';
@@ -729,22 +730,38 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
 
     try {
       final token = ref.read(authFlowProvider).accessToken ?? '';
+      AppLogger.i('ListenButton', 'Fetching audio for questionId: ${widget.questionId}');
       final bytes = await ref.read(placementRepositoryProvider).getQuestionAudio(
             token,
             questionId: widget.questionId,
           );
+      AppLogger.i('ListenButton', 'Fetched ${bytes.length} audio bytes for questionId: ${widget.questionId}');
       if (bytes.isNotEmpty) {
-        // The backend synthesizes listening audio as WAV
-        // (TtsAudioGenerationService, via Groq's Orpheus TTS, hardcodes
-        // contentType 'audio/wav'), but getBytes() only returns the raw
-        // bytes, not the response's Content-Type header. Without an
-        // explicit mimeType, BytesSource can't determine the audio format
-        // on some platforms (notably web and Android), which surfaces to
-        // the student as "failed to open audio" even though valid bytes
-        // were received.
-        await _audioPlayer.play(
-          BytesSource(Uint8List.fromList(bytes), mimeType: 'audio/wav'),
-        );
+        // Detect audio format from byte magic numbers:
+        // WAV starts with RIFF (0x52, 0x49, 0x46, 0x46)
+        // MP3 starts with ID3 (0x49, 0x44, 0x33) or frame sync 0xFF
+        // OGG starts with OggS (0x4F, 0x67, 0x67, 0x53)
+        String mimeType = 'audio/wav';
+        if (bytes.length >= 3 && bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) {
+          mimeType = 'audio/mpeg';
+        } else if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) {
+          mimeType = 'audio/mpeg';
+        } else if (bytes.length >= 4 && bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53) {
+          mimeType = 'audio/ogg';
+        }
+        AppLogger.i('ListenButton', 'Attempting audio playback with mimeType: $mimeType');
+
+        try {
+          await _audioPlayer.play(
+            BytesSource(Uint8List.fromList(bytes), mimeType: mimeType),
+          );
+        } catch (playError) {
+          AppLogger.w('ListenButton', 'Play with mimeType failed, falling back to default BytesSource: $playError');
+          await _audioPlayer.play(
+            BytesSource(Uint8List.fromList(bytes)),
+          );
+        }
+
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -752,14 +769,21 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
           });
         }
       } else {
-        if (mounted) setState(() => _isLoading = false);
+        AppLogger.w('ListenButton', 'No audio bytes received (204 No Content / no script authored yet)');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _error = 'Audio not available yet.';
+          });
+        }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.e('ListenButton', 'Failed to play question audio: $e', e, stackTrace);
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _isPlaying = false;
-        _error = 'Failed to load question audio.';
+        _error = 'Failed to load audio: $e';
       });
     }
   }

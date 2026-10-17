@@ -172,6 +172,161 @@
   --z-toast:    1400;
 }
 
+/* =============================================================
+   AIM Dark Mode Tokens — Exact match to AIM Mobile App
+   Derived from apps/mobile/lib/core/design_tokens/aim_colors.dart
+   ============================================================= */
+:root[data-theme="dark"],
+html.dark {
+  color-scheme: dark;
+
+  /* Semantic surface aliases — matching mobile app AimColorTheme.dark */
+  --background:     #0E1118;
+  --surface:        #181C26;
+  --surface-raised: #202533;
+  --surface-sunken: #11141C;
+
+  /* Text — matching mobile app AimColorTheme.dark */
+  --text-primary:    #F2F4F8;
+  --text-secondary:  #A6AEBF;
+  --text-muted:      #7A8499;
+  --text-on-primary: #FFFFFF;
+  --text-link:       #93A6FF;
+
+  /* Borders & Dividers — matching mobile app AimColorTheme.dark */
+  --border:        #2B3140;
+  --border-strong: #3A4253;
+  --divider:       #232838;
+
+  /* Focus */
+  --focus-ring: #6B82FB;
+
+  /* Tonal fills — matching mobile app AimColorTheme.dark */
+  --primary-soft:    #222B52;
+  --primary-soft-fg: #BBC9FF;
+  --secondary-soft:    #302950;
+  --secondary-soft-fg: #D7C8FB;
+  --accent-soft:       #173B3F;
+  --accent-soft-fg:    #A7EBDF;
+  --success-soft:    #1A3B37;
+  --success-soft-fg: #7FE0B4;
+  --warning-soft:    #493A26;
+  --warning-soft-fg: #FBD089;
+  --error-soft:      #45262F;
+  --error-soft-fg:   #F2A6A8;
+  --info-soft:       #1F354E;
+  --info-soft-fg:    #A8CCF0;
+
+  /* Interaction */
+  --state-hover:    rgba(255, 255, 255, 0.08);
+  --state-pressed:  rgba(255, 255, 255, 0.14);
+  --disabled-bg:    #202533;
+  --disabled-fg:    #5A6377;
+  --disabled-border:#2B3140;
+
+  /* Shadows tuned for dark surfaces */
+  --shadow-card:       0 1px 3px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.55);
+  --shadow-card-hover: 0 4px 14px rgba(0,0,0,0.5), 0 10px 28px rgba(0,0,0,0.6);
+  --shadow-dropdown:   0 6px 18px rgba(0,0,0,0.55), 0 16px 36px rgba(0,0,0,0.65);
+  --shadow-modal:      0 12px 36px rgba(0,0,0,0.65), 0 32px 72px rgba(0,0,0,0.75);
+  --shadow-focus:      0 0 0 3px rgba(107, 130, 251, 0.4);
+  --shadow-inset:      inset 0 1px 2px rgba(0,0,0,0.45);
+
+  /* Override neutral scale so raw utility tokens stay accessible */
+  --color-neutral-0:   #181C26;
+  --color-neutral-50:  #0E1118;
+  --color-neutral-100: #11141C;
+  --color-neutral-200: #232838;
+  --color-neutral-300: #2B3140;
+  --color-neutral-400: #3A4253;
+  --color-neutral-500: #7A8499;
+  --color-neutral-600: #A6AEBF;
+  --color-neutral-700: #CDD2DD;
+  --color-neutral-800: #EEF0F4;
+  --color-neutral-900: #F2F4F8;
+}
+
+/* System preference fallback when data-theme is not explicitly set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --background:     #0E1118;
+    --surface:        #181C26;
+    --surface-raised: #202533;
+    --surface-sunken: #11141C;
+
+    --text-primary:    #F2F4F8;
+    --text-secondary:  #A6AEBF;
+    --text-muted:      #7A8499;
+    --text-on-primary: #FFFFFF;
+    --text-link:       #93A6FF;
+
+    --border:        #2B3140;
+    --border-strong: #3A4253;
+    --divider:       #232838;
+
+    --focus-ring: #6B82FB;
+
+    --primary-soft:    #222B52;
+    --primary-soft-fg: #BBC9FF;
+    --secondary-soft:    #302950;
+    --secondary-soft-fg: #D7C8FB;
+    --accent-soft:       #173B3F;
+    --accent-soft-fg:    #A7EBDF;
+    --success-soft:    #1A3B37;
+    --success-soft-fg: #7FE0B4;
+    --warning-soft:    #493A26;
+    --warning-soft-fg: #FBD089;
+    --error-soft:      #45262F;
+    --error-soft-fg:   #F2A6A8;
+    --info-soft:       #1F354E;
+    --info-soft-fg:    #A8CCF0;
+
+    --state-hover:    rgba(255, 255, 255, 0.08);
+    --state-pressed:  rgba(255, 255, 255, 0.14);
+    --disabled-bg:    #202533;
+    --disabled-fg:    #5A6377;
+    --disabled-border:#2B3140;
+
+    --shadow-card:       0 1px 3px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.55);
+    --shadow-card-hover: 0 4px 14px rgba(0,0,0,0.5), 0 10px 28px rgba(0,0,0,0.6);
+    --shadow-dropdown:   0 6px 18px rgba(0,0,0,0.55), 0 16px 36px rgba(0,0,0,0.65);
+    --shadow-modal:      0 12px 36px rgba(0,0,0,0.65), 0 32px 72px rgba(0,0,0,0.75);
+    --shadow-focus:      0 0 0 3px rgba(107, 130, 251, 0.4);
+    --shadow-inset:      inset 0 1px 2px rgba(0,0,0,0.45);
+
+    --color-neutral-0:   #181C26;
+    --color-neutral-50:  #0E1118;
+    --color-neutral-100: #11141C;
+    --color-neutral-200: #232838;
+    --color-neutral-300: #2B3140;
+    --color-neutral-400: #3A4253;
+    --color-neutral-500: #7A8499;
+    --color-neutral-600: #A6AEBF;
+    --color-neutral-700: #CDD2DD;
+    --color-neutral-800: #EEF0F4;
+    --color-neutral-900: #F2F4F8;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+
 /* ---- Base reset ---- */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { min-height: 100%; margin: 0; }

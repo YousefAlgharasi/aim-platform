@@ -223,17 +223,24 @@ class BackendApiClient {
     String path, {
     Map<String, String>? headers,
   }) async {
+    final uri = buildUri(path);
     final response = await _withTimeout(() => _httpClient.get(
-          buildUri(path),
+          uri,
           headers: _authHeadersOnly(headers),
         ));
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw ApiClientException(
+      final exc = ApiClientException(
         code: 'AUDIO_FETCH_FAILED',
-        message: 'Failed to fetch voice audio.',
+        message: 'Failed to fetch voice audio: HTTP ${response.statusCode}',
         statusCode: response.statusCode,
       );
+      AppLogger.e(
+        'BackendApiClient',
+        'HTTP ${response.statusCode} [$uri] ${exc.code}: ${response.body}',
+        exc,
+      );
+      throw exc;
     }
 
     return response.bodyBytes;

@@ -14,7 +14,7 @@ export function HBar({ label, value, max, color }: Props) {
         <span className="text-[var(--text-secondary)]">{label}</span>
         <span className="font-bold text-[var(--text-primary)]">{value.toLocaleString()}</span>
       </div>
-      <div className="h-2 rounded-full bg-[var(--color-neutral-100,#f5f5f5)] overflow-hidden">
+      <div className="h-2 rounded-full bg-[var(--surface-sunken)] border border-[var(--border)] overflow-hidden">
         <div
           className="h-full rounded-full transition-[width] duration-500 ease-out"
           style={{ width: `${pct}%`, background: color }}

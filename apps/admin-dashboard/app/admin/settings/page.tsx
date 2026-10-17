@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { backendFetch } from '../../../core/api/client-api-helpers';
+import { ThemeToggle } from '../../../shared/components/Theme';
 
 type PlatformInfo = {
   appName: string;
@@ -134,6 +135,35 @@ export default function AdminSettingsPage() {
       {/* General */}
       {section === 'general' && (
         <div className="sett-content">
+          <div className="sett-card">
+            <div className="sett-card-header">
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+              <h2>Appearance & Theme</h2>
+            </div>
+            <div className="sett-card-body">
+              <div className="sett-row">
+                <div className="sett-row-left">
+                  <span className="sett-row-label">Interface Theme</span>
+                  <span className="sett-row-desc">
+                    Select Light mode, Dark mode (exact AIM Mobile App Obsidian theme), or System Default.
+                  </span>
+                </div>
+                <div className="sett-row-right">
+                  <ThemeToggle variant="segmented" />
+                </div>
+              </div>
+              <SettingRow
+                label="Mobile App Palette Match"
+                value="AIM Mobile App Design Tokens"
+                description="Background (#0E1118), Card Surface (#181C26), Text (#F2F4F8), Primary (#4762EE)"
+                type="badge-ok"
+              />
+            </div>
+          </div>
+
           <div className="sett-card">
             <div className="sett-card-header">
               <SvgIcon d={ICONS.globe} />

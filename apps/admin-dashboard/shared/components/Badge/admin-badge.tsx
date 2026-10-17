@@ -28,12 +28,12 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 'bg-[var(--surface-sunken)] text-[var(--text-secondary)]',
-        primary: 'bg-[var(--primary-soft)] text-[var(--color-primary-700)]',
-        success: 'bg-[var(--success-soft)] text-[var(--color-success-700)]',
-        warning: 'bg-[var(--warning-soft)] text-[var(--color-warning-700)]',
-        error:   'bg-[var(--error-soft)] text-[var(--color-error-700)]',
-        info:    'bg-[var(--info-soft)] text-[var(--color-info-700)]',
-        neutral: 'bg-[var(--color-neutral-100)] text-[var(--color-neutral-600)]',
+        primary: 'bg-[var(--primary-soft)] text-[var(--primary-soft-fg)]',
+        success: 'bg-[var(--success-soft)] text-[var(--success-soft-fg)]',
+        warning: 'bg-[var(--warning-soft)] text-[var(--warning-soft-fg)]',
+        error:   'bg-[var(--error-soft)] text-[var(--error-soft-fg)]',
+        info:    'bg-[var(--info-soft)] text-[var(--info-soft-fg)]',
+        neutral: 'bg-[var(--surface-sunken)] text-[var(--text-secondary)]',
         purple:  'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300',
         emerald: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
         amber:   'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',

@@ -12,17 +12,17 @@ type Props = {
 };
 
 const ACCENT_STYLES: Record<Props['accent'], string> = {
-  primary: 'bg-[var(--color-primary-100,#e0e7ff)] text-[var(--color-primary-600,#4f46e5)]',
-  success: 'bg-emerald-100 text-emerald-600',
-  emerald: 'bg-emerald-100 text-emerald-600',
-  blue: 'bg-blue-100 text-blue-600',
-  error: 'bg-red-100 text-red-600',
-  warning: 'bg-amber-100 text-amber-600',
+  primary: 'bg-[var(--primary-soft)] text-[var(--primary-soft-fg)]',
+  success: 'bg-[var(--success-soft)] text-[var(--success-soft-fg)]',
+  emerald: 'bg-[var(--success-soft)] text-[var(--success-soft-fg)]',
+  blue: 'bg-[var(--info-soft)] text-[var(--info-soft-fg)]',
+  error: 'bg-[var(--error-soft)] text-[var(--error-soft-fg)]',
+  warning: 'bg-[var(--warning-soft)] text-[var(--warning-soft-fg)]',
 };
 
 export const KpiCard = memo(function KpiCard({ icon, label, value, sub, accent, href }: Props) {
   const card = (
-    <div className="h-full flex items-start gap-3.5 p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-200 hover:border-[var(--color-primary-200)] hover:shadow-md hover:-translate-y-0.5">
+    <div className="h-full flex items-start gap-3.5 p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-200 hover:border-[var(--border-strong)] hover:shadow-md hover:-translate-y-0.5">
       <div
         className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ACCENT_STYLES[accent]}`}
       >

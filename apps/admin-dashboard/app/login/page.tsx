@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { ThemeToggle } from '../../shared/components/Theme';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,6 +42,10 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
+      <div className="login-theme-toggle">
+        <ThemeToggle variant="compact" />
+      </div>
+
       <div className="login-card">
         <div className="login-header">
           <p className="login-eyebrow">AIM Platform</p>
@@ -100,22 +105,33 @@ export default function LoginPage() {
 
       <style>{`
         .login-page {
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
           min-height: 100vh;
           padding: var(--space-16, 16px);
-          background: var(--color-neutral-50, #F7F8FA);
+          background: var(--background);
           font-family: 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+          transition: background 0.2s ease;
+        }
+
+        .login-theme-toggle {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 10;
         }
 
         .login-card {
           width: 100%;
-          max-width: 400px;
-          background: var(--color-neutral-0, #FFFFFF);
-          border-radius: var(--radius-lg, 12px);
-          box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+          max-width: 420px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg, 16px);
+          box-shadow: var(--shadow-modal);
           padding: var(--space-32, 32px);
+          transition: background 0.2s ease, border-color 0.2s ease;
         }
 
         .login-header {
@@ -125,30 +141,31 @@ export default function LoginPage() {
 
         .login-eyebrow {
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          color: var(--color-primary-600, #3349D6);
+          color: var(--color-primary-500);
           margin: 0 0 8px;
         }
 
         .login-title {
           font-size: 24px;
-          font-weight: 700;
-          color: var(--color-neutral-900, #181C26);
+          font-weight: 800;
+          color: var(--text-primary);
           margin: 0 0 8px;
         }
 
         .login-subtitle {
           font-size: 14px;
-          color: var(--color-neutral-500, #7A8499);
+          color: var(--text-muted);
           margin: 0;
+          line-height: 1.5;
         }
 
         .login-error {
-          background: var(--color-error-50, #FEF0F0);
-          color: var(--color-error-700, #B91C1C);
-          border: 1px solid var(--color-error-200, #FECACA);
+          background: var(--error-soft);
+          color: var(--error-soft-fg);
+          border: 1px solid var(--color-error-500);
           border-radius: var(--radius-md, 8px);
           padding: 12px 16px;
           font-size: 14px;
@@ -168,28 +185,30 @@ export default function LoginPage() {
         }
 
         .login-label {
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--color-neutral-700, #424A5C);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-secondary);
         }
 
         .login-input {
           width: 100%;
-          padding: 10px 12px;
+          height: 44px;
+          padding: 0 14px;
           font-size: 14px;
           font-family: inherit;
-          border: 1px solid var(--color-neutral-300, #CDD2DD);
+          border: 1px solid var(--border);
           border-radius: var(--radius-md, 8px);
-          background: var(--color-neutral-0, #FFFFFF);
-          color: var(--color-neutral-900, #181C26);
+          background: var(--surface-sunken);
+          color: var(--text-primary);
           outline: none;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
           box-sizing: border-box;
         }
 
         .login-input:focus {
-          border-color: var(--color-primary-500, #4762EE);
-          box-shadow: 0 0 0 3px var(--color-primary-100, #DCE4FF);
+          border-color: var(--color-primary-500);
+          box-shadow: var(--shadow-focus);
+          background: var(--surface);
         }
 
         .login-input:disabled {
@@ -198,31 +217,36 @@ export default function LoginPage() {
         }
 
         .login-input::placeholder {
-          color: var(--color-neutral-400, #A6AEBF);
+          color: var(--text-muted);
         }
 
         .login-button {
           width: 100%;
-          padding: 12px;
-          font-size: 15px;
-          font-weight: 600;
+          height: 44px;
+          padding: 0 16px;
+          font-size: 14px;
+          font-weight: 700;
           font-family: inherit;
-          color: var(--color-neutral-0, #FFFFFF);
-          background: var(--color-primary-600, #3349D6);
+          color: #ffffff;
+          background: var(--color-primary-500);
           border: none;
           border-radius: var(--radius-md, 8px);
           cursor: pointer;
-          transition: background 0.15s ease, opacity 0.15s ease;
+          transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
           margin-top: 8px;
         }
 
         .login-button:hover:not(:disabled) {
-          background: var(--color-primary-700, #2837AC);
+          background: var(--color-primary-600);
+        }
+
+        .login-button:active:not(:disabled) {
+          transform: scale(0.99);
         }
 
         .login-button:focus-visible {
           outline: none;
-          box-shadow: 0 0 0 3px var(--color-primary-100, #DCE4FF);
+          box-shadow: var(--shadow-focus);
         }
 
         .login-button:disabled {

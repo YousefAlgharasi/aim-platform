@@ -18,11 +18,11 @@ const buttonVariants = cva(
         primary:
           'bg-[var(--color-primary-500)] text-[var(--text-on-primary)] hover:enabled:bg-[var(--color-primary-600)]',
         secondary:
-          'bg-[var(--primary-soft)] text-[var(--color-primary-700)] hover:enabled:bg-[var(--color-primary-100)]',
+          'bg-[var(--primary-soft)] text-[var(--primary-soft-fg)] hover:enabled:bg-[var(--color-primary-100)] dark:hover:enabled:bg-[var(--primary-soft)] dark:hover:enabled:brightness-125',
         ghost:
           'bg-transparent text-[var(--text-secondary)] border border-[var(--border)] hover:enabled:bg-[var(--state-hover)] hover:enabled:text-[var(--text-primary)]',
         destructive:
-          'bg-[var(--error-soft)] text-[var(--color-error-700)] hover:enabled:bg-[var(--color-error-100)]',
+          'bg-[var(--error-soft)] text-[var(--error-soft-fg)] hover:enabled:bg-[var(--color-error-100)] dark:hover:enabled:bg-[var(--error-soft)] dark:hover:enabled:brightness-125',
       },
       size: {
         sm: 'h-9 px-3 text-xs',

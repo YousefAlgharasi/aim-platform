@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import type { AdminAuthContext, BackendAuthorizedRole } from '../../../core/auth';
 import { NAV_ICONS } from './admin-nav-icon-paths';
 import { AdminSvgIcon } from '../../components/Misc/admin-svg-icon';
+import { ThemeToggle } from '../../components/Theme';
 
 type NavItem = { label: string; href: string; icon: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -247,6 +248,9 @@ export function AdminNavigation({
       {/* Footer */}
       <div className="sn-footer">
         <hr className="sn-divider" aria-hidden="true" />
+        <div style={{ padding: '0 6px 4px' }}>
+          <ThemeToggle variant="nav" showLabel={!collapsed} />
+        </div>
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
