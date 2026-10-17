@@ -718,6 +718,41 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
     super.dispose();
   }
 
+  Uint8List _sanitizeWavHeader(Uint8List bytes) {
+    if (bytes.length < 12) return bytes;
+    // Check for 'RIFF' and 'WAVE'
+    if (bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x41 &&
+        bytes[10] == 0x56 &&
+        bytes[11] == 0x45) {
+      final copy = Uint8List.fromList(bytes);
+      final byteData = ByteData.sublistView(copy);
+      final riffSize = byteData.getUint32(4, Endian.little);
+      if (riffSize == 0xFFFFFFFF || riffSize > copy.length - 8) {
+        byteData.setUint32(4, copy.length - 8, Endian.little);
+      }
+
+      for (int i = 12; i <= copy.length - 8; i++) {
+        if (copy[i] == 0x64 &&
+            copy[i + 1] == 0x61 &&
+            copy[i + 2] == 0x74 &&
+            copy[i + 3] == 0x61) {
+          final dataSize = byteData.getUint32(i + 4, Endian.little);
+          if (dataSize == 0xFFFFFFFF || dataSize > copy.length - (i + 8)) {
+            byteData.setUint32(i + 4, copy.length - (i + 8), Endian.little);
+          }
+          break;
+        }
+      }
+      return copy;
+    }
+    return bytes;
+  }
+
   Future<void> _handleTap() async {
     if (_isPlaying) {
       await _audioPlayer.stop();
@@ -743,6 +778,11 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
       }
 
       if (cachedFile != null) {
+        if (cachedFile.path.endsWith('.wav')) {
+          final raw = await cachedFile.readAsBytes();
+          final sanitized = _sanitizeWavHeader(raw);
+          await cachedFile.writeAsBytes(sanitized, flush: true);
+        }
         AppLogger.i('ListenButton', 'Playing existing cached audio: ${cachedFile.path}');
         await _audioPlayer.play(DeviceFileSource(cachedFile.path));
         if (mounted) {
@@ -782,7 +822,11 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
               ? 'mp3'
               : (mimeType == 'audio/ogg' ? 'ogg' : 'wav');
           final tempFile = File('${tempDir.path}/placement_audio_${widget.questionId}.$extension');
-          await tempFile.writeAsBytes(bytes, flush: true);
+          Uint8List finalBytes = Uint8List.fromList(bytes);
+          if (mimeType == 'audio/wav') {
+            finalBytes = _sanitizeWavHeader(finalBytes);
+          }
+          await tempFile.writeAsBytes(finalBytes, flush: true);
           AppLogger.i('ListenButton', 'Playing audio via DeviceFileSource: ${tempFile.path}');
           await _audioPlayer.play(DeviceFileSource(tempFile.path));
         } catch (fileErr) {
