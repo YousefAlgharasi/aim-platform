@@ -76,6 +76,13 @@ export class PlacementLevelStateService {
 
     const { cefr_rank: cefrRank, track_slug: trackSlug } = courseResult.rows[0];
 
+    // Resolve student_profiles.id (student_level_state.student_id references student_profiles.id, not users.id)
+    const profileResult = await this.db.query<{ id: string }>(
+      `SELECT id FROM student_profiles WHERE id = $1 OR user_id = $1 LIMIT 1`,
+      [studentId],
+    );
+    const targetStudentId = profileResult.rows[0]?.id ?? studentId;
+
     // On first placement (no existing row) max_unlocked_cefr_rank is seeded
     // equal to current_cefr_rank — the P20-011 exception. On a retake
     // (row already exists), only current_cefr_rank/source/last_computed_at
@@ -92,7 +99,7 @@ export class PlacementLevelStateService {
          source = 'placement',
          last_computed_at = now(),
          updated_at = now()`,
-      [studentId, trackSlug, cefrRank],
+      [targetStudentId, trackSlug, cefrRank],
     );
 
     this.logger.log('placement_level_state_upserted', {

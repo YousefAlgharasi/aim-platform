@@ -72,6 +72,18 @@ class PlacementSubmitNotifier extends StateNotifier<PlacementSubmitState> {
         state = PlacementSubmitSuccess(attemptId: attemptId);
         return;
       }
+
+      // If completeAttempt failed (e.g. 500 or timeout), check if the result was already generated
+      try {
+        await _repository.getResult(bearerToken, attemptId: attemptId);
+        AppLogger.i('PlacementSubmitNotifier',
+            'Result already exists for attempt $attemptId; advancing to result');
+        state = PlacementSubmitSuccess(attemptId: attemptId);
+        return;
+      } catch (_) {
+        // Result not ready yet, continue to error
+      }
+
       AppLogger.e('PlacementSubmitNotifier',
           'Failed to complete placement attempt $attemptId', e, st);
       state = PlacementSubmitError(

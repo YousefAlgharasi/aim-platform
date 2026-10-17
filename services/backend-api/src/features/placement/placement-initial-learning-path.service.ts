@@ -140,6 +140,19 @@ export class PlacementInitialLearningPathService {
       throw new NotFoundException(`Placement result not found: ${resultId}`);
     }
 
+    // Check if initial_learning_path already has entries for this result (idempotency)
+    const existing = await this.db.query<{ id: string }>(
+      `SELECT id FROM initial_learning_path WHERE placement_result_id = $1 LIMIT 1`,
+      [resultId],
+    );
+    if ((existing.rowCount ?? 0) > 0) {
+      return {
+        resultId,
+        pathEntryCount: existing.rowCount ?? 0,
+        source: 'weakness_map',
+      };
+    }
+
     const result = resultRow.rows[0];
     const cefrLevel = LEVEL_TO_CEFR[result.estimated_level] ?? 'A1';
     const weaknesses =
