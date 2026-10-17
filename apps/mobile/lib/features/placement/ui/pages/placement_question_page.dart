@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/logging/app_logger.dart';
@@ -729,6 +731,29 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
     });
 
     try {
+      final tempDir = await getTemporaryDirectory();
+      final candidateExtensions = ['wav', 'mp3', 'ogg'];
+      File? cachedFile;
+      for (final ext in candidateExtensions) {
+        final f = File('${tempDir.path}/placement_audio_${widget.questionId}.$ext');
+        if (await f.exists() && await f.length() > 0) {
+          cachedFile = f;
+          break;
+        }
+      }
+
+      if (cachedFile != null) {
+        AppLogger.i('ListenButton', 'Playing existing cached audio: ${cachedFile.path}');
+        await _audioPlayer.play(DeviceFileSource(cachedFile.path));
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isPlaying = true;
+          });
+        }
+        return;
+      }
+
       final token = ref.read(authFlowProvider).accessToken ?? '';
       AppLogger.i('ListenButton', 'Fetching audio for questionId: ${widget.questionId}');
       final bytes = await ref.read(placementRepositoryProvider).getQuestionAudio(
@@ -752,13 +777,18 @@ class _ListenButtonState extends ConsumerState<_ListenButton> {
         AppLogger.i('ListenButton', 'Attempting audio playback with mimeType: $mimeType');
 
         try {
+          final tempDir = await getTemporaryDirectory();
+          final extension = mimeType == 'audio/mpeg'
+              ? 'mp3'
+              : (mimeType == 'audio/ogg' ? 'ogg' : 'wav');
+          final tempFile = File('${tempDir.path}/placement_audio_${widget.questionId}.$extension');
+          await tempFile.writeAsBytes(bytes, flush: true);
+          AppLogger.i('ListenButton', 'Playing audio via DeviceFileSource: ${tempFile.path}');
+          await _audioPlayer.play(DeviceFileSource(tempFile.path));
+        } catch (fileErr) {
+          AppLogger.w('ListenButton', 'DeviceFileSource failed, falling back to BytesSource: $fileErr');
           await _audioPlayer.play(
             BytesSource(Uint8List.fromList(bytes), mimeType: mimeType),
-          );
-        } catch (playError) {
-          AppLogger.w('ListenButton', 'Play with mimeType failed, falling back to default BytesSource: $playError');
-          await _audioPlayer.play(
-            BytesSource(Uint8List.fromList(bytes)),
           );
         }
 

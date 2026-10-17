@@ -14,6 +14,7 @@ import {
   AdminBadge,
   AdminFilterBar,
   AdminInput,
+  AdminButton,
   AdminIdCell,
   AdminDateCell,
   type AdminTableColumn,
@@ -149,58 +150,31 @@ export default async function AdminReviewsPage({ searchParams }: Props) {
       <form action="/admin/reviews" method="GET">
         <AdminFilterBar label="Filter results">
           <AdminInput
+            size="sm"
             name="studentId"
             placeholder="Student ID…"
             defaultValue={studentId ?? ''}
             aria-label="Filter by student ID"
-            style={{ maxWidth: 200 }}
+            className="w-full sm:w-48"
           />
           <AdminInput
+            size="sm"
             name="assessmentId"
             placeholder="Assessment ID…"
             defaultValue={assessmentId ?? ''}
             aria-label="Filter by assessment ID"
-            style={{ maxWidth: 200 }}
+            className="w-full sm:w-48"
           />
           <input type="hidden" name="limit" value={limit} />
-          <button type="submit" className="aim-filter-submit">
+          <AdminButton type="submit" variant="primary" size="sm">
             Apply
-            <style>{`
-              .aim-filter-submit {
-                display: inline-flex;
-                align-items: center;
-                height: var(--size-input);
-                padding: 0 var(--space-16);
-                border: none;
-                border-radius: var(--radius-sm);
-                background: var(--color-primary-600);
-                color: var(--text-on-primary);
-                font-size: 14px;
-                font-weight: var(--weight-medium);
-                cursor: pointer;
-                transition: background 0.15s;
-              }
-              .aim-filter-submit:hover { background: var(--color-primary-700); }
-              .aim-filter-submit:focus-visible {
-                outline: none;
-                box-shadow: var(--shadow-focus);
-              }
-            `}</style>
-          </button>
+          </AdminButton>
           {(studentId || assessmentId) && (
             <Link
               href={`/admin/reviews?limit=${limit}`}
-              className="aim-filter-clear"
+              className="text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--color-error-600)] hover:bg-[var(--error-soft)] h-8 px-2.5 rounded-lg inline-flex items-center transition-colors ml-1"
             >
               Clear
-              <style>{`
-                .aim-filter-clear {
-                  font-size: 13px;
-                  color: var(--text-link);
-                  text-decoration: none;
-                }
-                .aim-filter-clear:hover { text-decoration: underline; }
-              `}</style>
             </Link>
           )}
         </AdminFilterBar>

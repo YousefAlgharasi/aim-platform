@@ -212,22 +212,24 @@ export function AssessmentsList({
         searchValue={currentSearch}
         onSearchChange={(val) => setParams({ search: val, page: 1 })}
         searchPlaceholder="Search assessments..."
+        selectFilters={[
+          {
+            key: 'type',
+            value: currentType,
+            onChange: (val) => setParams({ type: val, page: 1 }),
+            placeholder: 'All Types',
+            options: [
+              { label: 'Quiz', value: 'quiz' },
+              { label: 'Exam', value: 'exam' },
+            ],
+          },
+        ]}
         onClearAll={
           currentSearch || currentType
             ? () => setParams({ search: '', type: '', page: 1 })
             : undefined
         }
-      >
-        <AdminSelect
-          value={currentType}
-          onChange={(e) => setParams({ type: e.target.value, page: 1 })}
-          aria-label="Filter by type"
-        >
-          <option value="">All Types</option>
-          <option value="quiz">Quiz</option>
-          <option value="exam">Exam</option>
-        </AdminSelect>
-      </AdminFilterBar>
+      />
 
       {displayAssessments.length === 0 ? (
         <p className="courses-empty">No assessments match the current filters.</p>

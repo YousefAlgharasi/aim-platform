@@ -123,19 +123,17 @@ export function AdminPlacementResultsList({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
       <AdminFilterBar
         label="Filter placement results"
+        selectFilters={[
+          {
+            key: 'level',
+            value: filterLevel,
+            onChange: (val) => setLevel(val),
+            placeholder: 'All Levels',
+            options: ESTIMATED_LEVELS.map((l) => ({ label: formatLevelLabel(l), value: l })),
+          },
+        ]}
         onClearAll={filterLevel ? () => setLevel('') : undefined}
-      >
-        <AdminSelect
-          value={filterLevel}
-          onChange={(e) => setLevel(e.target.value)}
-          aria-label="Filter by estimated level"
-        >
-          <option value="">All Levels</option>
-          {ESTIMATED_LEVELS.map((l) => (
-            <option key={l} value={l}>{formatLevelLabel(l)}</option>
-          ))}
-        </AdminSelect>
-      </AdminFilterBar>
+      />
 
       {results.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>

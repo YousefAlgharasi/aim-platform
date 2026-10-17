@@ -739,3 +739,141 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-muted);
   font-size: 13px;
 }
+
+/* =============================================================
+   AIM Universal Filter Toolbar Standard
+   Applies to all search & filter bars across the dashboard
+   ============================================================= */
+
+/* Universal select appearance-none reset to eliminate double chevrons everywhere */
+select,
+.cr-select,
+.cp-select,
+.qb-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237A8499' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+
+/* Universal Filter Container */
+.aim-filter-bar,
+.cr-filters,
+.cp-filters,
+.qb-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: var(--space-16, 16px);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cr-search-wrap,
+.cp-search-wrap,
+.qb-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.cr-search,
+.cp-search,
+.qb-search {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.cr-search:focus,
+.cp-search:focus,
+.qb-search:focus {
+  border-color: var(--color-primary-500);
+  background: var(--surface);
+  box-shadow: var(--shadow-focus);
+}
+
+.cr-select,
+.cp-select,
+.qb-select {
+  height: 36px;
+  padding: 0 2rem 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--surface-sunken);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  min-width: 130px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.cr-select:focus,
+.cp-select:focus,
+.qb-select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-focus);
+}
+
+.cr-filter-btn,
+.cp-filter-btn,
+.qb-filter-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-primary-500);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.cr-filter-btn:hover,
+.cp-filter-btn:hover,
+.qb-filter-btn:hover {
+  background: var(--color-primary-600);
+}
+
+.cr-clear-btn,
+.cp-clear,
+.qb-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.cr-clear-btn:hover,
+.cp-clear:hover,
+.qb-clear:hover {
+  color: var(--color-error-600);
+  background: var(--error-soft);
+}
+

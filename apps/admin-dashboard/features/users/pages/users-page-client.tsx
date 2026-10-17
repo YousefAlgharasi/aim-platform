@@ -195,6 +195,11 @@ export function UsersPageClient({
             options: TYPE_OPTIONS,
           },
         ]}
+        onClearAll={
+          search || status || userType
+            ? () => setParams({ search: null, email: null, status: null, userType: null, page: 1 })
+            : undefined
+        }
       />
 
       {/* Table Component */}

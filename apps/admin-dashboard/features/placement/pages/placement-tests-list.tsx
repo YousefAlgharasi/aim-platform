@@ -107,26 +107,17 @@ export function AdminPlacementTestsList({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
       <AdminFilterBar
         label="Filter placement tests"
+        selectFilters={[
+          {
+            key: 'status',
+            value: filterStatus,
+            onChange: (val) => setStatus(val),
+            placeholder: `All statuses (${total})`,
+            options: STATUSES.map((s) => ({ label: STATUS_LABELS[s], value: s })),
+          },
+        ]}
         onClearAll={filterStatus ? () => setStatus('') : undefined}
-      >
-        <button
-          type="button"
-          className={`filter-btn${!filterStatus ? ' active' : ''}`}
-          onClick={() => setStatus('')}
-        >
-          All ({total})
-        </button>
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`filter-btn${filterStatus === s ? ' active' : ''}`}
-            onClick={() => setStatus(s)}
-          >
-            {STATUS_LABELS[s]}
-          </button>
-        ))}
-      </AdminFilterBar>
+      />
 
       {tests.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>

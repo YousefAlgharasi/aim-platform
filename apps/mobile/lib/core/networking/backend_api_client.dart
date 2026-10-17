@@ -40,16 +40,20 @@ class BackendApiClient {
   /// forever.
   final Duration _requestTimeout;
 
-  Future<T> _withTimeout<T>(Future<T> Function() send) async {
+  Future<T> _withTimeout<T>(
+    Future<T> Function() send, {
+    Duration? timeout,
+  }) async {
+    final effectiveTimeout = timeout ?? _requestTimeout;
     try {
       return await send().timeout(
-        _requestTimeout,
+        effectiveTimeout,
         onTimeout: () {
-          const exc = ApiClientException(
+          final exc = ApiClientException(
             code: 'REQUEST_TIMEOUT',
             message: 'The request took too long to respond. Please try again.',
           );
-          AppLogger.e('BackendApiClient', 'Request timeout after ${_requestTimeout.inSeconds}s', exc);
+          AppLogger.e('BackendApiClient', 'Request timeout after ${effectiveTimeout.inSeconds}s', exc);
           throw exc;
         },
       );
@@ -224,10 +228,13 @@ class BackendApiClient {
     Map<String, String>? headers,
   }) async {
     final uri = buildUri(path);
-    final response = await _withTimeout(() => _httpClient.get(
-          uri,
-          headers: _authHeadersOnly(headers),
-        ));
+    final response = await _withTimeout(
+      () => _httpClient.get(
+        uri,
+        headers: _authHeadersOnly(headers),
+      ),
+      timeout: const Duration(seconds: 60),
+    );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final exc = ApiClientException(

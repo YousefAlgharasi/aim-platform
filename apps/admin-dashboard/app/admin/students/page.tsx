@@ -123,17 +123,19 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
       <form action="/admin/students" method="GET">
         <AdminFilterBar label="Filter students">
           <AdminInput
+            size="sm"
             name="email"
             placeholder="Search by email…"
             defaultValue={email ?? ''}
             aria-label="Search by email"
-            className="max-w-[240px]"
+            className="w-full sm:w-64"
           />
           <AdminSelect
+            size="sm"
             name="status"
             defaultValue={status ?? ''}
             aria-label="Filter by status"
-            className="max-w-[160px]"
+            className="w-full sm:w-40"
           >
             <option value="">All statuses</option>
             {STATUS_OPTIONS.map((s) => (
@@ -143,7 +145,7 @@ export default async function AdminStudentsPage({ searchParams }: Props) {
             ))}
           </AdminSelect>
           <input type="hidden" name="limit" value={limit} />
-          <AdminButton type="submit" variant="primary">
+          <AdminButton type="submit" variant="primary" size="sm">
             Apply
           </AdminButton>
           {(status || email) && (
