@@ -221,7 +221,22 @@ class _PlacementSpeakingAnswerInputState
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (_isRecording) ...[
+              if (widget.isSubmitting) ...[
+                Text(
+                  'Evaluating your answer...',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: AimColors.primary500,
+                    fontWeight: AimFontWeights.medium,
+                  ),
+                ),
+                const SizedBox(height: AimSpacing.space4),
+                Text(
+                  'Please wait while your recording is graded',
+                  style: AimTextStyles.caption.copyWith(
+                    color: surfaces.textMuted,
+                  ),
+                ),
+              ] else if (_isRecording) ...[
                 Text(
                   'Recording in progress...',
                   style: AimTextStyles.bodySm.copyWith(

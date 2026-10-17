@@ -49,6 +49,8 @@ class _PlacementQuestionPageState
     extends ConsumerState<PlacementQuestionPage> {
   String? _submitError;
   late String _timerExpiresAt;
+  List<int>? _recordedSpeakingBytes;
+  String? _recordedSpeakingMimeType;
 
   @override
   void initState() {
@@ -165,12 +167,16 @@ class _PlacementQuestionPageState
                       onSelectAnswer: (ans) => ref
                           .read(placementQuestionProvider.notifier)
                           .selectAnswer(ans),
-                      onSkip: () => ref
-                          .read(placementQuestionProvider.notifier)
-                          .skipCurrentQuestion(),
+                      onSkip: () {
+                        _recordedSpeakingBytes = null;
+                        _recordedSpeakingMimeType = null;
+                        ref
+                            .read(placementQuestionProvider.notifier)
+                            .skipCurrentQuestion();
+                      },
                       onSubmit: () => _submitAnswer(state),
                       onSubmitSpeaking: (bytes, mimeType) =>
-                          _submitSpeakingAnswer(bytes, mimeType),
+                          _handleSpeakingRecorded(bytes, mimeType),
                     ),
                 },
               ),
@@ -187,6 +193,11 @@ class _PlacementQuestionPageState
     setState(() => _submitError = l10n.placementQuestionTimerExpiredError);
   }
 
+  void _handleSpeakingRecorded(List<int> bytes, String mimeType) {
+    _recordedSpeakingBytes = bytes;
+    _recordedSpeakingMimeType = mimeType;
+  }
+
   Future<void> _submitSpeakingAnswer(List<int> audioBytes, String mimeType) async {
     setState(() => _submitError = null);
     final token = ref.read(authFlowProvider).accessToken ?? '';
@@ -197,6 +208,8 @@ class _PlacementQuestionPageState
             audioBytes: audioBytes,
             mimeType: mimeType,
           );
+      _recordedSpeakingBytes = null;
+      _recordedSpeakingMimeType = null;
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -211,6 +224,35 @@ class _PlacementQuestionPageState
 
   Future<void> _submitAnswer(PlacementQuestionReady state) async {
     setState(() => _submitError = null);
+    final question = state.currentQuestion;
+
+    if (question.type == 'speaking') {
+      if (_recordedSpeakingBytes == null || _recordedSpeakingBytes!.isEmpty) {
+        // If the user already recorded previously and DUPLICATE_ANSWER occurred,
+        // or re-attempting submit: submit empty dummy or return.
+        if (state.selectedAnswer == 'recorded_audio_answer') {
+          // Re-submit with dummy WAV so the notifier can verify duplicate or advance.
+          await _submitSpeakingAnswer(
+            const [
+              0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00,
+              0x57, 0x41, 0x56, 0x66, 0x6D, 0x74, 0x20, 0x10,
+              0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x44,
+              0xAC, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x02,
+              0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x00,
+              0x00, 0x00, 0x00,
+            ],
+            'audio/wav',
+          );
+        }
+        return;
+      }
+      await _submitSpeakingAnswer(
+        _recordedSpeakingBytes!,
+        _recordedSpeakingMimeType ?? 'audio/wav',
+      );
+      return;
+    }
+
     try {
       final token = ref.read(authFlowProvider).accessToken ?? '';
       await ref

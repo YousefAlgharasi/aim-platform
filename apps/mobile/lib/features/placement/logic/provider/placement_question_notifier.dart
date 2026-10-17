@@ -23,6 +23,7 @@ import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/placement/data/models/placement_question_model.dart';
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/features/placement/logic/entity/placement_submit_answer_payload.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
 
@@ -193,6 +194,19 @@ class PlacementQuestionNotifier
         );
       }
     } catch (e, st) {
+      if (e is ApiClientException && (e.code == 'DUPLICATE_ANSWER' || e.statusCode == 409)) {
+        AppLogger.i('PlacementQuestionNotifier', 'Answer already recorded on server; advancing');
+        if (current.isLastQuestion) {
+          state = PlacementQuestionSectionComplete(attemptId: current.attemptId);
+        } else {
+          state = current.copyWith(
+            currentIndex: current.currentIndex + 1,
+            clearSelectedAnswer: true,
+            isSubmitting: false,
+          );
+        }
+        return;
+      }
       AppLogger.e('PlacementQuestionNotifier', 'Failed to submit answer for question ${current.currentQuestion.id}', e, st);
       // Reset submitting flag so student can retry.
       state = current.copyWith(isSubmitting: false);
@@ -233,6 +247,19 @@ class PlacementQuestionNotifier
         );
       }
     } catch (e, st) {
+      if (e is ApiClientException && (e.code == 'DUPLICATE_ANSWER' || e.statusCode == 409)) {
+        AppLogger.i('PlacementQuestionNotifier', 'Speaking answer already recorded on server; advancing');
+        if (current.isLastQuestion) {
+          state = PlacementQuestionSectionComplete(attemptId: current.attemptId);
+        } else {
+          state = current.copyWith(
+            currentIndex: current.currentIndex + 1,
+            clearSelectedAnswer: true,
+            isSubmitting: false,
+          );
+        }
+        return;
+      }
       AppLogger.e('PlacementQuestionNotifier', 'Failed to submit speaking answer', e, st);
       state = current.copyWith(isSubmitting: false);
       rethrow;

@@ -214,8 +214,10 @@ class BackendApiClient {
         ),
       );
 
-    final streamedResponse =
-        await _withTimeout(() => _httpClient.send(request));
+    final streamedResponse = await _withTimeout(
+      () => _httpClient.send(request),
+      timeout: const Duration(seconds: 60),
+    );
     final response = await http.Response.fromStream(streamedResponse);
 
     return _parseResponse<T>(response, decodeData: decodeData);
