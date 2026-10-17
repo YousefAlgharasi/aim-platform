@@ -389,84 +389,39 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
         <span className="cr-breadcrumb-current">Courses</span>
       </nav>
 
-      {/* Header */}
-      <div className="cr-header">
-        <div>
-          <p className="cr-eyebrow">Curriculum</p>
-          <h1 className="cr-title">Courses</h1>
-          {data && <p className="cr-subtitle">{data.total} course{data.total !== 1 ? 's' : ''}</p>}
-        </div>
-      </div>
-
-      {/* Status Summary */}
-      {statusCounts && (
-        <div className="cr-status-row">
-          <span className="cr-chip"><span className="cr-dot cr-dot--draft" />Draft {statusCounts.draft}</span>
-          <span className="cr-chip"><span className="cr-dot cr-dot--review" />In Review {statusCounts.in_review}</span>
-          <span className="cr-chip"><span className="cr-dot cr-dot--published" />Published {statusCounts.published}</span>
-          <span className="cr-chip"><span className="cr-dot cr-dot--archived" />Archived {statusCounts.archived}</span>
-        </div>
-      )}
-
-      {/* Filters */}
-      <form action="/admin/content/courses" method="get" className="cr-filters">
-        <div className="cr-search-wrap">
-          <svg className="cr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search courses…" className="cr-search" />
-        </div>
-        <select name="status" defaultValue={statusFilter ?? ''} className="cr-select">
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-        </select>
-        <button type="submit" className="cr-filter-btn">Filter</button>
-        {(statusFilter || searchQuery) && (
-          <Link href="/admin/content/courses" className="cr-clear">Clear</Link>
-        )}
-      </form>
-
       {/* Error */}
       {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
-      {/* Empty */}
-      {data && data.courses.length === 0 && !fetchError && (
-        <div className="cr-empty">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-          <p className="cr-empty-title">No courses found</p>
-          <p className="cr-empty-desc">
-            {statusFilter || searchQuery ? 'Try adjusting your filters.' : 'Create your first course to get started.'}
-          </p>
-        </div>
-      )}
-
-      {/* Course List (client component handles table + create/edit) */}
-      {data && data.courses.length > 0 && (
-        <CoursesList
-          courses={data.courses}
-          total={data.total}
-          page={data.page}
-          totalPages={totalPages}
-          statusFilter={statusFilter}
-          searchQuery={searchQuery}
-          onCreateCourse={handleCreate}
-          onUpdateCourse={handleUpdate}
-          onTransitionCourse={handleTransition}
-          curriculumActions={curriculumActions}
-        />
-      )}
-
-      {/* Show create even when empty */}
-      {data && data.courses.length === 0 && !fetchError && (
-        <CoursesList
-          courses={[]}
-          total={0}
-          page={1}
-          totalPages={0}
-          onCreateCourse={handleCreate}
-          onUpdateCourse={handleUpdate}
-          onTransitionCourse={handleTransition}
-          curriculumActions={curriculumActions}
-        />
-      )}
+      {/* Courses List & Header with + New Course */}
+      <CoursesList
+        courses={data?.courses ?? []}
+        total={data?.total ?? 0}
+        page={data?.page ?? 1}
+        totalPages={totalPages}
+        statusFilter={statusFilter}
+        searchQuery={searchQuery}
+        statusCounts={statusCounts}
+        filterSlot={
+          <form action="/admin/content/courses" method="get" className="cr-filters">
+            <div className="cr-search-wrap">
+              <svg className="cr-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search courses…" className="cr-search" />
+            </div>
+            <select name="status" defaultValue={statusFilter ?? ''} className="cr-select">
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+            </select>
+            <button type="submit" className="cr-filter-btn">Filter</button>
+            {(statusFilter || searchQuery) && (
+              <Link href="/admin/content/courses" className="cr-clear">Clear</Link>
+            )}
+          </form>
+        }
+        onCreateCourse={handleCreate}
+        onUpdateCourse={handleUpdate}
+        onTransitionCourse={handleTransition}
+        curriculumActions={curriculumActions}
+      />
 
       <style>{`
         .cr-page { display: flex; flex-direction: column; gap: 20px; }

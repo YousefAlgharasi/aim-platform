@@ -13,6 +13,7 @@ export function AdminLoadingSkeleton({ rows = 5, label = 'Loading…' }: Props) 
       aria-live="polite"
       aria-busy="true"
     >
+      <span className="sr-only">{label}</span>
       <div className="h-8 w-60 rounded-lg bg-[var(--surface-sunken)] animate-pulse mb-2" aria-hidden="true" />
       {Array.from({ length: rows }).map((_, i) => (
         <div

@@ -16,6 +16,13 @@ type Props = {
   readonly totalPages: number;
   readonly statusFilter?: string;
   readonly searchQuery?: string;
+  readonly statusCounts?: {
+    draft: number;
+    in_review: number;
+    published: number;
+    archived: number;
+  } | null;
+  readonly filterSlot?: React.ReactNode;
   readonly onCreateCourse: (data: {
     title: string;
     slug: string | null;
@@ -49,6 +56,8 @@ export function CoursesList({
   totalPages,
   statusFilter,
   searchQuery,
+  statusCounts,
+  filterSlot,
   onCreateCourse,
   onUpdateCourse,
   onTransitionCourse,
@@ -170,13 +179,42 @@ export function CoursesList({
 
   return (
     <div className="cl-root">
-      {/* New course button */}
-      <div className="cl-toolbar">
-        <button type="button" className="cl-create-btn" onClick={() => setShowCreate(true)}>
+      {/* Header */}
+      <div className="cr-header">
+        <div>
+          <p className="cr-eyebrow">Curriculum</p>
+          <h1 className="cr-title">Courses</h1>
+          <p className="cr-subtitle">{total} course{total !== 1 ? 's' : ''}</p>
+        </div>
+        <button type="button" className="cr-create-btn" onClick={() => setShowCreate(true)}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
-          New Course
+          + New Course
         </button>
       </div>
+
+      {/* Status Summary */}
+      {statusCounts && (
+        <div className="cr-status-row">
+          <span className="cr-chip"><span className="cr-dot cr-dot--draft" />Draft {statusCounts.draft}</span>
+          <span className="cr-chip"><span className="cr-dot cr-dot--review" />In Review {statusCounts.in_review}</span>
+          <span className="cr-chip"><span className="cr-dot cr-dot--published" />Published {statusCounts.published}</span>
+          <span className="cr-chip"><span className="cr-dot cr-dot--archived" />Archived {statusCounts.archived}</span>
+        </div>
+      )}
+
+      {/* Filters */}
+      {filterSlot}
+
+      {/* Empty State */}
+      {courses.length === 0 && (
+        <div className="cr-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          <p className="cr-empty-title">No courses yet</p>
+          <p className="cr-empty-desc">
+            {statusFilter || searchQuery ? 'Try adjusting your filters.' : 'Create your first course to get started.'}
+          </p>
+        </div>
+      )}
 
       {/* Table */}
       {courses.length > 0 && (
@@ -188,7 +226,7 @@ export function CoursesList({
                 <th className="cl-th cl-th--status">Status</th>
                 <th className="cl-th cl-th--order">Order</th>
                 <th className="cl-th cl-th--date">Updated</th>
-                <th className="cl-th cl-th--actions" />
+                <th className="cl-th cl-th--actions" aria-label="Actions" />
               </tr>
             </thead>
             <tbody>
@@ -198,15 +236,19 @@ export function CoursesList({
                     <button type="button" className="cl-course-link" onClick={() => openCourse(course, 'details')}>
                       <div className="cl-course-info">
                         <span className="cl-course-title">{course.title}</span>
-                        {course.slug && <span className="cl-course-slug">{course.slug}</span>}
+                        {course.slug ? (
+                          <span className="cl-course-slug">{course.slug}</span>
+                        ) : (
+                          <span className="cl-course-slug">—</span>
+                        )}
                         {course.description && <span className="cl-course-desc">{course.description}</span>}
                       </div>
                     </button>
                   </td>
                   <td className="cl-td">
-                    <span className="cl-status">
+                    <span className={`cl-status status-${course.status}`}>
                       <span className="cl-status-dot" style={{ background: STATUS_DOT[course.status] ?? 'var(--text-muted)' }} />
-                      {course.status.replace('_', ' ')}
+                      {course.status.charAt(0).toUpperCase() + course.status.slice(1).replace('_', ' ')}
                     </span>
                   </td>
                   <td className="cl-td cl-td--order">{course.sortOrder}</td>
@@ -245,15 +287,60 @@ export function CoursesList({
       <style>{`
         .cl-root { display: flex; flex-direction: column; gap: 14px; }
 
-        .cl-toolbar { display: flex; justify-content: flex-end; }
-        .cl-create-btn {
+        .cr-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        .cr-eyebrow {
+          margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.05em; color: var(--color-primary-500);
+        }
+        .cr-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .cr-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        .cr-create-btn {
           display: inline-flex; align-items: center; gap: 6px; height: 38px;
           padding: 0 16px; border: none; border-radius: var(--radius-md);
           background: var(--color-primary-500); color: white;
           font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+          white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s;
         }
-        .cl-create-btn:hover { background: var(--color-primary-600); }
-        .cl-create-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+        .cr-create-btn:hover { background: var(--color-primary-600); }
+        .cr-create-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+        .cr-cancel-btn {
+          display: inline-flex; align-items: center; height: 38px;
+          padding: 0 16px; border: 1px solid var(--border); border-radius: var(--radius-md);
+          background: var(--surface); color: var(--text-secondary);
+          font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+          transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
+        }
+        .cr-cancel-btn:hover { background: var(--surface-sunken); color: var(--text-primary); }
+
+        .cr-status-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cr-chip {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 4px 10px; border-radius: 9999px;
+          background: var(--surface-raised); border: 1px solid var(--border);
+          font-size: 12px; font-weight: 500; color: var(--text-secondary);
+        }
+        .cr-dot { width: 7px; height: 7px; border-radius: 50%; }
+        .cr-dot--draft { background: var(--text-muted); }
+        .cr-dot--review { background: var(--color-warning-500, #f59e0b); }
+        .cr-dot--published { background: var(--color-success-500); }
+        .cr-dot--archived { background: var(--text-muted); }
+
+        .cr-empty {
+          display: flex; flex-direction: column; align-items: center;
+          padding: 48px 24px; text-align: center;
+          background: var(--surface); border: 1px dashed var(--border);
+          border-radius: var(--radius-lg); gap: 8px;
+        }
+        .cr-empty-title { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); }
+        .cr-empty-desc { margin: 0; font-size: 13px; color: var(--text-muted); }
 
         .cl-table-wrap {
           background: var(--surface); border: 1px solid var(--border);

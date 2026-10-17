@@ -27,6 +27,7 @@ type ContentBlocksListProps = {
   readonly blocks: AdminContentBlock[];
   readonly total: number;
   readonly lessonId: string;
+  readonly lessonTitle?: string;
   readonly onCreateBlock: (data: {
     type: ContentBlockType;
     title: string;
@@ -44,6 +45,7 @@ export function ContentBlocksList({
   blocks,
   total,
   lessonId,
+  lessonTitle,
   onCreateBlock,
   onUpdateBlock,
   onDeleteBlock,
@@ -131,13 +133,21 @@ export function ContentBlocksList({
 
   return (
     <div className="aim-content-blocks-container">
-      <div className="aim-content-blocks-toolbar">
-        <AdminButton variant="primary" onClick={() => setShowCreate(true)}>
-          + New Block
-        </AdminButton>
-        <span className="aim-content-blocks-count">
-          {total} block{total !== 1 ? 's' : ''}
-        </span>
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-600)]" aria-hidden="true">
+            Admin — Curriculum
+          </p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] leading-8 tracking-tight">Content Blocks</h1>
+          <p className="text-sm text-[var(--text-secondary)] leading-6">
+            {total} block{total !== 1 ? 's' : ''}{lessonTitle ? ` in "${lessonTitle}"` : ''}
+          </p>
+        </div>
+        {!showCreate && !editing && (
+          <AdminButton variant="primary" onClick={() => setShowCreate(true)}>
+            + New Block
+          </AdminButton>
+        )}
       </div>
 
       {sorted.length === 0 ? (

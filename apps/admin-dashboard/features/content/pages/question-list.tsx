@@ -18,6 +18,7 @@ type Props = {
   readonly filterType: string;
   readonly filterDifficulty: string;
   readonly filterStatus: string;
+  readonly filterSlot?: React.ReactNode;
   readonly onCreateQuestion: (data: {
     type: QuestionType; stem: string; difficulty: QuestionDifficulty;
     explanation: string | null; hint: string | null; tags: string[];
@@ -27,6 +28,17 @@ type Props = {
     explanation: string | null; hint: string | null; tags: string[];
   }) => Promise<{ error?: string }>;
 };
+
+const TYPE_OPTIONS: QuestionType[] = [
+  'multiple_choice', 'multiple_select', 'true_false', 'fill_in_the_blank',
+  'short_answer', 'ordering', 'matching',
+];
+
+const DIFFICULTY_OPTIONS: QuestionDifficulty[] = [
+  'beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced',
+];
+
+const STATUS_OPTIONS = ['draft', 'published', 'archived'] as const;
 
 const TYPE_LABELS: Record<QuestionType, string> = {
   multiple_choice: 'MCQ',
@@ -55,6 +67,7 @@ const DIFFICULTY_COLOR: Record<string, string> = {
 export function QuestionList({
   questions, total, page, totalPages,
   filterType, filterDifficulty, filterStatus,
+  filterSlot,
   onCreateQuestion, onUpdateQuestion,
 }: Props) {
   const router = useRouter();
@@ -91,12 +104,40 @@ export function QuestionList({
 
   return (
     <div className="ql-root">
-      <div className="ql-toolbar">
-        <button type="button" className="ql-create-btn" onClick={() => setShowCreate(true)}>
+      {/* Header */}
+      <div className="qb-header">
+        <div>
+          <p className="qb-eyebrow">Curriculum</p>
+          <h1 className="qb-title">Question Bank</h1>
+          <p className="qb-subtitle">{total} question{total !== 1 ? 's' : ''} total</p>
+        </div>
+        <button type="button" className="qb-create-btn" onClick={() => setShowCreate(true)}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
-          New Question
+          + New Question
         </button>
       </div>
+
+      {/* Filters */}
+      {filterSlot ?? (
+        <form action="/admin/content/question-bank" method="get" className="qb-filters">
+          <select name="type" aria-label="Filter by type" defaultValue={filterType ?? ''} className="qb-select">
+            <option value="">All types</option>
+            {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{TYPE_LABELS[t] ?? t}</option>)}
+          </select>
+          <select name="difficulty" aria-label="Filter by difficulty" defaultValue={filterDifficulty ?? ''} className="qb-select">
+            <option value="">All difficulties</option>
+            {DIFFICULTY_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select name="status" aria-label="Filter by status" defaultValue={filterStatus ?? ''} className="qb-select">
+            <option value="">All statuses</option>
+            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <button type="submit" className="qb-filter-btn">Filter</button>
+          {(filterType || filterDifficulty || filterStatus) && (
+            <Link href="/admin/content/question-bank" className="qb-clear">Clear</Link>
+          )}
+        </form>
+      )}
 
       {questions.length === 0 && (
         <div className="ql-empty">
@@ -123,9 +164,9 @@ export function QuestionList({
               {questions.map((q) => (
                 <tr key={q.id} className="ql-row">
                   <td className="ql-td">
-                    <span className="ql-stem" title={q.stem}>
+                    <Link href={`/admin/content/question-bank/${q.id}`} className="ql-stem" title={q.stem}>
                       {q.stem.length > 80 ? `${q.stem.slice(0, 80)}…` : q.stem}
-                    </span>
+                    </Link>
                   </td>
                   <td className="ql-td ql-td--type">
                     <span className="ql-type-pill">{TYPE_LABELS[q.type] ?? q.type}</span>
@@ -148,7 +189,7 @@ export function QuestionList({
                   <td className="ql-td">
                     <span className="ql-status">
                       <span className="ql-status-dot" style={{ background: STATUS_DOT[q.status] ?? 'var(--text-muted)' }} />
-                      {q.status}
+                      {q.status.charAt(0).toUpperCase() + q.status.slice(1).replace('_', ' ')}
                     </span>
                   </td>
                   <td className="ql-td ql-td--date">{fmtDate(q.updatedAt)}</td>
@@ -172,14 +213,29 @@ export function QuestionList({
 
       <style>{`
         .ql-root { display: flex; flex-direction: column; gap: 14px; }
-        .ql-toolbar { display: flex; justify-content: flex-end; }
-        .ql-create-btn {
+        .qb-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        .qb-eyebrow {
+          margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.05em; color: var(--color-primary-500);
+        }
+        .qb-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .qb-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        .qb-create-btn {
           display: inline-flex; align-items: center; gap: 6px; height: 38px;
           padding: 0 16px; border: none; border-radius: var(--radius-md);
           background: var(--color-primary-500); color: white;
           font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+          white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s;
         }
-        .ql-create-btn:hover { background: var(--color-primary-600); }
+        .qb-create-btn:hover { background: var(--color-primary-600); }
+        .qb-create-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
         .ql-table-wrap {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: var(--radius-lg); overflow-x: auto;

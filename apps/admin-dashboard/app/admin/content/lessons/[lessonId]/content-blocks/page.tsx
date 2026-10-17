@@ -18,7 +18,6 @@ import {
   ContentBlocksList,
 } from '../../../../../../features/content';
 import { AdminBadge } from '../../../../../../shared/components/Misc';
-import { AdminPageHeader } from '../../../../../../shared/layouts/DashboardLayout';
 import { AdminApiErrorState, AdminNotFoundState } from '../../../../../../shared/components/error-handling';
 
 type Props = { params: Promise<{ lessonId: string }> };
@@ -156,16 +155,6 @@ export default async function LessonContentBlocksPage({ params }: Props) {
         <span>Content Blocks</span>
       </nav>
 
-      <AdminPageHeader
-        eyebrow="Admin — Curriculum"
-        title="Content Blocks"
-        description={
-          lesson
-            ? `${blocksData?.total ?? 0} block${(blocksData?.total ?? 0) !== 1 ? 's' : ''} in "${lesson.title}"`
-            : undefined
-        }
-      />
-
       {lesson && (
         <div className="aim-content-blocks-lesson-info">
           <span><strong>Lesson:</strong> {lesson.title}</span>
@@ -186,6 +175,7 @@ export default async function LessonContentBlocksPage({ params }: Props) {
           blocks={blocksData.blocks}
           total={blocksData.total}
           lessonId={lessonId}
+          lessonTitle={lesson?.title}
           onCreateBlock={handleCreate}
           onUpdateBlock={handleUpdate}
           onDeleteBlock={handleDelete}

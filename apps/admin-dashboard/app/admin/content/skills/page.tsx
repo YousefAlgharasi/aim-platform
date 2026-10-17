@@ -77,49 +77,39 @@ export default async function AdminSkillsPage({ searchParams }: Props) {
         <span className="cp-breadcrumb-current">Skills</span>
       </nav>
 
-      <div className="cp-header">
-        <div>
-          <p className="cp-eyebrow">Curriculum</p>
-          <h1 className="cp-title">Skills</h1>
-          {data && <p className="cp-subtitle">{data.total} skill{data.total !== 1 ? 's' : ''} total</p>}
-        </div>
-      </div>
-
-      {/* Filters */}
-      <form action="/admin/content/skills" method="get" className="cp-filters">
-        <div className="cp-search-wrap">
-          <svg className="cp-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search skills…" className="cp-search" />
-        </div>
-        <select name="status" defaultValue={statusFilter ?? ''} className="cp-select">
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select name="domain" defaultValue={domainFilter ?? ''} className="cp-select">
-          <option value="">All domains</option>
-          {DOMAIN_OPTIONS.map((d) => <option key={d} value={d}>{d.replace('_', ' ')}</option>)}
-        </select>
-        <button type="submit" className="cp-filter-btn">Filter</button>
-        {(statusFilter || domainFilter || searchQuery) && (
-          <Link href="/admin/content/skills" className="cp-clear">Clear</Link>
-        )}
-      </form>
-
       {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
-      {data && (
-        <SkillsList
-          skills={data.skills}
-          total={data.total}
-          page={data.page}
-          totalPages={totalPages}
-          statusFilter={statusFilter}
-          domainFilter={domainFilter}
-          searchQuery={searchQuery}
-          onCreateSkill={handleCreate}
-          onUpdateSkill={handleUpdate}
-        />
-      )}
+      <SkillsList
+        skills={data?.skills ?? []}
+        total={data?.total ?? 0}
+        page={data?.page ?? 1}
+        totalPages={totalPages}
+        statusFilter={statusFilter}
+        domainFilter={domainFilter}
+        searchQuery={searchQuery}
+        filterSlot={
+          <form action="/admin/content/skills" method="get" className="cp-filters">
+            <div className="cp-search-wrap">
+              <svg className="cp-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search skills…" className="cp-search" />
+            </div>
+            <select name="status" defaultValue={statusFilter ?? ''} className="cp-select">
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select name="domain" defaultValue={domainFilter ?? ''} className="cp-select">
+              <option value="">All domains</option>
+              {DOMAIN_OPTIONS.map((d) => <option key={d} value={d}>{d.replace('_', ' ')}</option>)}
+            </select>
+            <button type="submit" className="cp-filter-btn">Filter</button>
+            {(statusFilter || domainFilter || searchQuery) && (
+              <Link href="/admin/content/skills" className="cp-clear">Clear</Link>
+            )}
+          </form>
+        }
+        onCreateSkill={handleCreate}
+        onUpdateSkill={handleUpdate}
+      />
 
       <style>{`
         .cp-page { display: flex; flex-direction: column; gap: 20px; }

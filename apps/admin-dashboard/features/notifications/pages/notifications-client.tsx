@@ -294,24 +294,34 @@ export function NotificationsClient({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-16)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-8)' }}>
-        <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
-          {TABS.map((tab) => (
-            <AdminButton
-              key={tab.key}
-              onClick={() => goToSection(tab.key)}
-              variant={tab.key === section ? 'primary' : 'secondary'}
-              size="sm"
-            >
-              {tab.label}
-            </AdminButton>
-          ))}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-600)]" aria-hidden="true">
+            Admin — Communications
+          </p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] leading-8 tracking-tight">Notifications & Broadcasts</h1>
+          <p className="text-sm text-[var(--text-secondary)] leading-6">
+            Manage system broadcasts, templates, delivery queue, schedules, and audit logs.
+          </p>
         </div>
         {section === 'broadcasts' && !showBroadcastForm && (
-          <AdminButton variant="primary" size="sm" onClick={() => setShowBroadcastForm(true)}>
+          <AdminButton variant="primary" onClick={() => setShowBroadcastForm(true)}>
             + New Broadcast
           </AdminButton>
         )}
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
+        {TABS.map((tab) => (
+          <AdminButton
+            key={tab.key}
+            onClick={() => goToSection(tab.key)}
+            variant={tab.key === section ? 'primary' : 'secondary'}
+            size="sm"
+          >
+            {tab.label}
+          </AdminButton>
+        ))}
       </div>
 
       {section === 'broadcasts' && showBroadcastForm && (

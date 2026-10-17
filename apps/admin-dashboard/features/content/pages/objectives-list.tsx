@@ -16,6 +16,7 @@ type Props = {
   readonly totalPages: number;
   readonly statusFilter?: string;
   readonly searchQuery?: string;
+  readonly filterSlot?: React.ReactNode;
   readonly onCreateObjective: (payload: CreateObjectivePayload) => Promise<{ error?: string }>;
   readonly onUpdateObjective: (id: string, payload: UpdateObjectivePayload) => Promise<{ error?: string }>;
 };
@@ -27,7 +28,7 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 export function ObjectivesList({
-  objectives, total, page, totalPages, statusFilter, searchQuery,
+  objectives, total, page, totalPages, statusFilter, searchQuery, filterSlot,
   onCreateObjective, onUpdateObjective,
 }: Props) {
   const router = useRouter();
@@ -175,12 +176,21 @@ export function ObjectivesList({
 
   return (
     <div className="ol-root">
-      <div className="ol-toolbar">
-        <button type="button" className="ol-create-btn" onClick={openCreate}>
+      {/* Header */}
+      <div className="ob-header">
+        <div>
+          <p className="ob-eyebrow">Curriculum</p>
+          <h1 className="ob-title">Objectives</h1>
+          <p className="ob-subtitle">{total} objective{total !== 1 ? 's' : ''} total</p>
+        </div>
+        <button type="button" className="ob-create-btn" onClick={openCreate}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
-          New Objective
+          + New Objective
         </button>
       </div>
+
+      {/* Filters */}
+      {filterSlot}
 
       {objectives.length === 0 && (
         <div className="ol-empty">
@@ -240,14 +250,29 @@ export function ObjectivesList({
 
       <style>{`
         .ol-root { display: flex; flex-direction: column; gap: 14px; }
-        .ol-toolbar { display: flex; justify-content: flex-end; }
-        .ol-create-btn {
+        .ob-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        .ob-eyebrow {
+          margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.05em; color: var(--color-primary-500);
+        }
+        .ob-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .ob-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        .ob-create-btn {
           display: inline-flex; align-items: center; gap: 6px; height: 38px;
           padding: 0 16px; border: none; border-radius: var(--radius-md);
           background: var(--color-primary-500); color: white;
           font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+          white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s;
         }
-        .ol-create-btn:hover { background: var(--color-primary-600); }
+        .ob-create-btn:hover { background: var(--color-primary-600); }
+        .ob-create-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
         .ol-table-wrap {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: var(--radius-lg); overflow-x: auto;

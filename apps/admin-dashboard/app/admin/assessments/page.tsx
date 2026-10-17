@@ -84,16 +84,6 @@ export default async function AdminAssessmentsPage({ searchParams }: Props) {
         <span>Assessments</span>
       </nav>
 
-      <header className="admin-page-header">
-        <p className="eyebrow">Admin — Assessments</p>
-        <h1>Assessments</h1>
-        {data && (
-          <p className="admin-page-meta">
-            {data.total} assessment{data.total !== 1 ? 's' : ''} total
-          </p>
-        )}
-      </header>
-
       {fetchError && (
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}

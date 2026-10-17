@@ -9,6 +9,8 @@ export type SelectFilterConfig = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  label?: string;
+  ariaLabel?: string;
   options: SelectFilterOption[];
 };
 
@@ -107,6 +109,7 @@ export function AdminFilterBar({
           >
             <AdminSelect
               size="sm"
+              aria-label={filter.ariaLabel ?? filter.label ?? (filter.key ? `Filter by ${filter.key}` : undefined)}
               value={filter.value}
               onChange={(e) => filter.onChange(e.target.value)}
               className={`w-full text-xs sm:text-sm transition-all ${

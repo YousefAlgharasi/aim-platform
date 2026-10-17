@@ -202,9 +202,19 @@ export function AssessmentsList({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBlockEnd: 'var(--space-16)' }}>
-        <span>{displayTotal} assessment{displayTotal !== 1 ? 's' : ''}</span>
-        <AdminButton variant="primary" onClick={() => setShowCreate(true)}>+ New Assessment</AdminButton>
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-primary-600)]" aria-hidden="true">
+            Admin — Assessments
+          </p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] leading-8 tracking-tight">Assessments</h1>
+          <p className="text-sm text-[var(--text-secondary)] leading-6">
+            {displayTotal} assessment{displayTotal !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <AdminButton variant="primary" onClick={() => setShowCreate(true)}>
+          + New Assessment
+        </AdminButton>
       </div>
 
       <AdminFilterBar

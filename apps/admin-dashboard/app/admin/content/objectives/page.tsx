@@ -68,43 +68,34 @@ export default async function AdminObjectivesPage({ searchParams }: Props) {
         <span className="ob-breadcrumb-current">Objectives</span>
       </nav>
 
-      <div className="ob-header">
-        <div>
-          <p className="ob-eyebrow">Curriculum</p>
-          <h1 className="ob-title">Objectives</h1>
-          {data && <p className="ob-subtitle">{data.total} objective{data.total !== 1 ? 's' : ''} total</p>}
-        </div>
-      </div>
-
-      <form action="/admin/content/objectives" method="get" className="ob-filters">
-        <div className="ob-search-wrap">
-          <svg className="ob-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search objectives…" className="ob-search" />
-        </div>
-        <select name="status" defaultValue={statusFilter ?? ''} className="ob-select">
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <button type="submit" className="ob-filter-btn">Filter</button>
-        {(statusFilter || searchQuery) && (
-          <Link href="/admin/content/objectives" className="ob-clear">Clear</Link>
-        )}
-      </form>
-
       {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
-      {data && (
-        <ObjectivesList
-          objectives={data.objectives}
-          total={data.total}
-          page={data.page}
-          totalPages={totalPages}
-          statusFilter={statusFilter}
-          searchQuery={searchQuery}
-          onCreateObjective={handleCreate}
-          onUpdateObjective={handleUpdate}
-        />
-      )}
+      <ObjectivesList
+        objectives={data?.objectives ?? []}
+        total={data?.total ?? 0}
+        page={data?.page ?? 1}
+        totalPages={totalPages}
+        statusFilter={statusFilter}
+        searchQuery={searchQuery}
+        filterSlot={
+          <form action="/admin/content/objectives" method="get" className="ob-filters">
+            <div className="ob-search-wrap">
+              <svg className="ob-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input name="q" type="text" defaultValue={searchQuery ?? ''} placeholder="Search objectives…" className="ob-search" />
+            </div>
+            <select name="status" defaultValue={statusFilter ?? ''} className="ob-select">
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button type="submit" className="ob-filter-btn">Filter</button>
+            {(statusFilter || searchQuery) && (
+              <Link href="/admin/content/objectives" className="ob-clear">Clear</Link>
+            )}
+          </form>
+        }
+        onCreateObjective={handleCreate}
+        onUpdateObjective={handleUpdate}
+      />
 
       <style>{`
         .ob-page { display: flex; flex-direction: column; gap: 20px; }

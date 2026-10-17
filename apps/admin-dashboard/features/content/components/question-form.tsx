@@ -89,8 +89,8 @@ export function QuestionForm({ mode, initial, onSubmit, onCancel }: Props) {
       <form onSubmit={handleSubmit} className="qf-form">
         <div className="qf-row">
           <div className="qf-field qf-field--half">
-            <label htmlFor="qf-type" className="qf-label">Type {mode === 'edit' && <span className="qf-hint">(locked)</span>}</label>
-            <select id="qf-type" value={type} onChange={(e) => setType(e.target.value as QuestionType)}
+            <label htmlFor="q-type" className="qf-label">Type {mode === 'edit' && <span className="qf-hint">(locked)</span>}</label>
+            <select id="q-type" value={type} onChange={(e) => setType(e.target.value as QuestionType)}
               disabled={isPending || mode === 'edit'} className="qf-select">
               {QUESTION_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
             </select>

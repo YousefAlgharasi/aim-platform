@@ -102,48 +102,39 @@ export default async function AdminQuestionBankPage({ searchParams }: Props) {
         <span className="qb-breadcrumb-current">Question Bank</span>
       </nav>
 
-      <div className="qb-header">
-        <div>
-          <p className="qb-eyebrow">Curriculum</p>
-          <h1 className="qb-title">Question Bank</h1>
-          {data && <p className="qb-subtitle">{data.total} question{data.total !== 1 ? 's' : ''} total</p>}
-        </div>
-      </div>
-
-      <form action="/admin/content/question-bank" method="get" className="qb-filters">
-        <select name="type" defaultValue={typeFilter ?? ''} className="qb-select">
-          <option value="">All types</option>
-          {QUESTION_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-        </select>
-        <select name="difficulty" defaultValue={difficultyFilter ?? ''} className="qb-select">
-          <option value="">All difficulties</option>
-          {QUESTION_DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
-        </select>
-        <select name="status" defaultValue={statusFilter ?? ''} className="qb-select">
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <button type="submit" className="qb-filter-btn">Filter</button>
-        {hasFilters && (
-          <Link href="/admin/content/question-bank" className="qb-clear">Clear</Link>
-        )}
-      </form>
-
       {fetchError && <div className="admin-error-banner" role="alert">{fetchError}</div>}
 
-      {data && (
-        <QuestionList
-          questions={data.questions}
-          total={data.total}
-          page={data.page}
-          totalPages={totalPages}
-          filterType={typeFilter ?? ''}
-          filterDifficulty={difficultyFilter ?? ''}
-          filterStatus={statusFilter ?? ''}
-          onCreateQuestion={handleCreate}
-          onUpdateQuestion={handleUpdate}
-        />
-      )}
+      <QuestionList
+        questions={data?.questions ?? []}
+        total={data?.total ?? 0}
+        page={data?.page ?? 1}
+        totalPages={totalPages}
+        filterType={typeFilter ?? ''}
+        filterDifficulty={difficultyFilter ?? ''}
+        filterStatus={statusFilter ?? ''}
+        filterSlot={
+          <form action="/admin/content/question-bank" method="get" className="qb-filters">
+            <select name="type" aria-label="Filter by type" defaultValue={typeFilter ?? ''} className="qb-select">
+              <option value="">All types</option>
+              {QUESTION_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+            </select>
+            <select name="difficulty" aria-label="Filter by difficulty" defaultValue={difficultyFilter ?? ''} className="qb-select">
+              <option value="">All difficulties</option>
+              {QUESTION_DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+            </select>
+            <select name="status" aria-label="Filter by status" defaultValue={statusFilter ?? ''} className="qb-select">
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button type="submit" className="qb-filter-btn">Filter</button>
+            {hasFilters && (
+              <Link href="/admin/content/question-bank" className="qb-clear">Clear</Link>
+            )}
+          </form>
+        }
+        onCreateQuestion={handleCreate}
+        onUpdateQuestion={handleUpdate}
+      />
 
       <style>{`
         .qb-page { display: flex; flex-direction: column; gap: 20px; }

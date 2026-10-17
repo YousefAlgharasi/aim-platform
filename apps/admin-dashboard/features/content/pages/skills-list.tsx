@@ -41,6 +41,7 @@ type Props = {
   readonly statusFilter?: string;
   readonly domainFilter?: string;
   readonly searchQuery?: string;
+  readonly filterSlot?: React.ReactNode;
   readonly onCreateSkill: (payload: CreateSkillPayload) => Promise<{ error?: string }>;
   readonly onUpdateSkill: (id: string, payload: UpdateSkillPayload) => Promise<{ error?: string }>;
 };
@@ -50,6 +51,7 @@ type FormMode = { type: 'idle' } | { type: 'create' } | { type: 'edit'; skill: A
 export function SkillsList({
   skills, total, page, totalPages,
   statusFilter, domainFilter, searchQuery,
+  filterSlot,
   onCreateSkill, onUpdateSkill,
 }: Props) {
   const router = useRouter();
@@ -84,7 +86,7 @@ export function SkillsList({
     const errors: Record<string, string> = {};
     if (formMode.type === 'create' && !key.trim()) errors.key = 'Skill key is required.';
     if (formMode.type === 'create' && key.trim() && !/^[a-z0-9]+(?:[._][a-z0-9]+)*$/.test(key.trim())) {
-      errors.key = 'Key: lowercase with dots/underscores (e.g. grammar.past_simple.forms).';
+      errors.key = 'Key must be lowercase with dots/underscores (e.g. grammar.past_simple.forms).';
     }
     if (!title.trim()) errors.title = 'Title is required.';
     setFieldErrors(errors);
@@ -121,10 +123,10 @@ export function SkillsList({
 
         <form onSubmit={handleSubmit} className="cf-form">
           <div className="cf-field">
-            <label htmlFor="skf-key" className="cf-label">
+            <label htmlFor="skill-key" className="cf-label">
               Key {formMode.type === 'create' && <span className="cf-req">*</span>}
             </label>
-            <input id="skf-key" type="text" value={key} onChange={(e) => setKey(e.target.value)}
+            <input id="skill-key" type="text" value={key} onChange={(e) => setKey(e.target.value)}
               placeholder="e.g. grammar.past_simple.forms"
               disabled={isPending || formMode.type === 'edit'} maxLength={255}
               className={`cf-input ${fieldErrors.key ? 'cf-input--error' : ''}`} />
@@ -135,8 +137,8 @@ export function SkillsList({
           </div>
 
           <div className="cf-field">
-            <label htmlFor="skf-title" className="cf-label">Title <span className="cf-req">*</span></label>
-            <input id="skf-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+            <label htmlFor="skill-title" className="cf-label">Title <span className="cf-req">*</span></label>
+            <input id="skill-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Past Simple — Forms" disabled={isPending} maxLength={255}
               className={`cf-input ${fieldErrors.title ? 'cf-input--error' : ''}`} />
             {fieldErrors.title && <span className="cf-error">{fieldErrors.title}</span>}
@@ -207,12 +209,21 @@ export function SkillsList({
 
   return (
     <div className="sl-root">
-      <div className="sl-toolbar">
-        <button type="button" className="sl-create-btn" onClick={openCreate}>
+      {/* Header */}
+      <div className="cp-header">
+        <div>
+          <p className="cp-eyebrow">Curriculum</p>
+          <h1 className="cp-title">Skills</h1>
+          <p className="cp-subtitle">{total} skill{total !== 1 ? 's' : ''} total</p>
+        </div>
+        <button type="button" className="cp-create-btn" onClick={openCreate}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
-          New Skill
+          + New Skill
         </button>
       </div>
+
+      {/* Filters */}
+      {filterSlot}
 
       {skills.length === 0 && (
         <div className="sl-empty">
@@ -275,14 +286,29 @@ export function SkillsList({
 
       <style>{`
         .sl-root { display: flex; flex-direction: column; gap: 14px; }
-        .sl-toolbar { display: flex; justify-content: flex-end; }
-        .sl-create-btn {
+        .cp-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        .cp-eyebrow {
+          margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.05em; color: var(--color-primary-500);
+        }
+        .cp-title { margin: 0; font-size: 26px; font-weight: 700; color: var(--text-primary); }
+        .cp-subtitle { margin: 0; font-size: 14px; color: var(--text-secondary); }
+
+        .cp-create-btn {
           display: inline-flex; align-items: center; gap: 6px; height: 38px;
           padding: 0 16px; border: none; border-radius: var(--radius-md);
           background: var(--color-primary-500); color: white;
           font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+          white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s;
         }
-        .sl-create-btn:hover { background: var(--color-primary-600); }
+        .cp-create-btn:hover { background: var(--color-primary-600); }
+        .cp-create-btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
         .sl-table-wrap {
           background: var(--surface); border: 1px solid var(--border);
           border-radius: var(--radius-lg); overflow-x: auto;
