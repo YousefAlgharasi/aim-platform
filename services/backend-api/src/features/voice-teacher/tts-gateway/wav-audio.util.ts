@@ -75,12 +75,17 @@ export function concatWavBuffers(buffers: readonly Buffer[]): Buffer {
   if (buffers.length === 0) {
     throw new Error('concatWavBuffers: no buffers to concatenate');
   }
+  if (buffers.length === 1) {
+    const single = buffers[0];
+    // If the single buffer has a streaming/unknown size (0xFFFFFFFF from Groq),
+    // rebuild it with exact RIFF and data chunk sizes so mobile players don't reject it.
+    if (single.length >= 8 && single.readUInt32LE(4) === 0xffffffff) {
+      const parts = parseWav(single);
+      return buildWav(parts.fmt, parts.data);
+    }
+    return single;
+  }
 
-  // Always parse and rebuild with buildWav — even for a single chunk. Groq
-  // Orpheus returns 0xFFFFFFFF for both RIFF and data chunk sizes (streaming
-  // WAV header), which Android MediaPlayer's WAVExtractor rejects with
-  // MEDIA_ERROR_UNKNOWN when playing static files. Rebuilding computes the
-  // exact sizes for both headers.
   const parts = buffers.map(parseWav);
   const data = Buffer.concat(parts.map((part) => part.data));
   return buildWav(parts[0].fmt, data);

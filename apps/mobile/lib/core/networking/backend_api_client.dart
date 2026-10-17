@@ -49,7 +49,7 @@ class BackendApiClient {
       return await send().timeout(
         effectiveTimeout,
         onTimeout: () {
-          final exc = ApiClientException(
+          const exc = ApiClientException(
             code: 'REQUEST_TIMEOUT',
             message: 'The request took too long to respond. Please try again.',
           );
