@@ -27,8 +27,6 @@ const ALL_NAV_GROUPS: NavGroup[] = [
     label: 'Users & Access',
     items: [
       { label: 'Users', href: '/admin/users', icon: 'users' },
-      { label: 'Roles', href: '/admin/roles', icon: 'shield' },
-      { label: 'Parents', href: '/admin/parents', icon: 'family' },
     ],
   },
   {
@@ -38,7 +36,6 @@ const ALL_NAV_GROUPS: NavGroup[] = [
       { label: 'Skills', href: '/admin/content/skills', icon: 'puzzle' },
       { label: 'Objectives', href: '/admin/content/objectives', icon: 'target' },
       { label: 'Question Bank', href: '/admin/content/question-bank', icon: 'question' },
-      { label: 'Assets', href: '/admin/content/assets', icon: 'photo' },
     ],
   },
   {
@@ -55,7 +52,6 @@ const ALL_NAV_GROUPS: NavGroup[] = [
     label: 'Learning',
     items: [
       { label: 'Students', href: '/admin/students', icon: 'progress' },
-      { label: 'Session Summaries', href: '/admin/session-summaries', icon: 'log' },
       { label: 'Reviews', href: '/admin/reviews', icon: 'clipboard' },
       { label: 'AI Teacher', href: '/admin/ai-teacher', icon: 'spark' },
     ],
@@ -201,17 +197,21 @@ export function AdminNavigation({
         <div className="sn-user">
           <div className="sn-user-avatar">
             {(authContext.user.email ?? 'U')[0].toUpperCase()}
+            <span className="sn-user-status-dot" aria-hidden="true" />
           </div>
           <div className="sn-user-info">
-            <span className="sn-user-email">{authContext.user.email ?? authContext.user.id}</span>
-            <span className="sn-user-role">{roleLabel}</span>
+            <span className="sn-user-email" title={authContext.user.email ?? authContext.user.id}>
+              {authContext.user.email ?? authContext.user.id}
+            </span>
+            <span className="sn-user-role-badge">{roleLabel.replace(/_/g, ' ')}</span>
           </div>
         </div>
       )}
       {collapsed && (
-        <div className="sn-user-collapsed" title={authContext.user.email ?? authContext.user.id}>
+        <div className="sn-user-collapsed" title={`${authContext.user.email ?? authContext.user.id} (${roleLabel})`}>
           <div className="sn-user-avatar">
             {(authContext.user.email ?? 'U')[0].toUpperCase()}
+            <span className="sn-user-status-dot" aria-hidden="true" />
           </div>
         </div>
       )}
@@ -234,8 +234,11 @@ export function AdminNavigation({
                       href={item.href}
                       title={collapsed ? item.label : undefined}
                     >
-                      <NavIcon name={item.icon} />
+                      <span className="sn-link-icon-wrap">
+                        <NavIcon name={item.icon} />
+                      </span>
                       {!collapsed && <span className="sn-link-text">{item.label}</span>}
+                      {active && !collapsed && <span className="sn-link-active-indicator" aria-hidden="true" />}
                     </Link>
                   </li>
                 );
