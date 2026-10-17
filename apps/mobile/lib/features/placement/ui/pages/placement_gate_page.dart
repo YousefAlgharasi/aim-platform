@@ -31,6 +31,15 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
   String _selectedHabit = '15min';
   String _selectedStartMode = 'take_placement';
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final token = ref.read(authFlowProvider).accessToken ?? '';
+      ref.read(placementGateProvider.notifier).check(token);
+    });
+  }
+
   void _choose(String decision) {
     final token = ref.read(authFlowProvider).accessToken ?? '';
     ref.read(placementGateProvider.notifier).choose(token, decision);
@@ -41,10 +50,11 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     final state = ref.watch(placementGateProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-
     ref.listen<PlacementGateState>(placementGateProvider, (_, next) {
       if (context.mounted) {
-        if (next is PlacementGateDecided && context.mounted) {
+        if (next is PlacementGateHidden && context.mounted) {
+          context.go(AppRoutePaths.home);
+        } else if (next is PlacementGateDecided && context.mounted) {
           if (next.decision == 'take_placement') {
             context.push(AppRoutePaths.placementStart);
           } else {
@@ -61,6 +71,23 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
     });
 
     final isChoosing = state is PlacementGateChecking;
+    final isInitialChecking =
+        (state is PlacementGateIdle || state is PlacementGateChecking) &&
+            _currentStep == 0;
+
+    if (isInitialChecking) {
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        child: Scaffold(
+          backgroundColor: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFFEEF0F7),
+          body: const Center(
+            child: CircularProgressIndicator(color: AimColors.primary500),
+          ),
+        ),
+      );
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,

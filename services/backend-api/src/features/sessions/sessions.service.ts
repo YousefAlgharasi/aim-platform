@@ -158,10 +158,22 @@ export class SessionsService {
     studentId: string,
   ): Promise<LatestPlacementResultRow> {
     const result = await this.db.query<LatestPlacementResultRow>(
-      `SELECT pr.id, pr.estimated_level, pa.completed_at
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT pr.id, pr.estimated_level, pa.completed_at
        FROM placement_results pr
        JOIN placement_attempts pa ON pa.id = pr.placement_attempt_id
-       WHERE pa.student_id = $1
+       WHERE (
+         pa.student_id = $1
+         OR pa.student_id IN (SELECT user_id FROM resolved_student)
+         OR pa.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         OR pa.student_id IN (SELECT profile_id FROM resolved_student)
+       )
          AND pa.completed_at IS NOT NULL
        ORDER BY pa.completed_at DESC
        LIMIT 1`,

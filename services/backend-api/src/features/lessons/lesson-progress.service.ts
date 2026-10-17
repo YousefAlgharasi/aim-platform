@@ -191,10 +191,20 @@ export class LessonProgressService {
     // Placement-path derived: top-priority skill from student's latest placement
     // -> lesson_skills -> first published incomplete lesson for that skill.
     const pathResult = await this.db.query<QuickStartLessonRow>(
-      `WITH latest_result AS (
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       ),
+       latest_result AS (
          SELECT pr.id AS placement_result_id
          FROM placement_results pr
          WHERE pr.student_id = $1
+            OR pr.student_id IN (SELECT user_id FROM resolved_student)
+            OR pr.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+            OR pr.student_id IN (SELECT profile_id FROM resolved_student)
          ORDER BY pr.created_at DESC
          LIMIT 1
        ),
@@ -215,7 +225,12 @@ export class LessonProgressService {
        JOIN lessons l ON l.id = ls.lesson_id AND l.status = 'published'
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
-       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.student_id = $1
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND (
+         lp.student_id = $1
+         OR lp.student_id IN (SELECT user_id FROM resolved_student)
+         OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+       )
        WHERE (lp.completed IS NULL OR lp.completed = false)
        ORDER BY ps.priority ASC, lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
        LIMIT 1`,
@@ -234,7 +249,14 @@ export class LessonProgressService {
 
     // Fallback: first published lesson with no completed progress, ordered by hierarchy.
     const fallbackResult = await this.db.query<QuickStartLessonRow>(
-      `SELECT
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT
          l.id AS lesson_id,
          l.title AS lesson_title,
          l.description AS lesson_description,
@@ -243,7 +265,12 @@ export class LessonProgressService {
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
        JOIN courses co ON co.id = lv.course_id
-       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.student_id = $1
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND (
+         lp.student_id = $1
+         OR lp.student_id IN (SELECT user_id FROM resolved_student)
+         OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+       )
        WHERE l.status = 'published'
          AND (lp.completed IS NULL OR lp.completed = false)
        ORDER BY co.sort_order ASC, lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
@@ -269,10 +296,20 @@ export class LessonProgressService {
    */
   async findRecommendedCourse(studentId: string): Promise<RecommendedCourse | null> {
     const pathResult = await this.db.query<RecommendedCourseRow>(
-      `WITH latest_result AS (
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       ),
+       latest_result AS (
          SELECT pr.id AS placement_result_id
          FROM placement_results pr
          WHERE pr.student_id = $1
+            OR pr.student_id IN (SELECT user_id FROM resolved_student)
+            OR pr.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+            OR pr.student_id IN (SELECT profile_id FROM resolved_student)
          ORDER BY pr.created_at DESC
          LIMIT 1
        ),
@@ -355,7 +392,7 @@ export class LessonProgressService {
    */
   async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
     const courseResult = await this.db.query<LessonCourseGatingRow>(
-      `SELECT COALESCE(co.track_slug, 'general_english') AS track_slug, co.cefr_rank
+      `SELECT COALESCE(co.track_slug, 'english') AS track_slug, co.cefr_rank
        FROM lessons l
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
@@ -369,20 +406,56 @@ export class LessonProgressService {
       return;
     }
 
-    const trackSlug = course.track_slug || 'general_english';
+    const trackSlug = course.track_slug || 'english';
     const stateResult = await this.db.query<LevelStateRow>(
-      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT sls.max_unlocked_cefr_rank
+       FROM student_level_state sls
+       WHERE (
+         sls.student_id = $1
+         OR sls.student_id IN (SELECT profile_id FROM resolved_student)
+         OR sls.student_id IN (SELECT user_id FROM resolved_student)
+       )
+       AND (
+         sls.track_slug = $2
+         OR (sls.track_slug = 'english' AND ($2 = 'general_english' OR $2 = 'english'))
+         OR (sls.track_slug = 'general_english' AND ($2 = 'english' OR $2 = 'general_english'))
+       )
+       ORDER BY sls.max_unlocked_cefr_rank DESC
+       LIMIT 1`,
       [studentId, trackSlug],
     );
 
     const maxUnlockedFromState = stateResult.rows[0]?.max_unlocked_cefr_rank ?? 1;
 
     const completedCoursesResult = await this.db.query<{ max_completed_rank: number }>(
-      `SELECT MAX(co.cefr_rank) AS max_completed_rank
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT MAX(co.cefr_rank) AS max_completed_rank
        FROM courses co
        JOIN course_lessons clsn ON clsn.course_id = co.id
-       LEFT JOIN lesson_progress lp ON lp.lesson_id = clsn.lesson_id AND lp.student_id = $1 AND lp.completed = true
-       WHERE COALESCE(co.track_slug, 'general_english') = $2 AND co.cefr_rank IS NOT NULL
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = clsn.lesson_id AND (
+         lp.student_id = $1
+         OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+         OR lp.student_id IN (SELECT user_id FROM resolved_student)
+         OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+       ) AND lp.completed = true
+       WHERE (
+         COALESCE(co.track_slug, 'english') = $2
+         OR (COALESCE(co.track_slug, 'english') = 'english' AND ($2 = 'general_english' OR $2 = 'english'))
+         OR (COALESCE(co.track_slug, 'english') = 'general_english' AND ($2 = 'english' OR $2 = 'general_english'))
+       ) AND co.cefr_rank IS NOT NULL
        GROUP BY co.id, co.cefr_rank
        HAVING COUNT(DISTINCT clsn.lesson_id) > 0 AND COUNT(DISTINCT lp.lesson_id) = COUNT(DISTINCT clsn.lesson_id)`,
       [studentId, trackSlug],

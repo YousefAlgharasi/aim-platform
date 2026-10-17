@@ -38,7 +38,14 @@ export class StudentCoursesRepository {
 
   async findCoursesWithProgress(studentId: string): Promise<StudentCourseRow[]> {
     const result = await this.db.query<StudentCourseRow>(
-      `WITH course_levels AS (
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       ),
+       course_levels AS (
          SELECT DISTINCT ON (course_id) course_id, code AS level_code
          FROM levels
          WHERE status = 'published'
@@ -52,9 +59,11 @@ export class StudentCoursesRepository {
          JOIN lessons les ON les.chapter_id = ch.id AND les.status = 'published'
        ),
        level_state AS (
-         SELECT track_slug, max_unlocked_cefr_rank
-         FROM student_level_state
-         WHERE student_id = $1
+         SELECT sls.track_slug, sls.max_unlocked_cefr_rank
+         FROM student_level_state sls
+         WHERE sls.student_id = $1
+            OR sls.student_id IN (SELECT profile_id FROM resolved_student)
+            OR sls.student_id IN (SELECT user_id FROM resolved_student)
        )
        SELECT
          co.id AS course_id,
@@ -77,7 +86,12 @@ export class StudentCoursesRepository {
            WHERE lv2.course_id = co.id AND a.type = 'quiz' AND a.status = 'published'
              AND NOT EXISTS (
                SELECT 1 FROM assessment_results ar
-               WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true
+               WHERE ar.assessment_id = a.id AND (
+                 ar.student_id = $1
+                 OR ar.student_id IN (SELECT user_id FROM resolved_student)
+                 OR ar.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+                 OR ar.student_id IN (SELECT profile_id FROM resolved_student)
+               ) AND ar.passed = true
              )
          ) AS quizzes_passed,
          (
@@ -93,7 +107,12 @@ export class StudentCoursesRepository {
            WHERE (a.course_id = co.id OR lv2.course_id = co.id) AND a.type = 'exam' AND a.status = 'published'
              AND NOT EXISTS (
                SELECT 1 FROM assessment_results ar
-               WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true
+               WHERE ar.assessment_id = a.id AND (
+                 ar.student_id = $1
+                 OR ar.student_id IN (SELECT user_id FROM resolved_student)
+                 OR ar.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+                 OR ar.student_id IN (SELECT profile_id FROM resolved_student)
+               ) AND ar.passed = true
              )
          ) AS exam_passed,
          co.track_slug AS track_slug,
@@ -103,8 +122,17 @@ export class StudentCoursesRepository {
        LEFT JOIN course_levels cl ON cl.course_id = co.id
        LEFT JOIN course_lessons clsn ON clsn.course_id = co.id
        LEFT JOIN lesson_progress lp
-         ON lp.lesson_id = clsn.lesson_id AND lp.student_id = $1
-       LEFT JOIN level_state ls ON ls.track_slug = co.track_slug
+         ON lp.lesson_id = clsn.lesson_id AND (
+           lp.student_id = $1
+           OR lp.student_id IN (SELECT user_id FROM resolved_student)
+           OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+           OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+         )
+       LEFT JOIN level_state ls ON (
+         ls.track_slug = co.track_slug
+         OR (ls.track_slug = 'english' AND (co.track_slug = 'general_english' OR co.track_slug IS NULL OR co.track_slug = 'english'))
+         OR (ls.track_slug = 'general_english' AND (co.track_slug = 'english' OR co.track_slug IS NULL OR co.track_slug = 'general_english'))
+       )
        WHERE co.status = 'published'
        GROUP BY co.id, co.title, co.description, co.sort_order, cl.level_code,
                 co.track_slug, co.cefr_rank, ls.max_unlocked_cefr_rank
