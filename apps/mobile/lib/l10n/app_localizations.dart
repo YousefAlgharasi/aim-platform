@@ -2826,6 +2826,18 @@ abstract class AppLocalizations {
   /// **'Lesson marked as completed! 🌟'**
   String get lessonsLessonMasteredSnackbar;
 
+  /// Button to start practice in order to complete the lesson
+  ///
+  /// In en, this message translates to:
+  /// **'Start Practice to Complete Lesson ⚡'**
+  String get lessonsStartPracticeToCompleteButton;
+
+  /// Button to practice questions again after completing the lesson
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Again ⚡'**
+  String get lessonsPracticeAgainButton;
+
   /// Error message when marking lesson complete fails.
   ///
   /// In en, this message translates to:

@@ -1742,6 +1742,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonsLessonMasteredSnackbar => 'Lesson marked as completed! 🌟';
 
   @override
+  String get lessonsStartPracticeToCompleteButton =>
+      'Start Practice to Complete Lesson ⚡';
+
+  @override
+  String get lessonsPracticeAgainButton => 'Practice Again ⚡';
+
+  @override
   String lessonsMarkCompleteFailed(String error) {
     return 'Could not mark lesson complete: $error';
   }

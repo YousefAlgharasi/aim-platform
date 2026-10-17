@@ -1787,6 +1787,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonsLessonMasteredSnackbar => 'تم تسجيل الدرس كمكتمل! 🌟';
 
   @override
+  String get lessonsStartPracticeToCompleteButton =>
+      'ابدأ التدريب لإكمال الدرس ⚡';
+
+  @override
+  String get lessonsPracticeAgainButton => 'تدرب مجدداً ⚡';
+
+  @override
   String lessonsMarkCompleteFailed(String error) {
     return 'تعذر تسجيل الدرس كمكتمل: $error';
   }

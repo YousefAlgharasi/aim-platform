@@ -455,6 +455,8 @@
   "lessonsQuizSubtitle": "اختبر استيعابك بتمارين تفاعلية سريعة.",
   "lessonsLessonMasteredTitle": "تم إتقان الدرس! 🌟",
   "lessonsLessonMasteredSnackbar": "تم تسجيل الدرس كمكتمل! 🌟",
+  "lessonsStartPracticeToCompleteButton": "ابدأ التدريب لإكمال الدرس ⚡",
+  "lessonsPracticeAgainButton": "تدرب مجدداً ⚡",
   "lessonsMarkCompleteFailed": "تعذر تسجيل الدرس كمكتمل: {error}",
   "lessonsInThisChapterHeader": "الدروس في هذا الفصل",
   "lessonsChapterQuizHeader": "اختبار الفصل",

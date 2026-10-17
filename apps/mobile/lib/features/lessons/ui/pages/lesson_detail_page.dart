@@ -137,54 +137,6 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
         );
   }
 
-  Future<void> _markComplete(LessonDetail detail) async {
-    final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
-
-    try {
-      await ref.read(lessonsRepositoryProvider).markLessonComplete(
-            bearerToken: token,
-            lessonId: detail.lesson.id,
-          );
-      ref.invalidate(chaptersProvider);
-      ref.invalidate(studentCoursesProvider);
-      if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        setState(() => _practiceUnlocked = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    l10n.commonDone,
-                    style: const TextStyle(color: AimColors.neutral0),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(
-              '${l10n.commonError}: $e',
-              style: const TextStyle(color: AimColors.neutral0),
-            ),
-          ),
-        );
-      }
-    }
-  }
-
   void _startPractice(LessonDetail detail) {
     context.push(
       AppRoutePaths.aiTeacherChat,
@@ -205,14 +157,21 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   // session (POST /sessions/start -> question delivery -> attempts, which
   // trigger the AIM pipeline). Added alongside — never replacing — the AI
   // Teacher chat and voice entry points above.
-  void _startQuestionPractice(LessonDetail detail) {
-    context.push(
+  Future<void> _startQuestionPractice(LessonDetail detail) async {
+    await context.push(
       AppRoutePaths.practiceSession,
       extra: {
         'lessonId': detail.lesson.id,
         'lessonTitle': detail.lesson.title,
       },
     );
+    if (mounted) {
+      _practiceCheckStarted = false;
+      ref.invalidate(chaptersProvider);
+      ref.invalidate(studentCoursesProvider);
+      await _checkPracticeUnlock(detail);
+      await _refresh();
+    }
   }
 
   void _startVoicePractice(LessonDetail detail) {
@@ -276,7 +235,6 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                 detail: data,
                 practiceUnlocked: _practiceUnlocked,
                 onRefresh: _refresh,
-                onMarkComplete: () => _markComplete(data),
                 onStartPractice: () => _startPractice(data),
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
@@ -301,7 +259,6 @@ class _LessonDetailContent extends StatelessWidget {
     required this.detail,
     required this.practiceUnlocked,
     required this.onRefresh,
-    required this.onMarkComplete,
     required this.onStartPractice,
     required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
@@ -311,7 +268,6 @@ class _LessonDetailContent extends StatelessWidget {
   final LessonDetail detail;
   final bool practiceUnlocked;
   final Future<void> Function() onRefresh;
-  final VoidCallback onMarkComplete;
   final VoidCallback onStartPractice;
   final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
@@ -382,14 +338,15 @@ class _LessonDetailContent extends StatelessWidget {
                 _KeyPhrasesCard(detail: detail),
                 const SizedBox(height: 20),
 
-                if (!practiceUnlocked) ...[
-                  AIMGradientButton(
-                    label: 'Mark Lesson as Completed ✨',
-                    fullWidth: true,
-                    onPressed: onMarkComplete,
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                AIMGradientButton(
+                  label: practiceUnlocked
+                      ? l10n.lessonsPracticeAgainButton
+                      : l10n.lessonsStartPracticeToCompleteButton,
+                  icon: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
+                  fullWidth: true,
+                  onPressed: onStartQuestionPractice,
+                ),
+                const SizedBox(height: 16),
 
                 if (practiceUnlocked) ...[
                   const SizedBox(height: 16),
