@@ -68,7 +68,7 @@ export default async function AdminAnalyticsOverviewPage() {
           <h2 className="ov-section-title">Activity</h2>
           <div className="ov-kpi-grid">
             <StatCard label="AI Sessions" value={stats.activity.aiSessions} />
-            <StatCard label="Voice Sessions" value={stats.activity.voiceSessions} />
+            <StatCard label="Active Users" value={stats.users.active} />
             <StatCard label="Learning Today" value={stats.activity.learningSessionsToday} accent />
           </div>
 

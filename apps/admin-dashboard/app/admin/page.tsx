@@ -268,14 +268,14 @@ export default function AdminDashboardPage() {
                 {(() => {
                   const actMax = Math.max(
                     stats.activity.aiSessions,
-                    stats.activity.voiceSessions,
+                    stats.users.active,
                     stats.activity.learningSessionsToday,
                     1
                   );
                   return (
                     <>
                       <HBar label="AI Chat Sessions" value={stats.activity.aiSessions} max={actMax} color="var(--color-primary-500, #6366f1)" />
-                      <HBar label="Voice Sessions" value={stats.activity.voiceSessions} max={actMax} color="var(--color-info-500, #3b82f6)" />
+                      <HBar label="Active Users" value={stats.users.active} max={actMax} color="var(--color-info-500, #3b82f6)" />
                       <HBar label="Sessions Today" value={stats.activity.learningSessionsToday} max={actMax} color="var(--color-success-500, #22c55e)" />
                     </>
                   );
