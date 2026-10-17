@@ -29,28 +29,28 @@ const defaultProps = {
 };
 
 describe('SkillsList', () => {
-  it('renders + New Skill button in idle mode', () => {
+  it('renders New Skill button in idle mode', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    expect(screen.getByText('+ New Skill')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /new skill/i })).toBeInTheDocument();
   });
 
-  it('opens create form when + New Skill clicked', () => {
+  it('opens create form when New Skill clicked', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Skill'));
+    fireEvent.click(screen.getByRole('button', { name: /new skill/i }));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
-    expect(screen.getByText('New Skill')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'New Skill' })).toBeInTheDocument();
   });
 
   it('validates empty title on create form submission', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Skill'));
+    fireEvent.click(screen.getByRole('button', { name: /new skill/i }));
     fireEvent.click(screen.getByText(/create skill/i));
     expect(screen.getByText(/title is required/i)).toBeInTheDocument();
   });
 
   it('validates skill key format', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Skill'));
+    fireEvent.click(screen.getByRole('button', { name: /new skill/i }));
     const keyInput = document.getElementById('skill-key') as HTMLInputElement;
     fireEvent.change(keyInput, { target: { value: 'INVALID KEY!' } });
     const titleInput = document.getElementById('skill-title') as HTMLInputElement;
@@ -61,7 +61,7 @@ describe('SkillsList', () => {
 
   it('validates empty key on create form submission', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Skill'));
+    fireEvent.click(screen.getByRole('button', { name: /new skill/i }));
     const titleInput = document.getElementById('skill-title') as HTMLInputElement;
     fireEvent.change(titleInput, { target: { value: 'Test' } });
     fireEvent.click(screen.getByText(/create skill/i));
@@ -70,9 +70,9 @@ describe('SkillsList', () => {
 
   it('closes form when Cancel clicked', () => {
     renderWithProviders(<SkillsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Skill'));
+    fireEvent.click(screen.getByRole('button', { name: /new skill/i }));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
     fireEvent.click(screen.getByText(/cancel/i));
-    expect(screen.getByText('+ New Skill')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /new skill/i })).toBeInTheDocument();
   });
 });

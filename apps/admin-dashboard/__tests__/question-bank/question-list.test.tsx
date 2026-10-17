@@ -72,9 +72,9 @@ describe('QuestionList', () => {
     expect(screen.getByText(/no questions/i)).toBeInTheDocument();
   });
 
-  it('opens create form when + New Question clicked', () => {
+  it('opens create form when New Question clicked', () => {
     renderWithProviders(<QuestionList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Question'));
+    fireEvent.click(screen.getByRole('button', { name: /new question/i }));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 

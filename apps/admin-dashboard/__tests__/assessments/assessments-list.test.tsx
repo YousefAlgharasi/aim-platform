@@ -62,7 +62,7 @@ describe('AssessmentsList', () => {
 
   it('opens create form', () => {
     renderWithProviders(<AssessmentsList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Assessment'));
+    fireEvent.click(screen.getByRole('button', { name: /new assessment/i }));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 

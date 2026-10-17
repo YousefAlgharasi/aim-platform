@@ -145,7 +145,8 @@ export function ContentBlocksList({
         </div>
         {!showCreate && !editing && (
           <AdminButton variant="primary" onClick={() => setShowCreate(true)}>
-            + New Block
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+            New Block
           </AdminButton>
         )}
       </div>

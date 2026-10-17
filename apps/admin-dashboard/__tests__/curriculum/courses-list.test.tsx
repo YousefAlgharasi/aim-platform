@@ -58,9 +58,9 @@ describe('CoursesList', () => {
     expect(screen.getByText(/no courses yet/i)).toBeInTheDocument();
   });
 
-  it('shows create form when + New Course clicked', () => {
+  it('shows create form when New Course clicked', () => {
     renderWithProviders(<CoursesList {...defaultProps} />);
-    fireEvent.click(screen.getByText('+ New Course'));
+    fireEvent.click(screen.getByRole('button', { name: /new course/i }));
     expect(screen.getByText(/cancel/i)).toBeInTheDocument();
   });
 
