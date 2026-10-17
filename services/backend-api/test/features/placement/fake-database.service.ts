@@ -576,6 +576,13 @@ export class FakeDatabaseService {
       return toQueryResult([]);
     }
 
+    // ---- initial_learning_path: idempotency check -------------------------
+    if (sql.startsWith('SELECT id FROM initial_learning_path WHERE placement_result_id = $1')) {
+      const [resultId] = params as [string];
+      const rows = this.initialLearningPath.filter((p) => p.placement_result_id === resultId);
+      return toQueryResult(rows.map((r) => ({ id: r.id })) as unknown as T[]);
+    }
+
     // ---- initial_learning_path: bulk insert --------------------------------
     if (sql.startsWith('INSERT INTO initial_learning_path')) {
       const columnsPerRow = 9;
@@ -666,6 +673,12 @@ export class FakeDatabaseService {
     // ---- student_profiles: ensure existence ---------------------------------
     if (sql.startsWith('INSERT INTO student_profiles') && sql.includes('ON CONFLICT (user_id) DO NOTHING')) {
       return toQueryResult([]);
+    }
+
+    // ---- student_profiles: lookup id ----------------------------------------
+    if (sql.startsWith('SELECT id FROM student_profiles')) {
+      const [id] = params as [string];
+      return toQueryResult([{ id }] as unknown as T[]);
     }
 
     // ---- placement_sections: list for active test --------------------------
