@@ -1,10 +1,17 @@
 // Phase 6 — P6-083 / P6-084 / P6-085 / P6-089 / P6-091
 // PracticeSessionPage — UI for interactive lesson practice session.
 
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 
+import 'package:aim_mobile/core/logging/app_logger.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -280,6 +287,10 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     final totalQuestions = sessionState.questions.length;
     final currentIndex = sessionState.currentIndex;
     final progressValue = (currentIndex + 1) / totalQuestions;
+    final isListening = currentQ.type == 'listening_choice' ||
+        currentQ.type.toLowerCase().contains('listening') ||
+        currentQ.stem.toLowerCase().startsWith('listen') ||
+        currentQ.stem.toLowerCase().contains('listen to');
 
     return Column(
       children: [
@@ -407,6 +418,14 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   ],
                 ),
               ),
+
+              if (isListening) ...[
+                const SizedBox(height: 16),
+                _PracticeAudioButton(
+                  key: ValueKey('practice_audio_${currentQ.id}'),
+                  questionId: currentQ.id,
+                ),
+              ],
 
               const SizedBox(height: 20),
 
@@ -1431,6 +1450,340 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     return AIMFullScreenError(
       message: sessionState.errorMessage ?? l10n.practiceSessionFailedMessage,
       onRetry: _start,
+    );
+  }
+}
+
+class _PracticeAudioButton extends ConsumerStatefulWidget {
+  const _PracticeAudioButton({
+    required this.questionId,
+    super.key,
+  });
+
+  final String questionId;
+
+  @override
+  ConsumerState<_PracticeAudioButton> createState() => _PracticeAudioButtonState();
+}
+
+class _PracticeAudioButtonState extends ConsumerState<_PracticeAudioButton> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  bool _isLoading = false;
+  String? _error;
+  StreamSubscription? _playerStateSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _playerStateSubscription = _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (mounted) {
+        setState(() {
+          _isPlaying = state == PlayerState.playing;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _playerStateSubscription?.cancel();
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Uint8List _sanitizeWavHeader(Uint8List bytes) {
+    if (bytes.length < 12) return bytes;
+    if (bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x41 &&
+        bytes[10] == 0x56 &&
+        bytes[11] == 0x45) {
+      final copy = Uint8List.fromList(bytes);
+      final byteData = ByteData.sublistView(copy);
+      final riffSize = byteData.getUint32(4, Endian.little);
+      if (riffSize == 0xFFFFFFFF || riffSize > copy.length - 8) {
+        byteData.setUint32(4, copy.length - 8, Endian.little);
+      }
+
+      for (int i = 12; i <= copy.length - 8; i++) {
+        if (copy[i] == 0x64 &&
+            copy[i + 1] == 0x61 &&
+            copy[i + 2] == 0x74 &&
+            copy[i + 3] == 0x61) {
+          final dataSize = byteData.getUint32(i + 4, Endian.little);
+          if (dataSize == 0xFFFFFFFF || dataSize > copy.length - (i + 8)) {
+            byteData.setUint32(i + 4, copy.length - (i + 8), Endian.little);
+          }
+          break;
+        }
+      }
+      return copy;
+    }
+    return bytes;
+  }
+
+  Future<void> _handleTap() async {
+    if (_isPlaying) {
+      await _audioPlayer.stop();
+      if (mounted) setState(() => _isPlaying = false);
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final candidateExtensions = ['wav', 'mp3', 'ogg'];
+      File? cachedFile;
+      for (final ext in candidateExtensions) {
+        final f = File('${tempDir.path}/practice_audio_${widget.questionId}.$ext');
+        if (await f.exists() && await f.length() > 0) {
+          cachedFile = f;
+          break;
+        }
+      }
+
+      if (cachedFile != null) {
+        if (cachedFile.path.endsWith('.wav')) {
+          final raw = await cachedFile.readAsBytes();
+          final sanitized = _sanitizeWavHeader(raw);
+          await cachedFile.writeAsBytes(sanitized, flush: true);
+        }
+        AppLogger.i('PracticeAudio', 'Playing existing cached audio: ${cachedFile.path}');
+        await _audioPlayer.play(DeviceFileSource(cachedFile.path));
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isPlaying = true;
+          });
+        }
+        return;
+      }
+
+      final token = ref.read(authFlowProvider).accessToken ?? '';
+      AppLogger.i('PracticeAudio', 'Fetching audio for questionId: ${widget.questionId}');
+      final bytes = await ref.read(questionAnswerRepositoryProvider).getQuestionAudio(
+            bearerToken: token,
+            questionId: widget.questionId,
+          );
+      AppLogger.i('PracticeAudio', 'Fetched ${bytes.length} audio bytes for questionId: ${widget.questionId}');
+
+      if (bytes.isNotEmpty) {
+        String mimeType = 'audio/wav';
+        if (bytes.length >= 3 && bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) {
+          mimeType = 'audio/mpeg';
+        } else if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) {
+          mimeType = 'audio/mpeg';
+        } else if (bytes.length >= 4 && bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53) {
+          mimeType = 'audio/ogg';
+        }
+
+        try {
+          final extension = mimeType == 'audio/mpeg'
+              ? 'mp3'
+              : (mimeType == 'audio/ogg' ? 'ogg' : 'wav');
+          final tempFile = File('${tempDir.path}/practice_audio_${widget.questionId}.$extension');
+          Uint8List finalBytes = Uint8List.fromList(bytes);
+          if (mimeType == 'audio/wav') {
+            finalBytes = _sanitizeWavHeader(finalBytes);
+          }
+          await tempFile.writeAsBytes(finalBytes, flush: true);
+          AppLogger.i('PracticeAudio', 'Playing audio via DeviceFileSource: ${tempFile.path}');
+          await _audioPlayer.play(DeviceFileSource(tempFile.path));
+        } catch (fileErr) {
+          AppLogger.w('PracticeAudio', 'DeviceFileSource failed, falling back to BytesSource: $fileErr');
+          await _audioPlayer.play(
+            BytesSource(Uint8List.fromList(bytes), mimeType: mimeType),
+          );
+        }
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isPlaying = true;
+          });
+        }
+      } else {
+        AppLogger.w('PracticeAudio', 'No audio bytes received (204 No Content / no script authored yet)');
+        if (mounted) {
+          final isAr = Localizations.localeOf(context).languageCode == 'ar';
+          setState(() {
+            _isLoading = false;
+            _error = isAr ? 'التسجيل الصوتي غير متوفر حالياً.' : 'Audio not available yet.';
+          });
+        }
+      }
+    } catch (e, stackTrace) {
+      AppLogger.e('PracticeAudio', 'Failed to play question audio: $e', e, stackTrace);
+      if (!mounted) return;
+      final isAr = Localizations.localeOf(context).languageCode == 'ar';
+      setState(() {
+        _isLoading = false;
+        _isPlaying = false;
+        _error = isAr ? 'تعذر تشغيل الصوت. اضغط لإعادة المحاولة.' : 'Could not play audio. Tap to retry.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final isAr = Localizations.localeOf(context).languageCode == 'ar';
+
+    final playLabel = isAr ? 'اضغط للاستماع' : 'TAP TO LISTEN';
+    final playingLabel = isAr ? 'جارٍ تشغيل الصوت...' : 'PLAYING AUDIO...';
+    final loadingLabel = isAr ? 'جارٍ تحميل الصوت...' : 'LOADING AUDIO...';
+
+    final idleSubtitle = isAr
+        ? 'استمع بعناية قبل اختيار إجابتك.'
+        : 'Listen carefully before choosing your answer.';
+    final playingSubtitle = isAr
+        ? 'اضغط على زر الإيقاف لإيقاف التشغيل.'
+        : 'Tap stop to pause playback.';
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: _isPlaying
+              ? AimColors.primary500.withValues(alpha: 0.6)
+              : surfaces.border,
+          width: _isPlaying ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _isPlaying
+                ? AimColors.primary500.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.03),
+            blurRadius: _isPlaying ? 16 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isLoading ? null : _handleTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(20, 18, 20, 18),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Play / Pause Circle Button
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Icon(
+                                _isPlaying
+                                    ? Icons.stop_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Status text and helper
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isPlaying
+                                ? playingLabel
+                                : (_isLoading ? loadingLabel : playLabel),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: AimColors.primary500,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _error != null
+                                ? _error!
+                                : (_isPlaying ? playingSubtitle : idleSubtitle),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: _error != null
+                                  ? AimColors.error500
+                                  : surfaces.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Sound Wave Visualizer
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: List.generate(28, (index) {
+                    final heights = [
+                      10, 16, 26, 38, 22, 14, 30, 42, 26, 12,
+                      18, 22, 34, 26, 12, 18, 24, 32, 40, 22,
+                      14, 26, 36, 22, 12, 18, 26, 12,
+                    ];
+                    final height = heights[index % heights.length].toDouble();
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2.2),
+                      width: 3.2,
+                      height: _isPlaying ? height * 0.75 : height * 0.35,
+                      decoration: BoxDecoration(
+                        color: AimColors.primary500.withValues(
+                          alpha: _isPlaying ? 0.9 : 0.25,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

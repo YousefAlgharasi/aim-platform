@@ -64,7 +64,10 @@ export class SessionQuestionAudioService {
       });
     }
 
-    if (question.type !== 'listening_choice') {
+    const hasListeningScript = Boolean(
+      question.listening_script && question.listening_script.trim().length > 0,
+    );
+    if (question.type !== 'listening_choice' && !hasListeningScript) {
       throw new AppError({
         code: ApiErrorCode.VALIDATION_ERROR,
         message: 'This question has no listening audio.',

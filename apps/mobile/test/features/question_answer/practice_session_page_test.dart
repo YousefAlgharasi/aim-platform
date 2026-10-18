@@ -201,4 +201,27 @@ void main() {
     expect(find.text('Answer recorded'), findsOneWidget);
     expect(find.text('Complete Session'), findsOneWidget);
   });
+
+  testWidgets('6. renders audio play button for listening_choice questions', (tester) async {
+    final listeningQuestion = QuestionModel.fromJson({
+      'id': 'e7a6bed2-135d-44bf-8780-df73384d3036',
+      'type': 'listening_choice',
+      'stem': 'Listen to the word. Does it start with a blend?',
+      'difficulty': 'beginner',
+      'tags': ['listening', 'phonics'],
+      'options': [
+        {'id': 'opt-yes', 'text': 'Yes', 'order': 0},
+        {'id': 'opt-no', 'text': 'No', 'order': 1},
+      ],
+    });
+
+    await tester.pumpWidget(_wrap(_FakeRepository(questions: [listeningQuestion])));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Listen to the word. Does it start with a blend?'), findsOneWidget);
+    expect(find.text('TAP TO LISTEN'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    expect(find.text('Yes'), findsOneWidget);
+    expect(find.text('No'), findsOneWidget);
+  });
 }
