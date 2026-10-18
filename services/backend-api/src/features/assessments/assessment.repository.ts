@@ -60,8 +60,11 @@ export class AssessmentRepository {
 
   async findAllPublished(): Promise<AssessmentRow[]> {
     const res = await this.db.query<AssessmentRow>(
-      `SELECT id, type, title, description, status, created_by, created_at, updated_at, chapter_id, course_id
-       FROM assessments WHERE status = 'published' ORDER BY created_at DESC`,
+      `SELECT a.id, a.type, a.title, a.description, a.status, a.created_by, a.created_at, a.updated_at, a.chapter_id, a.course_id
+       FROM assessments a
+       WHERE a.status = 'published'
+         AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
+       ORDER BY a.created_at DESC`,
     );
     return res.rows;
   }

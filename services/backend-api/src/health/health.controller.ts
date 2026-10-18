@@ -25,6 +25,18 @@ export class HealthController {
     private readonly db: DatabaseService,
   ) {}
 
+  @Get()
+  @ApiOperation({ summary: 'Return root service metadata.' })
+  @ApiOkResponse({ description: 'Service status and info.' })
+  getRoot(): { service: string; status: string; health: string; version: string } {
+    return {
+      service: 'aim-backend-api',
+      status: 'ok',
+      health: '/health',
+      version: '/version',
+    };
+  }
+
   @Get('health')
   @ApiOperation({ summary: 'Return backend health metadata.' })
   @ApiOkResponse({ description: 'Backend health metadata.' })

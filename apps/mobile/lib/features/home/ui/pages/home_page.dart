@@ -156,6 +156,23 @@ class _HomePageState extends ConsumerState<HomePage> {
       }
     });
 
+    ref.listen(authContextProvider, (_, next) {
+      if (next is AppAsyncSuccess) {
+        _load();
+      }
+    });
+
+    if (state is AppAsyncIdle) {
+      final authContext = ref.read(authContextProvider);
+      if (authContext is AppAsyncSuccess) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && ref.read(homeProvider) is AppAsyncIdle) {
+            _load();
+          }
+        });
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         bottom: false,

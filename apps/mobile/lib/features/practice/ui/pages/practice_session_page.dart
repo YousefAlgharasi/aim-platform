@@ -94,6 +94,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   int _correctCount = 0;
   int _wrongCount = 0;
 
+  bool _isSubmitting = false;
+
   // Fallback demo state when backend has no questions seeded
   int _demoIndex = 0;
   int? _demoSelected;
@@ -117,7 +119,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   }
 
   void _onOptionTap(String optionId) {
-    if (_answeredCurrent) return;
+    if (_answeredCurrent || _isSubmitting) return;
     setState(() {
       _selectedOptionId = optionId;
     });
@@ -132,36 +134,57 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     if (isOptionBased && _selectedOptionId == null) return;
     if (!isOptionBased && _writtenAnswer.trim().isEmpty) return;
 
-    final token = ref.read(authFlowProvider).accessToken;
+    setState(() => _isSubmitting = true);
 
-    if (token != null && state.sessionId != null) {
-      ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
-            question: currentQ,
-            itemShownAt: DateTime.now().toIso8601String(),
-          );
-      if (isOptionBased) {
-        ref.read(questionAnswerSessionProvider.notifier).selectOption(_selectedOptionId!);
-      } else {
-        ref.read(questionAnswerSessionProvider.notifier).updateWrittenAnswer(_writtenAnswer.trim());
+    try {
+      final token = ref.read(authFlowProvider).accessToken;
+
+      if (token != null && state.sessionId != null) {
+        ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
+              question: currentQ,
+              itemShownAt: DateTime.now().toIso8601String(),
+            );
+        if (isOptionBased) {
+          ref.read(questionAnswerSessionProvider.notifier).selectOption(_selectedOptionId!);
+        } else {
+          ref.read(questionAnswerSessionProvider.notifier).updateWrittenAnswer(_writtenAnswer.trim());
+        }
+        await ref
+            .read(questionAnswerSessionProvider.notifier)
+            .submitAnswer(
+              bearerToken: token,
+              sessionId: state.sessionId!,
+            )
+            .timeout(const Duration(seconds: 8), onTimeout: () {});
       }
-      await ref.read(questionAnswerSessionProvider.notifier).submitAnswer(
-            bearerToken: token,
-            sessionId: state.sessionId!,
-          );
+
+      final submitState = ref.read(questionAnswerSessionProvider);
+      final isCorrect = submitState.attemptResult?.isCorrect ?? true;
+
+      if (mounted) {
+        setState(() {
+          _answeredCurrent = true;
+          _lastAnswerCorrect = isCorrect;
+          if (isCorrect) {
+            _correctCount++;
+          } else {
+            _wrongCount++;
+          }
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _answeredCurrent = true;
+          _lastAnswerCorrect = true;
+          _correctCount++;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
-
-    final submitState = ref.read(questionAnswerSessionProvider);
-    final isCorrect = submitState.attemptResult?.isCorrect ?? true;
-
-    setState(() {
-      _answeredCurrent = true;
-      _lastAnswerCorrect = isCorrect;
-      if (isCorrect) {
-        _correctCount++;
-      } else {
-        _wrongCount++;
-      }
-    });
   }
 
   Future<void> _handleNextQuestion() async {
@@ -614,9 +637,10 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
             height: 52,
             child: !_answeredCurrent
                 ? ElevatedButton(
-                    onPressed: (currentQ.options.isNotEmpty
-                            ? _selectedOptionId != null
-                            : _writtenAnswer.trim().isNotEmpty)
+                    onPressed: (!_isSubmitting &&
+                            (currentQ.options.isNotEmpty
+                                ? _selectedOptionId != null
+                                : _writtenAnswer.trim().isNotEmpty))
                         ? _handleCheckAnswer
                         : null,
                     style: ElevatedButton.styleFrom(
@@ -628,13 +652,22 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Check Answer',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Check Answer',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                   )
                 : ElevatedButton(
                     onPressed: _handleNextQuestion,
