@@ -31,8 +31,12 @@ class AttemptRemoteDatasourceImpl implements AttemptRemoteDatasource {
     required AttemptSubmitRequestModel request,
   }) async {
     final envelope = await _apiClient.post<AttemptSubmitResponseModel>(
-      '${BackendApiPaths.sessionAttempt(sessionId)}?feedback=true',
-      body: request.toJson(),
+      BackendApiPaths.sessionAttempt(sessionId),
+      queryParameters: const {'feedback': 'true'},
+      body: {
+        ...request.toJson(),
+        'includeFeedback': true,
+      },
       headers: {'authorization': 'Bearer $bearerToken'},
       decodeData: (json) {
         if (json is! Map<String, dynamic>) {

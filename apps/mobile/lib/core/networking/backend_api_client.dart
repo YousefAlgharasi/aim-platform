@@ -83,10 +83,15 @@ class BackendApiClient {
   Uri buildUri(String path, [Map<String, String>? queryParameters]) {
     final base = Uri.parse(_config.backendApiBaseUrl);
     final normalizedPath = path.startsWith('/') ? path : '/$path';
+    final parsedUri = Uri.parse(normalizedPath);
+    final combinedQueryParams = {
+      ...parsedUri.queryParameters,
+      if (queryParameters != null) ...queryParameters,
+    };
 
     return base.replace(
-      path: _joinPaths(base.path, normalizedPath),
-      queryParameters: queryParameters,
+      path: _joinPaths(base.path, parsedUri.path),
+      queryParameters: combinedQueryParams.isNotEmpty ? combinedQueryParams : null,
     );
   }
 
@@ -115,6 +120,7 @@ class BackendApiClient {
     required ApiJsonDecoder<T> decodeData,
     Object? body,
     Map<String, String>? headers,
+    Map<String, String>? queryParameters,
     bool requiresAuth = true,
   }) async {
     final encodedBody = body == null ? null : jsonEncode(body);
@@ -122,7 +128,7 @@ class BackendApiClient {
     return _sendWithRefreshRetry<T>(
       decodeData: decodeData,
       send: (effectiveHeaders) => _withTimeout(() => _httpClient.post(
-            buildUri(path),
+            buildUri(path, queryParameters),
             headers: effectiveHeaders,
             body: encodedBody,
           )),

@@ -159,7 +159,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       }
 
       final submitState = ref.read(questionAnswerSessionProvider);
-      final isCorrect = submitState.attemptResult?.isCorrect ?? true;
+      final isCorrect = submitState.attemptResult?.isCorrect ?? false;
 
       if (mounted) {
         setState(() {
@@ -176,8 +176,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       if (mounted) {
         setState(() {
           _answeredCurrent = true;
-          _lastAnswerCorrect = true;
-          _correctCount++;
+          _lastAnswerCorrect = false;
+          _wrongCount++;
         });
       }
     } finally {
