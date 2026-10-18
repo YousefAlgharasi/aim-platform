@@ -441,6 +441,13 @@ export class LessonProgressService {
          LEFT JOIN student_profiles sp ON sp.user_id = u.id
          WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
          LIMIT 1
+       ),
+       course_lessons AS (
+         SELECT co.id AS course_id, les.id AS lesson_id
+         FROM courses co
+         JOIN levels lv ON lv.course_id = co.id AND lv.status = 'published'
+         JOIN chapters ch ON ch.level_id = lv.id AND ch.status = 'published'
+         JOIN lessons les ON les.chapter_id = ch.id AND les.status = 'published'
        )
        SELECT MAX(co.cefr_rank) AS max_completed_rank
        FROM courses co
