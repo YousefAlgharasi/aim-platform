@@ -97,6 +97,63 @@ export default async function CertificateViewPage({ params }: Props) {
           border-top: 1px solid #d9d3c3;
           margin: 32px 0;
         }
+        .certificate-breakdown-card {
+          background: #fbfaf6;
+          border: 1px solid #e7e2d4;
+          border-radius: 6px;
+          padding: 18px 24px;
+          margin-bottom: 24px;
+        }
+        .certificate-breakdown-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 7px 0;
+          border-bottom: 1px dashed #e2dcce;
+          font-size: 14px;
+        }
+        .certificate-breakdown-row:last-child {
+          border-bottom: none;
+        }
+        .certificate-breakdown-label {
+          color: #2b2b2b;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .certificate-weight-badge {
+          background: #eae4d4;
+          color: #65583b;
+          font-size: 11px;
+          font-weight: bold;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+        .certificate-breakdown-value {
+          font-variant-numeric: tabular-nums;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+        .certificate-grand-total {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 0 0;
+          margin-top: 12px;
+          border-top: 2px solid #8a7a4a;
+        }
+        .certificate-grand-score {
+          font-size: 22px;
+          font-weight: bold;
+          color: #1a1a1a;
+          font-variant-numeric: tabular-nums;
+        }
+        .certificate-grand-percent {
+          font-size: 26px;
+          font-weight: bold;
+          color: #1b6336;
+          font-variant-numeric: tabular-nums;
+        }
         .certificate-scores-title {
           font-size: 14px;
           text-transform: uppercase;
@@ -127,22 +184,25 @@ export default async function CertificateViewPage({ params }: Props) {
           font-variant-numeric: tabular-nums;
           white-space: nowrap;
         }
-        .certificate-report-total {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 14px 0 0;
-          margin-top: 6px;
-          border-top: 2px solid #1a1a1a;
-          font-size: 18px;
-          font-weight: bold;
-        }
         .certificate-pass { color: #1a7a3c; font-weight: bold; }
         .certificate-fail { color: #a3252f; font-weight: bold; }
+        .certificate-verify-box {
+          margin-top: 24px;
+          padding: 12px;
+          background: #f4f6fa;
+          border: 1px solid #dce2ee;
+          border-radius: 6px;
+          text-align: center;
+          font-size: 13px;
+        }
+        .certificate-verify-link {
+          color: #2563eb;
+          text-decoration: underline;
+          word-break: break-all;
+        }
         .certificate-footer {
           text-align: center;
-          margin-top: 32px;
+          margin-top: 28px;
           font-size: 13px;
           color: #888;
         }
@@ -172,31 +232,140 @@ export default async function CertificateViewPage({ params }: Props) {
 
       <hr className="certificate-divider" />
 
-      <p className="certificate-scores-title">Report Card</p>
-      {certificate.scoreSnapshot.length === 0 ? (
-        <p style={{ color: '#888', fontSize: '14px' }}>No assessment scores recorded for this certificate.</p>
+      {/* 1,000-Point Scoring Breakdown */}
+      <p className="certificate-scores-title">Course Evaluation (1,000 Points System)</p>
+      {certificate.breakdown ? (
+        <div className="certificate-breakdown-card">
+          <div className="certificate-breakdown-row">
+            <span className="certificate-breakdown-label">
+              <span>Lesson Practices</span>
+              <span className="certificate-weight-badge">20% Weight</span>
+            </span>
+            <span className="certificate-breakdown-value">
+              {certificate.breakdown.practicePoints} / 200 pts{' '}
+              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
+                ({certificate.breakdown.practiceAccuracyPercent}% accuracy)
+              </span>
+            </span>
+          </div>
+
+          <div className="certificate-breakdown-row">
+            <span className="certificate-breakdown-label">
+              <span>Chapter Quizzes</span>
+              <span className="certificate-weight-badge">20% Weight</span>
+            </span>
+            <span className="certificate-breakdown-value">
+              {certificate.breakdown.quizPoints} / 200 pts{' '}
+              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
+                ({certificate.breakdown.quizAveragePercent}% avg)
+              </span>
+            </span>
+          </div>
+
+          <div className="certificate-breakdown-row">
+            <span className="certificate-breakdown-label">
+              <span>Chapter Exams</span>
+              <span className="certificate-weight-badge">20% Weight</span>
+            </span>
+            <span className="certificate-breakdown-value">
+              {certificate.breakdown.chapterExamPoints} / 200 pts{' '}
+              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
+                ({certificate.breakdown.chapterExamAveragePercent}% avg)
+              </span>
+            </span>
+          </div>
+
+          <div className="certificate-breakdown-row">
+            <span className="certificate-breakdown-label">
+              <span>Course Final Exam</span>
+              <span className="certificate-weight-badge">40% Weight</span>
+            </span>
+            <span className="certificate-breakdown-value">
+              {certificate.breakdown.finalExamPoints} / 400 pts{' '}
+              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
+                ({certificate.breakdown.finalExamPercent}%)
+              </span>
+            </span>
+          </div>
+
+          <div className="certificate-grand-total">
+            <div>
+              <div style={{ fontSize: '13px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Total Points Earned
+              </div>
+              <div className="certificate-grand-score">
+                {certificate.breakdown.totalPoints} / 1,000 pts
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '13px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Final Grade
+              </div>
+              <div className="certificate-grand-percent">
+                {certificate.breakdown.overallPercent}%
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
-        <div>
-          {certificate.scoreSnapshot.map((entry) => (
-            <div key={entry.assessmentId} className="certificate-report-row">
-              <span className="certificate-report-label">
-                <span className="certificate-report-type">{entry.type}</span>
-                {entry.title}
-              </span>
-              <span className="certificate-report-score">
-                {entry.scorePercent}/100{' '}
-                <span className={entry.passed ? 'certificate-pass' : 'certificate-fail'}>
-                  {entry.passed ? '✓' : '✗'}
+        <div className="certificate-breakdown-card">
+          <div className="certificate-grand-total" style={{ borderTop: 'none', paddingTop: 0 }}>
+            <div>
+              <div style={{ fontSize: '13px', color: '#666', textTransform: 'uppercase' }}>
+                Total Grade
+              </div>
+              <div className="certificate-grand-score">
+                {certificate.overallScorePercent !== null
+                  ? `${Math.round(certificate.overallScorePercent * 10)} / 1,000 pts`
+                  : 'N/A'}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '13px', color: '#666', textTransform: 'uppercase' }}>
+                Percentage
+              </div>
+              <div className="certificate-grand-percent">
+                {certificate.overallScorePercent !== null ? `${certificate.overallScorePercent}%` : 'N/A'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Assessments List */}
+      {certificate.scoreSnapshot.length > 0 && (
+        <div style={{ marginTop: '24px' }}>
+          <p className="certificate-scores-title">Assessment Item Breakdown</p>
+          <div>
+            {certificate.scoreSnapshot.map((entry) => (
+              <div key={entry.assessmentId} className="certificate-report-row">
+                <span className="certificate-report-label">
+                  <span className="certificate-report-type">{entry.type}</span>
+                  {entry.title}
                 </span>
-              </span>
-            </div>
-          ))}
-          {certificate.overallScorePercent !== null && (
-            <div className="certificate-report-total">
-              <span>Total Grade</span>
-              <span>{certificate.overallScorePercent}/100</span>
-            </div>
-          )}
+                <span className="certificate-report-score">
+                  {entry.scorePercent}%{' '}
+                  <span className={entry.passed ? 'certificate-pass' : 'certificate-fail'}>
+                    {entry.passed ? '✓' : '✗'}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {certificate.verificationUrl && (
+        <div className="certificate-verify-box">
+          <span style={{ color: '#4b5563' }}>Public Verification Link: </span>
+          <a
+            href={certificate.verificationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="certificate-verify-link"
+          >
+            {certificate.verificationUrl}
+          </a>
         </div>
       )}
 

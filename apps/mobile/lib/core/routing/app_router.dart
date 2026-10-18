@@ -64,6 +64,9 @@ import '../../features/billing/ui/pages/checkout_start_page.dart';
 import '../../features/billing/ui/pages/checkout_status_page.dart';
 import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
 import '../../features/profile/ui/pages/account_settings_page.dart';
+import '../../features/certificates/data/models/certificate_model.dart';
+import '../../features/certificates/ui/pages/certificates_list_page.dart';
+import '../../features/certificates/ui/pages/certificate_detail_page.dart';
 
 import 'app_route_paths.dart';
 
@@ -265,6 +268,23 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.achievements,
           builder: (context, state) => const AchievementsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.certificates,
+          builder: (context, state) => const CertificatesListPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.certificateDetail,
+          builder: (context, state) {
+            final cert = state.extra is CertificateModel
+                ? state.extra as CertificateModel
+                : null;
+            final id = state.uri.queryParameters['id'];
+            return CertificateDetailPage(
+              initialCertificate: cert,
+              certificateId: id,
+            );
+          },
         ),
         GoRoute(
           path: AppRoutePaths.endpointTester,
@@ -760,6 +780,8 @@ class AppRouter {
     AppRoutePaths.notificationInbox,
     AppRoutePaths.analyticsSummary,
     AppRoutePaths.achievements,
+    AppRoutePaths.certificates,
+    AppRoutePaths.certificateDetail,
     // TASK-14: Newly wired-up screens are authenticated-student-facing
     AppRoutePaths.editProfile,
     AppRoutePaths.skillState,

@@ -3310,4 +3310,85 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get achievementFirstAssessmentPassedDesc => 'اجتز تقييمك الأول بنجاح.';
+
+  @override
+  String get profileLinkCertificates => 'شهاداتي';
+
+  @override
+  String get profileCertificatesSubtitle => 'عرض شهادات إتمام الدورات والدرجات';
+
+  @override
+  String get certificatesTitle => 'شهادات الدورات';
+
+  @override
+  String get certificatesEmptyTitle => 'لا توجد شهادات بعد';
+
+  @override
+  String get certificatesEmptyDescription =>
+      'أكمل دورة تعليمية تتضمن الدروس، الاختبارات القصيرة، والامتحانات للحصول على شهادتك الرسمية.';
+
+  @override
+  String certificatesTotalScore(int points) {
+    return 'المجموع: $points/1000 نقطة';
+  }
+
+  @override
+  String certificatesGrade(int percent) {
+    return 'التقدير: $percent٪';
+  }
+
+  @override
+  String certificatesIssuedOn(String date) {
+    return 'تاريخ الإصدار: $date';
+  }
+
+  @override
+  String get certificateDetailTitle => 'تفاصيل الشهادة';
+
+  @override
+  String get certificateEyebrow => 'شهادة إتمام معتمدة';
+
+  @override
+  String get certificateCertifiesThat => 'تشهد منصة AIM بأن الطالب';
+
+  @override
+  String get certificateHasCompleted => 'قد أتم بنجاح متطلبات الدورة التعليمية';
+
+  @override
+  String get certificateCourseEvaluation => 'تقييم الدورة (نظام 1000 نقطة)';
+
+  @override
+  String get certificatePractices => 'تمارين الدروس';
+
+  @override
+  String get certificateQuizzes => 'الاختبارات القصيرة للفصول';
+
+  @override
+  String get certificateChapterExams => 'امتحانات الفصول';
+
+  @override
+  String get certificateFinalExam => 'الامتحان النهائي للدورة';
+
+  @override
+  String get certificateAccuracy => 'دقة';
+
+  @override
+  String get certificateAverage => 'متوسط';
+
+  @override
+  String get certificateTotalScoreLabel => 'مجموع النقاط المحرزة';
+
+  @override
+  String get certificateFinalGradeLabel => 'الدرجة النهائية';
+
+  @override
+  String get certificateCopyVerification => 'نسخ رابط التحقق';
+
+  @override
+  String get certificateCopiedToast => 'تم نسخ رابط التحقق بنجاح!';
+
+  @override
+  String certificateIdLabel(String id) {
+    return 'رقم الشهادة: $id';
+  }
 }

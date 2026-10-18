@@ -316,6 +316,12 @@ class _ProfileBody extends StatelessWidget {
                     onTap: () => context.push(AppRoutePaths.achievements),
                   ),
                   _ProfileNavItem(
+                    icon: Icons.workspace_premium_outlined,
+                    label: l10n.profileLinkCertificates,
+                    surfaces: surfaces,
+                    onTap: () => context.push(AppRoutePaths.certificates),
+                  ),
+                  _ProfileNavItem(
                     icon: Icons.bar_chart_outlined,
                     label: l10n.profileLinkAnalyticsSummary,
                     surfaces: surfaces,

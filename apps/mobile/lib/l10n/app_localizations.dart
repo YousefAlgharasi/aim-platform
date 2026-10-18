@@ -5567,6 +5567,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pass your first assessment.'**
   String get achievementFirstAssessmentPassedDesc;
+
+  /// No description provided for @profileLinkCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'My Certificates'**
+  String get profileLinkCertificates;
+
+  /// No description provided for @profileCertificatesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View earned course certificates and grades'**
+  String get profileCertificatesSubtitle;
+
+  /// No description provided for @certificatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Certificates'**
+  String get certificatesTitle;
+
+  /// No description provided for @certificatesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Certificates Yet'**
+  String get certificatesEmptyTitle;
+
+  /// No description provided for @certificatesEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete a course including lessons, quizzes, and exams to earn your official certificate.'**
+  String get certificatesEmptyDescription;
+
+  /// No description provided for @certificatesTotalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Score: {points}/1000 pts'**
+  String certificatesTotalScore(int points);
+
+  /// No description provided for @certificatesGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade: {percent}%'**
+  String certificatesGrade(int percent);
+
+  /// No description provided for @certificatesIssuedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued on {date}'**
+  String certificatesIssuedOn(String date);
+
+  /// No description provided for @certificateDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate Details'**
+  String get certificateDetailTitle;
+
+  /// No description provided for @certificateEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'CERTIFICATE OF COMPLETION'**
+  String get certificateEyebrow;
+
+  /// No description provided for @certificateCertifiesThat.
+  ///
+  /// In en, this message translates to:
+  /// **'This certifies that'**
+  String get certificateCertifiesThat;
+
+  /// No description provided for @certificateHasCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'has successfully completed the course'**
+  String get certificateHasCompleted;
+
+  /// No description provided for @certificateCourseEvaluation.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Evaluation (1,000 Points System)'**
+  String get certificateCourseEvaluation;
+
+  /// No description provided for @certificatePractices.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Practices'**
+  String get certificatePractices;
+
+  /// No description provided for @certificateQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter Quizzes'**
+  String get certificateQuizzes;
+
+  /// No description provided for @certificateChapterExams.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter Exams'**
+  String get certificateChapterExams;
+
+  /// No description provided for @certificateFinalExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Final Exam'**
+  String get certificateFinalExam;
+
+  /// No description provided for @certificateAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'accuracy'**
+  String get certificateAccuracy;
+
+  /// No description provided for @certificateAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'avg'**
+  String get certificateAverage;
+
+  /// No description provided for @certificateTotalScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Points Earned'**
+  String get certificateTotalScoreLabel;
+
+  /// No description provided for @certificateFinalGradeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Final Grade'**
+  String get certificateFinalGradeLabel;
+
+  /// No description provided for @certificateCopyVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Verification Link'**
+  String get certificateCopyVerification;
+
+  /// No description provided for @certificateCopiedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification link copied to clipboard!'**
+  String get certificateCopiedToast;
+
+  /// No description provided for @certificateIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate ID: {id}'**
+  String certificateIdLabel(String id);
 }
 
 class _AppLocalizationsDelegate

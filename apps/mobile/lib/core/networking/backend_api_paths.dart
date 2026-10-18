@@ -433,4 +433,19 @@ class BackendApiPaths {
 
   /// GET /operational-status
   static const String operationalStatus = '/operational-status';
+
+  // ---------------------------------------------------------------------------
+  // Certificates
+  // ---------------------------------------------------------------------------
+
+  /// GET /certificates/my — all certificates for the authenticated student
+  static const String myCertificates = '/certificates/my';
+
+  /// GET /certificates/:id — certificate details with 1,000-point breakdown
+  static String certificateDetail(String certificateId) =>
+      '/certificates/$certificateId';
+
+  /// GET /certificates/:id/verify — public verification
+  static String certificateVerify(String certificateId) =>
+      '/certificates/$certificateId/verify';
 }

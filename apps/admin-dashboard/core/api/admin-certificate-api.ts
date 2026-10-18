@@ -14,6 +14,19 @@ export type AdminCertificateScoreSnapshotEntry = {
   readonly passed: boolean;
 };
 
+export type CertificateScoreBreakdown = {
+  readonly practicePoints: number; // max 200
+  readonly practiceAccuracyPercent: number;
+  readonly quizPoints: number; // max 200
+  readonly quizAveragePercent: number;
+  readonly chapterExamPoints: number; // max 200
+  readonly chapterExamAveragePercent: number;
+  readonly finalExamPoints: number; // max 400
+  readonly finalExamPercent: number;
+  readonly totalPoints: number; // max 1,000
+  readonly overallPercent: number; // max 100
+};
+
 export type AdminCertificate = {
   readonly id: string;
   readonly studentId: string;
@@ -22,7 +35,10 @@ export type AdminCertificate = {
   readonly studentName: string | null;
   readonly issuedAt: string;
   readonly scoreSnapshot: readonly AdminCertificateScoreSnapshotEntry[];
+  readonly breakdown?: CertificateScoreBreakdown;
+  readonly totalPoints?: number;
   readonly overallScorePercent: number | null;
+  readonly verificationUrl?: string;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -57,6 +73,22 @@ function decodeScoreEntry(raw: unknown): AdminCertificateScoreSnapshotEntry {
   };
 }
 
+function decodeBreakdown(raw: unknown): CertificateScoreBreakdown | undefined {
+  if (!isObject(raw)) return undefined;
+  return {
+    practicePoints: decodeNumber(raw.practicePoints),
+    practiceAccuracyPercent: decodeNumber(raw.practiceAccuracyPercent),
+    quizPoints: decodeNumber(raw.quizPoints),
+    quizAveragePercent: decodeNumber(raw.quizAveragePercent),
+    chapterExamPoints: decodeNumber(raw.chapterExamPoints),
+    chapterExamAveragePercent: decodeNumber(raw.chapterExamAveragePercent),
+    finalExamPoints: decodeNumber(raw.finalExamPoints),
+    finalExamPercent: decodeNumber(raw.finalExamPercent),
+    totalPoints: decodeNumber(raw.totalPoints),
+    overallPercent: decodeNumber(raw.overallPercent),
+  };
+}
+
 function decodeCertificate(raw: unknown): AdminCertificate {
   const r = isObject(raw) ? raw : {};
   const rawSnapshot = Array.isArray(r.scoreSnapshot) ? r.scoreSnapshot : [];
@@ -68,7 +100,10 @@ function decodeCertificate(raw: unknown): AdminCertificate {
     studentName: typeof r.studentName === 'string' ? r.studentName : null,
     issuedAt: String(r.issuedAt ?? ''),
     scoreSnapshot: rawSnapshot.map(decodeScoreEntry),
+    breakdown: decodeBreakdown(r.breakdown),
+    totalPoints: typeof r.totalPoints === 'number' ? r.totalPoints : undefined,
     overallScorePercent: typeof r.overallScorePercent === 'number' ? r.overallScorePercent : null,
+    verificationUrl: typeof r.verificationUrl === 'string' ? r.verificationUrl : undefined,
   };
 }
 

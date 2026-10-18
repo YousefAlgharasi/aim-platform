@@ -4268,5 +4268,57 @@
   "achievementFirstAssessmentPassedDesc": "Pass your first assessment.",
   "@achievementFirstAssessmentPassedDesc": {
     "description": "Achievement description for first_assessment_passed"
+  },
+  "profileLinkCertificates": "My Certificates",
+  "profileCertificatesSubtitle": "View earned course certificates and grades",
+  "certificatesTitle": "Course Certificates",
+  "certificatesEmptyTitle": "No Certificates Yet",
+  "certificatesEmptyDescription": "Complete a course including lessons, quizzes, and exams to earn your official certificate.",
+  "certificatesTotalScore": "Total Score: {points}/1000 pts",
+  "@certificatesTotalScore": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "certificatesGrade": "Grade: {percent}%",
+  "@certificatesGrade": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "certificatesIssuedOn": "Issued on {date}",
+  "@certificatesIssuedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "certificateDetailTitle": "Certificate Details",
+  "certificateEyebrow": "CERTIFICATE OF COMPLETION",
+  "certificateCertifiesThat": "This certifies that",
+  "certificateHasCompleted": "has successfully completed the course",
+  "certificateCourseEvaluation": "Course Evaluation (1,000 Points System)",
+  "certificatePractices": "Lesson Practices",
+  "certificateQuizzes": "Chapter Quizzes",
+  "certificateChapterExams": "Chapter Exams",
+  "certificateFinalExam": "Course Final Exam",
+  "certificateAccuracy": "accuracy",
+  "certificateAverage": "avg",
+  "certificateTotalScoreLabel": "Total Points Earned",
+  "certificateFinalGradeLabel": "Final Grade",
+  "certificateCopyVerification": "Copy Verification Link",
+  "certificateCopiedToast": "Verification link copied to clipboard!",
+  "certificateIdLabel": "Certificate ID: {id}",
+  "@certificateIdLabel": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
   }
 }

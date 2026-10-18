@@ -3276,4 +3276,87 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get achievementFirstAssessmentPassedDesc =>
       'Pass your first assessment.';
+
+  @override
+  String get profileLinkCertificates => 'My Certificates';
+
+  @override
+  String get profileCertificatesSubtitle =>
+      'View earned course certificates and grades';
+
+  @override
+  String get certificatesTitle => 'Course Certificates';
+
+  @override
+  String get certificatesEmptyTitle => 'No Certificates Yet';
+
+  @override
+  String get certificatesEmptyDescription =>
+      'Complete a course including lessons, quizzes, and exams to earn your official certificate.';
+
+  @override
+  String certificatesTotalScore(int points) {
+    return 'Total Score: $points/1000 pts';
+  }
+
+  @override
+  String certificatesGrade(int percent) {
+    return 'Grade: $percent%';
+  }
+
+  @override
+  String certificatesIssuedOn(String date) {
+    return 'Issued on $date';
+  }
+
+  @override
+  String get certificateDetailTitle => 'Certificate Details';
+
+  @override
+  String get certificateEyebrow => 'CERTIFICATE OF COMPLETION';
+
+  @override
+  String get certificateCertifiesThat => 'This certifies that';
+
+  @override
+  String get certificateHasCompleted => 'has successfully completed the course';
+
+  @override
+  String get certificateCourseEvaluation =>
+      'Course Evaluation (1,000 Points System)';
+
+  @override
+  String get certificatePractices => 'Lesson Practices';
+
+  @override
+  String get certificateQuizzes => 'Chapter Quizzes';
+
+  @override
+  String get certificateChapterExams => 'Chapter Exams';
+
+  @override
+  String get certificateFinalExam => 'Course Final Exam';
+
+  @override
+  String get certificateAccuracy => 'accuracy';
+
+  @override
+  String get certificateAverage => 'avg';
+
+  @override
+  String get certificateTotalScoreLabel => 'Total Points Earned';
+
+  @override
+  String get certificateFinalGradeLabel => 'Final Grade';
+
+  @override
+  String get certificateCopyVerification => 'Copy Verification Link';
+
+  @override
+  String get certificateCopiedToast => 'Verification link copied to clipboard!';
+
+  @override
+  String certificateIdLabel(String id) {
+    return 'Certificate ID: $id';
+  }
 }

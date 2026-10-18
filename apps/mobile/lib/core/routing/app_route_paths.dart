@@ -119,6 +119,10 @@ class AppRoutePaths {
   // Missing screens from Modern Auth Pages prototype
   static const String liveAiLesson = '/lessons/live-ai-voice';
   static const String accountSettings = '/profile/settings';
+
+  // Certificates routes
+  static const String certificates = '/certificates';
+  static const String certificateDetail = '/certificates/detail';
 }
 
 
