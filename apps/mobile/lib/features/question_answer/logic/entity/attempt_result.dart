@@ -16,6 +16,7 @@ class AttemptResult {
     required this.submittedAt,
     required this.aimPipelineTriggered,
     required this.aimOutcome,
+    this.isCorrect,
   });
 
   /// Backend-issued attempt UUID.
@@ -32,4 +33,7 @@ class AttemptResult {
 
   /// AIM pipeline outcome: 'ok' or 'deferred'.
   final String aimOutcome;
+
+  /// Backend-evaluated correctness (returned when practice feedback is enabled).
+  final bool? isCorrect;
 }

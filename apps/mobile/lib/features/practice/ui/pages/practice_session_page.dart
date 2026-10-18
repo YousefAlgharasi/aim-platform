@@ -90,7 +90,9 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   String? _selectedOptionId;
   String _writtenAnswer = '';
   bool _answeredCurrent = false;
+  bool? _lastAnswerCorrect;
   int _correctCount = 0;
+  int _wrongCount = 0;
 
   // Fallback demo state when backend has no questions seeded
   int _demoIndex = 0;
@@ -132,11 +134,6 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 
     final token = ref.read(authFlowProvider).accessToken;
 
-    setState(() {
-      _answeredCurrent = true;
-      _correctCount++;
-    });
-
     if (token != null && state.sessionId != null) {
       ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
             question: currentQ,
@@ -152,6 +149,19 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
             sessionId: state.sessionId!,
           );
     }
+
+    final submitState = ref.read(questionAnswerSessionProvider);
+    final isCorrect = submitState.attemptResult?.isCorrect ?? true;
+
+    setState(() {
+      _answeredCurrent = true;
+      _lastAnswerCorrect = isCorrect;
+      if (isCorrect) {
+        _correctCount++;
+      } else {
+        _wrongCount++;
+      }
+    });
   }
 
   Future<void> _handleNextQuestion() async {
@@ -159,6 +169,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       _selectedOptionId = null;
       _writtenAnswer = '';
       _answeredCurrent = false;
+      _lastAnswerCorrect = null;
     });
     await ref.read(practiceSessionProvider.notifier).advance();
   }
@@ -443,6 +454,56 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     ],
                   ],
                 ),
+                if (_answeredCurrent) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: _lastAnswerCorrect == false
+                          ? const Color(0xFFFEE2E2)
+                          : const Color(0xFFD1FAE5),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _lastAnswerCorrect == false
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF10B981),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _lastAnswerCorrect == false
+                              ? Icons.cancel_rounded
+                              : Icons.check_circle_rounded,
+                          color: _lastAnswerCorrect == false
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF10B981),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _lastAnswerCorrect == false
+                                ? (Localizations.localeOf(context).languageCode == 'ar'
+                                    ? 'إجابة غير صحيحة'
+                                    : 'Incorrect answer')
+                                : (Localizations.localeOf(context).languageCode == 'ar'
+                                    ? 'إجابة صحيحة! أحسنت'
+                                    : 'Correct answer! Well done.'),
+                            style: TextStyle(
+                              color: _lastAnswerCorrect == false
+                                  ? const Color(0xFF991B1B)
+                                  : const Color(0xFF065F46),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ] else ...[
                 // Free-text / Fill-in-the-blank input
                 Container(
@@ -488,20 +549,45 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD1FAE5),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF10B981)),
+                            color: _lastAnswerCorrect == false
+                                ? const Color(0xFFFEE2E2)
+                                : const Color(0xFFD1FAE5),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: _lastAnswerCorrect == false
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF10B981),
+                              width: 1.5,
+                            ),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
-                              SizedBox(width: 10),
-                              Text(
-                                'Answer recorded',
-                                style: TextStyle(
-                                  color: Color(0xFF065F46),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                              Icon(
+                                _lastAnswerCorrect == false
+                                    ? Icons.cancel_rounded
+                                    : Icons.check_circle_rounded,
+                                color: _lastAnswerCorrect == false
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFF10B981),
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _lastAnswerCorrect == false
+                                      ? (Localizations.localeOf(context).languageCode == 'ar'
+                                          ? 'إجابة غير صحيحة'
+                                          : 'Incorrect answer')
+                                      : (Localizations.localeOf(context).languageCode == 'ar'
+                                          ? 'إجابة صحيحة! أحسنت'
+                                          : 'Correct answer! Well done.'),
+                                  style: TextStyle(
+                                    color: _lastAnswerCorrect == false
+                                        ? const Color(0xFF991B1B)
+                                        : const Color(0xFF065F46),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                             ],
@@ -586,11 +672,28 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     Color tileBg = surfaces.surface;
     BorderSide tileBorder = BorderSide(color: surfaces.border);
     Color textColor = surfaces.textPrimary;
+    Widget? trailingIcon;
 
     if (_answeredCurrent && isSelected) {
-      tileBg = const Color(0xFFD1FAE5);
-      tileBorder = const BorderSide(color: Color(0xFF10B981), width: 2);
-      textColor = const Color(0xFF065F46);
+      if (_lastAnswerCorrect == true) {
+        tileBg = const Color(0xFFD1FAE5);
+        tileBorder = const BorderSide(color: Color(0xFF10B981), width: 2);
+        textColor = const Color(0xFF065F46);
+        trailingIcon = const Icon(
+          Icons.check_circle_rounded,
+          color: Color(0xFF10B981),
+          size: 22,
+        );
+      } else {
+        tileBg = const Color(0xFFFEE2E2);
+        tileBorder = const BorderSide(color: Color(0xFFEF4444), width: 2);
+        textColor = const Color(0xFF991B1B);
+        trailingIcon = const Icon(
+          Icons.cancel_rounded,
+          color: Color(0xFFEF4444),
+          size: 22,
+        );
+      }
     } else if (isSelected) {
       tileBg = AimColors.primary500.withValues(alpha: 0.08);
       tileBorder = const BorderSide(color: AimColors.primary500, width: 2);
@@ -622,12 +725,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   ),
                 ),
               ),
-              if (_answeredCurrent && isSelected)
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: Color(0xFF10B981),
-                  size: 22,
-                ),
+              if (trailingIcon != null) trailingIcon,
             ],
           ),
         ),
@@ -749,7 +847,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 Column(
                   children: [
                     Text(
-                      'XP EARNED',
+                      'CORRECT',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -758,12 +856,39 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      '+50 XP',
-                      style: TextStyle(
+                    Text(
+                      '$_correctCount',
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: AimColors.primary500,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: surfaces.border,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'WRONG',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textMuted,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$_wrongCount',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFEF4444),
                       ),
                     ),
                   ],
@@ -787,13 +912,118 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     const SizedBox(height: 4),
                     Text(
                       '$accuracyPercent%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF10B981),
+                        color: accuracyPercent >= 70
+                            ? const Color(0xFF10B981)
+                            : (accuracyPercent >= 40
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFFEF4444)),
                       ),
                     ),
                   ],
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: surfaces.border,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'XP EARNED',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textMuted,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '+50 XP',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AimColors.primary500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Feedback Summary Banner (shows wrong answers count clearly)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _wrongCount == 0
+                  ? const Color(0xFFD1FAE5)
+                  : const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _wrongCount == 0
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFF59E0B),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _wrongCount == 0
+                      ? Icons.emoji_events_rounded
+                      : Icons.info_outline_rounded,
+                  color: _wrongCount == 0
+                      ? const Color(0xFF065F46)
+                      : const Color(0xFFB45309),
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _wrongCount == 0
+                            ? (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'درجة كاملة! أحسنت صنعاً'
+                                : 'Perfect Score! All Correct')
+                            : (Localizations.localeOf(context).languageCode == 'ar'
+                                ? (_wrongCount == 1
+                                    ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
+                                    : 'لديك $_wrongCount إجابات غير صحيحة من أصل $totalQ أسئلة')
+                                : 'You got $_wrongCount wrong answer${_wrongCount > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: _wrongCount == 0
+                              ? const Color(0xFF065F46)
+                              : const Color(0xFF92400E),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _wrongCount == 0
+                            ? (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
+                                : 'You mastered all concepts in this practice session.')
+                            : (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
+                                : 'Review the lesson and practice again to master these concepts.'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _wrongCount == 0
+                              ? const Color(0xFF047857)
+                              : const Color(0xFFB45309),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -1233,7 +1463,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 Column(
                   children: [
                     Text(
-                      'XP EARNED',
+                      'CORRECT',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -1242,12 +1472,39 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      '+50 XP',
-                      style: TextStyle(
+                    Text(
+                      '$_demoScore',
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: AimColors.primary500,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: surfaces.border,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'WRONG',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textMuted,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${totalQ - _demoScore}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFEF4444),
                       ),
                     ),
                   ],
@@ -1271,13 +1528,118 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     const SizedBox(height: 4),
                     Text(
                       '$accuracyPercent%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF10B981),
+                        color: accuracyPercent >= 70
+                            ? const Color(0xFF10B981)
+                            : (accuracyPercent >= 40
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFFEF4444)),
                       ),
                     ),
                   ],
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: surfaces.border,
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'XP EARNED',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textMuted,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '+50 XP',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AimColors.primary500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Feedback Summary Banner (shows wrong answers count clearly)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: (totalQ - _demoScore) == 0
+                  ? const Color(0xFFD1FAE5)
+                  : const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (totalQ - _demoScore) == 0
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFF59E0B),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  (totalQ - _demoScore) == 0
+                      ? Icons.emoji_events_rounded
+                      : Icons.info_outline_rounded,
+                  color: (totalQ - _demoScore) == 0
+                      ? const Color(0xFF065F46)
+                      : const Color(0xFFB45309),
+                  size: 26,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        (totalQ - _demoScore) == 0
+                            ? (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'درجة كاملة! أحسنت صنعاً'
+                                : 'Perfect Score! All Correct')
+                            : (Localizations.localeOf(context).languageCode == 'ar'
+                                ? ((totalQ - _demoScore) == 1
+                                    ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
+                                    : 'لديك ${totalQ - _demoScore} إجابات غير صحيحة من أصل $totalQ أسئلة')
+                                : 'You got ${totalQ - _demoScore} wrong answer${(totalQ - _demoScore) > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: (totalQ - _demoScore) == 0
+                              ? const Color(0xFF065F46)
+                              : const Color(0xFF92400E),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        (totalQ - _demoScore) == 0
+                            ? (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
+                                : 'You mastered all concepts in this practice session.')
+                            : (Localizations.localeOf(context).languageCode == 'ar'
+                                ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
+                                : 'Review the lesson and practice again to master these concepts.'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: (totalQ - _demoScore) == 0
+                              ? const Color(0xFF047857)
+                              : const Color(0xFFB45309),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

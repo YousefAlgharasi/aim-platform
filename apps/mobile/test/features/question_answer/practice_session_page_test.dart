@@ -35,10 +35,15 @@ QuestionModel _question(String id) => QuestionModel.fromJson({
     });
 
 class _FakeRepository implements QuestionAnswerRepository {
-  _FakeRepository({this.questions = const [], this.questionsError});
+  _FakeRepository({
+    this.questions = const [],
+    this.questionsError,
+    this.attemptResponse,
+  });
 
   final List<QuestionModel> questions;
   final AppException? questionsError;
+  final AttemptSubmitResponseModel? attemptResponse;
 
   @override
   Future<SessionStartResponseModel> startSession({
@@ -77,7 +82,15 @@ class _FakeRepository implements QuestionAnswerRepository {
     required String sessionId,
     required AttemptSubmitRequestModel request,
   }) async =>
-      throw UnimplementedError();
+      attemptResponse ??
+      const AttemptSubmitResponseModel(
+        attemptId: 'att-1',
+        answerId: 'ans-1',
+        submittedAt: '2026-07-01T10:00:00Z',
+        aimPipelineTriggered: false,
+        aimOutcome: 'pending',
+        isCorrect: true,
+      );
 
   @override
   Future<SessionFeedbackModel> getSessionState({
@@ -198,7 +211,7 @@ void main() {
     await tester.tap(find.text('Check Answer'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Answer recorded'), findsOneWidget);
+    expect(find.text('Correct answer! Well done.'), findsOneWidget);
     expect(find.text('Complete Session'), findsOneWidget);
   });
 
@@ -224,4 +237,43 @@ void main() {
     expect(find.text('Yes'), findsOneWidget);
     expect(find.text('No'), findsOneWidget);
   });
+
+  testWidgets('7. handles incorrect answer by showing error feedback and reporting wrong count on finish', (tester) async {
+    final question = _question('q-1');
+    final repo = _FakeRepository(
+      questions: [question],
+      attemptResponse: const AttemptSubmitResponseModel(
+        attemptId: 'att-1',
+        answerId: 'ans-1',
+        submittedAt: '2026-07-01T10:00:00Z',
+        aimPipelineTriggered: false,
+        aimOutcome: 'pending',
+        isCorrect: false,
+      ),
+    );
+
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    // Select option 2 ('are')
+    await tester.tap(find.text('are'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Check Answer'), findsOneWidget);
+    await tester.tap(find.text('Check Answer'));
+    await tester.pumpAndSettle();
+
+    // Verify incorrect feedback banner is shown
+    expect(find.text('Incorrect answer'), findsOneWidget);
+    expect(find.text('Complete Session'), findsOneWidget);
+
+    // Complete session
+    await tester.tap(find.text('Complete Session'));
+    await tester.pumpAndSettle();
+
+    // Verify finish view shows wrong answers count
+    expect(find.text('WRONG'), findsOneWidget);
+    expect(find.text('You got 1 wrong answer out of 1 question'), findsOneWidget);
+  });
 }
+

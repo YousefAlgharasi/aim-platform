@@ -341,6 +341,58 @@ export class LessonAttemptService {
   }
 
   /**
+   * Return a summary of attempts recorded for the session (correct/wrong count,
+   * accuracy, and item evaluations). Scoped to studentId to prevent leaking.
+   */
+  async getSessionSummary(
+    sessionId: string,
+    studentId: string,
+  ): Promise<{
+    sessionId: string;
+    totalAttempts: number;
+    correctCount: number;
+    wrongCount: number;
+    accuracyPercent: number;
+    attempts: Array<{
+      itemId: string;
+      isCorrect: boolean;
+      answerValue: string;
+    }>;
+  }> {
+    const result = await this.db.query<{
+      item_id: string;
+      is_correct: boolean;
+      answer_value: string;
+    }>(
+      `SELECT item_id, is_correct, answer_value
+         FROM lesson_attempts
+        WHERE learning_session_id = $1
+          AND student_id = $2
+        ORDER BY created_at ASC`,
+      [sessionId, studentId],
+    );
+
+    const totalAttempts = result.rows.length;
+    const correctCount = result.rows.filter((r) => r.is_correct).length;
+    const wrongCount = totalAttempts - correctCount;
+    const accuracyPercent =
+      totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
+
+    return {
+      sessionId,
+      totalAttempts,
+      correctCount,
+      wrongCount,
+      accuracyPercent,
+      attempts: result.rows.map((r) => ({
+        itemId: r.item_id,
+        isCorrect: r.is_correct,
+        answerValue: r.answer_value,
+      })),
+    };
+  }
+
+  /**
    * Verify the session exists, belongs to studentId, and is active.
    * Missing, foreign, or inactive sessions all surface as NOT_FOUND to
    * avoid leaking session existence to a non-owner.

@@ -130,6 +130,7 @@ export interface SubmitAttemptResponse {
   readonly submittedAt: string;
   readonly aimPipelineTriggered: boolean;
   readonly aimOutcome: 'ok' | 'deferred';
+  readonly isCorrect?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,6 +284,7 @@ export class SessionsController {
       'Poll /sessions/:sessionId/state for AIM results.',
   })
   @ApiParam({ name: 'sessionId', description: 'UUID of the active learning session.' })
+  @ApiQuery({ name: 'feedback', required: false, type: Boolean })
   @ApiCreatedResponse({
     description:
       'Attempt recorded and AIM pipeline triggered. ' +
@@ -293,6 +295,7 @@ export class SessionsController {
     @Param('sessionId') sessionId: string,
     @Body() body: SubmitAttemptRequestBody,
     @Headers('x-request-id') xRequestId: string = '',
+    @Query('feedback') feedback?: string,
   ): Promise<SubmitAttemptResponse> {
     // -----------------------------------------------------------------------
     // Step 1: Resolve the backend-owned item fields, then record the attempt.
@@ -374,13 +377,49 @@ export class SessionsController {
     // AIM-owned values are never included.
     // -----------------------------------------------------------------------
 
-    return {
+    const response: SubmitAttemptResponse = {
       attemptId: attemptResult.attemptId,
       answerId: attemptResult.answerId,
       submittedAt: attemptResult.submittedAt,
       aimPipelineTriggered,
       aimOutcome,
     };
+
+    if (
+      feedback === 'true' ||
+      (body as unknown as { includeFeedback?: boolean }).includeFeedback === true
+    ) {
+      return {
+        ...response,
+        isCorrect: resolvedItem.isCorrect,
+      };
+    }
+
+    return response;
+  }
+
+  // -------------------------------------------------------------------------
+  // GET /sessions/:sessionId/summary
+  // -------------------------------------------------------------------------
+
+  /**
+   * GET /sessions/:sessionId/summary
+   *
+   * Return a summary of attempts recorded for the session (correct/wrong counts,
+   * accuracy, and item evaluations) for student feedback.
+   */
+  @Get(':sessionId/summary')
+  @UseGuards(SupabaseJwtAuthGuard)
+  @RequireRoles(AuthorizedRole.STUDENT)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get summary of lesson attempts for a session (student).' })
+  @ApiParam({ name: 'sessionId', description: 'UUID of the learning session.' })
+  async getSessionSummary(
+    @Param('sessionId') sessionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonAttemptService.getSessionSummary(sessionId, user.id);
   }
 
   // -------------------------------------------------------------------------

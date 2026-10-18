@@ -17,6 +17,7 @@ class AttemptSubmitResponseModel extends AttemptResult {
     required super.submittedAt,
     required super.aimPipelineTriggered,
     required super.aimOutcome,
+    super.isCorrect,
   });
 
   factory AttemptSubmitResponseModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +27,7 @@ class AttemptSubmitResponseModel extends AttemptResult {
       submittedAt: json['submittedAt'] as String,
       aimPipelineTriggered: json['aimPipelineTriggered'] as bool,
       aimOutcome: json['aimOutcome'] as String,
+      isCorrect: json['isCorrect'] as bool?,
     );
   }
 

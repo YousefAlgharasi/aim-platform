@@ -31,15 +31,13 @@ class AttemptRemoteDatasourceImpl implements AttemptRemoteDatasource {
     required AttemptSubmitRequestModel request,
   }) async {
     final envelope = await _apiClient.post<AttemptSubmitResponseModel>(
-      BackendApiPaths.sessionAttempt(sessionId),
+      '${BackendApiPaths.sessionAttempt(sessionId)}?feedback=true',
       body: request.toJson(),
       headers: {'authorization': 'Bearer $bearerToken'},
       decodeData: (json) {
         if (json is! Map<String, dynamic>) {
           throw const FormatException('Unexpected attempt response shape');
         }
-        // AttemptSubmitResponseModel.fromJson never reads is_correct —
-        // the field does not exist on the model by design.
         return AttemptSubmitResponseModel.fromJson(json);
       },
     );
