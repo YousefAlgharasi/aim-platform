@@ -151,7 +151,7 @@ export class CertificateService {
          LIMIT 1
        )
        SELECT cert.id, cert.student_id, cert.course_id, co.title AS course_title,
-              COALESCE(sp.display_name, u.raw_user_meta_data->>'full_name', u.email) AS display_name,
+              COALESCE(sp.display_name, u.email) AS display_name,
               u.email, cert.issued_at, cert.score_snapshot
        FROM certificates cert
        JOIN courses co ON co.id = cert.course_id
@@ -173,7 +173,7 @@ export class CertificateService {
   async getById(id: string): Promise<Certificate | null> {
     const result = await this.db.query<CertificateRow>(
       `SELECT cert.id, cert.student_id, cert.course_id, co.title AS course_title,
-              COALESCE(sp.display_name, u.raw_user_meta_data->>'full_name', u.email) AS display_name,
+              COALESCE(sp.display_name, u.email) AS display_name,
               u.email, cert.issued_at, cert.score_snapshot
        FROM certificates cert
        JOIN courses co ON co.id = cert.course_id
@@ -234,7 +234,7 @@ export class CertificateService {
          LIMIT 1
        )
        SELECT cert.id, cert.student_id, cert.course_id, co.title AS course_title,
-              COALESCE(sp.display_name, u.raw_user_meta_data->>'full_name', u.email) AS display_name,
+              COALESCE(sp.display_name, u.email) AS display_name,
               u.email, cert.issued_at, cert.score_snapshot
        FROM certificates cert
        JOIN courses co ON co.id = cert.course_id
