@@ -125,6 +125,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     });
   }
 
+  DateTime _questionShownAt = DateTime.now();
+
   Future<void> _handleCheckAnswer() async {
     final state = ref.read(practiceSessionProvider);
     final currentQ = state.currentQuestion;
@@ -140,9 +142,11 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       final token = ref.read(authFlowProvider).accessToken;
 
       if (token != null && state.sessionId != null) {
+        // Ensure startedAt is safely in the past relative to server time to avoid clock drift rejection
+        final safeShownAt = _questionShownAt.subtract(const Duration(seconds: 2));
         ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
               question: currentQ,
-              itemShownAt: DateTime.now().toIso8601String(),
+              itemShownAt: safeShownAt.toIso8601String(),
             );
         if (isOptionBased) {
           ref.read(questionAnswerSessionProvider.notifier).selectOption(_selectedOptionId!);
@@ -193,7 +197,9 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       _writtenAnswer = '';
       _answeredCurrent = false;
       _lastAnswerCorrect = null;
+      _questionShownAt = DateTime.now();
     });
+    ref.read(questionAnswerSessionProvider.notifier).reset();
     await ref.read(practiceSessionProvider.notifier).advance();
   }
 

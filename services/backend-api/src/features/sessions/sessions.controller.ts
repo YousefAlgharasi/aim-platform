@@ -315,6 +315,13 @@ export class SessionsController {
       body.answerValue,
     );
 
+    // Guard against client clock skew: if client device clock is ahead of server,
+    // cap startedAt at now so validation (startedAt <= submittedAt) succeeds reliably.
+    let safeStartedAt = body.startedAt;
+    if (safeStartedAt && new Date(safeStartedAt).getTime() > new Date(now).getTime()) {
+      safeStartedAt = now;
+    }
+
     const attemptInput: RecordLessonAttemptInput = {
       studentId: user.id,           // JWT-resolved — never from body
       learningSessionId: sessionId,
@@ -326,7 +333,7 @@ export class SessionsController {
       answerValue: body.answerValue,
       optionsPresentedCount: resolvedItem.optionsPresentedCount,
       isCorrect: resolvedItem.isCorrect,                   // backend-evaluated
-      startedAt: body.startedAt,
+      startedAt: safeStartedAt,
       submittedAt: now,
       answerChangeCount: 0,
     };
