@@ -173,4 +173,32 @@ void main() {
     expect(find.text('boom'), findsOneWidget);
     expect(find.text('Try again'), findsOneWidget);
   });
+
+  testWidgets('5. renders fill-in-the-blank input when options are empty and allows submission', (tester) async {
+    final fillQuestion = QuestionModel.fromJson({
+      'id': 'q-fill-1',
+      'type': 'fill_in_the_blank',
+      'stem': 'Fill in the missing letter: A, ___, C, D',
+      'difficulty': 'beginner',
+      'tags': ['alphabet'],
+      'options': [],
+    });
+
+    await tester.pumpWidget(_wrap(_FakeRepository(questions: [fillQuestion])));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fill in the missing letter: A, ___, C, D'), findsOneWidget);
+    expect(find.text('YOUR ANSWER'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'B');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Check Answer'), findsOneWidget);
+    await tester.tap(find.text('Check Answer'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Answer recorded'), findsOneWidget);
+    expect(find.text('Complete Session'), findsOneWidget);
+  });
 }

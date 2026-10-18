@@ -12,6 +12,7 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/practice_session_notifier.dart';
 import 'package:aim_mobile/features/question_answer/logic/provider/question_answer_provider.dart';
+import 'package:aim_mobile/features/question_answer/ui/widgets/question_fill_blank_input.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class PracticeSessionPage extends ConsumerStatefulWidget {
@@ -80,6 +81,7 @@ const _demoQuestions = [
 
 class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   String? _selectedOptionId;
+  String _writtenAnswer = '';
   bool _answeredCurrent = false;
   int _correctCount = 0;
 
@@ -113,22 +115,31 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   }
 
   Future<void> _handleCheckAnswer() async {
-    if (_selectedOptionId == null) return;
-    final token = ref.read(authFlowProvider).accessToken;
     final state = ref.read(practiceSessionProvider);
     final currentQ = state.currentQuestion;
+    if (currentQ == null) return;
+
+    final isOptionBased = currentQ.options.isNotEmpty;
+    if (isOptionBased && _selectedOptionId == null) return;
+    if (!isOptionBased && _writtenAnswer.trim().isEmpty) return;
+
+    final token = ref.read(authFlowProvider).accessToken;
 
     setState(() {
       _answeredCurrent = true;
       _correctCount++;
     });
 
-    if (token != null && state.sessionId != null && currentQ != null) {
+    if (token != null && state.sessionId != null) {
       ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
             question: currentQ,
             itemShownAt: DateTime.now().toIso8601String(),
           );
-      ref.read(questionAnswerSessionProvider.notifier).selectOption(_selectedOptionId!);
+      if (isOptionBased) {
+        ref.read(questionAnswerSessionProvider.notifier).selectOption(_selectedOptionId!);
+      } else {
+        ref.read(questionAnswerSessionProvider.notifier).updateWrittenAnswer(_writtenAnswer.trim());
+      }
       await ref.read(questionAnswerSessionProvider.notifier).submitAnswer(
             bearerToken: token,
             sessionId: state.sessionId!,
@@ -139,6 +150,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   Future<void> _handleNextQuestion() async {
     setState(() {
       _selectedOptionId = null;
+      _writtenAnswer = '';
       _answeredCurrent = false;
     });
     await ref.read(practiceSessionProvider.notifier).advance();
@@ -398,19 +410,89 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 
               const SizedBox(height: 20),
 
-              // Answer Options List
-              Column(
-                children: [
-                  for (int i = 0; i < currentQ.options.length; i++) ...[
-                    _buildOptionTile(
-                      surfaces: surfaces,
-                      option: currentQ.options[i],
-                      index: i,
-                    ),
-                    const SizedBox(height: 12),
+              if (currentQ.options.isNotEmpty) ...[
+                // Answer Options List
+                Column(
+                  children: [
+                    for (int i = 0; i < currentQ.options.length; i++) ...[
+                      _buildOptionTile(
+                        surfaces: surfaces,
+                        option: currentQ.options[i],
+                        index: i,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ],
-                ],
-              ),
+                ),
+              ] else ...[
+                // Free-text / Fill-in-the-blank input
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: surfaces.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: surfaces.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'YOUR ANSWER',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AimColors.primary500,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      QuestionFillBlankInput(
+                        key: ValueKey(currentQ.id),
+                        disabled: _answeredCurrent,
+                        placeholder: 'Type the missing letter or word',
+                        helper: 'Type your answer, then tap Check Answer below.',
+                        onChanged: (val) {
+                          setState(() {
+                            _writtenAnswer = val;
+                          });
+                        },
+                      ),
+                      if (_answeredCurrent) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD1FAE5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF10B981)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+                              SizedBox(width: 10),
+                              Text(
+                                'Answer recorded',
+                                style: TextStyle(
+                                  color: Color(0xFF065F46),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -427,7 +509,11 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
             height: 52,
             child: !_answeredCurrent
                 ? ElevatedButton(
-                    onPressed: _selectedOptionId != null ? _handleCheckAnswer : null,
+                    onPressed: (currentQ.options.isNotEmpty
+                            ? _selectedOptionId != null
+                            : _writtenAnswer.trim().isNotEmpty)
+                        ? _handleCheckAnswer
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AimColors.primary500,
                       disabledBackgroundColor: AimColors.primary500.withValues(alpha: 0.4),

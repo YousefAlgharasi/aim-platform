@@ -23,11 +23,17 @@ class QuestionFillBlankInput extends StatefulWidget {
   const QuestionFillBlankInput({
     required this.onChanged,
     this.disabled = false,
+    this.label,
+    this.helper,
+    this.placeholder,
     super.key,
   });
 
   final ValueChanged<String> onChanged;
   final bool disabled;
+  final String? label;
+  final String? helper;
+  final String? placeholder;
 
   @override
   State<QuestionFillBlankInput> createState() => _QuestionFillBlankInputState();
@@ -52,9 +58,9 @@ class _QuestionFillBlankInputState extends State<QuestionFillBlankInput> {
   Widget build(BuildContext context) {
     return AIMInput(
       controller: _controller,
-      label: 'Your answer',
-      helper: 'Type your response, then tap Continue to submit.',
-      placeholder: 'Type your answer here',
+      label: widget.label ?? 'Your answer',
+      helper: widget.helper ?? 'Type your response, then tap Check Answer to submit.',
+      placeholder: widget.placeholder ?? 'Type your answer here',
       disabled: widget.disabled,
       onChanged: widget.onChanged,
       textInputAction: TextInputAction.done,
