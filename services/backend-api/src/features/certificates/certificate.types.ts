@@ -21,12 +21,16 @@ export interface CertificateScoreSnapshotEntry {
 export interface CertificateScoreBreakdown {
   readonly practicePoints: number;       // 0 - 200
   readonly practiceMaxPoints: number;    // 200
+  readonly practiceAccuracyPercent?: number;
   readonly quizPoints: number;           // 0 - 200
   readonly quizMaxPoints: number;        // 200
+  readonly quizAveragePercent?: number;
   readonly chapterExamPoints: number;    // 0 - 200
   readonly chapterExamMaxPoints: number; // 200
+  readonly chapterExamAveragePercent?: number;
   readonly finalExamPoints: number;      // 0 - 400
   readonly finalExamMaxPoints: number;   // 400
+  readonly finalExamPercent?: number;
   readonly totalPoints: number;          // 0 - 1000
   readonly maxPoints: number;            // 1000
   readonly overallPercent: number;       // 0 - 100 %

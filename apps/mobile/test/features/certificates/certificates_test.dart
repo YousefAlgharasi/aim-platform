@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/features/certificates/data/models/certificate_model.dart';
 import 'package:aim_mobile/features/certificates/ui/pages/certificate_detail_page.dart';
-import 'package:aim_mobile/features/certificates/ui/pages/certificates_list_page.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 void main() {

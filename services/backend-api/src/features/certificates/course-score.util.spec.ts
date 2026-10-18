@@ -60,11 +60,24 @@ describe('computeCourseScorePercent', () => {
     expect(computeCourseScorePercent([])).toBeNull();
   });
 
-  it('returns the score percentage out of 100 from the 1000 point model', () => {
+  it('uses the exam alone when there are no quizzes', () => {
+    expect(computeCourseScorePercent([{ type: 'exam', score: 9, maxScore: 10 }])).toBe(90);
+  });
+
+  it('uses the quiz average alone when there is no exam', () => {
+    expect(
+      computeCourseScorePercent([
+        { type: 'quiz', score: 7, maxScore: 10 },
+        { type: 'quiz', score: 9, maxScore: 10 },
+      ]),
+    ).toBe(80);
+  });
+
+  it('weights quizzes 40/90 and the exam 50/90', () => {
     const result = computeCourseScorePercent([
-      { type: 'quiz', score: 10, maxScore: 10 },
-      { type: 'exam', score: 10, maxScore: 10, isFinalExam: true },
+      { type: 'quiz', score: 8, maxScore: 10 },
+      { type: 'exam', score: 9, maxScore: 10 },
     ]);
-    expect(result).toBe(100);
+    expect(result).toBe(86);
   });
 });

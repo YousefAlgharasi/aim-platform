@@ -1,6 +1,6 @@
 // Course scoring util.
 //
-// 1,000-Point Model:
+// 1,000-Point Model for Certificates:
 //   - Lesson Practices: 200 points max (20%)
 //   - Chapter Quizzes: 200 points max (20%)
 //   - Chapter Exams: 200 points max (20%)
@@ -17,6 +17,9 @@ export interface ScoredAssessment {
   readonly maxScore: number;
 }
 
+const QUIZ_WEIGHT = 40 / 90;
+const EXAM_WEIGHT = 50 / 90;
+
 export function toScorePercent(score: number, maxScore: number): number {
   if (maxScore <= 0) return 0;
   return Math.round((score / maxScore) * 100);
@@ -29,11 +32,11 @@ function averagePercent(items: readonly ScoredAssessment[]): number | null {
 }
 
 /**
- * Computes the 1,000-point breakdown and final 100% grade.
+ * Computes the 1,000-point breakdown and final 100% grade for course certificates.
  */
 export function computeCourse1000PointBreakdown(
   assessments: readonly ScoredAssessment[],
-  practiceAccuracyPercent: number = 100,
+  practiceAccuracyPercent: number = 0,
 ): CertificateScoreBreakdown {
   // 1. Practice (200 points)
   const clampedPracticeAccuracy = Math.min(100, Math.max(0, practiceAccuracyPercent));
@@ -42,7 +45,7 @@ export function computeCourse1000PointBreakdown(
   // 2. Quizzes (200 points)
   const quizzes = assessments.filter((a) => a.type === 'quiz');
   const quizAvg = averagePercent(quizzes);
-  const quizPoints = quizAvg !== null ? Math.round((quizAvg / 100) * 200) : 200;
+  const quizPoints = quizAvg !== null ? Math.round((quizAvg / 100) * 200) : 0;
 
   // 3. Chapter Exams (200 points) vs Final Exam (400 points)
   const exams = assessments.filter((a) => a.type === 'exam');
@@ -51,30 +54,29 @@ export function computeCourse1000PointBreakdown(
 
   let finalExamPoints = 0;
   let chapterExamPoints = 0;
+  let finalExamPercent = 0;
+  let chapterExamPercent = 0;
 
   if (finalExams.length > 0) {
-    const finalAvg = averagePercent(finalExams) ?? 100;
+    const finalAvg = averagePercent(finalExams) ?? 0;
+    finalExamPercent = Math.round(finalAvg);
     finalExamPoints = Math.round((finalAvg / 100) * 400);
 
     if (chapterExams.length > 0) {
-      const chapterAvg = averagePercent(chapterExams) ?? 100;
+      const chapterAvg = averagePercent(chapterExams) ?? 0;
+      chapterExamPercent = Math.round(chapterAvg);
       chapterExamPoints = Math.round((chapterAvg / 100) * 200);
-    } else {
-      chapterExamPoints = Math.round((finalAvg / 100) * 200);
     }
   } else if (exams.length > 0) {
     const finalAvg = toScorePercent(exams[exams.length - 1].score, exams[exams.length - 1].maxScore);
+    finalExamPercent = finalAvg;
     finalExamPoints = Math.round((finalAvg / 100) * 400);
 
     if (exams.length > 1) {
-      const chapterAvg = averagePercent(exams.slice(0, -1)) ?? finalAvg;
+      const chapterAvg = averagePercent(exams.slice(0, -1)) ?? 0;
+      chapterExamPercent = Math.round(chapterAvg);
       chapterExamPoints = Math.round((chapterAvg / 100) * 200);
-    } else {
-      chapterExamPoints = Math.round((finalAvg / 100) * 200);
     }
-  } else {
-    finalExamPoints = 400;
-    chapterExamPoints = 200;
   }
 
   const totalPoints = Math.min(
@@ -86,12 +88,16 @@ export function computeCourse1000PointBreakdown(
   return {
     practicePoints,
     practiceMaxPoints: 200,
+    practiceAccuracyPercent: clampedPracticeAccuracy,
     quizPoints,
     quizMaxPoints: 200,
+    quizAveragePercent: quizAvg !== null ? Math.round(quizAvg) : 0,
     chapterExamPoints,
     chapterExamMaxPoints: 200,
+    chapterExamAveragePercent: chapterExamPercent,
     finalExamPoints,
     finalExamMaxPoints: 400,
+    finalExamPercent,
     totalPoints,
     maxPoints: 1000,
     overallPercent,
@@ -102,11 +108,13 @@ export function computeCourse1000PointBreakdown(
  * Overall course score as a 0-100 percent. Returns null when there are no
  * quiz or exam results to derive a score from yet.
  */
-export function computeCourseScorePercent(
-  assessments: readonly ScoredAssessment[],
-  practiceAccuracyPercent?: number,
-): number | null {
-  if (assessments.length === 0) return null;
-  const breakdown = computeCourse1000PointBreakdown(assessments, practiceAccuracyPercent ?? 100);
-  return breakdown.overallPercent;
+export function computeCourseScorePercent(assessments: readonly ScoredAssessment[]): number | null {
+  const quizPercent = averagePercent(assessments.filter((a) => a.type === 'quiz'));
+  const examPercent = averagePercent(assessments.filter((a) => a.type === 'exam'));
+
+  if (quizPercent === null && examPercent === null) return null;
+  if (quizPercent === null) return Math.round(examPercent as number);
+  if (examPercent === null) return Math.round(quizPercent);
+
+  return Math.round(quizPercent * QUIZ_WEIGHT + examPercent * EXAM_WEIGHT);
 }
