@@ -144,7 +144,7 @@ void main() {
     await tester.enterText(textFields.at(3), 'secret123');
     await tester.pump();
 
-    expect(find.text('Create account'), findsOneWidget);
+    expect(find.text('Create account', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('Submit button stays disabled when passwords do not match',
@@ -187,6 +187,58 @@ void main() {
     await tester.pump();
 
     expect(find.byType(TextField), findsNWidgets(4));
+  });
+
+  // ── Validation & Password Requirements ──────────────────────────────────
+
+  testWidgets('Invalid email and password mismatch show errors on RegisterPage',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final textFields = find.byType(TextField);
+
+    // Invalid email
+    await tester.enterText(textFields.at(1), 'notanemail');
+    await tester.pump();
+    expect(
+      find.text('Please enter a valid email address (e.g. name@example.com)'),
+      findsOneWidget,
+    );
+
+    // Mismatched passwords
+    await tester.enterText(textFields.at(2), 'Password123!');
+    await tester.pumpAndSettle();
+    final confirmField = find.byType(TextField, skipOffstage: false).at(3);
+    await tester.ensureVisible(confirmField);
+    await tester.pumpAndSettle();
+    await tester.enterText(confirmField, 'DifferentPassword');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Passwords do not match', skipOffstage: false),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Password complexity checklist renders when typing password',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final textFields = find.byType(TextField);
+
+    // Initially checklist is not shown
+    expect(find.text('8+ characters'), findsNothing);
+
+    // Typing password shows the checklist
+    await tester.enterText(textFields.at(2), 'Ab1!');
+    await tester.pump();
+
+    expect(find.text('8+ characters'), findsOneWidget);
+    expect(find.text('Uppercase letter (A-Z)'), findsOneWidget);
+    expect(find.text('Lowercase letter (a-z)'), findsOneWidget);
+    expect(find.text('Number (0-9)'), findsOneWidget);
+    expect(find.text(r'Special character (!@#$...)'), findsOneWidget);
   });
 
   // ── RTL / Arabic ───────────────────────────────────────────────────────

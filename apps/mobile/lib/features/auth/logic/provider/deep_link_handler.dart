@@ -43,9 +43,11 @@ class DeepLinkHandler {
 
     try {
       final fragment = uri.fragment;
-      if (fragment.isEmpty) return;
+      final params = fragment.isNotEmpty
+          ? Uri.splitQueryString(fragment)
+          : uri.queryParameters;
+      if (params.isEmpty) return;
 
-      final params = Uri.splitQueryString(fragment);
       final type = params['type'];
       final accessToken = params['access_token'];
       final refreshToken = params['refresh_token'] ?? '';

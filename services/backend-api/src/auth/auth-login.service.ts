@@ -101,30 +101,81 @@ export class AuthLoginService {
       payload.nonce = input.nonce;
     }
 
-    let response = await this.callSupabase(
-      `${SUPABASE_TOKEN_PATH}?grant_type=id_token`,
-      payload,
-      'google',
-    );
-
-    if (response.user?.id && !response.user.app_metadata?.role) {
-      await this.assignDefaultRole(response.user.id);
-      response = await this.callSupabase(
+    try {
+      let response = await this.callSupabase(
         `${SUPABASE_TOKEN_PATH}?grant_type=id_token`,
         payload,
         'google',
       );
+
+      if (response.user?.id && !response.user.app_metadata?.role) {
+        await this.assignDefaultRole(response.user.id);
+        response = await this.callSupabase(
+          `${SUPABASE_TOKEN_PATH}?grant_type=id_token`,
+          payload,
+          'google',
+        );
+      }
+
+      const tokens = this.toTokenResult(response);
+
+      return {
+        ...tokens,
+        user: {
+          id: response.user?.id ?? '',
+          email: response.user?.email ?? null,
+        },
+      };
+    } catch (supabaseError) {
+      this.logger.warn(
+        `Supabase native id_token exchange failed, attempting direct Google token verification fallback: ${this.toSafeErrorMessage(supabaseError)}`,
+      );
+      return this.verifyGoogleIdTokenAndProcess(input.idToken);
+    }
+  }
+
+  private async verifyGoogleIdTokenAndProcess(idToken: string): Promise<AuthGoogleLoginResult> {
+    let tokenInfoRes: Response;
+    try {
+      tokenInfoRes = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+        { signal: AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS) },
+      );
+    } catch (err) {
+      this.logger.warn(`Google tokeninfo endpoint failed: ${this.toSafeErrorMessage(err)}`);
+      throw new AppError({
+        code: ApiErrorCode.UNAUTHORIZED,
+        message: 'Invalid Google authentication token.',
+        statusCode: HttpStatus.UNAUTHORIZED,
+      });
     }
 
-    const tokens = this.toTokenResult(response);
+    if (!tokenInfoRes.ok) {
+      throw new AppError({
+        code: ApiErrorCode.UNAUTHORIZED,
+        message: 'Invalid Google authentication token.',
+        statusCode: HttpStatus.UNAUTHORIZED,
+      });
+    }
 
-    return {
-      ...tokens,
-      user: {
-        id: response.user?.id ?? '',
-        email: response.user?.email ?? null,
-      },
+    const payload = (await tokenInfoRes.json()) as Record<string, any>;
+    if (!payload.email || (payload.email_verified !== 'true' && payload.email_verified !== true)) {
+      throw new AppError({
+        code: ApiErrorCode.UNAUTHORIZED,
+        message: 'Invalid Google authentication token.',
+        statusCode: HttpStatus.UNAUTHORIZED,
+      });
+    }
+
+    const googleUser: GoogleUserProfile = {
+      googleId: payload.sub ?? '',
+      email: payload.email,
+      firstName: payload.given_name,
+      lastName: payload.family_name,
+      avatarUrl: payload.picture,
     };
+
+    return this.processGoogleUser(googleUser);
   }
 
   async processGoogleUser(googleUser: GoogleUserProfile): Promise<AuthLoginResult> {

@@ -446,6 +446,78 @@ abstract class AppLocalizations {
   /// **'Passwords do not match'**
   String get authPasswordsDoNotMatch;
 
+  /// Validation error shown when the email field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get authEmailRequired;
+
+  /// Validation error shown when the email format is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address (e.g. name@example.com)'**
+  String get authEmailInvalid;
+
+  /// Validation error shown when the password field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get authPasswordRequired;
+
+  /// Validation error shown when login password is under 6 characters.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get authPasswordMinSix;
+
+  /// Validation error shown when register password fails complexity rules.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must include uppercase, lowercase, number, and special character (min 8 chars)'**
+  String get authPasswordComplexityRequired;
+
+  /// Validation error shown when confirm-password field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get authConfirmPasswordRequired;
+
+  /// Validation error shown when full name field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name is required'**
+  String get authFullNameRequired;
+
+  /// Password requirement indicator for minimum length.
+  ///
+  /// In en, this message translates to:
+  /// **'8+ characters'**
+  String get authReqMinLength;
+
+  /// Password requirement indicator for uppercase character.
+  ///
+  /// In en, this message translates to:
+  /// **'Uppercase letter (A-Z)'**
+  String get authReqUppercase;
+
+  /// Password requirement indicator for lowercase character.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowercase letter (a-z)'**
+  String get authReqLowercase;
+
+  /// Password requirement indicator for digit.
+  ///
+  /// In en, this message translates to:
+  /// **'Number (0-9)'**
+  String get authReqNumber;
+
+  /// Password requirement indicator for symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Special character (!@#\$...)'**
+  String get authReqSymbol;
+
   /// Divider label above the social sign-up buttons on the register page.
   ///
   /// In en, this message translates to:

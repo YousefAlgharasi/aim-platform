@@ -189,6 +189,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPasswordsDoNotMatch => 'Passwords do not match';
 
   @override
+  String get authEmailRequired => 'Email is required';
+
+  @override
+  String get authEmailInvalid =>
+      'Please enter a valid email address (e.g. name@example.com)';
+
+  @override
+  String get authPasswordRequired => 'Password is required';
+
+  @override
+  String get authPasswordMinSix => 'Password must be at least 6 characters';
+
+  @override
+  String get authPasswordComplexityRequired =>
+      'Password must include uppercase, lowercase, number, and special character (min 8 chars)';
+
+  @override
+  String get authConfirmPasswordRequired => 'Please confirm your password';
+
+  @override
+  String get authFullNameRequired => 'Full name is required';
+
+  @override
+  String get authReqMinLength => '8+ characters';
+
+  @override
+  String get authReqUppercase => 'Uppercase letter (A-Z)';
+
+  @override
+  String get authReqLowercase => 'Lowercase letter (a-z)';
+
+  @override
+  String get authReqNumber => 'Number (0-9)';
+
+  @override
+  String get authReqSymbol => 'Special character (!@#\$...)';
+
+  @override
   String get authOrSignUpWith => 'OR SIGN UP WITH';
 
   @override

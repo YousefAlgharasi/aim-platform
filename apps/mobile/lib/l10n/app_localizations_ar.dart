@@ -190,6 +190,44 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authPasswordsDoNotMatch => 'كلمتا المرور غير متطابقتين';
 
   @override
+  String get authEmailRequired => 'البريد الإلكتروني مطلوب';
+
+  @override
+  String get authEmailInvalid =>
+      'يرجى إدخال بريد إلكتروني صالح (مثال: name@example.com)';
+
+  @override
+  String get authPasswordRequired => 'كلمة المرور مطلوبة';
+
+  @override
+  String get authPasswordMinSix => 'يجب ألا تقل كلمة المرور عن 6 أحرف';
+
+  @override
+  String get authPasswordComplexityRequired =>
+      'يجب أن تحتوي كلمة المرور على أحرف كبيرة وصغيرة وأرقام ورموز (8 أحرف كحد أدنى)';
+
+  @override
+  String get authConfirmPasswordRequired => 'يرجى تأكيد كلمة المرور';
+
+  @override
+  String get authFullNameRequired => 'الاسم الكامل مطلوب';
+
+  @override
+  String get authReqMinLength => '8 أحرف على الأقل';
+
+  @override
+  String get authReqUppercase => 'حرف كبير (A-Z)';
+
+  @override
+  String get authReqLowercase => 'حرف صغير (a-z)';
+
+  @override
+  String get authReqNumber => 'رقم (0-9)';
+
+  @override
+  String get authReqSymbol => 'رمز خاص (!@#\$...)';
+
+  @override
   String get authOrSignUpWith => 'أو سجّل باستخدام';
 
   @override

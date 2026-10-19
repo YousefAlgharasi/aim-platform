@@ -41,6 +41,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
+  void _onFullNameChanged(String v) =>
+      ref.read(registerProvider.notifier).setFullName(v);
+
   void _onEmailChanged(String v) =>
       ref.read(registerProvider.notifier).setEmail(v);
 
@@ -177,6 +180,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
                   disabled: formState.isSubmitting,
+                  errorText: formState.fieldError('fullName') != null
+                      ? l10n.authFullNameRequired
+                      : null,
+                  onChanged: _onFullNameChanged,
                   onSubmitted: (_) => _emailFocus.requestFocus(),
                 ),
                 const SizedBox(height: AimSpacing.formFieldGap),
@@ -189,6 +196,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.email],
                   disabled: formState.isSubmitting,
+                  errorText: formState.fieldError('email') != null
+                      ? l10n.authEmailInvalid
+                      : null,
                   onChanged: _onEmailChanged,
                   onSubmitted: (_) => _passwordFocus.requestFocus(),
                 ),
@@ -202,6 +212,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.newPassword],
                   disabled: formState.isSubmitting,
+                  errorText: formState.fieldError('password') != null && password.isEmpty
+                      ? l10n.authPasswordRequired
+                      : null,
                   onChanged: _onPasswordChanged,
                   onSubmitted: (_) => _confirmFocus.requestFocus(),
                 ),
@@ -209,6 +222,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 if (password.isNotEmpty) ...[
                   const SizedBox(height: AimSpacing.space8),
                   _PasswordStrengthMeter(password: password),
+                  const SizedBox(height: AimSpacing.space8),
+                  _PasswordRequirementsList(password: password),
                 ],
 
                 const SizedBox(height: AimSpacing.formFieldGap),
@@ -221,6 +236,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.newPassword],
                   disabled: formState.isSubmitting,
+                  errorText: formState.fieldError('confirmPassword') != null
+                      ? l10n.authPasswordsDoNotMatch
+                      : null,
                   onChanged: _onConfirmChanged,
                   onSubmitted: (_) => _submit(),
                 ),
@@ -367,6 +385,7 @@ class _RegFigmaInputField extends StatefulWidget {
     this.textInputAction,
     this.autofillHints,
     this.disabled = false,
+    this.errorText,
     this.onChanged,
     this.onSubmitted,
   });
@@ -379,6 +398,7 @@ class _RegFigmaInputField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
   final bool disabled;
+  final String? errorText;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -409,67 +429,105 @@ class _RegFigmaInputFieldState extends State<_RegFigmaInputField> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
 
     Color borderColor;
     if (widget.disabled) {
       borderColor = surfaces.disabledBorder;
+    } else if (hasError) {
+      borderColor = AimColors.error500;
     } else if (_focused) {
       borderColor = AimColors.primary500;
     } else {
       borderColor = surfaces.border;
     }
 
-    return Container(
-      height: AimSizes.input,
-      decoration: BoxDecoration(
-        color: widget.disabled ? surfaces.surfaceSunken : surfaces.surfaceRaised,
-        borderRadius: AimRadius.borderMd,
-        border: Border.all(
-          color: borderColor,
-          width: _focused ? 1.5 : 1.0,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: widget.controller,
-              focusNode: widget.focusNode,
-              obscureText: widget.obscureText && !_showText,
-              keyboardType: widget.keyboardType,
-              textInputAction: widget.textInputAction,
-              autofillHints: widget.autofillHints,
-              enabled: !widget.disabled,
-              onChanged: widget.onChanged,
-              onSubmitted: widget.onSubmitted,
-              style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
-              decoration: InputDecoration(
-                hintText: widget.placeholder,
-                hintStyle: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
-                contentPadding: const EdgeInsetsDirectional.symmetric(
-                  horizontal: AimSpacing.space16,
-                  vertical: AimSpacing.space12,
-                ),
-                border: InputBorder.none,
-                isDense: true,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: AimSizes.input,
+          decoration: BoxDecoration(
+            color: widget.disabled
+                ? surfaces.surfaceSunken
+                : (hasError
+                    ? AimColors.error500.withValues(alpha: 0.05)
+                    : surfaces.surfaceRaised),
+            borderRadius: AimRadius.borderMd,
+            border: Border.all(
+              color: borderColor,
+              width: (hasError || _focused) ? 1.5 : 1.0,
             ),
           ),
-          if (widget.obscureText)
-            IconButton(
-              icon: Icon(
-                _showText
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                size: 20,
-                color: surfaces.textMuted,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: widget.controller,
+                  focusNode: widget.focusNode,
+                  obscureText: widget.obscureText && !_showText,
+                  keyboardType: widget.keyboardType,
+                  textInputAction: widget.textInputAction,
+                  autofillHints: widget.autofillHints,
+                  enabled: !widget.disabled,
+                  onChanged: widget.onChanged,
+                  onSubmitted: widget.onSubmitted,
+                  style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: widget.placeholder,
+                    hintStyle: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+                    contentPadding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AimSpacing.space16,
+                      vertical: AimSpacing.space12,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                ),
               ),
-              onPressed: widget.disabled
-                  ? null
-                  : () => setState(() => _showText = !_showText),
+              if (widget.obscureText)
+                IconButton(
+                  icon: Icon(
+                    _showText
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 20,
+                    color: surfaces.textMuted,
+                  ),
+                  onPressed: widget.disabled
+                      ? null
+                      : () => setState(() => _showText = !_showText),
+                ),
+            ],
+          ),
+        ),
+        if (hasError) ...[
+          const SizedBox(height: AimSpacing.space4),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: AimSpacing.space4),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 14,
+                  color: AimColors.error500,
+                ),
+                const SizedBox(width: AimSpacing.space4),
+                Expanded(
+                  child: Text(
+                    widget.errorText!,
+                    style: AimTextStyles.caption.copyWith(
+                      color: AimColors.error500,
+                      fontWeight: AimFontWeights.medium,
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
         ],
-      ),
+      ],
     );
   }
 }
@@ -559,27 +617,109 @@ class _PasswordStrengthMeter extends StatelessWidget {
   }
 
   int _calculateScore(String p) {
-    if (p.length < 6) return 1;
-    var score = 1;
-    if (p.length >= 8) score++;
-    if (RegExp(r'[A-Z]').hasMatch(p) && RegExp(r'[0-9]').hasMatch(p)) score++;
-    if (RegExp(r'[!@#$%^&*(),.?":{}|<-_>]').hasMatch(p)) score++;
-    return score;
+    var count = 0;
+    if (RegisterNotifier.hasMinLength(p)) count++;
+    if (RegisterNotifier.hasUppercase(p)) count++;
+    if (RegisterNotifier.hasLowercase(p)) count++;
+    if (RegisterNotifier.hasDigit(p)) count++;
+    if (RegisterNotifier.hasSpecialChar(p)) count++;
+
+    if (count <= 1) return 1;
+    if (count <= 3) return 2;
+    if (count == 4) return 3;
+    return 4;
   }
 
   Color _scoreColor(int score) => switch (score) {
         1 => AimColors.error500,
         2 => AimColors.warning500,
-        3 => AimColors.success500,
+        3 => AimColors.warning500,
         _ => AimColors.success500,
       };
 
   String _scoreLabel(int score, AppLocalizations l10n) => switch (score) {
         1 => l10n.authPasswordStrengthWeak,
         2 => l10n.authPasswordStrengthMedium,
-        3 => l10n.authPasswordStrengthStrong,
+        3 => l10n.authPasswordStrengthMedium,
         _ => l10n.authPasswordStrengthStrong,
       };
+}
+
+class _PasswordRequirementsList extends StatelessWidget {
+  const _PasswordRequirementsList({required this.password});
+
+  final String password;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
+
+    final hasLen = RegisterNotifier.hasMinLength(password);
+    final hasUpper = RegisterNotifier.hasUppercase(password);
+    final hasLower = RegisterNotifier.hasLowercase(password);
+    final hasNum = RegisterNotifier.hasDigit(password);
+    final hasSym = RegisterNotifier.hasSpecialChar(password);
+
+    return Container(
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
+      decoration: BoxDecoration(
+        color: surfaces.surfaceSunken,
+        borderRadius: AimRadius.borderMd,
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _RequirementRow(label: l10n.authReqMinLength, satisfied: hasLen),
+          const SizedBox(height: AimSpacing.space4),
+          _RequirementRow(label: l10n.authReqUppercase, satisfied: hasUpper),
+          const SizedBox(height: AimSpacing.space4),
+          _RequirementRow(label: l10n.authReqLowercase, satisfied: hasLower),
+          const SizedBox(height: AimSpacing.space4),
+          _RequirementRow(label: l10n.authReqNumber, satisfied: hasNum),
+          const SizedBox(height: AimSpacing.space4),
+          _RequirementRow(label: l10n.authReqSymbol, satisfied: hasSym),
+        ],
+      ),
+    );
+  }
+}
+
+class _RequirementRow extends StatelessWidget {
+  const _RequirementRow({required this.label, required this.satisfied});
+
+  final String label;
+  final bool satisfied;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final color = satisfied ? AimColors.success500 : surfaces.textMuted;
+
+    return Row(
+      children: [
+        Icon(
+          satisfied
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked_rounded,
+          size: 14,
+          color: color,
+        ),
+        const SizedBox(width: AimSpacing.space8),
+        Expanded(
+          child: Text(
+            label,
+            style: AimTextStyles.caption.copyWith(
+              color: satisfied ? surfaces.textPrimary : surfaces.textMuted,
+              fontWeight:
+                  satisfied ? AimFontWeights.semibold : AimFontWeights.regular,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ConfirmationSentView extends StatelessWidget {

@@ -6,6 +6,7 @@ class AppConfig {
     required this.environment,
     required this.backendApiBaseUrl,
     this.googleServerClientId,
+    this.supabaseUrl = 'https://yrarpdkvdxszgxxondkt.supabase.co',
   });
 
   factory AppConfig.fromEnvironment() {
@@ -20,7 +21,12 @@ class AppConfig {
       ),
       googleServerClientId: String.fromEnvironment(
         'GOOGLE_SERVER_CLIENT_ID',
-        defaultValue: '',
+        defaultValue:
+            '766098419690-g9ve6up7ih41klmp5igmkd6v0jb1je4v.apps.googleusercontent.com',
+      ),
+      supabaseUrl: String.fromEnvironment(
+        'SUPABASE_URL',
+        defaultValue: 'https://yrarpdkvdxszgxxondkt.supabase.co',
       ),
     );
   }
@@ -28,6 +34,7 @@ class AppConfig {
   final String environment;
   final String backendApiBaseUrl;
   final String? googleServerClientId;
+  final String supabaseUrl;
 
   bool get isProduction => environment == 'production';
 }

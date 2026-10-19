@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
@@ -49,6 +50,16 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   String _email = '';
   String _password = '';
 
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$',
+  );
+
+  static bool isValidEmail(String email) {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return false;
+    return _emailRegex.hasMatch(trimmed);
+  }
+
   void setEmail(String value) {
     _email = value.trim();
     _revalidate();
@@ -60,21 +71,61 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   }
 
   void _revalidate() {
-    final isValid =
-        _email.contains('@') && _email.length > 3 && _password.length >= 6;
-    state = state.copyWith(isValid: isValid, clearError: true);
+    final isValid = isValidEmail(_email) && _password.length >= 6;
+    final updatedFieldErrors = Map<String, String>.from(state.fieldErrors);
+    if (_email.isNotEmpty && !isValidEmail(_email)) {
+      updatedFieldErrors['email'] = 'invalid_email';
+    } else {
+      updatedFieldErrors.remove('email');
+    }
+    if (_password.isNotEmpty && _password.length < 6) {
+      updatedFieldErrors['password'] = 'too_short';
+    } else {
+      updatedFieldErrors.remove('password');
+    }
+    state = state.copyWith(
+      isValid: isValid,
+      clearError: true,
+      fieldErrors: updatedFieldErrors,
+    );
   }
 
   /// Submits the login form.
   ///
-  /// 1. Calls the backend's `POST /auth/login` → access/refresh token pair.
-  /// 2. Calls backend sync-user (bootstrap) + me via [AuthContextNotifier].
-  /// 3. Persists the session to [SessionStore].
-  /// 4. Transitions [AuthFlowNotifier] to signedIn.
+  /// 1. Validates email structure and password length.
+  /// 2. Calls the backend's `POST /auth/login` → access/refresh token pair.
+  /// 3. Calls backend sync-user (bootstrap) + me via [AuthContextNotifier].
+  /// 4. Persists the session to [SessionStore].
+  /// 5. Transitions [AuthFlowNotifier] to signedIn.
   Future<void> submit(AppLocalizations l10n) async {
-    if (!state.isValid || state.isSubmitting) return;
+    final fieldErrors = <String, String>{};
+    if (_email.isEmpty) {
+      fieldErrors['email'] = l10n.authEmailRequired;
+    } else if (!isValidEmail(_email)) {
+      fieldErrors['email'] = l10n.authEmailInvalid;
+    }
 
-    state = state.copyWith(isSubmitting: true, clearError: true);
+    if (_password.isEmpty) {
+      fieldErrors['password'] = l10n.authPasswordRequired;
+    } else if (_password.length < 6) {
+      fieldErrors['password'] = l10n.authPasswordMinSix;
+    }
+
+    if (fieldErrors.isNotEmpty) {
+      state = state.copyWith(
+        fieldErrors: fieldErrors,
+        isSubmitting: false,
+      );
+      return;
+    }
+
+    if (state.isSubmitting) return;
+
+    state = state.copyWith(
+      isSubmitting: true,
+      clearError: true,
+      clearFieldErrors: true,
+    );
 
     try {
       final login = await _repository.login(
@@ -178,22 +229,24 @@ class LoginNotifier extends StateNotifier<AppFormState> {
   }
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(clearError: true, clearFieldErrors: true);
   }
 
   /// Triggers real Google Sign-In SDK, gets ID token, calls `POST /auth/google`,
   /// bootstraps user context, saves session, and transitions to signedIn state.
+  /// If native Google Sign-In fails or is unavailable on the platform, opens
+  /// Supabase OAuth directly in the browser.
   Future<void> submitGoogleLogin(
     AppLocalizations l10n, {
     GoogleSignIn? googleSignInOverride,
   }) async {
     if (state.isSubmitting) return;
 
-    state = state.copyWith(isSubmitting: true, clearError: true);
+    state = state.copyWith(isSubmitting: true, clearError: true, clearFieldErrors: true);
 
     try {
-      final serverClientId =
-          _ref.read(appConfigProvider).googleServerClientId?.trim();
+      final config = _ref.read(appConfigProvider);
+      final serverClientId = config.googleServerClientId?.trim();
       final googleSignIn = googleSignInOverride ??
           GoogleSignIn(
             scopes: ['email', 'profile'],
@@ -202,7 +255,20 @@ class LoginNotifier extends StateNotifier<AppFormState> {
                     ? serverClientId
                     : null,
           );
-      final googleUser = await googleSignIn.signIn();
+
+      GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await googleSignIn.signIn();
+      } catch (signInErr) {
+        if (googleSignInOverride != null) rethrow;
+        AppLogger.w(
+          'LoginNotifier',
+          'Native GoogleSignIn encountered an error: $signInErr. Launching Supabase OAuth fallback.',
+        );
+        await _launchSupabaseOAuth(config.supabaseUrl, l10n);
+        return;
+      }
+
       if (googleUser == null) {
         // User cancelled Google Sign-In flow
         AppLogger.i('LoginNotifier', 'User cancelled Google Sign-In dialog.');
@@ -214,14 +280,18 @@ class LoginNotifier extends StateNotifier<AppFormState> {
       final idToken = googleAuth.idToken;
 
       if (idToken == null || idToken.isEmpty) {
-        AppLogger.e(
+        if (googleSignInOverride != null) {
+          state = state.copyWith(
+            isSubmitting: false,
+            errorMessage: l10n.authSignInFailedGeneric,
+          );
+          return;
+        }
+        AppLogger.w(
           'LoginNotifier',
-          'Google Sign-In returned null or empty idToken. Ensure Google Web OAuth Client ID is passed via GOOGLE_SERVER_CLIENT_ID or configured in Android google-services.json / strings.xml.',
+          'Google Sign-In returned empty idToken. Attempting Supabase browser OAuth fallback...',
         );
-        state = state.copyWith(
-          isSubmitting: false,
-          errorMessage: l10n.authSignInFailedGeneric,
-        );
+        await _launchSupabaseOAuth(config.supabaseUrl, l10n);
         return;
       }
 
@@ -265,6 +335,30 @@ class LoginNotifier extends StateNotifier<AppFormState> {
       );
     } catch (e, st) {
       AppLogger.e('LoginNotifier', 'Google Login failed with unknown error', e, st);
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: l10n.authSignInFailedGeneric,
+      );
+    }
+  }
+
+  Future<void> _launchSupabaseOAuth(String supabaseUrl, AppLocalizations l10n) async {
+    try {
+      final authorizeUri = Uri.parse(
+        '$supabaseUrl/auth/v1/authorize?provider=google&redirect_to=aimapp://login-callback',
+      );
+      final launched = await launchUrl(
+        authorizeUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: l10n.authSignInFailedGeneric,
+        );
+      }
+    } catch (e, st) {
+      AppLogger.e('LoginNotifier', 'Failed to launch Supabase OAuth browser flow: $e', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: l10n.authSignInFailedGeneric,

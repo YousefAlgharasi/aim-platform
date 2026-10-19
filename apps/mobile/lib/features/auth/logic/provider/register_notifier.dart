@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:aim_mobile/core/config/app_config_provider.dart';
 import 'package:aim_mobile/core/errors/app_exception.dart';
@@ -51,6 +52,7 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   final AuthRepository _repository;
   final Ref _ref;
 
+  String _fullName = '';
   String _email = '';
   String _password = '';
   String _confirmPassword = '';
@@ -59,6 +61,35 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
 
   /// The outcome after a successful submission. Null before submission or on error.
   RegisterOutcome? get outcome => _outcome;
+
+  static final RegExp _emailRegex = RegExp(
+    r'^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$',
+  );
+
+  static bool isValidEmail(String email) {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return false;
+    return _emailRegex.hasMatch(trimmed);
+  }
+
+  static bool hasMinLength(String p) => p.length >= 8;
+  static bool hasUppercase(String p) => RegExp(r'[A-Z]').hasMatch(p);
+  static bool hasLowercase(String p) => RegExp(r'[a-z]').hasMatch(p);
+  static bool hasDigit(String p) => RegExp(r'[0-9]').hasMatch(p);
+  static bool hasSpecialChar(String p) =>
+      RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/`~;]').hasMatch(p);
+
+  static bool isPasswordComplex(String p) =>
+      hasMinLength(p) &&
+      hasUppercase(p) &&
+      hasLowercase(p) &&
+      hasDigit(p) &&
+      hasSpecialChar(p);
+
+  void setFullName(String value) {
+    _fullName = value.trim();
+    _revalidate();
+  }
 
   void setEmail(String value) {
     _email = value.trim();
@@ -76,11 +107,35 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   }
 
   void _revalidate() {
-    final isValid = _email.contains('@') &&
-        _email.length > 3 &&
-        _password.length >= 6 &&
-        _password == _confirmPassword;
-    state = state.copyWith(isValid: isValid, clearError: true);
+    final isEmailValid = isValidEmail(_email);
+    final isPasswordValid = isPasswordComplex(_password);
+    final isConfirmValid =
+        _confirmPassword.isNotEmpty && _confirmPassword == _password;
+    final isNameValid = _fullName.trim().isNotEmpty;
+
+    final updatedFieldErrors = Map<String, String>.from(state.fieldErrors);
+    if (_fullName.trim().isNotEmpty) {
+      updatedFieldErrors.remove('fullName');
+    }
+    if (_email.isNotEmpty && !isEmailValid) {
+      updatedFieldErrors['email'] = 'invalid_email';
+    } else {
+      updatedFieldErrors.remove('email');
+    }
+    if (isPasswordValid) {
+      updatedFieldErrors.remove('password');
+    }
+    if (_confirmPassword.isNotEmpty && !isConfirmValid) {
+      updatedFieldErrors['confirmPassword'] = 'mismatch';
+    } else {
+      updatedFieldErrors.remove('confirmPassword');
+    }
+
+    state = state.copyWith(
+      isValid: isEmailValid && isPasswordValid && isConfirmValid && isNameValid,
+      clearError: true,
+      fieldErrors: updatedFieldErrors,
+    );
   }
 
   /// Submits the registration form.
@@ -92,9 +147,44 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   /// 2b. If email confirmation required: sets [outcome] to
   ///     [RegisterOutcome.awaitingEmailConfirmation].
   Future<void> submit(AppLocalizations l10n) async {
-    if (!state.isValid || state.isSubmitting) return;
+    final fieldErrors = <String, String>{};
+    if (_fullName.trim().isEmpty) {
+      fieldErrors['fullName'] = l10n.authFullNameRequired;
+    }
 
-    state = state.copyWith(isSubmitting: true, clearError: true);
+    if (_email.isEmpty) {
+      fieldErrors['email'] = l10n.authEmailRequired;
+    } else if (!isValidEmail(_email)) {
+      fieldErrors['email'] = l10n.authEmailInvalid;
+    }
+
+    if (_password.isEmpty) {
+      fieldErrors['password'] = l10n.authPasswordRequired;
+    } else if (!isPasswordComplex(_password)) {
+      fieldErrors['password'] = l10n.authPasswordComplexityRequired;
+    }
+
+    if (_confirmPassword.isEmpty) {
+      fieldErrors['confirmPassword'] = l10n.authConfirmPasswordRequired;
+    } else if (_confirmPassword != _password) {
+      fieldErrors['confirmPassword'] = l10n.authPasswordsDoNotMatch;
+    }
+
+    if (fieldErrors.isNotEmpty) {
+      state = state.copyWith(
+        fieldErrors: fieldErrors,
+        isSubmitting: false,
+      );
+      return;
+    }
+
+    if (state.isSubmitting) return;
+
+    state = state.copyWith(
+      isSubmitting: true,
+      clearError: true,
+      clearFieldErrors: true,
+    );
     _outcome = null;
 
     try {
@@ -154,23 +244,25 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
   }
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(clearError: true, clearFieldErrors: true);
   }
 
   /// Triggers real Google Sign-In SDK, gets ID token, calls `POST /auth/google`,
   /// bootstraps user context, saves session, and transitions to signedIn state.
+  /// If native Google Sign-In fails or is unavailable on the platform, opens
+  /// Supabase OAuth directly in the browser.
   Future<void> submitGoogleLogin(
     AppLocalizations l10n, {
     GoogleSignIn? googleSignInOverride,
   }) async {
     if (state.isSubmitting) return;
 
-    state = state.copyWith(isSubmitting: true, clearError: true);
+    state = state.copyWith(isSubmitting: true, clearError: true, clearFieldErrors: true);
     _outcome = null;
 
     try {
-      final serverClientId =
-          _ref.read(appConfigProvider).googleServerClientId?.trim();
+      final config = _ref.read(appConfigProvider);
+      final serverClientId = config.googleServerClientId?.trim();
       final googleSignIn = googleSignInOverride ??
           GoogleSignIn(
             scopes: ['email', 'profile'],
@@ -179,7 +271,20 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
                     ? serverClientId
                     : null,
           );
-      final googleUser = await googleSignIn.signIn();
+
+      GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await googleSignIn.signIn();
+      } catch (signInErr) {
+        if (googleSignInOverride != null) rethrow;
+        AppLogger.w(
+          'RegisterNotifier',
+          'Native GoogleSignIn encountered an error: $signInErr. Launching Supabase OAuth fallback.',
+        );
+        await _launchSupabaseOAuth(config.supabaseUrl, l10n);
+        return;
+      }
+
       if (googleUser == null) {
         // User cancelled Google Sign-In flow
         AppLogger.i('RegisterNotifier', 'User cancelled Google Sign-In dialog.');
@@ -191,14 +296,18 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       final idToken = googleAuth.idToken;
 
       if (idToken == null || idToken.isEmpty) {
-        AppLogger.e(
+        if (googleSignInOverride != null) {
+          state = state.copyWith(
+            isSubmitting: false,
+            errorMessage: l10n.authRegistrationFailedGeneric,
+          );
+          return;
+        }
+        AppLogger.w(
           'RegisterNotifier',
-          'Google Sign-In returned null or empty idToken. Ensure Google Web OAuth Client ID is passed via GOOGLE_SERVER_CLIENT_ID or configured in Android google-services.json / strings.xml.',
+          'Google Sign-In returned empty idToken. Attempting Supabase browser OAuth fallback...',
         );
-        state = state.copyWith(
-          isSubmitting: false,
-          errorMessage: l10n.authRegistrationFailedGeneric,
-        );
+        await _launchSupabaseOAuth(config.supabaseUrl, l10n);
         return;
       }
 
@@ -243,6 +352,30 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       );
     } catch (e, st) {
       AppLogger.e('RegisterNotifier', 'Google Register failed with unknown error', e, st);
+      state = state.copyWith(
+        isSubmitting: false,
+        errorMessage: l10n.authRegistrationFailedGeneric,
+      );
+    }
+  }
+
+  Future<void> _launchSupabaseOAuth(String supabaseUrl, AppLocalizations l10n) async {
+    try {
+      final authorizeUri = Uri.parse(
+        '$supabaseUrl/auth/v1/authorize?provider=google&redirect_to=aimapp://login-callback',
+      );
+      final launched = await launchUrl(
+        authorizeUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        state = state.copyWith(
+          isSubmitting: false,
+          errorMessage: l10n.authRegistrationFailedGeneric,
+        );
+      }
+    } catch (e, st) {
+      AppLogger.e('RegisterNotifier', 'Failed to launch Supabase OAuth browser flow: $e', e, st);
       state = state.copyWith(
         isSubmitting: false,
         errorMessage: l10n.authRegistrationFailedGeneric,

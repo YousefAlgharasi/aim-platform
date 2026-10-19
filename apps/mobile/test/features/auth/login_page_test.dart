@@ -354,6 +354,47 @@ void main() {
     expect(find.text('Open Endpoint Tester →', skipOffstage: false), findsNothing);
   });
 
+  // ── Validation Errors ───────────────────────────────
+
+  testWidgets('Invalid email shows validation error message on LoginPage',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final textFields = find.byType(TextField);
+    await tester.enterText(textFields.at(0), 'invalid-email');
+    await tester.pump();
+
+    expect(
+      find.text('Please enter a valid email address (e.g. name@example.com)'),
+      findsOneWidget,
+    );
+
+    // Correcting it clears error
+    await tester.enterText(textFields.at(0), 'valid@example.com');
+    await tester.pump();
+
+    expect(
+      find.text('Please enter a valid email address (e.g. name@example.com)'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Short password shows error on LoginPage',
+      (tester) async {
+    await tester.pumpWidget(_testApp());
+    await tester.pump();
+
+    final textFields = find.byType(TextField);
+    await tester.enterText(textFields.at(1), '123');
+    await tester.pump();
+
+    expect(
+      find.text('Password must be at least 6 characters'),
+      findsOneWidget,
+    );
+  });
+
   // ── RTL / Arabic ─────────────────────────────────────
 
   testWidgets('LoginPage renders without errors under Arabic RTL locale',

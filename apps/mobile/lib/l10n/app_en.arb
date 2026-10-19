@@ -185,6 +185,54 @@
   "@authPasswordsDoNotMatch": {
     "description": "Validation error shown when password and confirm-password fields differ."
   },
+  "authEmailRequired": "Email is required",
+  "@authEmailRequired": {
+    "description": "Validation error shown when the email field is empty."
+  },
+  "authEmailInvalid": "Please enter a valid email address (e.g. name@example.com)",
+  "@authEmailInvalid": {
+    "description": "Validation error shown when the email format is invalid."
+  },
+  "authPasswordRequired": "Password is required",
+  "@authPasswordRequired": {
+    "description": "Validation error shown when the password field is empty."
+  },
+  "authPasswordMinSix": "Password must be at least 6 characters",
+  "@authPasswordMinSix": {
+    "description": "Validation error shown when login password is under 6 characters."
+  },
+  "authPasswordComplexityRequired": "Password must include uppercase, lowercase, number, and special character (min 8 chars)",
+  "@authPasswordComplexityRequired": {
+    "description": "Validation error shown when register password fails complexity rules."
+  },
+  "authConfirmPasswordRequired": "Please confirm your password",
+  "@authConfirmPasswordRequired": {
+    "description": "Validation error shown when confirm-password field is empty."
+  },
+  "authFullNameRequired": "Full name is required",
+  "@authFullNameRequired": {
+    "description": "Validation error shown when full name field is empty."
+  },
+  "authReqMinLength": "8+ characters",
+  "@authReqMinLength": {
+    "description": "Password requirement indicator for minimum length."
+  },
+  "authReqUppercase": "Uppercase letter (A-Z)",
+  "@authReqUppercase": {
+    "description": "Password requirement indicator for uppercase character."
+  },
+  "authReqLowercase": "Lowercase letter (a-z)",
+  "@authReqLowercase": {
+    "description": "Password requirement indicator for lowercase character."
+  },
+  "authReqNumber": "Number (0-9)",
+  "@authReqNumber": {
+    "description": "Password requirement indicator for digit."
+  },
+  "authReqSymbol": "Special character (!@#$...)",
+  "@authReqSymbol": {
+    "description": "Password requirement indicator for symbol."
+  },
   "authOrSignUpWith": "OR SIGN UP WITH",
   "@authOrSignUpWith": {
     "description": "Divider label above the social sign-up buttons on the register page."
