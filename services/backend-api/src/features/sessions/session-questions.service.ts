@@ -394,30 +394,119 @@ export class SessionQuestionsService {
       [itemId],
     );
     if (result.rows.length === 0) {
+      // Fallback: check question_choices in case choices were stored there
+      const choicesResult = await this.db.query<ChoiceRow>(
+        `SELECT id, text, is_correct FROM question_choices WHERE question_id = $1 AND is_correct = true`,
+        [itemId],
+      );
+      if (choicesResult.rows.length > 0) {
+        const normalized = answerValue.trim().toLowerCase();
+        return choicesResult.rows.some(
+          (c) =>
+            c.text.trim().toLowerCase() === normalized ||
+            c.id === answerValue,
+        );
+      }
+
       this.logger.warn('session_question_missing_grading_data', {
         itemId,
         reason: 'no_question_answers',
       });
       return false;
     }
+
     const normalized = answerValue.trim().toLowerCase();
+    const normalizedNoPunct = normalized.replace(/^[(\s]+|[)\s.,!?;:]+$/g, '').trim();
+
     return result.rows.some((row) =>
-      this.acceptedTextValues(row.value).some((v) => v === normalized),
+      this.acceptedTextValues(row.value).some((v) => {
+        const vNorm = v.trim().toLowerCase();
+        const vNoPunct = vNorm.replace(/^[(\s]+|[)\s.,!?;:]+$/g, '').trim();
+        return (
+          vNorm === normalized ||
+          (normalizedNoPunct.length > 0 && vNoPunct === normalizedNoPunct)
+        );
+      }),
     );
   }
 
-  /** Flatten question_answers.value (string | {text|value} | array) to normalized strings. */
+  /**
+   * Flatten question_answers.value into normalized lowercase strings.
+   *
+   * Supports all schema shapes stored across migrations and seeds:
+   *   - fill_blank: { blanks: [{ position, accepted_values }], case_sensitive }
+   *   - short_text: { model_answer, grading_note }
+   *   - object wrappers: { accepted_values | acceptedValues | text | value | answer | answers }
+   *   - direct array: string[] or object[]
+   *   - direct string
+   */
   private acceptedTextValues(value: unknown): string[] {
-    if (typeof value === 'string') return [value.trim().toLowerCase()];
+    if (typeof value === 'string') {
+      const trimmed = value.trim().toLowerCase();
+      return trimmed.length > 0 ? [trimmed] : [];
+    }
     if (Array.isArray(value)) {
       return value.flatMap((v) => this.acceptedTextValues(v));
     }
     if (value !== null && typeof value === 'object') {
-      const obj = value as { text?: unknown; value?: unknown };
-      return [
-        ...this.acceptedTextValues(obj.text ?? null),
-        ...this.acceptedTextValues(obj.value ?? null),
-      ];
+      const obj = value as Record<string, unknown>;
+      const results: string[] = [];
+
+      // 1. fill_blank: { blanks: [ { position, accepted_values } ] }
+      if (Array.isArray(obj.blanks)) {
+        for (const blank of obj.blanks) {
+          if (blank !== null && typeof blank === 'object') {
+            const b = blank as Record<string, unknown>;
+            if (b.accepted_values !== undefined) {
+              results.push(...this.acceptedTextValues(b.accepted_values));
+            }
+            if (b.acceptedValues !== undefined) {
+              results.push(...this.acceptedTextValues(b.acceptedValues));
+            }
+            if (b.value !== undefined) {
+              results.push(...this.acceptedTextValues(b.value));
+            }
+            if (b.text !== undefined) {
+              results.push(...this.acceptedTextValues(b.text));
+            }
+            if (b.answer !== undefined) {
+              results.push(...this.acceptedTextValues(b.answer));
+            }
+          }
+        }
+      }
+
+      // 2. { accepted_values: [...] } / { acceptedValues: [...] }
+      if (obj.accepted_values !== undefined) {
+        results.push(...this.acceptedTextValues(obj.accepted_values));
+      }
+      if (obj.acceptedValues !== undefined) {
+        results.push(...this.acceptedTextValues(obj.acceptedValues));
+      }
+
+      // 3. { model_answer: '...' } / { modelAnswer: '...' }
+      if (obj.model_answer !== undefined) {
+        results.push(...this.acceptedTextValues(obj.model_answer));
+      }
+      if (obj.modelAnswer !== undefined) {
+        results.push(...this.acceptedTextValues(obj.modelAnswer));
+      }
+
+      // 4. { text: '...' } / { value: '...' } / { answer: '...' } / { answers: [...] }
+      if (obj.text !== undefined) {
+        results.push(...this.acceptedTextValues(obj.text));
+      }
+      if (obj.value !== undefined) {
+        results.push(...this.acceptedTextValues(obj.value));
+      }
+      if (obj.answer !== undefined) {
+        results.push(...this.acceptedTextValues(obj.answer));
+      }
+      if (obj.answers !== undefined) {
+        results.push(...this.acceptedTextValues(obj.answers));
+      }
+
+      return results;
     }
     return [];
   }

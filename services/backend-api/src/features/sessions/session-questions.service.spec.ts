@@ -249,15 +249,55 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
     expect((await service.resolveItemForAttempt(QUESTION_ID, 'goed')).isCorrect).toBe(false);
   });
 
-  it('marks incorrect when a text question has no question_answers rows', async () => {
+  it('grades fill_in_the_blank against real schema with blanks array and accepted_values', async () => {
+    const db = makeDb([
+      ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank' }]],
+      ['FROM question_skills qs', SKILL_LINKS],
+      [
+        'FROM question_answers',
+        [
+          {
+            value: {
+              blanks: [{ position: 1, accepted_values: ['name'] }],
+              case_sensitive: false,
+            },
+          },
+        ],
+      ],
+    ]);
+    const { service } = makeService(db);
+    // Exact match
+    expect((await service.resolveItemForAttempt(QUESTION_ID, 'name')).isCorrect).toBe(true);
+    // Case-insensitive match
+    expect((await service.resolveItemForAttempt(QUESTION_ID, 'Name')).isCorrect).toBe(true);
+    // With whitespace and punctuation
+    expect((await service.resolveItemForAttempt(QUESTION_ID, ' name. ')).isCorrect).toBe(true);
+    // Incorrect answer
+    expect((await service.resolveItemForAttempt(QUESTION_ID, 'game')).isCorrect).toBe(false);
+  });
+
+  it('marks incorrect when a text question has no question_answers and no choices', async () => {
     const db = makeDb([
       ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank' }]],
       ['FROM question_skills qs', SKILL_LINKS],
       ['FROM question_answers', []],
+      ['FROM question_choices', []],
     ]);
     const { service } = makeService(db);
     const resolved = await service.resolveItemForAttempt(QUESTION_ID, 'anything');
     expect(resolved.isCorrect).toBe(false);
+  });
+
+  it('falls back to question_choices when a text question has no question_answers row', async () => {
+    const db = makeDb([
+      ['FROM question_bank', [{ ...QUESTION_ROW, type: 'fill_in_the_blank' }]],
+      ['FROM question_skills qs', SKILL_LINKS],
+      ['FROM question_answers', []],
+      ['FROM question_choices', [{ id: 'choice-1', text: 'name', is_correct: true }]],
+    ]);
+    const { service } = makeService(db);
+    expect((await service.resolveItemForAttempt(QUESTION_ID, 'name')).isCorrect).toBe(true);
+    expect((await service.resolveItemForAttempt(QUESTION_ID, 'game')).isCorrect).toBe(false);
   });
 
   it('resolves an empty skill list when no links exist', async () => {
