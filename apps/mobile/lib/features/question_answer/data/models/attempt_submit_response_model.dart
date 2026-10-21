@@ -21,13 +21,19 @@ class AttemptSubmitResponseModel extends AttemptResult {
   });
 
   factory AttemptSubmitResponseModel.fromJson(Map<String, dynamic> json) {
+    final rawIsCorrect = json['isCorrect'] ?? json['is_correct'];
     return AttemptSubmitResponseModel(
-      attemptId: json['attemptId'] as String,
-      answerId: json['answerId'] as String,
-      submittedAt: json['submittedAt'] as String,
-      aimPipelineTriggered: json['aimPipelineTriggered'] as bool,
-      aimOutcome: json['aimOutcome'] as String,
-      isCorrect: json['isCorrect'] as bool?,
+      attemptId: (json['attemptId'] ?? json['attempt_id'] ?? '').toString(),
+      answerId: (json['answerId'] ?? json['answer_id'] ?? '').toString(),
+      submittedAt: (json['submittedAt'] ?? json['submitted_at'] ?? '').toString(),
+      aimPipelineTriggered:
+          json['aimPipelineTriggered'] == true || json['aim_pipeline_triggered'] == true,
+      aimOutcome: (json['aimOutcome'] ?? json['aim_outcome'] ?? 'deferred').toString(),
+      isCorrect: rawIsCorrect is bool
+          ? rawIsCorrect
+          : (rawIsCorrect != null
+              ? rawIsCorrect.toString().toLowerCase() == 'true'
+              : null),
     );
   }
 

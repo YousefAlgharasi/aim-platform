@@ -278,16 +278,23 @@ export class SessionQuestionsService {
     const presentedDifficulty =
       DIFFICULTY_BY_LABEL[question.difficulty] ?? DEFAULT_PRESENTED_DIFFICULTY;
 
-    if (OPTION_BASED_QUESTION_TYPES.has(question.type)) {
-      const choices =
-        (await this.fetchChoices([itemId])).get(itemId) ?? [];
+    const choices =
+      (await this.fetchChoices([itemId])).get(itemId) ?? [];
+
+    if (choices.length > 0 || OPTION_BASED_QUESTION_TYPES.has(question.type)) {
       const isCorrect = await this.evaluateChoiceAnswer(itemId, choices, answerValue);
       return {
         itemType: 'lesson_question',
-        answerFormat,
+        answerFormat:
+          choices.length > 0
+            ? (ANSWER_FORMAT_BY_QUESTION_TYPE[question.type] ?? 'multiple_choice')
+            : answerFormat,
         skillIds,
         presentedDifficulty,
-        optionsPresentedCount: choices.length,
+        optionsPresentedCount:
+          choices.length > 0
+            ? choices.length
+            : (OPTION_BASED_QUESTION_TYPES.has(question.type) ? 0 : null),
         isCorrect,
       };
     }
@@ -372,11 +379,16 @@ export class SessionQuestionsService {
     const correct = choices.filter((c) => c.is_correct);
     if (correct.length > 0) {
       const normalized = answerValue.trim().toLowerCase();
-      return correct.some(
-        (c) =>
-          c.id === answerValue ||
-          c.text.trim().toLowerCase() === normalized,
-      );
+      const normalizedNoPunct = normalized.replace(/^["'(\s]+|[)"'\s.,!?;:]+$/g, '').trim();
+      return correct.some((c) => {
+        if (c.id === answerValue) return true;
+        const choiceNorm = c.text.trim().toLowerCase();
+        const choiceNoPunct = choiceNorm.replace(/^["'(\s]+|[)"'\s.,!?;:]+$/g, '').trim();
+        return (
+          choiceNorm === normalized ||
+          (normalizedNoPunct.length > 0 && choiceNoPunct === normalizedNoPunct)
+        );
+      });
     }
 
     // Fallback: only when NO choices are marked is_correct, check question_answers

@@ -392,10 +392,13 @@ export class SessionsController {
       aimOutcome,
     };
 
-    if (
+    const isFeedbackRequested =
       feedback === 'true' ||
-      (body as unknown as { includeFeedback?: boolean }).includeFeedback === true
-    ) {
+      feedback === '1' ||
+      String(feedback).toLowerCase() === 'true' ||
+      (body as unknown as { includeFeedback?: boolean })?.includeFeedback === true;
+
+    if (isFeedbackRequested) {
       return {
         ...response,
         isCorrect: resolvedItem.isCorrect,
