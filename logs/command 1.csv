@@ -1,0 +1,94 @@
+question_id,stem,question_type,status,choice_id,choice_text,choice_is_correct,sort_order,answer_type,answer_value
+02db22f1-b409-4c56-9352-e1794e59ebc6,Listen to the command. What should you do?,listening_choice,published,5984319f-761d-41d7-b179-f7092c1647df,Close your book,false,0,null,null
+02db22f1-b409-4c56-9352-e1794e59ebc6,Listen to the command. What should you do?,listening_choice,published,81e72f3c-17f5-49b5-bf13-ecb668245e58,Open your book,true,0,null,null
+02db22f1-b409-4c56-9352-e1794e59ebc6,Listen to the command. What should you do?,listening_choice,published,ae3a8bbe-3243-4fdd-85a2-eead1dd718ef,Stand up,false,0,null,null
+02db22f1-b409-4c56-9352-e1794e59ebc6,Listen to the command. What should you do?,listening_choice,published,34895937-de34-4972-9ae1-ecfd61c1578e,Write your name,false,0,null,null
+03e7e43f-1f4d-4373-ac85-611b0be40804,Listen. What greeting did you hear?,listening_choice,published,81d0a425-73e8-417f-83dc-30826cdd8d98,Good afternoon,false,0,null,null
+03e7e43f-1f4d-4373-ac85-611b0be40804,Listen. What greeting did you hear?,listening_choice,published,bf9cb4b8-38ba-47e4-a5f2-2d4190347529,Good morning,false,0,null,null
+03e7e43f-1f4d-4373-ac85-611b0be40804,Listen. What greeting did you hear?,listening_choice,published,761f4395-3223-4464-a9f6-98f15047a481,Good evening,true,0,null,null
+03e7e43f-1f4d-4373-ac85-611b0be40804,Listen. What greeting did you hear?,listening_choice,published,1d5797a0-b1a8-4a4d-afde-99013c651ef9,Goodbye,false,0,null,null
+0cd7e978-8359-407d-9d54-0202f89695d6,Listen. What did Anna say she was doing?,listening_choice,published,341d4897-71a9-4716-a822-7fe497fa9c4b,going on vacation,false,0,null,null
+0cd7e978-8359-407d-9d54-0202f89695d6,Listen. What did Anna say she was doing?,listening_choice,published,5b64bb59-f8d0-4e52-90b9-a830ff77f43d,moving to a new apartment,true,0,null,null
+0cd7e978-8359-407d-9d54-0202f89695d6,Listen. What did Anna say she was doing?,listening_choice,published,772f2567-7053-4cee-af10-3425a53c7527,starting a new job,false,0,null,null
+0ce2edb1-c40a-4779-86bd-9eb92a4d7efd,Natural unscripted speech often includes hesitations and self-corrections that a listener must filter to find the real meaning.,true_false,published,4fdcd9f0-1990-4362-8036-bb4915718f57,True,true,0,null,null
+0ce2edb1-c40a-4779-86bd-9eb92a4d7efd,Natural unscripted speech often includes hesitations and self-corrections that a listener must filter to find the real meaning.,true_false,published,ad23944f-0a6a-4a37-aed5-1b02656275dd,False,false,0,null,null
+188c8477-2314-4c7c-ab8a-88abc821bf76,Listen to the forecast. What will today be like?,listening_choice,published,3fbd95a3-ce63-41ab-b1cd-6f832356d091,rainy and cold,false,0,null,null
+188c8477-2314-4c7c-ab8a-88abc821bf76,Listen to the forecast. What will today be like?,listening_choice,published,6a4b183d-80e1-43ec-8fea-7780c3b09470,snowy,false,0,null,null
+188c8477-2314-4c7c-ab8a-88abc821bf76,Listen to the forecast. What will today be like?,listening_choice,published,bfda3b61-500e-491c-888d-c518816052ee,sunny and warm,true,0,null,null
+203e626b-c240-4f61-984f-ff7f4b2f39e7,Listen. What does the speaker suggest doing regularly?,listening_choice,published,4f33b942-df49-4bff-b1e6-ac2557a64beb,take a break,false,0,null,null
+203e626b-c240-4f61-984f-ff7f4b2f39e7,Listen. What does the speaker suggest doing regularly?,listening_choice,published,a170446f-f23c-40cf-9708-3bafe15c6268,touch base,true,0,null,null
+203e626b-c240-4f61-984f-ff7f4b2f39e7,Listen. What does the speaker suggest doing regularly?,listening_choice,published,01944112-01f8-4265-82eb-82293f7e65ff,go offline,false,0,null,null
+210360b4-a501-4a71-a063-93c2069a2071,Listen. Has the speaker been to Africa?,listening_choice,published,9535f8bf-cf6f-4ba5-ad57-93404fca90f9,Yes,false,0,null,null
+210360b4-a501-4a71-a063-93c2069a2071,Listen. Has the speaker been to Africa?,listening_choice,published,5940b381-e0aa-4aab-abdc-5c0512dd492d,No,true,0,null,null
+2779f0fb-a196-418b-a20d-211dd99a0a67,Where do you go to borrow books?,multiple_choice,published,1e6ba1b7-7b68-4b18-8a26-f83b8adae876,library,true,0,null,null
+2779f0fb-a196-418b-a20d-211dd99a0a67,Where do you go to borrow books?,multiple_choice,published,10abbb9e-33d2-4914-9d89-6d66d3fcea37,bank,false,0,null,null
+2779f0fb-a196-418b-a20d-211dd99a0a67,Where do you go to borrow books?,multiple_choice,published,bc5239fc-8521-403c-a679-7bdb86e33488,hospital,false,0,null,null
+2ce5b8a6-d5d1-4e26-ae2f-b1b298f55571,"Complete: ""The book is ___ the table."" (on top of it)",fill_in_the_blank,published,null,null,null,null,fill_blank,on
+2f024c18-8ecb-45eb-b41e-01d2429f16e8,Listen to the panel discussion. Does Speaker C think the main question is whether automation is positive?,listening_choice,published,4f333d93-f7f1-4b66-ac46-42e7b2403dd5,No,true,0,null,null
+2f024c18-8ecb-45eb-b41e-01d2429f16e8,Listen to the panel discussion. Does Speaker C think the main question is whether automation is positive?,listening_choice,published,73050cbd-9a9a-4359-9c46-e032108842a9,Yes,false,0,null,null
+307f7eec-d63f-4470-8300-521d82fb714f,Listen. Can the girl play the piano?,listening_choice,published,3e951c81-e315-4881-adec-48fb89a1e7da,Yes,false,0,null,null
+307f7eec-d63f-4470-8300-521d82fb714f,Listen. Can the girl play the piano?,listening_choice,published,3a88a041-565c-4423-9ed9-8421ca241e12,No,true,0,null,null
+4f89421f-882f-48e4-9f4c-257b67cd0d5b,Listen. Where is the library?,listening_choice,published,db573e50-146b-4681-90ed-9414636e25df,Next to the bank,false,0,null,null
+4f89421f-882f-48e4-9f4c-257b67cd0d5b,Listen. Where is the library?,listening_choice,published,5a6532da-7ab5-4359-8018-a908bce7a7e3,Across from the park,false,0,null,null
+4f89421f-882f-48e4-9f4c-257b67cd0d5b,Listen. Where is the library?,listening_choice,published,62e09508-3ac6-44e7-9a1f-fbec504b1e16,Next to the school,true,0,null,null
+61993012-630a-4784-b5c3-113717683ed4,Listen. What should passengers have ready?,listening_choice,published,8ebb6b73-510a-4699-86df-5892742eacc5,boarding pass and passport,true,0,null,null
+61993012-630a-4784-b5c3-113717683ed4,Listen. What should passengers have ready?,listening_choice,published,9e396268-768c-4e03-8df7-142fd6b99d35,ticket and luggage,false,0,null,null
+61993012-630a-4784-b5c3-113717683ed4,Listen. What should passengers have ready?,listening_choice,published,75e4ba13-da96-4b92-aed6-793354b0c647,map and camera,false,0,null,null
+66ada756-bfed-4cab-a373-d498290668c2,Listen. Does Speaker B agree that all jobs can be remote?,listening_choice,published,badc2464-29d2-487a-822f-96e1690304bc,No,true,0,null,null
+66ada756-bfed-4cab-a373-d498290668c2,Listen. Does Speaker B agree that all jobs can be remote?,listening_choice,published,8c9b1bf0-d4f4-448f-b135-a774ace7cbdb,Yes,false,0,null,null
+6f0fec18-bfbd-4e74-9946-ecb5e690106a,Listen. What did the man order?,listening_choice,published,b45a48a4-bed3-4210-ba6d-0735fec76a90,chicken,false,0,null,null
+6f0fec18-bfbd-4e74-9946-ecb5e690106a,Listen. What did the man order?,listening_choice,published,cec67e0e-82f2-4a21-be3c-dbee894cdf7d,pasta,false,0,null,null
+6f0fec18-bfbd-4e74-9946-ecb5e690106a,Listen. What did the man order?,listening_choice,published,615d7bda-a12a-4a64-85e9-71416de14462,fish,true,0,null,null
+77651a36-941b-48ac-a4c6-bfe4fc4e9085,"Complete: ""This is ___ (I) book.""",fill_in_the_blank,published,null,null,null,null,fill_blank,my
+96e0391d-bdd6-4b57-8144-f0fa63434043,Listen. What did the speaker have as a child?,listening_choice,published,dd455046-71bc-4552-93d8-63158cd526b5,no childhood memories,false,0,null,null
+96e0391d-bdd6-4b57-8144-f0fa63434043,Listen. What did the speaker have as a child?,listening_choice,published,3b130032-9310-4b4d-9939-a9e8292fbd15,a happy childhood,true,0,null,null
+96e0391d-bdd6-4b57-8144-f0fa63434043,Listen. What did the speaker have as a child?,listening_choice,published,1c7770ce-0b62-4bea-8446-c3543e99162e,a difficult childhood,false,0,null,null
+986b9255-963b-4f5f-9851-d5dc6540bd82,Listen to the introduction. What is the speaker's name?,listening_choice,published,5a6ab091-f245-4301-8b3a-2bf340bcbf5e,Sara,false,0,null,null
+986b9255-963b-4f5f-9851-d5dc6540bd82,Listen to the introduction. What is the speaker's name?,listening_choice,published,4eb1c212-ac17-4899-bac0-8b015972f027,Ana,false,0,null,null
+986b9255-963b-4f5f-9851-d5dc6540bd82,Listen to the introduction. What is the speaker's name?,listening_choice,published,05c44869-58b6-4e3c-b87c-a7c9ec8f2633,Tom,true,0,null,null
+986b9255-963b-4f5f-9851-d5dc6540bd82,Listen to the introduction. What is the speaker's name?,listening_choice,published,8aafa51f-fd9c-4b74-9891-b47515108b42,Lucy,false,0,null,null
+9db67122-f4b2-4c5a-b930-2ab48bddcf2e,Listen to the interview excerpt. What was the speaker's biggest lesson?,listening_choice,published,b2a5c702-a5fb-471d-86bd-0b9be73f4d92,hiring more staff quickly,false,0,null,null
+9db67122-f4b2-4c5a-b930-2ab48bddcf2e,Listen to the interview excerpt. What was the speaker's biggest lesson?,listening_choice,published,27737c42-6c1c-4080-9726-a7b23717aee7,raising more money early,false,0,null,null
+9db67122-f4b2-4c5a-b930-2ab48bddcf2e,Listen to the interview excerpt. What was the speaker's biggest lesson?,listening_choice,published,dd89cdfa-76e9-40eb-b6b1-8da1c273e4f6,saying no to good ideas to focus on great ones,true,0,null,null
+a473d283-47bb-4a03-bd72-baf1e6556caa,"""Listen"" means you should read out loud.",true_false,published,bf269d58-f853-4c32-bd2c-e482da56fc11,False,true,0,null,null
+a473d283-47bb-4a03-bd72-baf1e6556caa,"""Listen"" means you should read out loud.",true_false,published,981aa482-b53b-49c2-ab38-bff37ace0e34,True,false,0,null,null
+ab000000-0000-0000-0001-000000000006,The book is _____ the table.,multiple_choice,published,ac000000-0000-0000-0001-000000000015,on,true,0,null,null
+ab000000-0000-0000-0001-000000000006,The book is _____ the table.,multiple_choice,published,ac000000-0000-0000-0001-000000000016,at,false,1,null,null
+ab000000-0000-0000-0001-000000000006,The book is _____ the table.,multiple_choice,published,ac000000-0000-0000-0001-000000000017,to,false,2,null,null
+ab000000-0000-0000-0001-000000000006,The book is _____ the table.,multiple_choice,published,ac000000-0000-0000-0001-000000000018,in,false,3,null,null
+ab000000-0000-0000-0002-000000000002,This book is _____ than that one.,multiple_choice,published,ac000000-0000-0000-0002-000000000005,more interesting,true,0,null,null
+ab000000-0000-0000-0002-000000000002,This book is _____ than that one.,multiple_choice,published,ac000000-0000-0000-0002-000000000006,interestinger,false,1,null,null
+ab000000-0000-0000-0002-000000000002,This book is _____ than that one.,multiple_choice,published,ac000000-0000-0000-0002-000000000007,most interesting,false,2,null,null
+ab000000-0000-0000-0002-000000000002,This book is _____ than that one.,multiple_choice,published,ac000000-0000-0000-0002-000000000008,interesting,false,3,null,null
+b36d33eb-d888-4bf1-8a28-93126863af48,Listen. Where is the train station?,listening_choice,published,b2578c79-d772-4716-8eed-a6aff325b25e,On your left,true,0,null,null
+b36d33eb-d888-4bf1-8a28-93126863af48,Listen. Where is the train station?,listening_choice,published,e2967608-6ad0-4000-86b6-9d0d651e961b,On your right,false,0,null,null
+b36d33eb-d888-4bf1-8a28-93126863af48,Listen. Where is the train station?,listening_choice,published,f43485a5-f503-465f-a74b-f37bc97567eb,Straight ahead,false,0,null,null
+bbb905cc-ee36-4151-8558-60dd8b44486e,Listen. What does the speaker do every day?,listening_choice,published,a490ff29-8464-4564-b8a6-b5f3fb5ff86a,eat breakfast,false,0,null,null
+bbb905cc-ee36-4151-8558-60dd8b44486e,Listen. What does the speaker do every day?,listening_choice,published,5091e9ba-cd06-4b09-baf0-91e039bed4f3,study English,true,0,null,null
+bbb905cc-ee36-4151-8558-60dd8b44486e,Listen. What does the speaker do every day?,listening_choice,published,0b7ab260-c03b-4c93-8a8e-47a2be0f0cfd,go to work,false,0,null,null
+c77cd50a-0833-4fb8-8d1f-870da81e4b26,Listen. What was the speaker doing when it stopped raining?,listening_choice,published,efabae4e-88bc-459f-b973-ed015a7f0a1b,walking,false,0,null,null
+c77cd50a-0833-4fb8-8d1f-870da81e4b26,Listen. What was the speaker doing when it stopped raining?,listening_choice,published,9785a6a9-c35a-4da5-85b4-374d42955000,sleeping,false,0,null,null
+c77cd50a-0833-4fb8-8d1f-870da81e4b26,Listen. What was the speaker doing when it stopped raining?,listening_choice,published,7cfbcdb3-52a6-46d6-9100-ca873835b595,talking,true,0,null,null
+c8160e75-f5c7-479f-a696-9654a66a53cc,"Listen. Which word did you hear: ""pat"" or ""bat""?",listening_choice,published,fc51ff59-870c-40e7-9d46-7a7d5b18ba67,pat,false,0,null,null
+c8160e75-f5c7-479f-a696-9654a66a53cc,"Listen. Which word did you hear: ""pat"" or ""bat""?",listening_choice,published,34c17b20-af52-4615-a62b-d4abd4adeb2e,bat,true,0,null,null
+cd01456b-39a3-4b3d-8fe7-061b1b1c02e2,Listen. What is the patient's problem?,listening_choice,published,97a03d4e-8b7d-4852-94b7-de95225ef040,sore throat,false,0,null,null
+cd01456b-39a3-4b3d-8fe7-061b1b1c02e2,Listen. What is the patient's problem?,listening_choice,published,55c7b799-2e64-4deb-bad0-ef7369716ff7,stomach ache,false,0,null,null
+cd01456b-39a3-4b3d-8fe7-061b1b1c02e2,Listen. What is the patient's problem?,listening_choice,published,b308d783-af05-4b4e-ade7-95f7d87e435f,headache and fever,true,0,null,null
+e7a6bed2-135d-44bf-8780-df73384d3036,Listen to the word. Does it start with a blend?,listening_choice,published,d1365181-f900-47f5-925d-653118f374f8,Yes,true,0,null,null
+e7a6bed2-135d-44bf-8780-df73384d3036,Listen to the word. Does it start with a blend?,listening_choice,published,1a1ad695-8925-4e06-a5b6-d8b3b21ebda6,No,false,0,null,null
+e8ebd62e-506e-4ea5-9373-de8f141a6ec0,Listen. Does Speaker B agree with Speaker A?,listening_choice,published,97ce3abe-162e-4f22-9361-10e46adedc80,Yes,false,0,null,null
+e8ebd62e-506e-4ea5-9373-de8f141a6ec0,Listen. Does Speaker B agree with Speaker A?,listening_choice,published,949e3d48-ee87-4511-9ba2-203c3dd27421,No,true,0,null,null
+ef8ddb1c-105a-4b62-b4a1-a10d7a9ff2c8,Listen to the number. Which one did you hear?,listening_choice,published,1dfd56b7-cca0-4223-9842-b6f90daa15b3,80,false,0,null,null
+ef8ddb1c-105a-4b62-b4a1-a10d7a9ff2c8,Listen to the number. Which one did you hear?,listening_choice,published,415fc42b-d93d-49e7-a4f8-e579b4f16d5e,8,false,0,null,null
+ef8ddb1c-105a-4b62-b4a1-a10d7a9ff2c8,Listen to the number. Which one did you hear?,listening_choice,published,29dd0352-eac8-46df-99b7-7565d6be8593,13,false,0,null,null
+ef8ddb1c-105a-4b62-b4a1-a10d7a9ff2c8,Listen to the number. Which one did you hear?,listening_choice,published,9aaa0133-f5cb-4717-b757-3824b8b8e064,18,true,0,null,null
+f02cff8a-3b40-44ed-927f-177e64f84d2e,Listen. Why does the candidate want the job?,listening_choice,published,5f3587cf-d128-453f-8197-b7552347f29a,She wants to travel,false,0,null,null
+f02cff8a-3b40-44ed-927f-177e64f84d2e,Listen. Why does the candidate want the job?,listening_choice,published,2cb74bf2-2914-4525-8371-07896575f2e5,She wants more money,false,0,null,null
+f02cff8a-3b40-44ed-927f-177e64f84d2e,Listen. Why does the candidate want the job?,listening_choice,published,7b854670-d0db-472b-a90a-9fbb2dbca6d9,She enjoys helping people,true,0,null,null
+f95f7a35-4e80-4561-8968-731754b7d675,Listen. What does the speaker wish for?,listening_choice,published,e2822ff8-10b8-4f32-9f06-d77b61f3d2a6,a shorter commute,false,0,null,null
+f95f7a35-4e80-4561-8968-731754b7d675,Listen. What does the speaker wish for?,listening_choice,published,690fdd80-72b3-47b1-91cf-67d692f1a2fd,a new job,false,0,null,null
+f95f7a35-4e80-4561-8968-731754b7d675,Listen. What does the speaker wish for?,listening_choice,published,a457a75a-abba-401f-87d4-a4a731b82d37,more time to travel,true,0,null,null
+fe256f96-db64-4eac-9da0-90d1494d0ca9,Listen to the command. What is being asked?,listening_choice,published,9e7d2921-d1cc-47b8-a77f-2c810eec84bc,Listen silently,false,0,null,null
+fe256f96-db64-4eac-9da0-90d1494d0ca9,Listen to the command. What is being asked?,listening_choice,published,bd160152-6d5a-4ae9-aa41-de80eef0606d,Read the words,false,0,null,null
+fe256f96-db64-4eac-9da0-90d1494d0ca9,Listen to the command. What is being asked?,listening_choice,published,21e03436-4c78-4b16-8209-907a13a8f6e5,Write the words,false,0,null,null
+fe256f96-db64-4eac-9da0-90d1494d0ca9,Listen to the command. What is being asked?,listening_choice,published,2c30ea2c-e21d-430b-8a70-f3c0df6533e3,Repeat the words,true,0,null,null

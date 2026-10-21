@@ -1,0 +1,11 @@
+attempt_id,submitted_at,item_id,stem,answer_format,answer_value,is_correct
+7ce3389d-4b20-4357-8172-8942a7c62e88,2026-10-21 00:44:00.798+00,bc567bac-1fb5-4244-a05b-cc1f050dfa8e,What do you call your father's or mother's daughter (not you)?,multiple_choice,a987487e-ed2d-4c62-aa53-e2b3c6f38743,true
+4c2a28e0-0596-4075-bd5f-9daaa4e1e33e,2026-10-21 00:43:48.083+00,41dd9ed6-7b74-4e1c-806a-7072cef7431d,"Complete: ""This is my ___."" (a word for a male parent)",fill_blank,father,true
+e95ca929-f908-446f-9fd0-b459a89676ab,2026-10-21 00:43:25.669+00,09090b4b-7dea-4784-8db9-9760a8e49054,"""Brother"" means a male sibling.",true_false,ad334da1-45f5-41c7-9dfe-45812fd0f2a0,true
+c741686a-792c-4968-be9c-fee7c77b210e,2026-10-21 00:43:12.622+00,ab000000-0000-0000-0001-000000000008,My mother's mother is my _____.,multiple_choice,ac000000-0000-0000-0001-000000000023,true
+99c5dded-0caa-48d8-ac54-84a6dab44006,2026-10-21 00:31:55.48+00,fe256f96-db64-4eac-9da0-90d1494d0ca9,Listen to the command. What is being asked?,listening_choice,2c30ea2c-e21d-430b-8a70-f3c0df6533e3,true
+41622263-528e-4a72-b823-955a1680db80,2026-10-21 00:31:32.541+00,a473d283-47bb-4a03-bd72-baf1e6556caa,"""Listen"" means you should read out loud.",true_false,bf269d58-f853-4c32-bd2c-e482da56fc11,true
+c5e13b04-5868-4b21-b2c1-00474b4f1979,2026-10-21 00:31:18.191+00,02db22f1-b409-4c56-9352-e1794e59ebc6,Listen to the command. What should you do?,listening_choice,81e72f3c-17f5-49b5-bf13-ecb668245e58,true
+4cd1506b-a9f8-4eb7-9dc4-7b4aa1a9295c,2026-10-20 23:32:59.802+00,fb531681-ae13-49d6-a4dc-c187ca2a6c09,How do you ask someone's name?,multiple_choice,b82737cf-db94-4b7b-a553-053e7b73237b,false
+73dfb857-2df9-43e2-a567-6dfc41666e4e,2026-10-20 23:32:48.738+00,986b9255-963b-4f5f-9851-d5dc6540bd82,Listen to the introduction. What is the speaker's name?,listening_choice,05c44869-58b6-4e3c-b87c-a7c9ec8f2633,true
+3d037477-d078-4852-b92a-b3b375bc17ad,2026-10-20 23:32:37.423+00,6724f23a-002c-4822-a4c3-9fc6111284ce,"Complete: ""My ___ is Ana.""",fill_blank,name,true
