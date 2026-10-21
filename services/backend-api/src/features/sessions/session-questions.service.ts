@@ -281,7 +281,7 @@ export class SessionQuestionsService {
     if (OPTION_BASED_QUESTION_TYPES.has(question.type)) {
       const choices =
         (await this.fetchChoices([itemId])).get(itemId) ?? [];
-      const isCorrect = this.evaluateChoiceAnswer(itemId, choices, answerValue);
+      const isCorrect = await this.evaluateChoiceAnswer(itemId, choices, answerValue);
       return {
         itemType: 'lesson_question',
         answerFormat,
@@ -364,25 +364,38 @@ export class SessionQuestionsService {
     return tags.filter((t): t is string => typeof t === 'string');
   }
 
-  private evaluateChoiceAnswer(
+  private async evaluateChoiceAnswer(
     itemId: string,
     choices: readonly ChoiceRow[],
     answerValue: string,
-  ): boolean {
+  ): Promise<boolean> {
     const correct = choices.filter((c) => c.is_correct);
-    if (choices.length === 0 || correct.length === 0) {
-      this.logger.warn('session_question_missing_grading_data', {
-        itemId,
-        reason: choices.length === 0 ? 'no_choices' : 'no_correct_choice',
-      });
-      return false;
+    if (correct.length > 0) {
+      const normalized = answerValue.trim().toLowerCase();
+      return correct.some(
+        (c) =>
+          c.id === answerValue ||
+          c.text.trim().toLowerCase() === normalized,
+      );
     }
-    const normalized = answerValue.trim().toLowerCase();
-    return correct.some(
-      (c) =>
-        c.id === answerValue ||
-        c.text.trim().toLowerCase() === normalized,
-    );
+
+    // Fallback: only when NO choices are marked is_correct, check question_answers
+    const selectedChoice = choices.find((c) => c.id === answerValue);
+    const candidateValues: string[] = [answerValue];
+    if (selectedChoice && selectedChoice.text) {
+      candidateValues.push(selectedChoice.text);
+    }
+
+    for (const val of candidateValues) {
+      const textMatches = await this.evaluateTextAnswer(itemId, val);
+      if (textMatches) return true;
+    }
+
+    this.logger.warn('session_question_missing_grading_data', {
+      itemId,
+      reason: choices.length === 0 ? 'no_choices' : 'no_correct_choice',
+    });
+    return false;
   }
 
   private async evaluateTextAnswer(

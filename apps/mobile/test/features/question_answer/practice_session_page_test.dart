@@ -207,12 +207,13 @@ void main() {
     await tester.enterText(find.byType(TextField), 'B');
     await tester.pumpAndSettle();
 
-    expect(find.text('Check Answer'), findsOneWidget);
-    await tester.tap(find.text('Check Answer'));
+    expect(find.text('Complete Session'), findsOneWidget);
+    await tester.tap(find.text('Complete Session'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Correct answer! Well done.'), findsOneWidget);
-    expect(find.text('Complete Session'), findsOneWidget);
+    expect(find.text('PRACTICE COMPLETE!'), findsOneWidget);
+    expect(find.text('CORRECT'), findsOneWidget);
+    expect(find.text('Question Review'), findsOneWidget);
   });
 
   testWidgets('6. renders audio play button for listening_choice questions', (tester) async {
@@ -238,7 +239,7 @@ void main() {
     expect(find.text('No'), findsOneWidget);
   });
 
-  testWidgets('7. handles incorrect answer by showing error feedback and reporting wrong count on finish', (tester) async {
+  testWidgets('7. handles incorrect answer without mid-quiz reveal and reports wrong count on finish', (tester) async {
     final question = _question('q-1');
     final repo = _FakeRepository(
       questions: [question],
@@ -259,21 +260,61 @@ void main() {
     await tester.tap(find.text('are'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Check Answer'), findsOneWidget);
-    await tester.tap(find.text('Check Answer'));
-    await tester.pumpAndSettle();
-
-    // Verify incorrect feedback banner is shown
-    expect(find.text('Incorrect answer'), findsOneWidget);
     expect(find.text('Complete Session'), findsOneWidget);
-
-    // Complete session
+    // Tap Complete Session to submit answer and finish quiz
     await tester.tap(find.text('Complete Session'));
     await tester.pumpAndSettle();
 
-    // Verify finish view shows wrong answers count
+    // Verify finish view shows wrong answers count and question review
     expect(find.text('WRONG'), findsOneWidget);
     expect(find.text('You got 1 wrong answer out of 1 question'), findsOneWidget);
+    expect(find.text('Question Review'), findsOneWidget);
+  });
+
+  testWidgets('8. advances smoothly across multiple questions with all answers evaluated at the end', (tester) async {
+    final q1 = _question('q-1');
+    final q2 = QuestionModel.fromJson({
+      'id': 'q-2',
+      'type': 'multiple_choice',
+      'stem': 'She _____ my sister.',
+      'difficulty': 'easy',
+      'tags': ['a1'],
+      'options': [
+        {'id': 'opt-2-1', 'text': 'is', 'order': 0},
+        {'id': 'opt-2-2', 'text': 'are', 'order': 1},
+      ],
+    });
+
+    await tester.pumpWidget(_wrap(_FakeRepository(questions: [q1, q2])));
+    await tester.pumpAndSettle();
+
+    // Question 1
+    expect(find.text('QUESTION 1 OF 2'), findsOneWidget);
+    await tester.tap(find.text('is'));
+    await tester.pumpAndSettle();
+
+    // First question has 'Next Question'
+    expect(find.text('Next Question'), findsOneWidget);
+    await tester.tap(find.text('Next Question'));
+    await tester.pumpAndSettle();
+
+    // Question 2 immediately appears without intermediate check screen
+    expect(find.text('QUESTION 2 OF 2'), findsOneWidget);
+    expect(find.text('She _____ my sister.'), findsOneWidget);
+    await tester.tap(find.text('is'));
+    await tester.pumpAndSettle();
+
+    // Final question has 'Complete Session'
+    expect(find.text('Complete Session'), findsOneWidget);
+    await tester.tap(find.text('Complete Session'));
+    await tester.pumpAndSettle();
+
+    // End-of-session evaluation is displayed
+    expect(find.text('PRACTICE COMPLETE!'), findsOneWidget);
+    expect(find.text('CORRECT'), findsOneWidget);
+    expect(find.text('Question Review'), findsOneWidget);
+    expect(find.text('Q1: He _____ a teacher.'), findsOneWidget);
+    expect(find.text('Q2: She _____ my sister.'), findsOneWidget);
   });
 }
 

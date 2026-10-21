@@ -86,22 +86,35 @@ const _demoQuestions = [
   ),
 ];
 
+class _PracticeQuestionSummary {
+  const _PracticeQuestionSummary({
+    required this.questionNumber,
+    required this.stem,
+    required this.userAnswer,
+    required this.isCorrect,
+  });
+
+  final int questionNumber;
+  final String stem;
+  final String userAnswer;
+  final bool isCorrect;
+}
+
 class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   String? _selectedOptionId;
   String _writtenAnswer = '';
-  bool _answeredCurrent = false;
-  bool? _lastAnswerCorrect;
   int _correctCount = 0;
   int _wrongCount = 0;
+  final List<_PracticeQuestionSummary> _questionSummaries = [];
 
   bool _isSubmitting = false;
 
   // Fallback demo state when backend has no questions seeded
   int _demoIndex = 0;
   int? _demoSelected;
-  bool _demoAnswered = false;
   int _demoScore = 0;
   bool _demoFinished = false;
+  final List<_PracticeQuestionSummary> _demoSummaries = [];
 
   @override
   void initState() {
@@ -119,7 +132,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
   }
 
   void _onOptionTap(String optionId) {
-    if (_answeredCurrent || _isSubmitting) return;
+    if (_isSubmitting) return;
     setState(() {
       _selectedOptionId = optionId;
     });
@@ -127,10 +140,10 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 
   DateTime _questionShownAt = DateTime.now();
 
-  Future<void> _handleCheckAnswer() async {
+  Future<void> _handleProceed() async {
     final state = ref.read(practiceSessionProvider);
     final currentQ = state.currentQuestion;
-    if (currentQ == null) return;
+    if (currentQ == null || _isSubmitting) return;
 
     final isOptionBased = currentQ.options.isNotEmpty;
     if (isOptionBased && _selectedOptionId == null) return;
@@ -165,24 +178,49 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       final submitState = ref.read(questionAnswerSessionProvider);
       final isCorrect = submitState.attemptResult?.isCorrect ?? false;
 
+      final answerText = isOptionBased
+          ? (currentQ.options.where((o) => o.id == _selectedOptionId).firstOrNull?.text ?? '')
+          : _writtenAnswer.trim();
+
       if (mounted) {
         setState(() {
-          _answeredCurrent = true;
-          _lastAnswerCorrect = isCorrect;
+          _questionSummaries.add(_PracticeQuestionSummary(
+            questionNumber: state.currentIndex + 1,
+            stem: currentQ.stem,
+            userAnswer: answerText,
+            isCorrect: isCorrect,
+          ));
           if (isCorrect) {
             _correctCount++;
           } else {
             _wrongCount++;
           }
+          _selectedOptionId = null;
+          _writtenAnswer = '';
+          _questionShownAt = DateTime.now();
         });
+        ref.read(questionAnswerSessionProvider.notifier).reset();
+        await ref.read(practiceSessionProvider.notifier).advance();
       }
     } catch (_) {
       if (mounted) {
+        final answerText = isOptionBased
+            ? (currentQ.options.where((o) => o.id == _selectedOptionId).firstOrNull?.text ?? '')
+            : _writtenAnswer.trim();
         setState(() {
-          _answeredCurrent = true;
-          _lastAnswerCorrect = false;
+          _questionSummaries.add(_PracticeQuestionSummary(
+            questionNumber: state.currentIndex + 1,
+            stem: currentQ.stem,
+            userAnswer: answerText,
+            isCorrect: false,
+          ));
           _wrongCount++;
+          _selectedOptionId = null;
+          _writtenAnswer = '';
+          _questionShownAt = DateTime.now();
         });
+        ref.read(questionAnswerSessionProvider.notifier).reset();
+        await ref.read(practiceSessionProvider.notifier).advance();
       }
     } finally {
       if (mounted) {
@@ -191,42 +229,30 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     }
   }
 
-  Future<void> _handleNextQuestion() async {
-    setState(() {
-      _selectedOptionId = null;
-      _writtenAnswer = '';
-      _answeredCurrent = false;
-      _lastAnswerCorrect = null;
-      _questionShownAt = DateTime.now();
-    });
-    ref.read(questionAnswerSessionProvider.notifier).reset();
-    await ref.read(practiceSessionProvider.notifier).advance();
-  }
-
   // Fallback quiz handlers
-  void _handleDemoCheck() {
+  void _handleDemoProceed() {
     if (_demoSelected == null) return;
     final currentQ = _demoQuestions[_demoIndex];
+    final isCorrect = _demoSelected == currentQ.correctIndex;
+    final selectedText = currentQ.options[_demoSelected!];
+
     setState(() {
-      _demoAnswered = true;
-      if (_demoSelected == currentQ.correctIndex) {
+      _demoSummaries.add(_PracticeQuestionSummary(
+        questionNumber: _demoIndex + 1,
+        stem: currentQ.prompt,
+        userAnswer: selectedText,
+        isCorrect: isCorrect,
+      ));
+      if (isCorrect) {
         _demoScore++;
       }
-    });
-  }
-
-  void _handleDemoNext() {
-    if (_demoIndex < _demoQuestions.length - 1) {
-      setState(() {
+      _demoSelected = null;
+      if (_demoIndex < _demoQuestions.length - 1) {
         _demoIndex++;
-        _demoSelected = null;
-        _demoAnswered = false;
-      });
-    } else {
-      setState(() {
+      } else {
         _demoFinished = true;
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -483,56 +509,6 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     ],
                   ],
                 ),
-                if (_answeredCurrent) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: _lastAnswerCorrect == false
-                          ? const Color(0xFFFEE2E2)
-                          : const Color(0xFFD1FAE5),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: _lastAnswerCorrect == false
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF10B981),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _lastAnswerCorrect == false
-                              ? Icons.cancel_rounded
-                              : Icons.check_circle_rounded,
-                          color: _lastAnswerCorrect == false
-                              ? const Color(0xFFEF4444)
-                              : const Color(0xFF10B981),
-                          size: 22,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _lastAnswerCorrect == false
-                                ? (Localizations.localeOf(context).languageCode == 'ar'
-                                    ? 'إجابة غير صحيحة'
-                                    : 'Incorrect answer')
-                                : (Localizations.localeOf(context).languageCode == 'ar'
-                                    ? 'إجابة صحيحة! أحسنت'
-                                    : 'Correct answer! Well done.'),
-                            style: TextStyle(
-                              color: _lastAnswerCorrect == false
-                                  ? const Color(0xFF991B1B)
-                                  : const Color(0xFF065F46),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ] else ...[
                 // Free-text / Fill-in-the-blank input
                 Container(
@@ -552,9 +528,11 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'YOUR ANSWER',
-                        style: TextStyle(
+                      Text(
+                        Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'إجابتك'
+                            : 'YOUR ANSWER',
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: AimColors.primary500,
@@ -564,65 +542,19 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       const SizedBox(height: 14),
                       QuestionFillBlankInput(
                         key: ValueKey(currentQ.id),
-                        disabled: _answeredCurrent,
-                        placeholder: 'Type the missing letter or word',
-                        helper: 'Type your answer, then tap Check Answer below.',
+                        disabled: _isSubmitting,
+                        placeholder: Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'اكتب الإجابة هنا'
+                            : 'Type the missing letter or word',
+                        helper: Localizations.localeOf(context).languageCode == 'ar'
+                            ? 'اكتب إجابتك ثم اضغط على ${currentIndex < totalQuestions - 1 ? "السؤال التالي" : "إكمال الجلسة"} أدناه.'
+                            : 'Type your answer, then tap ${currentIndex < totalQuestions - 1 ? "Next Question" : "Complete Session"} below.',
                         onChanged: (val) {
                           setState(() {
                             _writtenAnswer = val;
                           });
                         },
                       ),
-                      if (_answeredCurrent) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _lastAnswerCorrect == false
-                                ? const Color(0xFFFEE2E2)
-                                : const Color(0xFFD1FAE5),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: _lastAnswerCorrect == false
-                                  ? const Color(0xFFEF4444)
-                                  : const Color(0xFF10B981),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _lastAnswerCorrect == false
-                                    ? Icons.cancel_rounded
-                                    : Icons.check_circle_rounded,
-                                color: _lastAnswerCorrect == false
-                                    ? const Color(0xFFEF4444)
-                                    : const Color(0xFF10B981),
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _lastAnswerCorrect == false
-                                      ? (Localizations.localeOf(context).languageCode == 'ar'
-                                          ? 'إجابة غير صحيحة'
-                                          : 'Incorrect answer')
-                                      : (Localizations.localeOf(context).languageCode == 'ar'
-                                          ? 'إجابة صحيحة! أحسنت'
-                                          : 'Correct answer! Well done.'),
-                                  style: TextStyle(
-                                    color: _lastAnswerCorrect == false
-                                        ? const Color(0xFF991B1B)
-                                        : const Color(0xFF065F46),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -641,58 +573,45 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           child: SizedBox(
             width: double.infinity,
             height: 52,
-            child: !_answeredCurrent
-                ? ElevatedButton(
-                    onPressed: (!_isSubmitting &&
-                            (currentQ.options.isNotEmpty
-                                ? _selectedOptionId != null
-                                : _writtenAnswer.trim().isNotEmpty))
-                        ? _handleCheckAnswer
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AimColors.primary500,
-                      disabledBackgroundColor: AimColors.primary500.withValues(alpha: 0.4),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+            child: ElevatedButton(
+              onPressed: (!_isSubmitting &&
+                      (currentQ.options.isNotEmpty
+                          ? _selectedOptionId != null
+                          : _writtenAnswer.trim().isNotEmpty))
+                  ? _handleProceed
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AimColors.primary500,
+                disabledBackgroundColor: AimColors.primary500.withValues(alpha: 0.4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
                       ),
-                      elevation: 0,
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Check Answer',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                  )
-                : ElevatedButton(
-                    onPressed: _handleNextQuestion,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AimColors.primary500,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      currentIndex < totalQuestions - 1 ? 'Next Question' : 'Complete Session',
+                    )
+                  : Text(
+                      currentIndex < totalQuestions - 1
+                          ? (Localizations.localeOf(context).languageCode == 'ar'
+                              ? 'السؤال التالي'
+                              : 'Next Question')
+                          : (Localizations.localeOf(context).languageCode == 'ar'
+                              ? 'إكمال الجلسة'
+                              : 'Complete Session'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                  ),
+            ),
           ),
         ),
       ],
@@ -711,29 +630,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     Color tileBg = surfaces.surface;
     BorderSide tileBorder = BorderSide(color: surfaces.border);
     Color textColor = surfaces.textPrimary;
-    Widget? trailingIcon;
 
-    if (_answeredCurrent && isSelected) {
-      if (_lastAnswerCorrect == true) {
-        tileBg = const Color(0xFFD1FAE5);
-        tileBorder = const BorderSide(color: Color(0xFF10B981), width: 2);
-        textColor = const Color(0xFF065F46);
-        trailingIcon = const Icon(
-          Icons.check_circle_rounded,
-          color: Color(0xFF10B981),
-          size: 22,
-        );
-      } else {
-        tileBg = const Color(0xFFFEE2E2);
-        tileBorder = const BorderSide(color: Color(0xFFEF4444), width: 2);
-        textColor = const Color(0xFF991B1B);
-        trailingIcon = const Icon(
-          Icons.cancel_rounded,
-          color: Color(0xFFEF4444),
-          size: 22,
-        );
-      }
-    } else if (isSelected) {
+    if (isSelected) {
       tileBg = AimColors.primary500.withValues(alpha: 0.08);
       tileBorder = const BorderSide(color: AimColors.primary500, width: 2);
       textColor = AimColors.primary500;
@@ -764,7 +662,18 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   ),
                 ),
               ),
-              if (trailingIcon != null) trailingIcon,
+              if (isSelected)
+                const Icon(
+                  Icons.radio_button_checked_rounded,
+                  color: AimColors.primary500,
+                  size: 20,
+                )
+              else
+                Icon(
+                  Icons.radio_button_unchecked_rounded,
+                  color: surfaces.border,
+                  size: 20,
+                ),
             ],
           ),
         ),
@@ -779,17 +688,17 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     required PracticeSessionState sessionState,
     required AppLocalizations l10n,
   }) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final totalQ = sessionState.questions.isNotEmpty ? sessionState.questions.length : 1;
     final accuracyPercent = ((_correctCount / totalQ) * 100).round();
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Spacer(),
-
-          // Trophy Animated Box
-          Stack(
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      children: [
+        const SizedBox(height: 12),
+        // Trophy Animated Box
+        Center(
+          child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
@@ -826,19 +735,21 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               ),
             ],
           ),
+        ),
 
-          const SizedBox(height: 24),
+        const SizedBox(height: 24),
 
-          // Eyebrow Tag
-          Container(
+        // Eyebrow Tag
+        Center(
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'PRACTICE COMPLETE!',
-              style: TextStyle(
+            child: Text(
+              isArabic ? 'اكتملت الجلسة!' : 'PRACTICE COMPLETE!',
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFFD97706),
@@ -846,10 +757,12 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               ),
             ),
           ),
+        ),
 
-          const SizedBox(height: 12),
+        const SizedBox(height: 12),
 
-          Text(
+        Center(
+          child: Text(
             l10n.practiceSessionCompleteTitle,
             style: TextStyle(
               fontSize: 28,
@@ -858,248 +771,369 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               letterSpacing: -0.5,
             ),
           ),
+        ),
 
-          const SizedBox(height: 6),
+        const SizedBox(height: 6),
 
-          Text(
-            'You finished this practice session for ${widget.lessonTitle}.',
+        Center(
+          child: Text(
+            isArabic
+                ? 'لقد أكملت جميع أسئلة التمرين لدرس ${widget.lessonTitle}.'
+                : 'You finished this practice session for ${widget.lessonTitle}.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
               color: surfaces.textSecondary,
             ),
           ),
+        ),
 
-          const SizedBox(height: 32),
+        const SizedBox(height: 28),
 
-          // Stats Card Box
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: surfaces.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: surfaces.border),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      'CORRECT',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$_correctCount',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF10B981),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'WRONG',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$_wrongCount',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFEF4444),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'ACCURACY',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$accuracyPercent%',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: accuracyPercent >= 70
-                            ? const Color(0xFF10B981)
-                            : (accuracyPercent >= 40
-                                ? const Color(0xFFF59E0B)
-                                : const Color(0xFFEF4444)),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'XP EARNED',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      '+50 XP',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: AimColors.primary500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        // Stats Card Box
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: surfaces.border),
           ),
-
-          const SizedBox(height: 20),
-
-          // Feedback Summary Banner (shows wrong answers count clearly)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _wrongCount == 0
-                  ? const Color(0xFFD1FAE5)
-                  : const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _wrongCount == 0
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFF59E0B),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _wrongCount == 0
-                      ? Icons.emoji_events_rounded
-                      : Icons.info_outline_rounded,
-                  color: _wrongCount == 0
-                      ? const Color(0xFF065F46)
-                      : const Color(0xFFB45309),
-                  size: 26,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _wrongCount == 0
-                            ? (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'درجة كاملة! أحسنت صنعاً'
-                                : 'Perfect Score! All Correct')
-                            : (Localizations.localeOf(context).languageCode == 'ar'
-                                ? (_wrongCount == 1
-                                    ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
-                                    : 'لديك $_wrongCount إجابات غير صحيحة من أصل $totalQ أسئلة')
-                                : 'You got $_wrongCount wrong answer${_wrongCount > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: _wrongCount == 0
-                              ? const Color(0xFF065F46)
-                              : const Color(0xFF92400E),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _wrongCount == 0
-                            ? (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
-                                : 'You mastered all concepts in this practice session.')
-                            : (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
-                                : 'Review the lesson and practice again to master these concepts.'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _wrongCount == 0
-                              ? const Color(0xFF047857)
-                              : const Color(0xFFB45309),
-                        ),
-                      ),
-                    ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'صحيحة' : 'CORRECT',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_correctCount',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: surfaces.border,
+              ),
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'خاطئة' : 'WRONG',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_wrongCount',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFEF4444),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: surfaces.border,
+              ),
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'الدقة' : 'ACCURACY',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$accuracyPercent%',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: accuracyPercent >= 70
+                          ? const Color(0xFF10B981)
+                          : (accuracyPercent >= 40
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFFEF4444)),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: surfaces.border,
+              ),
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'النقاط' : 'XP EARNED',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    '+50 XP',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: AimColors.primary500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Feedback Summary Banner (shows wrong answers count clearly)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _wrongCount == 0
+                ? const Color(0xFFD1FAE5)
+                : const Color(0xFFFEF3C7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _wrongCount == 0
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
             ),
           ),
-
-          const Spacer(),
-
-          // Continue Button
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/main');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AimColors.primary500,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
+          child: Row(
+            children: [
+              Icon(
+                _wrongCount == 0
+                    ? Icons.emoji_events_rounded
+                    : Icons.info_outline_rounded,
+                color: _wrongCount == 0
+                    ? const Color(0xFF065F46)
+                    : const Color(0xFFB45309),
+                size: 26,
               ),
-              child: Text(
-                l10n.practiceSessionDoneButton,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _wrongCount == 0
+                          ? (isArabic
+                              ? 'درجة كاملة! أحسنت صنعاً'
+                              : 'Perfect Score! All Correct')
+                          : (isArabic
+                              ? (_wrongCount == 1
+                                  ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
+                                  : 'لديك $_wrongCount إجابات غير صحيحة من أصل $totalQ أسئلة')
+                              : 'You got $_wrongCount wrong answer${_wrongCount > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: _wrongCount == 0
+                            ? const Color(0xFF065F46)
+                            : const Color(0xFF92400E),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _wrongCount == 0
+                          ? (isArabic
+                              ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
+                              : 'You mastered all concepts in this practice session.')
+                          : (isArabic
+                              ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
+                              : 'Review the lesson and practice again to master these concepts.'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _wrongCount == 0
+                            ? const Color(0xFF047857)
+                            : const Color(0xFFB45309),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ],
+          ),
+        ),
+
+        if (_questionSummaries.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          _buildQuestionReviewList(
+            context: context,
+            surfaces: surfaces,
+            summaries: _questionSummaries,
+            isArabic: isArabic,
+          ),
+        ],
+
+        const SizedBox(height: 28),
+
+        // Continue Button
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/main');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AimColors.primary500,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              l10n.practiceSessionDoneButton,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
               ),
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
+  Widget _buildQuestionReviewList({
+    required BuildContext context,
+    required AimSurfaceTheme surfaces,
+    required List<_PracticeQuestionSummary> summaries,
+    required bool isArabic,
+  }) {
+    if (summaries.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.checklist_rounded,
+                color: AimColors.primary500,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isArabic ? 'مراجعة الإجابات' : 'Question Review',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: surfaces.textPrimary,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
+          for (final item in summaries) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: item.isCorrect
+                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                      : const Color(0xFFEF4444).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: item.isCorrect
+                          ? const Color(0xFFD1FAE5)
+                          : const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      item.isCorrect
+                          ? Icons.check_rounded
+                          : Icons.close_rounded,
+                      color: item.isCorrect
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${isArabic ? "سؤال" : "Q"}${item.questionNumber}: ${item.stem}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: surfaces.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${isArabic ? "إجابتك:" : "Your answer:"} ${item.userAnswer.isEmpty ? (isArabic ? "(فارغ)" : "(empty)") : item.userAnswer}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: item.isCorrect
+                                ? const Color(0xFF065F46)
+                                : const Color(0xFFB91C1C),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1270,47 +1304,32 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           child: SizedBox(
             width: double.infinity,
             height: 52,
-            child: !_demoAnswered
-                ? ElevatedButton(
-                    onPressed: _demoSelected != null ? _handleDemoCheck : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AimColors.primary500,
-                      disabledBackgroundColor:
-                          AimColors.primary500.withValues(alpha: 0.4),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Check Answer',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  )
-                : ElevatedButton(
-                    onPressed: _handleDemoNext,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AimColors.primary500,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      _demoIndex < totalQuestions - 1
-                          ? 'Next Question'
-                          : 'Complete Session',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
+            child: ElevatedButton(
+              onPressed: _demoSelected != null ? _handleDemoProceed : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AimColors.primary500,
+                disabledBackgroundColor:
+                    AimColors.primary500.withValues(alpha: 0.4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                _demoIndex < totalQuestions - 1
+                    ? (Localizations.localeOf(context).languageCode == 'ar'
+                        ? 'السؤال التالي'
+                        : 'Next Question')
+                    : (Localizations.localeOf(context).languageCode == 'ar'
+                        ? 'إكمال الجلسة'
+                        : 'Complete Session'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -1324,23 +1343,12 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     required int correctIndex,
   }) {
     final isSelected = _demoSelected == index;
-    final isCorrect = index == correctIndex;
 
     Color tileBg = surfaces.surface;
     BorderSide tileBorder = BorderSide(color: surfaces.border);
     Color textColor = surfaces.textPrimary;
 
-    if (_demoAnswered) {
-      if (isCorrect) {
-        tileBg = const Color(0xFFD1FAE5);
-        tileBorder = const BorderSide(color: Color(0xFF10B981), width: 2);
-        textColor = const Color(0xFF065F46);
-      } else if (isSelected && !isCorrect) {
-        tileBg = const Color(0xFFFFE4E6);
-        tileBorder = const BorderSide(color: Color(0xFFF43F5E), width: 2);
-        textColor = const Color(0xFF9F1239);
-      }
-    } else if (isSelected) {
+    if (isSelected) {
       tileBg = AimColors.primary500.withValues(alpha: 0.08);
       tileBorder = const BorderSide(color: AimColors.primary500, width: 2);
       textColor = AimColors.primary500;
@@ -1350,7 +1358,6 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          if (_demoAnswered) return;
           setState(() => _demoSelected = index);
         },
         borderRadius: BorderRadius.circular(16),
@@ -1374,11 +1381,17 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   ),
                 ),
               ),
-              if (_demoAnswered && isCorrect)
+              if (isSelected)
                 const Icon(
-                  Icons.check_circle_rounded,
-                  color: Color(0xFF10B981),
-                  size: 22,
+                  Icons.radio_button_checked_rounded,
+                  color: AimColors.primary500,
+                  size: 20,
+                )
+              else
+                Icon(
+                  Icons.radio_button_unchecked_rounded,
+                  color: surfaces.border,
+                  size: 20,
                 ),
             ],
           ),
@@ -1392,17 +1405,18 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
     required AimSurfaceTheme surfaces,
     required AppLocalizations l10n,
   }) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     final totalQ = _demoQuestions.length;
     final accuracyPercent = ((_demoScore / totalQ) * 100).round();
+    final wrongCount = totalQ - _demoScore;
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const Spacer(),
-
-          // Trophy Animated Box
-          Stack(
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      children: [
+        const SizedBox(height: 12),
+        // Trophy Animated Box
+        Center(
+          child: Stack(
             alignment: Alignment.center,
             children: [
               Container(
@@ -1442,19 +1456,21 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               ),
             ],
           ),
+        ),
 
-          const SizedBox(height: 24),
+        const SizedBox(height: 24),
 
-          // Eyebrow Tag
-          Container(
+        // Eyebrow Tag
+        Center(
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'PRACTICE COMPLETE!',
-              style: TextStyle(
+            child: Text(
+              isArabic ? 'اكتمل التدريب التجريبي!' : 'DEMO PRACTICE COMPLETE!',
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
                 color: Color(0xFFD97706),
@@ -1462,11 +1478,13 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               ),
             ),
           ),
+        ),
 
-          const SizedBox(height: 12),
+        const SizedBox(height: 12),
 
-          Text(
-            'Great Job!',
+        Center(
+          child: Text(
+            isArabic ? 'عمل رائع!' : 'Great Job!',
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
@@ -1474,250 +1492,235 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               letterSpacing: -0.5,
             ),
           ),
+        ),
 
-          const SizedBox(height: 6),
+        const SizedBox(height: 6),
 
-          Text(
-            'You scored $_demoScore/$totalQ on this practice session.',
+        Center(
+          child: Text(
+            isArabic
+                ? 'أكملت جلسة التدريب التجريبية بنجاح.'
+                : 'You completed the demo practice session successfully.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
               color: surfaces.textSecondary,
             ),
           ),
+        ),
 
-          const SizedBox(height: 32),
+        const SizedBox(height: 28),
 
-          // Stats Card Box
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: surfaces.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: surfaces.border),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      'CORRECT',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$_demoScore',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF10B981),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'WRONG',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${totalQ - _demoScore}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFEF4444),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'ACCURACY',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$accuracyPercent%',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: accuracyPercent >= 70
-                            ? const Color(0xFF10B981)
-                            : (accuracyPercent >= 40
-                                ? const Color(0xFFF59E0B)
-                                : const Color(0xFFEF4444)),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: surfaces.border,
-                ),
-                Column(
-                  children: [
-                    Text(
-                      'XP EARNED',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textMuted,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      '+50 XP',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: AimColors.primary500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        // Stats Card Box
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: surfaces.border),
           ),
-
-          const SizedBox(height: 20),
-
-          // Feedback Summary Banner (shows wrong answers count clearly)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: (totalQ - _demoScore) == 0
-                  ? const Color(0xFFD1FAE5)
-                  : const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: (totalQ - _demoScore) == 0
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFF59E0B),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  (totalQ - _demoScore) == 0
-                      ? Icons.emoji_events_rounded
-                      : Icons.info_outline_rounded,
-                  color: (totalQ - _demoScore) == 0
-                      ? const Color(0xFF065F46)
-                      : const Color(0xFFB45309),
-                  size: 26,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (totalQ - _demoScore) == 0
-                            ? (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'درجة كاملة! أحسنت صنعاً'
-                                : 'Perfect Score! All Correct')
-                            : (Localizations.localeOf(context).languageCode == 'ar'
-                                ? ((totalQ - _demoScore) == 1
-                                    ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
-                                    : 'لديك ${totalQ - _demoScore} إجابات غير صحيحة من أصل $totalQ أسئلة')
-                                : 'You got ${totalQ - _demoScore} wrong answer${(totalQ - _demoScore) > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: (totalQ - _demoScore) == 0
-                              ? const Color(0xFF065F46)
-                              : const Color(0xFF92400E),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        (totalQ - _demoScore) == 0
-                            ? (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
-                                : 'You mastered all concepts in this practice session.')
-                            : (Localizations.localeOf(context).languageCode == 'ar'
-                                ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
-                                : 'Review the lesson and practice again to master these concepts.'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: (totalQ - _demoScore) == 0
-                              ? const Color(0xFF047857)
-                              : const Color(0xFFB45309),
-                        ),
-                      ),
-                    ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'صحيحة' : 'CORRECT',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_demoScore',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: surfaces.border,
+              ),
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'خاطئة' : 'WRONG',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$wrongCount',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFEF4444),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: surfaces.border,
+              ),
+              Column(
+                children: [
+                  Text(
+                    isArabic ? 'الدقة' : 'ACCURACY',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: surfaces.textMuted,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$accuracyPercent%',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: accuracyPercent >= 70
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Feedback Summary Banner (shows wrong answers count clearly)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: wrongCount == 0
+                ? const Color(0xFFD1FAE5)
+                : const Color(0xFFFEF3C7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: wrongCount == 0
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
             ),
           ),
-
-          const Spacer(),
-
-          // Continue Button
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/main');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AimColors.primary500,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
+          child: Row(
+            children: [
+              Icon(
+                wrongCount == 0
+                    ? Icons.emoji_events_rounded
+                    : Icons.info_outline_rounded,
+                color: wrongCount == 0
+                    ? const Color(0xFF065F46)
+                    : const Color(0xFFB45309),
+                size: 26,
               ),
-              child: const Text(
-                'Continue to Lesson',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      wrongCount == 0
+                          ? (isArabic
+                              ? 'درجة كاملة! أحسنت صنعاً'
+                              : 'Perfect Score! All Correct')
+                          : (isArabic
+                              ? (wrongCount == 1
+                                  ? 'لديك إجابة واحدة غير صحيحة من أصل $totalQ أسئلة'
+                                  : 'لديك $wrongCount إجابات غير صحيحة من أصل $totalQ أسئلة')
+                              : 'You got $wrongCount wrong answer${wrongCount > 1 ? 's' : ''} out of $totalQ ${totalQ == 1 ? 'question' : 'questions'}'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: wrongCount == 0
+                            ? const Color(0xFF065F46)
+                            : const Color(0xFF92400E),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      wrongCount == 0
+                          ? (isArabic
+                              ? 'لقد أتقنت جميع مفاهيم هذا الدرس بنجاح.'
+                              : 'You mastered all concepts in this practice session.')
+                          : (isArabic
+                              ? 'راجع الدرس وتدرّب مجدداً لإتقان جميع الإجابات.'
+                              : 'Review the lesson and practice again to master these concepts.'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: wrongCount == 0
+                            ? const Color(0xFF047857)
+                            : const Color(0xFFB45309),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 12),
+        ),
+
+        if (_demoSummaries.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          _buildQuestionReviewList(
+            context: context,
+            surfaces: surfaces,
+            summaries: _demoSummaries,
+            isArabic: isArabic,
+          ),
         ],
-      ),
+
+        const SizedBox(height: 28),
+
+        // Continue Button
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/main');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AimColors.primary500,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Continue to Lesson',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
     );
   }
 
@@ -1824,9 +1827,9 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   setState(() {
                     _demoIndex = 0;
                     _demoSelected = null;
-                    _demoAnswered = false;
                     _demoScore = 0;
                     _demoFinished = false;
+                    _demoSummaries.clear();
                   });
                 },
                 style: OutlinedButton.styleFrom(
