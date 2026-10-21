@@ -13,7 +13,6 @@
 //   "Max attempts" (a real field) is shown instead of "Attempts used".
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -88,102 +87,33 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _AssessmentDetailHeader(title: headerTitle),
-          Expanded(
-            child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessment',
-                ),
-              AppAsyncFailure(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _load,
-                ),
-              AppAsyncSuccess(:final data) => _AssessmentDetailContent(
-                  detail: data,
-                  onStartAttempt: () => _navigateToStartAttempt(data),
-                  onViewPastResults: () => _navigateToPastResults(data),
-                ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessment',
-                ),
-            },
-          ),
-        ],
+      appBar: AIMTopAppBar(
+        title: headerTitle,
+        onBack: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/student/assessments');
+          }
+        },
       ),
-    );
-  }
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-class _AssessmentDetailHeader extends StatelessWidget {
-  const _AssessmentDetailHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.space16,
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.space16,
-        ),
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-        child: SafeArea(
-          bottom: false,
-          child: Row(
-            children: [
-              Semantics(
-                button: true,
-                label: 'Back',
-                child: InkWell(
-                  onTap: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/student/assessments');
-                    }
-                  },
-                  customBorder: const CircleBorder(),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AimColors.neutral0.withValues(alpha: 0.18),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AimSpacing.space12),
-                      child: Icon(
-                        Directionality.of(context) == TextDirection.rtl
-                            ? Icons.chevron_right_rounded
-                            : Icons.chevron_left_rounded,
-                        size: AimSizes.iconMd,
-                        color: AimColors.neutral0,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AimSpacing.space12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+      body: switch (state) {
+        AppAsyncLoading() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading assessment',
           ),
-        ),
-      ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: message,
+            onRetry: _load,
+          ),
+        AppAsyncSuccess(:final data) => _AssessmentDetailContent(
+            detail: data,
+            onStartAttempt: () => _navigateToStartAttempt(data),
+            onViewPastResults: () => _navigateToPastResults(data),
+          ),
+        AppAsyncIdle() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading assessment',
+          ),
+      },
     );
   }
 }
@@ -271,12 +201,14 @@ class _AssessmentDetailContent extends StatelessWidget {
         ],
 
         const SizedBox(height: AimSpacing.sectionGap),
-        AIMGradientButton(
-          label: AppLocalizations.of(context).assessmentsStartAttempt,
+        AIMButton(
+          variant: AIMButtonVariant.primary,
+          size: AIMButtonSize.large,
           fullWidth: true,
           onPressed: onStartAttempt,
           semanticLabel:
               '${AppLocalizations.of(context).assessmentsStartAttempt} ${detail.title}',
+          child: Text(AppLocalizations.of(context).assessmentsStartAttempt),
         ),
       ],
     );

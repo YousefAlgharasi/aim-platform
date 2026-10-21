@@ -7,24 +7,34 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AIMTopAppBar({
     super.key,
     this.title,
+    this.subtitle,
+    this.titleWidget,
     this.onBack,
     this.leading,
     this.actions = const [],
     this.centerTitle = false,
     this.transparent = false,
     this.backSemanticLabel = 'Back',
+    this.iconButtonVariant = AIMIconButtonVariant.soft,
   });
 
   final String? title;
+  final String? subtitle;
+  final Widget? titleWidget;
   final VoidCallback? onBack;
   final Widget? leading;
   final List<Widget> actions;
   final bool centerTitle;
   final bool transparent;
   final String backSemanticLabel;
+  final AIMIconButtonVariant iconButtonVariant;
 
   @override
-  Size get preferredSize => const Size.fromHeight(AimSizes.topBarHeight);
+  Size get preferredSize => Size.fromHeight(
+        (subtitle != null && subtitle!.isNotEmpty)
+            ? AimSizes.topBarHeight + 8
+            : AimSizes.topBarHeight,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +43,39 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
     final background = transparent ? Colors.transparent : surfaces.surface;
     final border = transparent ? Colors.transparent : surfaces.border;
 
-    final titleWidget = Text(
-      title ?? '',
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
-      textAlign: centerTitle ? TextAlign.center : TextAlign.start,
-      style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
-    );
+    final Widget resolvedTitle = titleWidget ??
+        (subtitle != null && subtitle!.isNotEmpty
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: centerTitle
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title ?? '',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: centerTitle ? TextAlign.center : TextAlign.start,
+                    style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: centerTitle ? TextAlign.center : TextAlign.start,
+                    style:
+                        AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+                  ),
+                ],
+              )
+            : Text(
+                title ?? '',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: centerTitle ? TextAlign.center : TextAlign.start,
+                style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+              ));
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -49,7 +85,7 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          height: AimSizes.topBarHeight,
+          height: preferredSize.height,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space8),
             child: Row(
@@ -58,6 +94,7 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (onBack != null)
                   AIMIconButton(
                     semanticLabel: backSemanticLabel,
+                    variant: iconButtonVariant,
                     onPressed: onBack,
                     icon: Icon(
                       direction == TextDirection.rtl
@@ -72,10 +109,10 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                       horizontal: AimSpacing.space8,
                     ),
                     child: centerTitle
-                        ? Center(child: titleWidget)
+                        ? Center(child: resolvedTitle)
                         : Align(
                             alignment: AlignmentDirectional.centerStart,
-                            child: titleWidget,
+                            child: resolvedTitle,
                           ),
                   ),
                 ),

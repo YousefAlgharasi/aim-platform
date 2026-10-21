@@ -91,7 +91,12 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
     final state = ref.watch(attemptResultProvider);
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: widget.assessmentTitle),
+      appBar: AIMTopAppBar(
+        title: widget.assessmentTitle,
+        onBack: () => context.canPop()
+            ? context.pop()
+            : context.go(AppRoutePaths.assessments),
+      ),
       body: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',
@@ -227,11 +232,13 @@ class _ResultContent extends StatelessWidget {
         ],
 
         const SizedBox(height: AimSpacing.sectionGap),
-        AIMGradientButton(
-          label: AppLocalizations.of(context).assessmentsDone,
+        AIMButton(
+          variant: AIMButtonVariant.primary,
+          size: AIMButtonSize.large,
           onPressed: onDone,
           fullWidth: true,
           semanticLabel: AppLocalizations.of(context).assessmentsDone,
+          child: Text(AppLocalizations.of(context).assessmentsDone),
         ),
       ],
     );

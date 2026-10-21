@@ -119,55 +119,51 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _AttemptHeader(
-            title: widget.assessmentTitle,
-            expiresAt: widget.expiresAt,
-          ),
-          Expanded(
-            child: switch (resumeState) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Resuming attempt',
-                ),
-              AppAsyncFailure(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _resumeAttempt,
-                ),
-              AppAsyncSuccess(:final data) => _AttemptContent(
-                  result: data,
-                  attemptId: widget.attemptId,
-                  onSubmit: _openSubmitConfirmation,
-                  onAnswerSelect: _submitAnswer,
-                ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Resuming attempt',
-                ),
-            },
-          ),
+      appBar: AIMTopAppBar(
+        title: widget.assessmentTitle,
+        onBack: () => context.pop(),
+        actions: [
+          if (widget.expiresAt != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
+              child: _AttemptTimerAction(expiresAt: widget.expiresAt!),
+            ),
         ],
       ),
+      body: switch (resumeState) {
+        AppAsyncLoading() => const AIMFullScreenLoading(
+            semanticLabel: 'Resuming attempt',
+          ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: message,
+            onRetry: _resumeAttempt,
+          ),
+        AppAsyncSuccess(:final data) => _AttemptContent(
+            result: data,
+            attemptId: widget.attemptId,
+            onSubmit: _openSubmitConfirmation,
+            onAnswerSelect: _submitAnswer,
+          ),
+        AppAsyncIdle() => const AIMFullScreenLoading(
+            semanticLabel: 'Resuming attempt',
+          ),
+      },
     );
   }
 }
 
-// ── Gradient header ─────────────────────────────────────────────────────────
+// ── Timer badge action ───────────────────────────────────────────────────────
 
-/// Hero header mirroring [RegisterPage]'s back-button/title pattern, with a
-/// live-updating countdown pill sourced from the real `expiresAt` field
-/// returned by the resume endpoint.
-class _AttemptHeader extends StatefulWidget {
-  const _AttemptHeader({required this.title, required this.expiresAt});
+class _AttemptTimerAction extends StatefulWidget {
+  const _AttemptTimerAction({required this.expiresAt});
 
-  final String title;
-  final String? expiresAt;
+  final String expiresAt;
 
   @override
-  State<_AttemptHeader> createState() => _AttemptHeaderState();
+  State<_AttemptTimerAction> createState() => _AttemptTimerActionState();
 }
 
-class _AttemptHeaderState extends State<_AttemptHeader> {
+class _AttemptTimerActionState extends State<_AttemptTimerAction> {
   Timer? _ticker;
   Duration _remaining = Duration.zero;
 
@@ -175,33 +171,22 @@ class _AttemptHeaderState extends State<_AttemptHeader> {
   void initState() {
     super.initState();
     _updateRemaining();
-    if (widget.expiresAt != null) {
-      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (!mounted) return;
-        _updateRemaining();
-      });
-    }
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      _updateRemaining();
+    });
   }
 
   @override
-  void didUpdateWidget(covariant _AttemptHeader oldWidget) {
+  void didUpdateWidget(covariant _AttemptTimerAction oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.expiresAt != widget.expiresAt) {
-      _ticker?.cancel();
       _updateRemaining();
-      if (widget.expiresAt != null) {
-        _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-          if (!mounted) return;
-          _updateRemaining();
-        });
-      }
     }
   }
 
   void _updateRemaining() {
-    final expiresAt = widget.expiresAt;
-    if (expiresAt == null) return;
-    final deadline = DateTime.tryParse(expiresAt);
+    final deadline = DateTime.tryParse(widget.expiresAt);
     if (deadline == null) return;
     final diff = deadline.difference(DateTime.now());
     setState(() {
@@ -231,67 +216,11 @@ class _AttemptHeaderState extends State<_AttemptHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () => context.pop(),
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Text(
-                widget.title,
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (widget.expiresAt != null) ...[
-              const SizedBox(width: AimSpacing.space8),
-              _CountdownPill(label: _formatted),
-            ],
-          ],
-        ),
-      ),
-    );
+    return _CountdownPill(label: _formatted);
   }
 }
 
-/// Amber countdown pill matching the screenshot's "⏱ 14:32" affordance.
-///
-/// Display-only: reaching `00:00` does not trigger auto-submission or any
-/// other business logic — that would be new scope beyond this UI task.
+/// Amber countdown pill matching design countdown affordance.
 class _CountdownPill extends StatelessWidget {
   const _CountdownPill({required this.label});
 
@@ -302,21 +231,24 @@ class _CountdownPill extends StatelessWidget {
     return Semantics(
       label: 'Time remaining: $label',
       child: Container(
-        constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
+        constraints: const BoxConstraints(minHeight: 32),
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AimSpacing.space12,
-          vertical: AimSpacing.space8,
+          vertical: AimSpacing.space4,
         ),
         decoration: BoxDecoration(
-          color: AimColors.warning500.withValues(alpha: 0.18),
+          color: AimColors.warning500.withValues(alpha: 0.15),
           borderRadius: AimRadius.borderPill,
+          border: Border.all(
+            color: AimColors.warning500.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.timer_outlined,
-              size: AimSizes.iconSm,
+              size: 16,
               color: AimColors.warning500,
             ),
             const SizedBox(width: AimSpacing.space4),
@@ -482,11 +414,13 @@ class _AttemptContent extends ConsumerWidget {
             },
           ),
           const SizedBox(height: AimSpacing.sectionGap),
-          AIMGradientButton(
-            label: AppLocalizations.of(context).assessmentsSubmit,
+          AIMButton(
+            variant: AIMButtonVariant.primary,
+            size: AIMButtonSize.large,
             onPressed: onSubmit,
             fullWidth: true,
             semanticLabel: AppLocalizations.of(context).assessmentsSubmit,
+            child: Text(AppLocalizations.of(context).assessmentsSubmit),
           ),
         ],
       ),
@@ -526,18 +460,21 @@ class _QuestionCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Question ${index + 1}',
-            style: AimTextStyles.bodySm.copyWith(
-              color: surfaces.textSecondary,
-              fontWeight: FontWeight.w600,
+            'QUESTION ${index + 1}',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: AimColors.primary500,
+              letterSpacing: 1.0,
             ),
           ),
-          const SizedBox(height: AimSpacing.space4),
+          const SizedBox(height: AimSpacing.space8),
           Text(
             question.prompt,
-            style: AimTextStyles.bodyMd.copyWith(
+            style: AimTextStyles.bodyLg.copyWith(
               color: surfaces.textPrimary,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
             ),
           ),
           if (isListening) ...[

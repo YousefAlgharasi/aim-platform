@@ -87,116 +87,33 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _HistoryHeader(assessmentTitle: widget.assessmentTitle),
-          Expanded(
-            child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading result history',
-                ),
-              AppAsyncFailure(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _load,
-                ),
-              AppAsyncSuccess(:final data) => _ResultHistoryContent(
-                  history: data,
-                  onItemTap: _onItemTap,
-                ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading result history',
-                ),
-            },
+      appBar: AIMTopAppBar(
+        title: 'Result history',
+        subtitle: widget.assessmentTitle,
+        onBack: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/student/assessments');
+          }
+        },
+      ),
+      body: switch (state) {
+        AppAsyncLoading() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading result history',
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-/// Hero header mirroring [AttemptPage]/[SubmitAttemptPage]'s
-/// back-button/title pattern. Shows the design's static "Result history"
-/// label plus the REAL assessment title as a subtitle line, so the screen
-/// still identifies which assessment the history belongs to.
-class _HistoryHeader extends StatelessWidget {
-  const _HistoryHeader({required this.assessmentTitle});
-
-  final String assessmentTitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/student/assessments');
-                  }
-                },
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Result history',
-                    style:
-                        AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    assessmentTitle,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.85),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: message,
+            onRetry: _load,
+          ),
+        AppAsyncSuccess(:final data) => _ResultHistoryContent(
+            history: data,
+            onItemTap: _onItemTap,
+          ),
+        AppAsyncIdle() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading result history',
+          ),
+      },
     );
   }
 }

@@ -113,160 +113,80 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SubmitHeader(
-            title: widget.assessmentTitle,
-            // Match the Go Back button's disabled-while-submitting behaviour
-            // so the user can't leave mid-submit.
-            onBack: _submitting ? null : () => context.pop(),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.sectionGap,
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.sectionGap,
+      appBar: AIMTopAppBar(
+        title: widget.assessmentTitle,
+        onBack: _submitting ? null : () => context.pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.sectionGap,
+          AimSpacing.screenPaddingMobile,
+          AimSpacing.sectionGap,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Spacer(),
+            Text(
+              AppLocalizations.of(context).submitAttemptTitle,
+              style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            Text(
+              AppLocalizations.of(context).submitAttemptWarning,
+              style:
+                  AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            // Finality warning
+            Container(
+              padding: const EdgeInsets.all(AimSpacing.componentGap),
+              decoration: const BoxDecoration(
+                color: AimColors.error100,
+                borderRadius: AimRadius.borderSm,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Row(
                 children: [
-                  const Spacer(),
-                  Text(
-                    AppLocalizations.of(context).submitAttemptTitle,
-                    style: AimTextStyles.h2
-                        .copyWith(color: surfaces.textPrimary),
-                    textAlign: TextAlign.center,
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    size: AimSizes.iconSm,
+                    color: AimColors.error500,
                   ),
-                  // The design's stats card ("Answered 10 / 10", "Time used
-                  // 9 min") is intentionally omitted here — neither row has
-                  // backing data; see the file header.
-                  const SizedBox(height: AimSpacing.componentGap),
-                  Text(
-                    AppLocalizations.of(context).submitAttemptWarning,
-                    style: AimTextStyles.bodyMd
-                        .copyWith(color: surfaces.textSecondary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AimSpacing.componentGap),
-                  // Finality warning
-                  Container(
-                    padding: const EdgeInsets.all(AimSpacing.componentGap),
-                    decoration: const BoxDecoration(
-                      color: AimColors.error100,
-                      borderRadius: AimRadius.borderSm,
+                  const SizedBox(width: AimSpacing.space8),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context).submitAttemptFinalAction,
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: AimColors.error700,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          size: AimSizes.iconSm,
-                          color: AimColors.error500,
-                        ),
-                        const SizedBox(width: AimSpacing.space8),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(context)
-                                .submitAttemptFinalAction,
-                            style: AimTextStyles.bodySm.copyWith(
-                              color: AimColors.error700,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(flex: 2),
-                  AIMGradientButton(
-                    label: AppLocalizations.of(context).assessmentsSubmit,
-                    onPressed: _submitting ? null : _submitAttempt,
-                    loading: _submitting,
-                    fullWidth: true,
-                    semanticLabel:
-                        '${AppLocalizations.of(context).assessmentsSubmit} ${widget.assessmentTitle}',
-                  ),
-                  const SizedBox(height: AimSpacing.componentGap),
-                  AIMButton(
-                    variant: AIMButtonVariant.outline,
-                    onPressed: _submitting ? null : () => context.pop(),
-                    disabled: _submitting,
-                    fullWidth: true,
-                    child: Text(AppLocalizations.of(context).assessmentsGoBack),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-/// Hero header mirroring [AttemptPage]'s back-button/title pattern, minus
-/// the countdown pill (this screen has no live deadline affordance in the
-/// design). Shows the real assessment title.
-class _SubmitHeader extends StatelessWidget {
-  const _SubmitHeader({required this.title, this.onBack});
-
-  final String title;
-
-  /// Null disables the back affordance (while a submission is in flight).
-  final VoidCallback? onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              enabled: onBack != null,
-              label: AppLocalizations.of(context).commonBack,
-              child: InkWell(
-                onTap: onBack,
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
+            const Spacer(flex: 2),
+            AIMButton(
+              variant: AIMButtonVariant.primary,
+              size: AIMButtonSize.large,
+              onPressed: _submitting ? null : _submitAttempt,
+              loading: _submitting,
+              fullWidth: true,
+              semanticLabel:
+                  '${AppLocalizations.of(context).assessmentsSubmit} ${widget.assessmentTitle}',
+              child: Text(AppLocalizations.of(context).assessmentsSubmit),
             ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Text(
-                title,
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMButton(
+              variant: AIMButtonVariant.outline,
+              size: AIMButtonSize.large,
+              onPressed: _submitting ? null : () => context.pop(),
+              disabled: _submitting,
+              fullWidth: true,
+              child: Text(AppLocalizations.of(context).assessmentsGoBack),
             ),
           ],
         ),

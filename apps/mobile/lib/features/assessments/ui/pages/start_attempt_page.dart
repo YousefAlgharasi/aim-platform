@@ -7,7 +7,6 @@
 // Attempt button.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -91,146 +90,72 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _StartAttemptHeader(
-              title: AppLocalizations.of(context).assessmentsStartAttemptTitle),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AimSpacing.screenPaddingMobile,
-                vertical: AimSpacing.sectionGap,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AimSpacing.sectionGap),
-                  Center(
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AimColors.primary500.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.timer_outlined,
-                        size: 36,
-                        color: AimColors.primary500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AimSpacing.sectionGap),
-                  Text(
-                    widget.assessmentTitle,
-                    style:
-                        AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AimSpacing.space8),
-                  Text(
-                    subtitle,
-                    style: AimTextStyles.bodyMd.copyWith(
-                      color: surfaces.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const Spacer(),
-                  AIMGradientButton(
-                    label: AppLocalizations.of(context).assessmentsStartAttempt,
-                    loading: _starting,
-                    fullWidth: true,
-                    onPressed: _startAttempt,
-                    semanticLabel:
-                        '${AppLocalizations.of(context).assessmentsStartAttempt} ${widget.assessmentTitle}',
-                  ),
-                  const SizedBox(height: AimSpacing.componentGap),
-                  AIMButton(
-                    variant: AIMButtonVariant.outline,
-                    onPressed: () => context.pop(),
-                    fullWidth: true,
-                    child: Text(AppLocalizations.of(context).assessmentsGoBack),
-                  ),
-                ],
+      appBar: AIMTopAppBar(
+        title: AppLocalizations.of(context).assessmentsStartAttemptTitle,
+        onBack: () => context.pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AimSpacing.screenPaddingMobile,
+          vertical: AimSpacing.sectionGap,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: AimSpacing.sectionGap),
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AimColors.primary500.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.timer_outlined,
+                  size: 36,
+                  color: AimColors.primary500,
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              widget.assessmentTitle,
+              style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AimSpacing.space8),
+            Text(
+              subtitle,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: surfaces.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const Spacer(),
+            AIMButton(
+              variant: AIMButtonVariant.primary,
+              size: AIMButtonSize.large,
+              loading: _starting,
+              fullWidth: true,
+              onPressed: _startAttempt,
+              semanticLabel:
+                  '${AppLocalizations.of(context).assessmentsStartAttempt} ${widget.assessmentTitle}',
+              child: Text(AppLocalizations.of(context).assessmentsStartAttempt),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMButton(
+              variant: AIMButtonVariant.outline,
+              size: AIMButtonSize.large,
+              onPressed: () => context.pop(),
+              fullWidth: true,
+              child: Text(AppLocalizations.of(context).assessmentsGoBack),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   String _formatMinutes(int seconds) => (seconds / 60).round().toString();
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-class _StartAttemptHeader extends StatelessWidget {
-  const _StartAttemptHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.space16,
-          AimSpacing.screenPaddingMobile,
-          AimSpacing.space16,
-        ),
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-        child: SafeArea(
-          bottom: false,
-          child: Row(
-            children: [
-              Semantics(
-                button: true,
-                label: 'Back',
-                child: InkWell(
-                  onTap: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/student/assessments');
-                    }
-                  },
-                  customBorder: const CircleBorder(),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AimColors.neutral0.withValues(alpha: 0.18),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AimSpacing.space12),
-                      child: Icon(
-                        Directionality.of(context) == TextDirection.rtl
-                            ? Icons.chevron_right_rounded
-                            : Icons.chevron_left_rounded,
-                        size: AimSizes.iconMd,
-                        color: AimColors.neutral0,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AimSpacing.space12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -113,98 +113,32 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _DeadlinesHeader(),
-          Expanded(
-            child: switch (state) {
-              AppAsyncLoading() => AIMFullScreenLoading(
-                  semanticLabel: l10n.deadlinesLoadingSemantic,
-                ),
-              AppAsyncFailure(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _load,
-                ),
-              AppAsyncSuccess(:final data) => _DeadlinesContent(
-                  deadlines: data,
-                  onRefresh: _refresh,
-                ),
-              AppAsyncIdle() => AIMFullScreenLoading(
-                  semanticLabel: l10n.deadlinesLoadingSemantic,
-                ),
-            },
+      appBar: AIMTopAppBar(
+        title: l10n.deadlinesTitle,
+        onBack: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/student/assessments');
+          }
+        },
+      ),
+      body: switch (state) {
+        AppAsyncLoading() => AIMFullScreenLoading(
+            semanticLabel: l10n.deadlinesLoadingSemantic,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-/// Hero header mirroring [AttemptPage]/[SubmitAttemptPage]'s
-/// back-button/title pattern (design screen 31's top bar).
-class _DeadlinesHeader extends StatelessWidget {
-  const _DeadlinesHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: AppLocalizations.of(context).commonBack,
-              child: InkWell(
-                onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/student/assessments');
-                  }
-                },
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context).deadlinesTitle,
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: message,
+            onRetry: _load,
+          ),
+        AppAsyncSuccess(:final data) => _DeadlinesContent(
+            deadlines: data,
+            onRefresh: _refresh,
+          ),
+        AppAsyncIdle() => AIMFullScreenLoading(
+            semanticLabel: l10n.deadlinesLoadingSemantic,
+          ),
+      },
     );
   }
 }

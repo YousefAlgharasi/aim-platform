@@ -57,121 +57,63 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
 
     return Scaffold(
       backgroundColor: surfaces.background,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _AssessmentListHeader(),
-          Expanded(
-            child: switch (state) {
-              AppAsyncLoading() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessments',
+      appBar: AIMTopAppBar(
+        title: 'Assessments',
+        onBack: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/main');
+          }
+        },
+        actions: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
+            child: Semantics(
+              button: true,
+              label: 'Deadlines',
+              child: TextButton.icon(
+                onPressed: () => context.push(AppRoutePaths.assessmentDeadlines),
+                icon: const Icon(
+                  Icons.calendar_today_outlined,
+                  size: AimSizes.iconSm,
+                  color: AimColors.primary500,
                 ),
-              AppAsyncFailure(:final message) => AIMFullScreenError(
-                  message: message,
-                  onRetry: _load,
+                label: Text(
+                  'Deadlines',
+                  style: AimTextStyles.label.copyWith(
+                    color: AimColors.primary500,
+                    fontWeight: AimFontWeights.semibold,
+                  ),
                 ),
-              AppAsyncSuccess(:final data) => _AssessmentListContent(
-                  items: data,
-                  onRefresh: _refresh,
-                  onTap: _onAssessmentTap,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space8),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AimRadius.borderSm,
+                  ),
                 ),
-              AppAsyncIdle() => const AIMFullScreenLoading(
-                  semanticLabel: 'Loading assessments',
-                ),
-            },
+              ),
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-// ── Gradient header ─────────────────────────────────────────────────────────
-
-/// Hero header mirroring [DeadlinesPage]'s back-button/title pattern (design
-/// screen 24's top bar), plus a "Deadlines" link to the existing deadlines
-/// route.
-class _AssessmentListHeader extends StatelessWidget {
-  const _AssessmentListHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/main');
-                  }
-                },
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Text(
-                'Assessments',
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Semantics(
-              button: true,
-              label: 'Deadlines',
-              child: InkWell(
-                onTap: () => context.push(AppRoutePaths.assessmentDeadlines),
-                borderRadius: AimRadius.borderSm,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AimSpacing.space8,
-                    vertical: AimSpacing.space4,
-                  ),
-                  child: Text(
-                    'Deadlines',
-                    style: AimTextStyles.label.copyWith(
-                      color: AimColors.neutral0,
-                      fontWeight: AimFontWeights.semibold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: switch (state) {
+        AppAsyncLoading() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading assessments',
+          ),
+        AppAsyncFailure(:final message) => AIMFullScreenError(
+            message: message,
+            onRetry: _load,
+          ),
+        AppAsyncSuccess(:final data) => _AssessmentListContent(
+            items: data,
+            onRefresh: _refresh,
+            onTap: _onAssessmentTap,
+          ),
+        AppAsyncIdle() => const AIMFullScreenLoading(
+            semanticLabel: 'Loading assessments',
+          ),
+      },
     );
   }
 }
