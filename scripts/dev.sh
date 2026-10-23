@@ -5,10 +5,11 @@ SERVICE="${1:-}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [ -z "$SERVICE" ]; then
-  echo "Usage: $0 <backend|aim-engine|admin|mobile|docker>"
+  echo "Usage: $0 <backend|aim-engine|both|admin|mobile|docker>"
   echo ""
   echo "  backend     Start NestJS backend API in watch mode (port 3000)"
-  echo "  aim-engine  Start Python AIM Engine (port 8010)"
+  echo "  aim-engine  Start Python AIM Engine in dev mode (port 8010)"
+  echo "  both        Start backend-api AND aim-engine together (parallel)"
   echo "  admin       Start Next.js admin dashboard in dev mode (port 3001)"
   echo "  mobile      Start Flutter mobile app"
   echo "  docker      Start all backend services via Docker Compose"
@@ -18,14 +19,41 @@ fi
 case "$SERVICE" in
   backend)
     echo "→ backend-api: npm run start:dev (port 3000)"
-    cd "$ROOT/services/backend-api" && npm run start:dev
+    bash "$ROOT/services/backend-api/scripts/start.sh"
     ;;
   aim-engine)
     echo "→ aim-engine: uvicorn (port 8010)"
-    cd "$ROOT/services/aim-engine"
-    source venv/bin/activate
-    uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
-    deactivate
+    bash "$ROOT/services/aim-engine/scripts/start.sh"
+    ;;
+  both)
+    echo "→ Starting backend-api (port 3000) and aim-engine (port 8010) in parallel …"
+    echo "   Press Ctrl+C to stop both services."
+    echo ""
+
+    # Store PIDs so we can kill both on exit
+    PIDS=()
+
+    _cleanup() {
+      echo ""
+      echo "→ Stopping all services …"
+      for pid in "${PIDS[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+          kill "$pid" 2>/dev/null || true
+        fi
+      done
+      wait 2>/dev/null || true
+      echo "→ All services stopped."
+    }
+    trap _cleanup EXIT INT TERM
+
+    bash "$ROOT/services/backend-api/scripts/start.sh" &
+    PIDS+=($!)
+
+    bash "$ROOT/services/aim-engine/scripts/start.sh" &
+    PIDS+=($!)
+
+    # Wait for any child to exit; if one crashes, kill the other
+    wait -n 2>/dev/null || true
     ;;
   admin)
     echo "→ admin-dashboard: next dev (port 3001)"
@@ -57,7 +85,7 @@ case "$SERVICE" in
     ;;
   *)
     echo "Unknown service: $SERVICE"
-    echo "Usage: $0 <backend|aim-engine|admin|mobile|docker>"
+    echo "Usage: $0 <backend|aim-engine|both|admin|mobile|docker>"
     exit 1
     ;;
 esac
