@@ -55,7 +55,7 @@ describe('Practice Authority Rules', () => {
     for (const filePath of files) {
       const content = fs.readFileSync(filePath, 'utf-8');
       if (content.includes('submit') && content.includes('answer')) {
-        expect(content).toMatch(/apiClient\.post/);
+        expect(content).toMatch(/apiClient\.post|from ['"][^'"]*Api['"]/);
       }
     }
   });
@@ -66,6 +66,12 @@ describe('Practice Authority Rules', () => {
       if (content.includes('feedback') && content.includes('correct')) {
         expect(content).not.toMatch(/===\s*['"]correct['"]/);
       }
+    }
+  });
+
+  test('feature API modules call the backend through apiClient', () => {
+    for (const filePath of files.filter((f) => /Api\.ts$/.test(f))) {
+      expect(fs.readFileSync(filePath, 'utf-8')).toMatch(/apiClient\./);
     }
   });
 

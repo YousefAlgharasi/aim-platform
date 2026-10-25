@@ -23,7 +23,10 @@ import {
   type PlacementSection,
 } from './placementApi';
 import { QuestionAudio, SpeakingRecorder } from './PlacementAudio';
-import styles from './Placement.module.css';
+import { ClockIcon } from '../../components/common/Icons';
+import { BODY, CARD, ChoiceRow, EYEBROW, H2, PageHeader, ProgressBar, TEXTAREA, TimerPill } from './ui';
+
+const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
 
 type Phase = 'section' | 'questions' | 'review';
 
@@ -231,15 +234,11 @@ export function PlacementQuestionUI() {
 
   // ---------------------------------------------------------------------------
 
-  const timer = remaining !== null && (
-    <span className={`${styles.timer} ${remaining <= 300 ? styles.timerWarning : ''}`} aria-live="off">
-      ⏱ {formatRemaining(remaining)}
-    </span>
-  );
+  const timer = remaining !== null && <TimerPill warning={remaining <= 300}>{formatRemaining(remaining)}</TimerPill>;
 
   if (inactive) {
     return (
-      <div className={styles.container}>
+      <div className={SHELL}>
         <EmptyState
           title="This attempt is no longer active"
           message="It may have been submitted or replaced by a newer attempt."
@@ -252,16 +251,19 @@ export function PlacementQuestionUI() {
 
   if (expired) {
     return (
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Time's up</h1>
+      <div className={SHELL}>
+        <PageHeader eyebrow="Placement Test" title="Time's up" />
         {submitError && <Banner variant="error">{submitError}</Banner>}
         <Card>
-          <div className={styles.entryContent}>
-            <p className={styles.description}>
+          <div className="flex flex-col gap-3">
+            <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <ClockIcon className="size-5" />
+            </div>
+            <p className={BODY}>
               The time limit for this placement test has been reached. Your answers so far have been
               saved — finish now to see your level.
             </p>
-            <Button onClick={handleComplete} disabled={completing}>
+            <Button size="lg" onClick={handleComplete} disabled={completing}>
               {completing ? 'Finishing…' : 'See my result'}
             </Button>
           </div>
@@ -281,7 +283,7 @@ export function PlacementQuestionUI() {
   }
   if (!sections || sections.length === 0) {
     return (
-      <div className={styles.container}>
+      <div className={SHELL}>
         <EmptyState
           title="No sections found"
           message="This placement test has no sections yet."
@@ -292,41 +294,49 @@ export function PlacementQuestionUI() {
     );
   }
 
+  const progressValue = phase === 'review' ? sections.length : sectionIndex;
   const header = (
-    <div className={styles.progressHeader}>
-      <div className={styles.headerRow}>
-        <span className={styles.questionCount}>
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {phase === 'review' ? 'All sections complete' : `Section ${sectionIndex + 1} of ${sections.length}`}
         </span>
         {timer}
       </div>
-      <div className={styles.progressTrack}>
-        <div
-          className={styles.progressFill}
-          style={{ width: `${((phase === 'review' ? sections.length : sectionIndex) / sections.length) * 100}%` }}
-          role="progressbar"
-          aria-valuenow={phase === 'review' ? sections.length : sectionIndex}
-          aria-valuemin={0}
-          aria-valuemax={sections.length}
-        />
-      </div>
+      <ProgressBar value={progressValue} total={sections.length} label="Section progress" />
     </div>
   );
 
   // ---- Review / submit -------------------------------------------------------
   if (phase === 'review') {
     return (
-      <div className={styles.container}>
+      <div className={SHELL}>
         {header}
         {submitError && <Banner variant="error">{submitError}</Banner>}
         <Card>
-          <div className={styles.entryContent}>
-            <h2 className={styles.subtitle}>Ready to submit?</h2>
-            <p className={styles.description}>
+          <div className="flex flex-col items-center text-center gap-4 py-2">
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 opacity-20 blur-lg" />
+              <div className="relative size-20 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/25 rotate-3">
+                <svg className="size-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
+              </div>
+            </div>
+            <h2 className={H2}>Ready to submit?</h2>
+            <div className="grid grid-cols-2 gap-3 w-full max-w-sm text-start">
+              <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Answered</span>
+                <span className="block mt-0.5 text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{answered}</span>
+              </div>
+              <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
+                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Skipped</span>
+                <span className="block mt-0.5 text-xl font-extrabold text-amber-600 dark:text-amber-400">{skipped}</span>
+              </div>
+            </div>
+            <p className={`${BODY} max-w-sm`}>
               You answered {answered} question{answered === 1 ? '' : 's'}
               {skipped > 0 ? ` and skipped ${skipped}` : ''}. Once submitted, AIM will calculate your level.
             </p>
-            <Button onClick={handleComplete} disabled={completing}>
+            <Button size="lg" onClick={handleComplete} disabled={completing} fullWidth>
               {completing ? 'Submitting…' : 'Submit placement test'}
             </Button>
           </div>
@@ -339,27 +349,29 @@ export function PlacementQuestionUI() {
   if (phase === 'section' || !questions) {
     const section = sections[sectionIndex];
     return (
-      <div className={styles.container}>
+      <div className={SHELL}>
         {header}
         <Card>
-          <div className={styles.entryContent}>
-            <span className={styles.resultLabel}>Section {sectionIndex + 1}</span>
-            <h2 className={styles.subtitle}>{section.title}</h2>
-            <p className={styles.description}>
+          <div className="flex flex-col gap-3">
+            <span className={EYEBROW}>Section {sectionIndex + 1}</span>
+            <h2 className={H2}>{section.title}</h2>
+            <p className={BODY}>
               {section.total_questions} question{section.total_questions === 1 ? '' : 's'}. The timer keeps running
               between sections.
             </p>
-            <Button onClick={() => loadQuestions(0)}>Start section</Button>
+            <Button size="lg" onClick={() => loadQuestions(0)}>Start section</Button>
           </div>
         </Card>
-        <Link to="/placement" className={styles.backLink}>Exit — you can continue later</Link>
+        <Link to="/placement" className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">
+          Exit — you can continue later
+        </Link>
       </div>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <div className={styles.container}>
+      <div className={SHELL}>
         {header}
         <EmptyState
           title="No questions in this section"
@@ -389,81 +401,75 @@ export function PlacementQuestionUI() {
       : [];
 
   return (
-    <div className={styles.container}>
+    <div className={SHELL}>
       {header}
-      <span className={styles.questionCount}>
-        {sections[sectionIndex].title} · Question {questionIndex + 1} of {questions.length}
-      </span>
 
       {submitError && <Banner variant="error">{submitError}</Banner>}
 
-      <Card>
-        <div className={styles.questionContent}>
-          <h2 className={`${styles.questionText} ${question.type === 'reading' ? styles.questionReading : ''}`}>
-            {question.text}
-          </h2>
+      <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
+        <p className={`m-0 ${EYEBROW} !font-semibold !text-[11px]`}>
+          {sections[sectionIndex].title} · Question {questionIndex + 1} of {questions.length}
+        </p>
+        <h2
+          className={`m-0 text-base sm:text-lg leading-snug text-[#0F172A] dark:text-white ${
+            question.type === 'reading' ? 'font-normal italic text-slate-500 dark:text-slate-400' : 'font-medium'
+          }`}
+        >
+          {question.text}
+        </h2>
 
-          {question.type === 'listening_choice' && (
-            <QuestionAudio
-              key={question.id}
-              available={question.has_listening_audio}
-              load={() => fetchPlacementQuestionAudio(question.id)}
+        {question.type === 'listening_choice' && (
+          <QuestionAudio
+            key={question.id}
+            available={question.has_listening_audio}
+            load={() => fetchPlacementQuestionAudio(question.id)}
+          />
+        )}
+
+        {isText && (
+          <label className="block">
+            <span className="sr-only">Your answer</span>
+            <textarea
+              className={TEXTAREA}
+              rows={question.type === 'writing' ? 8 : 3}
+              value={selected}
+              onChange={(e) => setSelected(e.target.value)}
+              disabled={submitting}
+              placeholder={question.type === 'writing' ? 'Type your response here…' : 'Type your answer here…'}
             />
-          )}
+          </label>
+        )}
 
-          {choiceOptions.length > 0 && (
-            <fieldset className={styles.options} disabled={submitting}>
-              <legend className={styles.srOnly}>Select your answer</legend>
-              {choiceOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className={`${styles.option} ${selected === option.id ? styles.optionSelected : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name={`answer-${question.id}`}
-                    value={option.id}
-                    checked={selected === option.id}
-                    onChange={() => setSelected(option.id)}
-                    className={styles.srOnly}
-                  />
-                  <span className={styles.optionRadio} />
-                  <span>
-                    {isChoice && option.text !== option.id && <strong className={styles.optionKey}>{option.id}.</strong>}
-                    {option.text}
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-          )}
+        {isSpeaking && (
+          <SpeakingRecorder key={`${question.id}-${recorderKey}`} disabled={submitting} onRecorded={setRecording} />
+        )}
 
-          {isText && (
-            <label className={styles.textAnswer}>
-              <span className={styles.srOnly}>Your answer</span>
-              <textarea
-                className={styles.textArea}
-                rows={question.type === 'writing' ? 8 : 3}
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
-                disabled={submitting}
-                placeholder={question.type === 'writing' ? 'Type your response here…' : 'Type your answer here…'}
-              />
-            </label>
-          )}
+        {!isKnownType && (
+          <p className={BODY}>This question type ({question.type}) can't be answered here. Please skip it.</p>
+        )}
+      </div>
 
-          {isSpeaking && (
-            <SpeakingRecorder key={`${question.id}-${recorderKey}`} disabled={submitting} onRecorded={setRecording} />
-          )}
+      {choiceOptions.length > 0 && (
+        <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-2.5" disabled={submitting}>
+          <legend className="sr-only">Select your answer</legend>
+          {choiceOptions.map((option) => (
+            <ChoiceRow
+              key={option.id}
+              name={`answer-${question.id}`}
+              value={option.id}
+              selected={selected === option.id}
+              onChange={() => setSelected(option.id)}
+              keyLabel={isChoice && option.text !== option.id ? option.id : undefined}
+            >
+              {option.text}
+            </ChoiceRow>
+          ))}
+        </fieldset>
+      )}
 
-          {!isKnownType && (
-            <p className={styles.description}>This question type ({question.type}) can't be answered here. Please skip it.</p>
-          )}
-        </div>
-      </Card>
-
-      <div className={styles.actionRow}>
-        <Button variant="ghost" onClick={handleSkip} disabled={submitting}>Skip</Button>
-        <Button onClick={handleSubmit} disabled={!canSubmit}>
+      <div className="flex gap-3 pt-1">
+        <Button variant="secondary" size="lg" className="flex-1" onClick={handleSkip} disabled={submitting}>Skip</Button>
+        <Button size="lg" className="flex-[2]" onClick={handleSubmit} disabled={!canSubmit}>
           {submitting
             ? isSpeaking ? 'Uploading…' : 'Submitting…'
             : questionIndex === questions.length - 1 ? 'Submit & finish section' : 'Submit answer'}

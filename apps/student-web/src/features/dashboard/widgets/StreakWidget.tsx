@@ -3,7 +3,8 @@ import { Card } from '../../../components/common/Card';
 import { Button } from '../../../components/common/Button';
 import { getErrorMessage } from '../../../api/client';
 import { DAILY_GOAL_MAX, DAILY_GOAL_MIN, type DailyGoalSummary } from '../dashboardApi';
-import styles from './Widgets.module.css';
+import { FlameIcon } from '../../../components/common/Icons';
+import * as ui from './ui';
 
 interface StreakWidgetProps {
   /** Backend-computed goal + streak (GET /student/engagement/summary). Null when unavailable. */
@@ -21,11 +22,11 @@ export function StreakWidget({ goal, onUpdateGoal }: StreakWidgetProps) {
   if (!goal) {
     return (
       <Card>
-        <div className={styles.widget}>
-          <span className={styles.widgetIcon} aria-hidden="true">🔥</span>
-          <div className={styles.widgetContent}>
-            <span className={styles.widgetValue}>—</span>
-            <span className={styles.widgetLabel}>Streak unavailable</span>
+        <div className="flex items-center gap-3">
+          <span className={ui.iconPill} aria-hidden="true"><FlameIcon className="size-5" /></span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-extrabold text-slate-900 dark:text-white">—</span>
+            <span className={ui.label}>Streak unavailable</span>
           </div>
         </div>
       </Card>
@@ -52,33 +53,35 @@ export function StreakWidget({ goal, onUpdateGoal }: StreakWidgetProps) {
 
   return (
     <Card>
-      <div className={styles.listWidget}>
-        <div className={styles.widget}>
-          <span className={styles.widgetIcon} aria-hidden="true">🔥</span>
-          <div className={styles.widgetContent}>
-            <span className={styles.widgetValue}>{goal.streakDays}</span>
-            <span className={styles.widgetLabel}>Day streak</span>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/40" aria-hidden="true">
+            <FlameIcon className="size-5 fill-amber-400" />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="text-2xl font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{goal.streakDays}</span>
+            <span className={ui.label}>Day streak</span>
           </div>
-          <span className={styles.widgetMeta}>
+          <span className={goalMet ? 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : ui.meta}>
             {goalMet ? 'Goal met today' : `${goal.completedToday}/${target} today`}
           </span>
         </div>
 
         <div
-          className={styles.bar}
+          className={ui.barTrack}
           role="progressbar"
           aria-label="Daily goal progress"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={pct}
         >
-          <div className={styles.barFill} style={{ width: `${pct}%` }} />
+          <div className={goalMet ? 'h-full rounded-full bg-emerald-500' : ui.barFill} style={{ width: `${pct}%` }} />
         </div>
 
         {editing ? (
-          <div className={styles.goalEditor}>
-            <span className={styles.widgetLabel}>Lessons per day</span>
-            <div className={styles.stepper}>
+          <div className="flex flex-col gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-900/40">
+            <span className={ui.label}>Lessons per day</span>
+            <div className="flex items-center gap-3">
               <Button
                 variant="secondary"
                 size="sm"
@@ -88,7 +91,7 @@ export function StreakWidget({ goal, onUpdateGoal }: StreakWidgetProps) {
               >
                 −
               </Button>
-              <span className={styles.stepperValue} aria-live="polite">{draft}</span>
+              <span className="min-w-8 text-center text-lg font-extrabold text-slate-900 dark:text-white" aria-live="polite">{draft}</span>
               <Button
                 variant="secondary"
                 size="sm"
@@ -99,7 +102,7 @@ export function StreakWidget({ goal, onUpdateGoal }: StreakWidgetProps) {
                 +
               </Button>
             </div>
-            <div className={styles.actionsRow}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button size="sm" onClick={save} disabled={saving || draft === goal.targetLessons}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>
@@ -115,12 +118,12 @@ export function StreakWidget({ goal, onUpdateGoal }: StreakWidgetProps) {
                 Cancel
               </Button>
             </div>
-            {error && <p className={styles.errorText} role="alert">{error}</p>}
+            {error && <p className="m-0 text-xs font-semibold text-red-600 dark:text-red-400" role="alert">{error}</p>}
           </div>
         ) : (
           onUpdateGoal && (
-            <div className={styles.actionsRow}>
-              <span className={styles.widgetLabel}>Daily goal: {target} lesson{target === 1 ? '' : 's'}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className={ui.label}>Daily goal: {target} lesson{target === 1 ? '' : 's'}</span>
               <Button
                 size="sm"
                 variant="ghost"

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { getErrorMessage } from '../../api/client';
 import { SPEAKING_AUDIO_TYPES, SPEAKING_MAX_BYTES } from './placementApi';
-import styles from './Placement.module.css';
+
 
 // ---------------------------------------------------------------------------
 // Listening audio — fetched through the authenticated backend endpoint.
@@ -47,22 +47,32 @@ export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
   }
 
   if (missing) {
-    return <p className={styles.audioNote}>Audio for this question isn't available yet.</p>;
+    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">Audio for this question isn't available yet.</p>;
   }
 
   return (
-    <div className={styles.audioBox}>
+    <div className="flex flex-col gap-2 bg-[#EEF2FF] dark:bg-indigo-950/60 rounded-2xl px-4 py-3">
       {url ? (
-        <audio controls autoPlay src={url} className={styles.audioPlayer} />
+        <audio controls autoPlay src={url} className="w-full" />
       ) : (
-        <Button variant="secondary" size="sm" onClick={handleLoad} disabled={loading}>
-          {loading ? 'Loading audio…' : '▶ Play audio'}
-        </Button>
+        <button
+          type="button"
+          onClick={handleLoad}
+          disabled={loading}
+          className="self-start inline-flex items-center gap-3 border-0 bg-transparent p-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span className="size-10 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] flex items-center justify-center shadow-sm">
+            <svg className="size-5 text-white" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+          </span>
+          <span className="text-sm font-semibold text-[#4F46E5] dark:text-indigo-400">
+            {loading ? 'Loading audio…' : 'Play audio'}
+          </span>
+        </button>
       )}
       {error && (
-        <p className={styles.audioError} role="alert">
+        <p className="m-0 text-xs text-red-600 dark:text-red-400" role="alert">
           {error}{' '}
-          <button type="button" className={styles.linkButton} onClick={handleLoad}>Retry</button>
+          <button type="button" className="border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer" onClick={handleLoad}>Retry</button>
         </p>
       )}
     </div>
@@ -178,32 +188,47 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
   }
 
   if (!supported) {
-    return <p className={styles.audioNote}>Your browser does not support audio recording. You can skip this question.</p>;
+    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">Your browser does not support audio recording. You can skip this question.</p>;
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
 
   return (
-    <div className={styles.audioBox}>
-      <div className={styles.recorderRow}>
-        {recording ? (
-          <Button variant="secondary" onClick={stop}>■ Stop recording</Button>
-        ) : (
-          <Button variant="secondary" onClick={start} disabled={disabled}>
-            {previewUrl ? '● Record again' : '● Start recording'}
-          </Button>
-        )}
+    <div className="flex flex-col items-center gap-4 py-4">
+      <div className="relative">
+        {recording && <span className="absolute -inset-4 rounded-full bg-[#4F46E5]/10 animate-ping" />}
+        <button
+          type="button"
+          onClick={recording ? stop : start}
+          disabled={!recording && disabled}
+          aria-label={recording ? 'Stop recording' : previewUrl ? 'Record again' : 'Start recording'}
+          className={`relative size-24 rounded-full border-0 cursor-pointer flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${
+            recording ? 'bg-red-500 hover:bg-red-600 shadow-red-200 dark:shadow-red-950' : 'bg-[#4F46E5] hover:bg-[#4338CA] shadow-indigo-200 dark:shadow-indigo-950'
+          }`}
+        >
+          {recording ? (
+            <svg className="size-9 text-white" viewBox="0 0 24 24" fill="white" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+          ) : (
+            <svg className="size-9 text-white" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
+              <path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+      <div className="text-center">
+        <p className={`m-0 text-sm font-medium ${recording ? 'text-red-500 dark:text-red-400' : 'text-[#64748B] dark:text-slate-400'}`}>
+          {recording ? 'Recording… tap to stop' : previewUrl ? 'Tap to record again' : 'Tap to start recording'}
+        </p>
         {recording && (
-          <span className={styles.recordingIndicator} aria-live="polite">
+          <p className="m-0 mt-1.5 font-mono text-xs font-semibold tracking-widest text-[#4F46E5] dark:text-indigo-400" aria-live="polite">
             Recording {mm}:{ss} / 01:00
-          </span>
+          </p>
         )}
       </div>
-      {previewUrl && !recording && (
-        <audio controls src={previewUrl} className={styles.audioPlayer} />
-      )}
-      {error && <p className={styles.audioError} role="alert">{error}</p>}
+      {previewUrl && !recording && <audio controls src={previewUrl} className="w-full" />}
+      {error && <p className="m-0 text-xs text-red-600 dark:text-red-400" role="alert">{error}</p>}
     </div>
   );
 }

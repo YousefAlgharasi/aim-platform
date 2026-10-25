@@ -16,7 +16,7 @@ import {
   TIMEZONE_OPTIONS,
   type ProfileMeResponse,
 } from './profileApi';
-import styles from './ProfilePage.module.css';
+import { PageHeader, SectionTitle, Field, LinkRow, selectCls, labelCls, bodyCls, pillCls } from './ui';
 
 const QUICK_LINKS = [
   { to: '/settings', label: 'Account settings' },
@@ -101,96 +101,115 @@ export function ProfilePage() {
     }
   }
 
+  const initial = (displayName || user.email || '?').trim().charAt(0).toUpperCase();
+
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Profile</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader eyebrow="Account" title="Profile" />
 
-      <Card>
-        <div className={styles.form}>
-          <h2 className={styles.sectionTitle}>Account</h2>
-          <div className={styles.field}>
-            <span className={styles.label}>Email</span>
-            <p className={styles.value}>{user.email}</p>
-          </div>
-          {profile?.userType && (
-            <div className={styles.field}>
-              <span className={styles.label}>Account type</span>
-              <p className={styles.value}>{profile.userType}</p>
-            </div>
-          )}
-          {user.roles.length > 0 && (
-            <div className={styles.field}>
-              <span className={styles.label}>Roles</span>
-              <div className={styles.pills}>
-                {user.roles.map(r => <span key={r} className={styles.pill}>{r}</span>)}
+      <div className="grid gap-5 lg:grid-cols-3 items-start">
+        <div className="lg:col-span-1 flex flex-col gap-5">
+          <Card>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3.5">
+                <div
+                  className="size-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
+                  aria-hidden="true"
+                >
+                  {initial}
+                </div>
+                <div className="min-w-0">
+                  {displayName && <p className="font-bold text-base m-0 text-slate-900 dark:text-white truncate">{displayName}</p>}
+                  <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400 break-all">{user.email}</p>
+                </div>
               </div>
+              <dl className="m-0 flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Email</dt>
+                  <dd className={`${bodyCls} break-all`}>{user.email}</dd>
+                </div>
+                {profile?.userType && (
+                  <div className="flex flex-col gap-1">
+                    <dt className={labelCls}>Account type</dt>
+                    <dd className={bodyCls}>{profile.userType}</dd>
+                  </div>
+                )}
+                {user.roles.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <dt className={labelCls}>Roles</dt>
+                    <dd className="m-0 flex flex-wrap gap-2">
+                      {user.roles.map(r => <span key={r} className={pillCls}>{r}</span>)}
+                    </dd>
+                  </div>
+                )}
+              </dl>
             </div>
-          )}
+          </Card>
+
+          <Card>
+            <nav className="flex flex-col gap-1" aria-label="Account links">
+              <SectionTitle>More</SectionTitle>
+              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+                {QUICK_LINKS.map(l => (
+                  <li key={l.to}><LinkRow to={l.to}>{l.label}</LinkRow></li>
+                ))}
+              </ul>
+            </nav>
+          </Card>
         </div>
-      </Card>
 
-      <Card>
-        {studentProfile ? (
-          <form onSubmit={handleSubmit} className={styles.form} noValidate>
-            <h2 className={styles.sectionTitle}>Edit profile</h2>
-            {success && <Banner variant="success">{success}</Banner>}
-            {error && <Banner variant="error">{error}</Banner>}
+        <div className="lg:col-span-2">
+          <Card>
+            {studentProfile ? (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+                <SectionTitle>Edit profile</SectionTitle>
+                {success && <Banner variant="success">{success}</Banner>}
+                {error && <Banner variant="error">{error}</Banner>}
 
-            <Input
-              label="Display name"
-              type="text"
-              value={displayName}
-              maxLength={DISPLAY_NAME_MAX}
-              onChange={e => { setDisplayName(e.target.value); setNameError(''); markDirty(); }}
-              error={nameError || undefined}
-            />
+                <Input
+                  label="Display name"
+                  type="text"
+                  value={displayName}
+                  maxLength={DISPLAY_NAME_MAX}
+                  onChange={e => { setDisplayName(e.target.value); setNameError(''); markDirty(); }}
+                  error={nameError || undefined}
+                />
 
-            <div className={styles.field}>
-              <label htmlFor="profile-language" className={styles.label}>Preferred language</label>
-              <select
-                id="profile-language"
-                className={styles.select}
-                value={preferredLanguage}
-                onChange={e => { setPreferredLanguage(e.target.value as 'en' | 'ar'); markDirty(); }}
-              >
-                {LANGUAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
+                <Field label="Preferred language" htmlFor="profile-language">
+                  <select
+                    id="profile-language"
+                    className={selectCls}
+                    value={preferredLanguage}
+                    onChange={e => { setPreferredLanguage(e.target.value as 'en' | 'ar'); markDirty(); }}
+                  >
+                    {LANGUAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </Field>
 
-            <div className={styles.field}>
-              <label htmlFor="profile-timezone" className={styles.label}>Timezone</label>
-              <select
-                id="profile-timezone"
-                className={styles.select}
-                value={timezone}
-                onChange={e => { setTimezone(e.target.value); markDirty(); }}
-              >
-                <option value="" disabled>Select a timezone</option>
-                {timezoneOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
+                <Field label="Timezone" htmlFor="profile-timezone">
+                  <select
+                    id="profile-timezone"
+                    className={selectCls}
+                    value={timezone}
+                    onChange={e => { setTimezone(e.target.value); markDirty(); }}
+                  >
+                    <option value="" disabled>Select a timezone</option>
+                    {timezoneOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </Field>
 
-            <Button type="submit" disabled={saving || !dirty}>
-              {saving ? 'Saving...' : 'Save changes'}
-            </Button>
-          </form>
-        ) : (
-          <Banner variant="info">
-            This account has no student profile, so there are no editable student profile fields.
-          </Banner>
-        )}
-      </Card>
-
-      <Card>
-        <nav className={styles.form} aria-label="Account links">
-          <h2 className={styles.sectionTitle}>More</h2>
-          <ul className={styles.linkList}>
-            {QUICK_LINKS.map(l => (
-              <li key={l.to}><Link to={l.to} className={styles.link}>{l.label}</Link></li>
-            ))}
-          </ul>
-        </nav>
-      </Card>
+                <Button type="submit" size="lg" disabled={saving || !dirty}>
+                  {saving ? 'Saving...' : 'Save changes'}
+                </Button>
+              </form>
+            ) : (
+              <Banner variant="info">
+                This account has no student profile, so there are no editable student profile fields.
+              </Banner>
+            )}
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

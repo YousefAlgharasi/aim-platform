@@ -1,20 +1,19 @@
-import { Link } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
-import styles from './AuthPages.module.css';
+import { AuthLogo } from '../../components/auth/AuthParts';
 
 export function SessionExpiredPage() {
+  const navigate = useNavigate();
   return (
-    <Card>
-      <div className={styles.form}>
-        <h1 className={styles.title}>Session expired</h1>
-        <p className={styles.text}>
+    <>
+      <AuthLogo />
+      <div className="my-auto text-center flex flex-col items-center gap-2">
+        <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">Session expired</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
           Your session has expired. Please sign in again to continue.
         </p>
-        <Link to="/login">
-          <Button fullWidth>Sign in</Button>
-        </Link>
       </div>
-    </Card>
+      <Button size="lg" fullWidth onClick={() => navigate('/login')}>Sign in</Button>
+    </>
   );
 }

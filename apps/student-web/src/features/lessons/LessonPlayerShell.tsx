@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -16,7 +15,8 @@ import {
   type LessonDetail,
   type StudentLessonSummary,
 } from './lessonsApi';
-import styles from './LessonPlayer.module.css';
+import { BackArrowIcon } from '../curriculum/CurriculumIcons';
+import { CheckIcon, SparkleIcon, ZapIcon } from '../../components/common/Icons';
 
 /** Navigation state accepted by /lessons/:lessonId and /practice/lesson/:lessonId. */
 export interface LessonRouteState {
@@ -84,7 +84,7 @@ export function LessonPlayerShell() {
   useEffect(() => { load(); }, [load]);
 
   const backTo = courseId ? `/curriculum/${courseId}` : '/curriculum';
-  const backLabel = courseId ? '← Back to course' : '← Back to courses';
+  const backLabel = courseId ? 'Back to course' : 'Back to courses';
 
   if (loading) return <LoadingSpinner />;
   if (error || !lesson) {
@@ -96,34 +96,52 @@ export function LessonPlayerShell() {
   const practiceState: LessonRouteState = { courseId, lessonTitle: lesson.title };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.topBar}>
-        <Link to={backTo} className={styles.backLink}>{backLabel}</Link>
-        <h1 className={styles.lessonTitle}>{lesson.title}</h1>
-        {completed && <span className={styles.completedBadge}>✓ Completed</span>}
-      </div>
-      <div className={styles.progressTrack} aria-hidden="true">
-        <div className={styles.progressFill} style={{ width: completed ? '100%' : '0%' }} />
+    <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
+      <div className="flex items-center gap-3">
+        <Link
+          to={backTo}
+          aria-label={backLabel}
+          title={backLabel}
+          className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
+        >
+          <BackArrowIcon />
+        </Link>
+        <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">{backLabel}</span>
       </div>
 
-      <div className={styles.content}>
-        <div className={styles.hero}>
-          {lesson.description && <p className={styles.heroDescription}>{lesson.description}</p>}
-          <div className={styles.heroMeta}>
-            <span>{assets.length} {assets.length === 1 ? 'step' : 'steps'}</span>
-            {totalSeconds > 0 && <span>~{Math.max(1, Math.round(totalSeconds / 60))} min</span>}
-            {lesson.xpValue > 0 && <span>{lesson.xpValue} XP</span>}
-          </div>
+      <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+        <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="text-indigo-100 text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
+            Lesson
+          </span>
+          {completed && (
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1">
+              <CheckIcon className="size-3 text-emerald-300" /> Completed
+            </span>
+          )}
         </div>
+        <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight m-0 leading-tight mb-2 text-white">{lesson.title}</h1>
+        {lesson.description && <p className="text-indigo-100/90 text-sm m-0 leading-relaxed mb-3">{lesson.description}</p>}
+        <div className="flex flex-wrap gap-2 text-xs font-semibold text-indigo-100">
+          <span className="bg-white/15 px-2.5 py-1 rounded-full">{assets.length} {assets.length === 1 ? 'step' : 'steps'}</span>
+          {totalSeconds > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">~{Math.max(1, Math.round(totalSeconds / 60))} min</span>}
+          {lesson.xpValue > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{lesson.xpValue} XP</span>}
+        </div>
+        <div className="h-2 bg-black/20 rounded-full overflow-hidden p-0.5 mt-4" aria-hidden="true">
+          <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: completed ? '100%' : '0%' }} />
+        </div>
+      </div>
 
-        {position.locked && (
-          <Banner variant="warning">
-            Complete the previous lesson before starting this one. You can read the content, but practice
-            and progress are unlocked in order.
-          </Banner>
-        )}
+      {position.locked && (
+        <Banner variant="warning">
+          Complete the previous lesson before starting this one. You can read the content, but practice
+          and progress are unlocked in order.
+        </Banner>
+      )}
 
-        <h2 className={styles.sectionTitle}>What’s inside</h2>
+      <div className="flex flex-col gap-3">
+        <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">What’s inside</h2>
         {assets.length === 0 ? (
           <EmptyState
             title="No content yet"
@@ -132,46 +150,63 @@ export function LessonPlayerShell() {
         ) : (
           assets.map((asset, i) => <ContentBlockRenderer key={asset.id} asset={asset} stepNumber={i + 1} />)
         )}
-
-        <Card>
-          <div className={styles.practiceCard}>
-            {completed ? (
-              <>
-                <h2 className={styles.sectionTitle}>Lesson mastered! 🌟</h2>
-                <p className={styles.heroDescription}>
-                  Reinforce your knowledge or practice with quick exercises.
-                </p>
-              </>
-            ) : (
-              <p className={styles.heroDescription}>
-                Finish this lesson by completing its practice questions. Your answers are checked by AIM and
-                the lesson is marked complete when you reach the end.
-              </p>
-            )}
-            <div className={styles.practiceActions}>
-              {position.locked ? (
-                <span className={styles.lockedNote}>🔒 Practice unlocks after the previous lesson</span>
-              ) : (
-                <Link
-                  to={`/practice/lesson/${lesson.id}`}
-                  state={practiceState}
-                  className={styles.primaryLink}
-                >
-                  {completed ? 'Practice again ⚡' : 'Start practice to complete lesson ⚡'}
-                </Link>
-              )}
-              <Link
-                to={`/ai-teacher?lessonId=${encodeURIComponent(lesson.id)}&lessonTitle=${encodeURIComponent(lesson.title)}`}
-                className={styles.secondaryLink}
-              >
-                Ask AI tutor ✨
-              </Link>
-            </div>
-          </div>
-        </Card>
       </div>
 
-      <div className={styles.navBar}>
+      <div className="flex flex-col gap-3">
+        {completed ? (
+          <div className="px-1">
+            <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0">Lesson mastered! 🌟</h2>
+            <p className="text-slate-400 dark:text-slate-500 text-xs m-0 mt-0.5">
+              Reinforce your knowledge or practice with quick exercises.
+            </p>
+          </div>
+        ) : (
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed m-0 px-1">
+            Finish this lesson by completing its practice questions. Your answers are checked by AIM and
+            the lesson is marked complete when you reach the end.
+          </p>
+        )}
+
+        {position.locked ? (
+          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm font-semibold">
+            🔒 Practice unlocks after the previous lesson
+          </span>
+        ) : completed ? (
+          <Link
+            to={`/practice/lesson/${lesson.id}`}
+            state={practiceState}
+            className="w-full bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-800 dark:to-indigo-950/80 ring-2 ring-[#4F46E5] rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-md shadow-indigo-500/10"
+          >
+            <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <ZapIcon className="size-6 text-white" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-extrabold text-indigo-700 dark:text-indigo-300 text-base">Practice again ⚡</span>
+              <span className="block text-slate-600 dark:text-slate-300 text-xs mt-0.5">Test your comprehension with quick interactive exercises.</span>
+            </span>
+          </Link>
+        ) : (
+          <Link
+            to={`/practice/lesson/${lesson.id}`}
+            state={practiceState}
+            className="w-full h-[54px] rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-base no-underline shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2.5 hover:opacity-95 transition-all"
+          >
+            Start practice to complete lesson ⚡
+          </Link>
+        )}
+
+        <Link
+          to={`/ai-teacher?lessonId=${encodeURIComponent(lesson.id)}&lessonTitle=${encodeURIComponent(lesson.title)}`}
+          className="w-full bg-white dark:bg-slate-800/90 ring-1 ring-slate-200/80 dark:ring-slate-700/80 hover:ring-indigo-300 rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-sm"
+        >
+          <span className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+            <SparkleIcon className="size-6" />
+          </span>
+          <span className="font-bold text-slate-900 dark:text-white text-sm">Ask AI tutor ✨</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
         <LessonNavigation position={position} courseId={courseId} />
       </div>
     </div>

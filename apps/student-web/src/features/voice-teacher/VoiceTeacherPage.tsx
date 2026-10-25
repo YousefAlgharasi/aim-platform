@@ -14,7 +14,10 @@ import {
   voiceTeacherApi,
   type VoiceMessage,
 } from './voiceTeacherApi';
-import styles from './VoiceTeacher.module.css';
+import { MicIcon } from '../../components/common/Icons';
+import { BackLink, ThumbButton, pillLinkClass } from '../ai-teacher/ui';
+
+const WAVE_HEIGHTS = [4, 8, 14, 22, 16, 28, 18, 12, 24, 15, 8, 5];
 
 interface VoiceLocationState {
   lessonTitle?: string | null;
@@ -88,9 +91,9 @@ function VoiceSessionStarter() {
 
   if (error) return <ErrorState message={error} onRetry={start} />;
   return (
-    <div className={styles.centered}>
+    <div className="flex flex-col items-center gap-2">
       <LoadingSpinner />
-      <p className={styles.muted}>Starting Voice Teacher session…</p>
+      <p className="m-0 text-sm text-slate-500 dark:text-slate-400">Starting Voice Teacher session…</p>
     </div>
   );
 }
@@ -326,19 +329,19 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
   const micBlocked = recorder.status === 'unsupported' || recorder.status === 'denied';
   const lastTeacher = [...messages].reverse().find((m) => m.role === 'teacher');
 
+  const waveActive = isRecording || isSpeaking;
+
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Link to="/ai-teacher" className={styles.iconLink} aria-label="Back to AI Teacher">
-          <span className={styles.backArrow} aria-hidden="true">←</span>
-        </Link>
-        <div className={styles.titleGroup}>
-          <h1 className={styles.title}>Voice Teacher</h1>
-          <span className={styles.subtitle}>
+    <div className="flex flex-col gap-4 max-w-3xl w-full mx-auto">
+      <div className="flex items-center gap-3">
+        <BackLink to="/ai-teacher" label="Back to AI Teacher" />
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">Voice Teacher</h1>
+          <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
             {navState.lessonTitle || 'Practise speaking with your AI teacher'}
           </span>
         </div>
-        <Link to={`/ai-teacher/${sessionId}`} className={styles.headerLink}>
+        <Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>
           Text chat
         </Link>
       </div>
@@ -350,61 +353,109 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         </Banner>
       )}
 
-      <section className={styles.stage} aria-label="Voice conversation">
-        <div className={`${styles.avatar} ${isSpeaking ? styles.avatarSpeaking : ''}`} aria-hidden="true">
-          🎓
-        </div>
-        <span className={styles.statusPill} role="status" aria-live="polite">
+      <section
+        className="rounded-3xl bg-gradient-to-b from-indigo-50/60 via-white to-slate-50/60 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm px-5 py-8 flex flex-col items-center text-center gap-3"
+        aria-label="Voice conversation"
+      >
+        <span
+          className="text-[#4F46E5] dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full"
+          role="status"
+          aria-live="polite"
+        >
           Status: {status.label}
         </span>
-        <p className={styles.heading}>{status.heading}</p>
+        <p className="m-0 text-slate-900 dark:text-white font-extrabold text-xl sm:text-2xl tracking-tight leading-snug">
+          {status.heading}
+        </p>
 
         {lastTeacher && !showTranscript && (
-          <p className={styles.lastReply}>{lastTeacher.text}</p>
+          <p className="m-0 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl rounded-es-none p-4 text-start">
+            {lastTeacher.text}
+          </p>
         )}
 
-        {recorder.status === 'unsupported' && (
-          <Banner variant="warning">
-            Voice recording isn&apos;t available in this browser. Use a recent version of Chrome, Edge, Firefox or
-            Safari over a secure (https) connection — or continue in{' '}
-            <Link to={`/ai-teacher/${sessionId}`}>text chat</Link>.
-          </Banner>
-        )}
-        {recorder.status === 'denied' && (
-          <Banner variant="error">
-            Microphone permission was denied. Allow microphone access for this site in your browser settings, then
-            try again.{' '}
-            <button type="button" className={styles.inlineButton} onClick={recorder.reset}>
-              Try again
+        <div className="w-full max-w-md flex flex-col gap-2 empty:hidden text-start">
+          {recorder.status === 'unsupported' && (
+            <Banner variant="warning">
+              Voice recording isn&apos;t available in this browser. Use a recent version of Chrome, Edge, Firefox or
+              Safari over a secure (https) connection — or continue in{' '}
+              <Link to={`/ai-teacher/${sessionId}`}>text chat</Link>.
+            </Banner>
+          )}
+          {recorder.status === 'denied' && (
+            <Banner variant="error">
+              Microphone permission was denied. Allow microphone access for this site in your browser settings, then
+              try again.{' '}
+              <button type="button" className="bg-transparent border-none p-0 underline font-semibold text-inherit cursor-pointer" onClick={recorder.reset}>
+                Try again
+              </button>
+            </Banner>
+          )}
+          {recorder.status === 'error' && recorder.errorMessage && (
+            <Banner variant="error">{recorder.errorMessage}</Banner>
+          )}
+          {turnError && <Banner variant="error">{turnError}</Banner>}
+          {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
+          {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
+        </div>
+
+        <div className="flex flex-col items-center justify-center py-4">
+          <div className="flex items-end gap-1.5 h-10 mb-6" aria-hidden="true">
+            {WAVE_HEIGHTS.map((h, i) => (
+              <div
+                key={i}
+                className={`w-1.5 rounded-full transition-all duration-200 ${
+                  waveActive ? 'bg-indigo-600 dark:bg-indigo-400 animate-pulse' : 'bg-slate-200 dark:bg-slate-700'
+                }`}
+                style={{ height: `${waveActive ? h * 1.5 : 8}px` }}
+              />
+            ))}
+          </div>
+
+          <div className="relative">
+            {isRecording && (
+              <>
+                <div className="absolute -inset-6 rounded-full bg-indigo-600/10 animate-ping" aria-hidden="true" />
+                <div className="absolute -inset-3 rounded-full bg-indigo-600/20" aria-hidden="true" />
+              </>
+            )}
+            <button
+              type="button"
+              onClick={handleMicClick}
+              disabled={submitting || micBlocked || recorder.status === 'requesting'}
+              aria-pressed={isRecording}
+              aria-label={isRecording ? 'Stop recording and send' : 'Start recording'}
+              className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+                isRecording
+                  ? 'bg-rose-500 text-white shadow-rose-200 dark:shadow-rose-900/40'
+                  : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-500/25'
+              }`}
+            >
+              {submitting ? (
+                <span className="text-3xl font-black leading-none" aria-hidden="true">…</span>
+              ) : isRecording ? (
+                <span className="size-8 rounded-md bg-white" aria-hidden="true" />
+              ) : (
+                <MicIcon className="size-10 text-white" />
+              )}
             </button>
-          </Banner>
-        )}
-        {recorder.status === 'error' && recorder.errorMessage && (
-          <Banner variant="error">{recorder.errorMessage}</Banner>
-        )}
-        {turnError && <Banner variant="error">{turnError}</Banner>}
-        {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
-        {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
+          </div>
 
-        <button
-          type="button"
-          className={`${styles.micButton} ${isRecording ? styles.micRecording : ''}`}
-          onClick={handleMicClick}
-          disabled={submitting || micBlocked || recorder.status === 'requesting'}
-          aria-pressed={isRecording}
-          aria-label={isRecording ? 'Stop recording and send' : 'Start recording'}
-        >
-          <span aria-hidden="true">{submitting ? '…' : isRecording ? '■' : '🎙'}</span>
-        </button>
-        <span className={styles.micHint}>
-          {recorder.status === 'requesting'
-            ? 'Waiting for microphone permission…'
-            : isRecording
-              ? `${formatSeconds(recorder.elapsedMs)} / ${formatSeconds(MAX_RECORDING_MS)} — tap to send`
-              : submitting
-                ? 'Sending your answer…'
-                : 'Tap to speak'}
-        </span>
+          <p className={`text-sm font-bold mt-5 mb-0 ${isRecording ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'}`}>
+            {recorder.status === 'requesting'
+              ? 'Waiting for microphone permission…'
+              : isRecording
+                ? 'Listening… tap to send'
+                : submitting
+                  ? 'Sending your answer…'
+                  : 'Tap to speak'}
+          </p>
+          {isRecording && (
+            <span className="text-[#4F46E5] dark:text-indigo-400 font-mono text-xs font-bold mt-1 tracking-widest">
+              {formatSeconds(recorder.elapsedMs)} / {formatSeconds(MAX_RECORDING_MS)}
+            </span>
+          )}
+        </div>
 
         {isSpeaking && (
           <Button variant="secondary" size="sm" onClick={stopPlayback}>
@@ -413,32 +464,45 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         )}
       </section>
 
-      <div className={styles.transcriptToggle}>
+      <div className="flex justify-center">
         <Button variant="ghost" size="sm" onClick={() => setShowTranscript((v) => !v)} aria-expanded={showTranscript}>
           {showTranscript ? 'Hide messages' : `Messages (${messages.length})`}
         </Button>
       </div>
 
       {showTranscript && (
-        <div className={styles.transcript} role="log" aria-label="Voice conversation messages">
-          {messages.length === 0 && <p className={styles.muted}>No messages yet. Tap the microphone to start.</p>}
+        <div className="flex flex-col gap-3.5" role="log" aria-label="Voice conversation messages">
+          {messages.length === 0 && (
+            <p className="m-0 text-center text-sm text-slate-500 dark:text-slate-400">No messages yet. Tap the microphone to start.</p>
+          )}
           {messages.map((msg) => {
             const isTeacher = msg.role === 'teacher';
             const source = sourceForMessage(msg);
             const key = source ? sourceKey(source) : null;
             const entry = feedback[msg.id];
             return (
-              <div key={msg.id} className={`${styles.message} ${isTeacher ? styles.messageTeacher : styles.messageStudent}`}>
-                <div className={styles.messageText}>{msg.text}</div>
-                <div className={styles.messageMeta}>
-                  <span>
-                    {msg.channel === 'voice' ? '🎙 ' : ''}
+              <div
+                key={msg.id}
+                className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}
+              >
+                <div
+                  className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                    isTeacher
+                      ? 'bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 rounded-es-none shadow-sm'
+                      : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-ee-none shadow-md shadow-indigo-500/15'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+                <div className="flex items-center gap-2 mt-1 px-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                  <span className="inline-flex items-center gap-1">
+                    {msg.channel === 'voice' && <MicIcon className="size-3" />}
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   {source && key && (
                     <button
                       type="button"
-                      className={styles.playButton}
+                      className="min-h-8 px-3 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 text-xs font-semibold border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => (playingKey === key ? stopPlayback() : play(source))}
                       disabled={loadingKey === key || isRecording}
                       aria-label={playingKey === key ? 'Stop audio' : 'Play audio'}
@@ -448,30 +512,24 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   )}
                 </div>
                 {isTeacher && (
-                  <div className={styles.feedbackRow}>
-                    <span className={styles.feedbackLabel}>
+                  <div className="flex items-center gap-2 mt-1 px-1">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
                       {entry?.status === 'done' ? 'Thanks for your feedback' : 'Was this helpful?'}
                     </span>
-                    <button
-                      type="button"
-                      className={`${styles.feedbackBtn} ${entry?.rating === 'helpful' ? styles.feedbackBtnActive : ''}`}
+                    <ThumbButton
+                      kind="up"
+                      active={entry?.rating === 'helpful'}
+                      disabled={!!entry}
                       onClick={() => submitFeedback(msg.id, 'helpful')}
+                      label="Mark reply as helpful"
+                    />
+                    <ThumbButton
+                      kind="down"
+                      active={entry?.rating === 'not_helpful'}
                       disabled={!!entry}
-                      aria-pressed={entry?.rating === 'helpful'}
-                      aria-label="Mark reply as helpful"
-                    >
-                      👍
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.feedbackBtn} ${entry?.rating === 'not_helpful' ? styles.feedbackBtnActive : ''}`}
                       onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                      disabled={!!entry}
-                      aria-pressed={entry?.rating === 'not_helpful'}
-                      aria-label="Mark reply as not helpful"
-                    >
-                      👎
-                    </button>
+                      label="Mark reply as not helpful"
+                    />
                   </div>
                 )}
               </div>

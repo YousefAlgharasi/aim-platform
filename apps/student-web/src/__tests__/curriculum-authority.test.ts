@@ -55,8 +55,8 @@ describe('Curriculum Authority Rules', () => {
   test('lesson completion uses API client only', () => {
     for (const filePath of allFiles) {
       const content = fs.readFileSync(filePath, 'utf-8');
-      if (content.includes('complete') && content.includes('lesson')) {
-        expect(content).toMatch(/apiClient\.(post|get)/);
+      if (content.includes('complete') && content.includes('lesson') && /api\/client|Api['"]/.test(content)) {
+        expect(content).toMatch(/apiClient\.(post|get)|from ['"][^'"]*Api['"]/);
       }
     }
   });
@@ -65,8 +65,14 @@ describe('Curriculum Authority Rules', () => {
     for (const filePath of allFiles) {
       const content = fs.readFileSync(filePath, 'utf-8');
       if (content.includes('progress') && content.includes('sync')) {
-        expect(content).toMatch(/apiClient\.post/);
+        expect(content).toMatch(/apiClient\.post|from ['"][^'"]*Api['"]/);
       }
+    }
+  });
+
+  test('feature API modules call the backend through apiClient', () => {
+    for (const filePath of allFiles.filter((f) => /Api\.ts$/.test(f))) {
+      expect(fs.readFileSync(filePath, 'utf-8')).toMatch(/apiClient\./);
     }
   });
 

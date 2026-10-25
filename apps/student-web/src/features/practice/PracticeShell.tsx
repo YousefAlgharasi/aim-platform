@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'reac
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -20,7 +19,8 @@ import {
   type SessionQuestion,
   type SessionSummary,
 } from './practiceApi';
-import styles from './Practice.module.css';
+import { linkButton, linkButtonPrimary } from './practiceStyles';
+import { BackArrowIcon } from '../curriculum/CurriculumIcons';
 
 type Status = 'loading' | 'locked' | 'expired' | 'failed' | 'empty' | 'active' | 'finished';
 
@@ -152,14 +152,14 @@ export function PracticeShell() {
   }
 
   const lessonLink = (
-    <Link to={lessonId ? `/lessons/${lessonId}` : '/curriculum'} state={navState} className={styles.linkButton}>
+    <Link to={lessonId ? `/lessons/${lessonId}` : '/curriculum'} state={navState} className={linkButton}>
       {lessonId ? 'Back to lesson' : 'Browse courses'}
     </Link>
   );
 
   if (!lessonId) {
     return (
-      <div className={styles.container}>
+      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
           title="Choose a lesson to practice"
           message="Practice sessions are started from a lesson. Open a lesson and select “Start practice”."
@@ -174,7 +174,7 @@ export function PracticeShell() {
 
   if (status === 'locked') {
     return (
-      <div className={styles.container}>
+      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
           title="Practice locked"
           message={errorMessage || 'This lesson is locked for you right now. Finish the earlier lessons first.'}
@@ -186,7 +186,7 @@ export function PracticeShell() {
 
   if (status === 'expired') {
     return (
-      <div className={styles.container}>
+      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
           title="This practice session has ended"
           message="The session is no longer active. Start a new one to keep practicing."
@@ -202,16 +202,16 @@ export function PracticeShell() {
 
   if (status === 'empty') {
     return (
-      <div className={styles.container}>
+      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
           title="No practice questions yet"
           message="This lesson doesn't have any published practice questions yet. Try the AI tutor to work through it instead."
         />
-        <div className={styles.actions}>
+        <div className="flex flex-wrap gap-3">
           {lessonLink}
           <Link
             to={`/ai-teacher?lessonId=${encodeURIComponent(lessonId)}${navState.lessonTitle ? `&lessonTitle=${encodeURIComponent(navState.lessonTitle)}` : ''}`}
-            className={styles.linkButtonPrimary}
+            className={linkButtonPrimary}
           >
             Ask AI tutor
           </Link>
@@ -245,72 +245,85 @@ export function PracticeShell() {
   const progressPct = Math.round(((index + (answered ? 1 : 0)) / questions.length) * 100);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.sessionHeader}>
-        <h1 className={styles.heading}>Practice</h1>
-        {navState.lessonTitle && <span className={styles.sessionMeta}>{navState.lessonTitle}</span>}
-      </div>
-
-      <div className={styles.progressHeader}>
-        <span className={styles.questionCount}>Question {index + 1} of {questions.length}</span>
-        <div
-          className={styles.progressTrack}
-          role="progressbar"
-          aria-valuenow={progressPct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Practice progress"
+    <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex items-center gap-3">
+        <Link
+          to={`/lessons/${lessonId}`}
+          state={navState}
+          aria-label="Back to lesson"
+          className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
         >
-          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+          <BackArrowIcon />
+        </Link>
+        <div className="min-w-0">
+          <h1 className="text-xs font-extrabold text-[#4F46E5] dark:text-indigo-400 uppercase tracking-wider m-0">Practice Session</h1>
+          {navState.lessonTitle && (
+            <span className="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{navState.lessonTitle}</span>
+          )}
         </div>
       </div>
 
-      <Card>
-        <div className={styles.questionArea}>
-          <QuestionRenderer
-            question={current}
-            selectedAnswer={answered ? feedback.answerValue : draft}
-            onAnswerChange={updateDraft}
-            disabled={submitting || answered}
-          />
+      <div
+        className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={progressPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Practice progress"
+      >
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500"
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
 
-          {answered && (
-            <div
-              className={`${styles.feedbackCard} ${
-                feedback.isCorrect === false ? styles.feedbackIncorrect : styles.feedbackCorrect
-              }`}
-              role="status"
-            >
-              <p className={styles.feedbackTitle}>
-                {feedback.isCorrect === true
-                  ? '✓ Correct!'
-                  : feedback.isCorrect === false
-                    ? '✗ Not quite'
-                    : 'Answer recorded'}
-              </p>
-              <p className={styles.feedbackExplanation}>
-                {feedback.isCorrect === false
-                  ? 'Keep going — AIM uses this to tailor your next practice.'
-                  : 'Your answer was saved.'}
-              </p>
-            </div>
-          )}
+      <div className="flex flex-col gap-4">
+        <QuestionRenderer
+          question={current}
+          questionNumber={index + 1}
+          questionTotal={questions.length}
+          selectedAnswer={answered ? feedback.answerValue : draft}
+          onAnswerChange={updateDraft}
+          disabled={submitting || answered}
+          result={answered ? feedback.isCorrect : undefined}
+        />
 
-          {submitError && <Banner variant="error">{submitError}</Banner>}
-
-          <div className={styles.actions}>
-            {answered ? (
-              <Button variant="primary" onClick={handleNext}>
-                {index + 1 < questions.length ? 'Next question →' : 'Finish practice'}
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={handleSubmit} disabled={!canSubmit || submitting}>
-                {submitting ? 'Checking…' : 'Check answer'}
-              </Button>
-            )}
+        {answered && (
+          <div
+            className={`rounded-2xl p-4 ring-1 ${
+              feedback.isCorrect === false
+                ? 'bg-rose-50 dark:bg-rose-950/40 ring-rose-200 dark:ring-rose-900 text-rose-800 dark:text-rose-300'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-900 text-emerald-800 dark:text-emerald-300'
+            }`}
+            role="status"
+          >
+            <p className="font-extrabold text-base m-0">
+              {feedback.isCorrect === true
+                ? '✓ Correct!'
+                : feedback.isCorrect === false
+                  ? '✗ Not quite'
+                  : 'Answer recorded'}
+            </p>
+            <p className="text-sm m-0 mt-1 opacity-90">
+              {feedback.isCorrect === false
+                ? 'Keep going — AIM uses this to tailor your next practice.'
+                : 'Your answer was saved.'}
+            </p>
           </div>
-        </div>
-      </Card>
+        )}
+
+        {submitError && <Banner variant="error">{submitError}</Banner>}
+
+        {answered ? (
+          <Button variant="primary" fullWidth onClick={handleNext}>
+            {index + 1 < questions.length ? 'Next question →' : 'Finish practice'}
+          </Button>
+        ) : (
+          <Button variant="primary" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
+            {submitting ? 'Checking…' : 'Check answer'}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

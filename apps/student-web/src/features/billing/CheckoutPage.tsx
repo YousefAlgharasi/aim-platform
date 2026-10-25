@@ -19,7 +19,7 @@ import {
   type BillingPrice,
   type CheckoutStatus,
 } from './billingApi';
-import styles from './Billing.module.css';
+import { PageHeader, BackLink, KV, h2Cls, subCls, textLinkCls } from '../profile/ui';
 
 // Flow (mirrors Flutter checkout_start_page + checkout_status_page):
 // 1. POST /billing/checkout { priceId, successUrl, cancelUrl, promotionCode? }.
@@ -188,48 +188,48 @@ export function CheckoutPage() {
   if (sessionId || result === 'success') {
     const state = status?.status ?? 'pending';
     return (
-      <div className={styles.checkoutContainer}>
-        <h1 className={styles.heading}>Checkout</h1>
+      <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
+        <PageHeader eyebrow="Billing" title="Checkout" back={<BackLink to="/billing" label="Back to billing" />} />
         <Card>
-          <div className={styles.orderSummary}>
+          <div className="flex flex-col gap-4 items-stretch">
             {statusError ? (
               <>
                 <Banner variant="error">{statusError}</Banner>
-                <div className={styles.actions}>
+                <div className="flex flex-wrap gap-2">
                   {sessionId && <Button variant="secondary" onClick={() => startPolling(sessionId)}>Check again</Button>}
                   <Button variant="ghost" onClick={startOver}>Start over</Button>
                 </div>
               </>
             ) : state === 'completed' ? (
               <>
-                <div className={styles.statusIcon} aria-hidden="true">✓</div>
-                <h2 className={styles.statusTitle}>Payment successful</h2>
-                <p className={`${styles.description} ${styles.center}`}>
+                <div className="size-14 rounded-2xl mx-auto bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✓</div>
+                <h2 className={`${h2Cls} text-center`}>Payment successful</h2>
+                <p className={`${subCls} text-center`}>
                   {plan ? `You're now subscribed to ${plan.name}.` : 'Your subscription is active.'}
                 </p>
-                <Link to="/billing"><Button variant="primary" fullWidth>Go to billing</Button></Link>
+                <Link to="/billing" className="no-underline"><Button variant="primary" size="lg" fullWidth>Go to billing</Button></Link>
               </>
             ) : state === 'failed' || state === 'expired' ? (
               <>
-                <div className={styles.statusIcon} aria-hidden="true">✕</div>
-                <h2 className={styles.statusTitle}>{state === 'expired' ? 'Checkout expired' : 'Payment failed'}</h2>
-                <p className={`${styles.description} ${styles.center}`}>No charge was completed. You can try again.</p>
-                <Button variant="primary" fullWidth onClick={startOver}>Try again</Button>
+                <div className="size-14 rounded-2xl mx-auto bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✕</div>
+                <h2 className={`${h2Cls} text-center`}>{state === 'expired' ? 'Checkout expired' : 'Payment failed'}</h2>
+                <p className={`${subCls} text-center`}>No charge was completed. You can try again.</p>
+                <Button variant="primary" size="lg" fullWidth onClick={startOver}>Try again</Button>
               </>
             ) : (
               <>
-                <h2 className={styles.statusTitle}>Waiting for payment confirmation…</h2>
+                <h2 className={`${h2Cls} text-center`}>Waiting for payment confirmation…</h2>
                 {polling && <LoadingSpinner />}
                 {status?.checkoutUrl && (
-                  <a href={status.checkoutUrl} className={styles.link}>Continue to payment page</a>
+                  <a href={status.checkoutUrl} className={`${textLinkCls} text-center`}>Continue to payment page</a>
                 )}
                 {!status?.checkoutUrl && status && !polling && (
-                  <p className={styles.description}>
+                  <p className={`${subCls} text-center`}>
                     The payment provider hasn't confirmed this checkout yet. This can take a moment.
                   </p>
                 )}
                 {pollTimedOut && sessionId && (
-                  <div className={styles.actions}>
+                  <div className="flex flex-wrap justify-center gap-2">
                     <Button variant="secondary" onClick={() => startPolling(sessionId)}>Check again</Button>
                     <Button variant="ghost" onClick={startOver}>Start over</Button>
                   </div>
@@ -255,24 +255,25 @@ export function CheckoutPage() {
 
   // ----- Start view -----
   return (
-    <div className={styles.checkoutContainer}>
-      <h1 className={styles.heading}>Checkout</h1>
+    <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
+      <PageHeader eyebrow="Billing" title="Checkout" back={<BackLink to="/billing" label="Back to billing" />} />
 
       {result === 'cancel' && <Banner variant="info">Payment was cancelled. You have not been charged.</Banner>}
 
       <Card>
-        <div className={styles.orderSummary}>
-          <h2 className={styles.subtitle}>{plan.name}</h2>
-          {plan.description && <p className={styles.description}>{plan.description}</p>}
+        <div className="flex flex-col gap-3">
+          <h2 className={h2Cls}>{plan.name}</h2>
+          {plan.description && <p className={subCls}>{plan.description}</p>}
           {price ? (
-            <div className={`${styles.orderRow} ${styles.orderTotal}`}>
-              <span>Plan ({INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval})</span>
-              <span>{formatMoney(price.amount, price.currency)}</span>
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-900/40 px-4 py-3">
+              <KV label={`Plan (${INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval})`} strong>
+                {formatMoney(price.amount, price.currency)}
+              </KV>
             </div>
           ) : (
             <Banner variant="warning">This plan has no active price and can't be purchased right now.</Banner>
           )}
-          <p className={styles.description}>
+          <p className={subCls}>
             Any discount from a promotion code is applied by the payment provider on the next page.
           </p>
         </div>
@@ -288,14 +289,14 @@ export function CheckoutPage() {
 
       {error && <Banner variant="error">{error}</Banner>}
 
-      <Button variant="primary" fullWidth onClick={handleCheckout} disabled={processing || !price}>
+      <Button variant="primary" size="lg" fullWidth onClick={handleCheckout} disabled={processing || !price}>
         {processing ? 'Processing…' : 'Continue to Payment'}
       </Button>
 
-      <p className={`${styles.description} ${styles.center}`}>
+      <p className={`${subCls} text-center`}>
         Payment is processed securely through our payment provider.
       </p>
-      <Link to="/billing" className={`${styles.link} ${styles.center}`}>Back to billing</Link>
+      <Link to="/billing" className={`${textLinkCls} text-center`}>Back to billing</Link>
     </div>
   );
 }

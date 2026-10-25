@@ -1,37 +1,36 @@
-import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAimResults } from './useAimResults';
 import { dueLabel, formatInterval, humanize, prettifySkillId, type ReviewScheduleEntry } from './aimApi';
-import styles from './AimPages.module.css';
+import * as ui from './ui';
 
 function statusTone(status: string): string {
   switch (status.toLowerCase()) {
     case 'due':
-      return styles.tonePrimary;
+      return ui.tone.primary;
     case 'completed':
-      return styles.toneSuccess;
+      return ui.tone.success;
     case 'rescheduled':
-      return styles.toneWarning;
+      return ui.tone.warning;
     default:
-      return '';
+      return ui.tone.neutral;
   }
 }
 
 function ReviewList({ items }: { items: ReviewScheduleEntry[] }) {
   return (
-    <div className={styles.list}>
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {items.map((r) => (
         <Card key={r.scheduleId}>
-          <div className={styles.item}>
-            <div className={styles.itemHeader}>
-              <span className={styles.itemTitle} title={r.skillId}>{prettifySkillId(r.skillId)}</span>
-              <span className={`${styles.badge} ${statusTone(r.status)}`}>{humanize(r.status)}</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className={ui.itemTitle} title={r.skillId}>{prettifySkillId(r.skillId)}</span>
+              <span className={ui.badge(statusTone(r.status))}>{humanize(r.status)}</span>
             </div>
-            <span className={styles.due}>{dueLabel(r.dueAt)}</span>
-            <p className={styles.meta}>
+            <span className="text-[15px] font-bold text-slate-900 dark:text-white">{dueLabel(r.dueAt)}</span>
+            <p className={ui.meta}>
               Every {formatInterval(r.intervalDays)} · Reviewed {r.repetitionCount} time{r.repetitionCount === 1 ? '' : 's'}
             </p>
           </div>
@@ -56,22 +55,22 @@ export function ReviewSchedulePage() {
   const done = data.reviewSchedules.filter((r) => r.status === 'completed');
 
   return (
-    <div className={styles.container}>
-      <Link to="/progress" className={styles.backLink}>← Progress</Link>
-      <h1 className={styles.heading}>Review schedule</h1>
-      <p className={styles.intro}>Spaced-repetition reviews scheduled for you to keep skills fresh.</p>
+    <div className={ui.pageStack}>
+      <ui.BackLink to="/progress">Progress</ui.BackLink>
+      <h1 className={ui.h1}>Review schedule</h1>
+      <p className={ui.intro}>Spaced-repetition reviews scheduled for you to keep skills fresh.</p>
 
       {data.reviewSchedules.length === 0 ? (
         <EmptyState title="No reviews scheduled" message="Reviews are scheduled automatically as you practice skills." />
       ) : (
         <>
-          <section>
-            <h2 className={styles.sectionTitle}>Upcoming</h2>
-            {open.length === 0 ? <p className={styles.meta}>Nothing to review right now.</p> : <ReviewList items={open} />}
+          <section className="flex flex-col gap-3">
+            <h2 className={ui.sectionTitle}>Upcoming</h2>
+            {open.length === 0 ? <p className={ui.meta}>Nothing to review right now.</p> : <ReviewList items={open} />}
           </section>
           {done.length > 0 && (
-            <section>
-              <h2 className={styles.sectionTitle}>Completed</h2>
+            <section className="flex flex-col gap-3">
+              <h2 className={ui.sectionTitle}>Completed</h2>
               <ReviewList items={done} />
             </section>
           )}

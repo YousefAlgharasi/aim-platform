@@ -1,11 +1,10 @@
 import { useState, FormEvent, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { apiClient, getErrorMessage } from '../../api/client';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { Card } from '../../components/common/Card';
-import styles from './AuthPages.module.css';
+import { AuthLogo, AuthHeader, PasswordToggle, SuccessBadge } from '../../components/auth/AuthParts';
 
 /** Supabase's recovery link lands here as /reset-password#access_token=…&type=recovery. */
 function readRecoveryToken(): string | null {
@@ -17,9 +16,11 @@ export function ResetPasswordPage() {
   const recoveryToken = useMemo(readRecoveryToken, []);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -44,55 +45,68 @@ export function ResetPasswordPage() {
     }
   }
 
-  if (!recoveryToken && !done) {
+  if (done) {
     return (
-      <Card>
-        <div className={styles.form}>
-          <h1 className={styles.title}>Invalid reset link</h1>
-          <p className={styles.text}>This link is missing or has expired. Request a new one.</p>
-          <Link to="/forgot-password" className={styles.link}>Send a new reset link</Link>
+      <>
+        <div className="my-auto flex flex-col items-center text-center">
+          <SuccessBadge />
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight m-0">Password Reset!</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 max-w-[260px] leading-relaxed">
+            Your password has been updated. Sign in with your new password.
+          </p>
         </div>
-      </Card>
+        <Button size="lg" fullWidth onClick={() => navigate('/login')}>Back to Sign In</Button>
+      </>
     );
   }
 
-  if (done) {
+  if (!recoveryToken) {
     return (
-      <Card>
-        <div className={styles.form}>
-          <h1 className={styles.title}>Password updated</h1>
-          <p className={styles.text}>Sign in with your new password.</p>
-          <Link to="/login" className={styles.link}>Back to sign in</Link>
+      <>
+        <AuthLogo />
+        <div className="my-auto text-center flex flex-col items-center gap-2">
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">Invalid reset link</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
+            This link is missing or has expired. Request a new one.
+          </p>
         </div>
-      </Card>
+        <Button size="lg" fullWidth onClick={() => navigate('/forgot-password')}>Send a new reset link</Button>
+      </>
     );
   }
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <h1 className={styles.title}>Choose a new password</h1>
+    <>
+      <AuthHeader
+        eyebrow="Reset Password"
+        title={<>Create a new<br />password</>}
+        subtitle="Choose a strong password you haven't used before."
+      />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 my-auto pt-4">
         {error && <Banner variant="error">{error}</Banner>}
         <Input
           label="New password"
-          type="password"
+          type={showPass ? 'text' : 'password'}
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="new-password"
+          rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
           label="Confirm new password"
-          type="password"
+          type={showPass ? 'text' : 'password'}
           value={confirm}
-          onChange={e => setConfirm(e.target.value)}
+          onChange={(e) => setConfirm(e.target.value)}
           required
           autoComplete="new-password"
         />
-        <Button type="submit" fullWidth disabled={loading}>
-          {loading ? 'Updating...' : 'Update password'}
-        </Button>
+        <div className="mt-2">
+          <Button type="submit" size="lg" fullWidth disabled={loading}>
+            {loading ? 'Resetting…' : 'Reset Password'}
+          </Button>
+        </div>
       </form>
-    </Card>
+    </>
   );
 }

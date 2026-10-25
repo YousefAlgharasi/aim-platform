@@ -1,17 +1,17 @@
-import styles from './Assessment.module.css';
+import type { BadgeTone } from '../placement/ui';
 
-/** CSS class for a backend-supplied deadline status badge. */
-export function statusClass(status: string | null | undefined): string {
+/** Badge tone for a backend-supplied deadline status. */
+export function statusTone(status: string | null | undefined): BadgeTone {
   switch (status) {
     case 'open':
     case 'extended':
-      return styles.statusAvailable;
+      return 'emerald';
     case 'upcoming':
     case 'late':
-      return styles.statusUpcoming;
+      return 'amber';
     case 'missed':
-      return styles.statusMissed;
+      return 'red';
     default:
-      return styles.statusCompleted;
+      return 'slate';
   }
 }

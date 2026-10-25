@@ -1,12 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { getErrorMessage } from '../../api/client';
 import { fetchPlacementGate, setPlacementDecision, type PlacementDecision } from './placementApi';
-import styles from './Placement.module.css';
+import { ChoiceRow, PageHeader } from './ui';
+
+function FlagIcon() {
+  return (
+    <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 3h12l-3 4.5L16 12H4" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="4" y1="3" x2="4" y2="21" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="5.5" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" fillOpacity="0.65" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 /**
  * First-login placement gate (Flutter PlacementGatePage).
@@ -75,41 +94,43 @@ export function PlacementGatePage() {
   ];
 
   return (
-    <div className={styles.container}>
-      <div>
-        <h1 className={styles.heading}>How would you like to start?</h1>
-        <p className={styles.description}>Choose how you want to begin learning. This choice is only asked once.</p>
-      </div>
+    <div className="mx-auto w-full max-w-xl flex flex-col gap-5">
+      <PageHeader
+        eyebrow="Get started"
+        title="How would you like to start?"
+        subtitle="Choose how you want to begin learning. This choice is only asked once."
+      />
 
       {error && <Banner variant="error">{error}</Banner>}
 
-      <Card>
-        <fieldset className={styles.options} disabled={saving}>
-          <legend className={styles.srOnly}>Choose how to start</legend>
-          {choices.map((choice) => (
-            <label
-              key={choice.value}
-              className={`${styles.option} ${selected === choice.value ? styles.optionSelected : ''}`}
-            >
-              <input
-                type="radio"
+      <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-3" disabled={saving}>
+        <legend className="sr-only">Choose how to start</legend>
+        {choices.map((choice) => {
+          const recommended = choice.value === 'take_placement';
+          return (
+            <div key={choice.value} className={`relative ${recommended ? 'mt-3' : ''}`}>
+              {recommended && (
+                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-indigo-600 shadow-[0_2px_8px_rgba(79,70,229,0.45)] text-[10px] font-bold tracking-widest text-white uppercase">
+                  Recommended
+                </span>
+              )}
+              <ChoiceRow
+                large
                 name="placement-decision"
                 value={choice.value}
-                checked={selected === choice.value}
+                selected={selected === choice.value}
                 onChange={() => setSelected(choice.value)}
-                className={styles.srOnly}
-              />
-              <span className={styles.optionRadio} />
-              <span className={styles.choiceText}>
-                <span className={styles.choiceTitle}>{choice.title}</span>
-                <span className={styles.choiceBody}>{choice.body}</span>
-              </span>
-            </label>
-          ))}
-        </fieldset>
-      </Card>
+                icon={recommended ? <TargetIcon /> : <FlagIcon />}
+                subtitle={choice.body}
+              >
+                {choice.title}
+              </ChoiceRow>
+            </div>
+          );
+        })}
+      </fieldset>
 
-      <Button onClick={handleContinue} disabled={saving} fullWidth>
+      <Button size="lg" onClick={handleContinue} disabled={saving} fullWidth>
         {saving ? 'Saving…' : 'Continue'}
       </Button>
     </div>

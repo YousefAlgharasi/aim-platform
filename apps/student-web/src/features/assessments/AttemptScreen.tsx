@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
@@ -17,7 +16,10 @@ import {
   type AttemptQuestion,
 } from './assessmentsApi';
 import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
-import styles from './Assessment.module.css';
+import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
+
+const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
+const LINK_BTN = 'border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer';
 
 type SaveState = 'saving' | 'saved' | 'error';
 
@@ -161,23 +163,23 @@ export function AttemptScreen() {
   if (loading) return <LoadingSpinner />;
   if (notResumable) {
     return (
-      <div className={styles.attemptShell}>
+      <div className={SHELL}>
         <EmptyState
           title="This attempt is closed"
           message="It has already been submitted or can no longer be continued."
           actionLabel="View result"
           onAction={() => navigate(`/assessments/${assessmentId}/result/${attemptId}`)}
         />
-        <Link to={`/assessments/${assessmentId}`} className={styles.backLink}>Back to assessment</Link>
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">Back to assessment</Link>
       </div>
     );
   }
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!questions || questions.length === 0) {
     return (
-      <div className={styles.attemptShell}>
+      <div className={SHELL}>
         <EmptyState title="No questions yet" message="This assessment doesn't have any questions yet." />
-        <Link to={`/assessments/${assessmentId}`} className={styles.backLink}>Back to assessment</Link>
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">Back to assessment</Link>
       </div>
     );
   }
@@ -191,31 +193,37 @@ export function AttemptScreen() {
   const state = saveState[linkId];
 
   return (
-    <div className={styles.attemptShell}>
-      <div className={styles.timerBar}>
-        <span className={styles.attemptProgress}>
-          Question {current + 1} of {questions.length} · {answeredCount} answered
-        </span>
-        {remaining !== null && (
-          <span className={`${styles.timer} ${remaining <= 60 ? styles.timerWarning : ''}`}>
-            ⏱ {formatRemaining(remaining)}
+    <div className={SHELL}>
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Question {current + 1} of {questions.length} · {answeredCount} answered
           </span>
-        )}
+          {remaining !== null && <TimerPill warning={remaining <= 60}>{formatRemaining(remaining)}</TimerPill>}
+        </div>
+        <ProgressBar value={answeredCount} total={questions.length} label="Answered questions" />
       </div>
 
       {timeUp && <Banner variant="warning">Time is up. Submit your attempt now.</Banner>}
       {saveError && <Banner variant="error">{saveError}</Banner>}
 
-      <nav className={styles.questionNav} aria-label="Questions">
+      <nav className="flex flex-wrap gap-1.5" aria-label="Questions">
         {questions.map((q, i) => {
           const answered = !!(answers[q.assessmentQuestionLinkId] ?? '').trim();
+          const isCurrent = i === current;
           return (
             <button
               key={q.assessmentQuestionLinkId}
               type="button"
-              className={`${styles.questionDot} ${i === current ? styles.dotCurrent : ''} ${answered && i !== current ? styles.dotAnswered : ''}`}
+              className={`size-10 rounded-xl text-xs font-bold cursor-pointer transition-all duration-150 ${
+                isCurrent
+                  ? 'bg-[#4F46E5] text-white border-0 shadow-md'
+                  : answered
+                    ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-900 border-0'
+                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 ring-1 ring-[#E2E8F0] dark:ring-slate-700 border-0 hover:ring-[#C7D2FE]'
+              }`}
               onClick={() => setCurrent(i)}
-              aria-current={i === current ? 'step' : undefined}
+              aria-current={isCurrent ? 'step' : undefined}
               aria-label={`Question ${i + 1}${answered ? ', answered' : ''}`}
             >
               {i + 1}
@@ -224,77 +232,73 @@ export function AttemptScreen() {
         })}
       </nav>
 
-      <Card>
-        <div className={styles.questionArea}>
-          <span className={styles.questionLabel}>Question {current + 1}</span>
-          <h2 className={styles.questionPrompt}>{question.prompt}</h2>
+      <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
+        <span className={EYEBROW}>Question {current + 1}</span>
+        <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-[#0F172A] dark:text-white">{question.prompt}</h2>
 
-          {question.type === 'listening_choice' && (
-            <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
-          )}
+        {question.type === 'listening_choice' && (
+          <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
+        )}
 
-          {question.options.length > 0 ? (
-            <fieldset className={styles.options} disabled={submitting}>
-              <legend className={styles.srOnly}>Select your answer</legend>
-              {question.options.map((option) => {
-                const checked = answers[linkId] === option.id;
-                return (
-                  <label key={option.id} className={`${styles.option} ${checked ? styles.optionSelected : ''}`}>
-                    <input
-                      type="radio"
-                      name={`answer-${linkId}`}
-                      value={option.id}
-                      checked={checked}
-                      onChange={() => selectOption(linkId, option.id)}
-                      className={styles.srOnly}
-                    />
-                    <span className={styles.optionKey}>{option.label}</span>
-                    <span>{option.text}</span>
-                  </label>
-                );
-              })}
-            </fieldset>
-          ) : (
-            <label className={styles.textAnswer}>
-              <span className={styles.srOnly}>Your answer</span>
-              <textarea
-                className={styles.textArea}
-                rows={3}
-                value={answers[linkId] ?? ''}
-                onChange={(e) => changeText(linkId, e.target.value)}
-                disabled={submitting}
-                placeholder="Type your answer…"
-              />
-            </label>
-          )}
+        {question.options.length === 0 && (
+          <label className="block">
+            <span className="sr-only">Your answer</span>
+            <textarea
+              className={TEXTAREA}
+              rows={3}
+              value={answers[linkId] ?? ''}
+              onChange={(e) => changeText(linkId, e.target.value)}
+              disabled={submitting}
+              placeholder="Type your answer…"
+            />
+          </label>
+        )}
 
-          <span className={styles.saveStatus} aria-live="polite">
-            {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (
-              <button type="button" className={styles.linkButton} onClick={() => saveAnswer(linkId, answers[linkId] ?? '')}>
-                Not saved — retry
-              </button>
-            ) : ''}
-          </span>
-        </div>
-        <div className={styles.actions}>
-          <Button variant="secondary" onClick={() => setCurrent((c) => c - 1)} disabled={current === 0}>
-            Previous
-          </Button>
-          {current < questions.length - 1 ? (
-            <Button onClick={() => setCurrent((c) => c + 1)}>Next</Button>
-          ) : (
-            <Button onClick={() => setConfirmOpen(true)} disabled={submitting}>Review &amp; submit</Button>
-          )}
-        </div>
-      </Card>
+        <span className="min-h-4 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+          {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (
+            <button type="button" className={LINK_BTN} onClick={() => saveAnswer(linkId, answers[linkId] ?? '')}>
+              Not saved — retry
+            </button>
+          ) : ''}
+        </span>
+      </div>
+
+      {question.options.length > 0 && (
+        <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-2.5" disabled={submitting}>
+          <legend className="sr-only">Select your answer</legend>
+          {question.options.map((option) => (
+            <ChoiceRow
+              key={option.id}
+              name={`answer-${linkId}`}
+              value={option.id}
+              selected={answers[linkId] === option.id}
+              onChange={() => selectOption(linkId, option.id)}
+              keyLabel={option.label}
+            >
+              {option.text}
+            </ChoiceRow>
+          ))}
+        </fieldset>
+      )}
+
+      <div className="flex gap-3">
+        <Button variant="secondary" size="lg" className="flex-1" onClick={() => setCurrent((c) => c - 1)} disabled={current === 0}>
+          Previous
+        </Button>
+        {current < questions.length - 1 ? (
+          <Button size="lg" className="flex-[2]" onClick={() => setCurrent((c) => c + 1)}>Next</Button>
+        ) : (
+          <Button size="lg" className="flex-[2]" onClick={() => setConfirmOpen(true)} disabled={submitting}>Review &amp; submit</Button>
+        )}
+      </div>
 
       <Button variant="ghost" onClick={() => setConfirmOpen(true)} disabled={submitting} fullWidth>
         Submit attempt
       </Button>
 
       <Modal open={confirmOpen} onClose={() => !submitting && setConfirmOpen(false)} title="Submit attempt?">
-        <div className={styles.modalBody}>
-          <p className={styles.description}>
+        <div className="flex flex-col gap-3">
+          <p className={BODY}>
             You answered {answeredCount} of {questions.length} questions. After submitting you can't change your answers.
           </p>
           {submitError && <Banner variant="error">{submitError}</Banner>}

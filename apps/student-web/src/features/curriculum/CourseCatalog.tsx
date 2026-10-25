@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
@@ -15,7 +14,7 @@ import {
   type CurrentEnrollment,
   type StudentCourse,
 } from './curriculumApi';
-import styles from './CourseCatalog.module.css';
+import { LockIcon } from './CurriculumIcons';
 
 const STATUS_LABEL: Record<StudentCourse['status'], string> = {
   not_started: 'Not started',
@@ -93,19 +92,29 @@ export function CourseCatalog() {
   }
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Courses</h1>
+    <div className="flex flex-col gap-5">
+      <div>
+        <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">Learn</span>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">Courses</h1>
+      </div>
       {notice && <Banner variant="info">{notice}</Banner>}
 
-      <div className={styles.grid}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map(course => {
           const isCurrent = course.courseId === currentCourseId;
+          const completed = course.status === 'completed';
           return (
             <div
               key={course.courseId}
               role="button"
               tabIndex={0}
-              className={`${styles.cardLink} ${styles.cardButton} ${course.locked ? styles.cardLocked : ''}`}
+              className={`flex flex-col gap-2.5 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 ring-1 shadow-sm transition-all duration-200 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                course.locked
+                  ? 'ring-slate-200/60 dark:ring-slate-800 opacity-65 cursor-not-allowed'
+                  : isCurrent
+                    ? 'ring-2 ring-[#4F46E5] dark:ring-indigo-400 hover:shadow-md cursor-pointer'
+                    : 'ring-[#E2E8F0] dark:ring-slate-700 hover:ring-indigo-300 dark:hover:ring-indigo-700 hover:shadow-md cursor-pointer'
+              }`}
               onClick={() => handleOpen(course)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -116,49 +125,64 @@ export function CourseCatalog() {
               aria-disabled={course.locked || undefined}
               aria-label={`${course.title}${course.locked ? ' (locked)' : ''}`}
             >
-              <Card>
-                <div className={styles.courseCard}>
-                  <div className={styles.badgeRow}>
-                    {course.levelCode && <span className={styles.levelBadge}>{course.levelCode}</span>}
-                    {isCurrent && <span className={styles.currentBadge}>Current course</span>}
-                    {course.locked && <span className={styles.lockedBadge}>🔒 Locked</span>}
-                  </div>
-                  <h2 className={styles.courseName}>{course.title}</h2>
-                  {course.description && <p className={styles.courseDesc}>{course.description}</p>}
-                  <div className={styles.courseMeta}>
-                    <span>{course.lessonCount} lessons</span>
-                    {course.quizCount > 0 && <span>{course.quizCount} quizzes</span>}
-                    {course.examCount > 0 && <span>Final exam</span>}
-                  </div>
-                  <div
-                    className={styles.progressBar}
-                    role="progressbar"
-                    aria-valuenow={course.percent}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`${course.title} progress`}
-                  >
-                    <div className={styles.progressFill} style={{ width: `${course.percent}%` }} />
-                  </div>
-                  <span className={styles.progressLabel}>
-                    {STATUS_LABEL[course.status] ?? course.status} · {course.percent}%
+              <div className="flex flex-wrap items-center gap-1.5">
+                {course.levelCode && (
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
+                    {course.levelCode}
                   </span>
+                )}
+                {isCurrent && (
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-indigo-600 px-2.5 py-1 rounded-full">
+                    Current course
+                  </span>
+                )}
+                {course.locked && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                    <LockIcon className="size-3" /> Locked
+                  </span>
+                )}
+              </div>
+              <h2 className="font-extrabold text-lg tracking-tight leading-tight text-slate-900 dark:text-white m-0">{course.title}</h2>
+              {course.description && (
+                <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0 line-clamp-2">{course.description}</p>
+              )}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-400 dark:text-slate-500">
+                <span>{course.lessonCount} lessons</span>
+                {course.quizCount > 0 && <span>{course.quizCount} quizzes</span>}
+                {course.examCount > 0 && <span>Final exam</span>}
+              </div>
+              <div className="mt-auto pt-1">
+                <div
+                  className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={course.percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${course.title} progress`}
+                >
+                  <div
+                    className={`h-full rounded-full ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`}
+                    style={{ width: `${course.percent}%` }}
+                  />
                 </div>
-              </Card>
+                <span className="block mt-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
+                  {STATUS_LABEL[course.status] ?? course.status} · {course.percent}%
+                </span>
+              </div>
             </div>
           );
         })}
       </div>
 
       <Modal open={!!pending} onClose={() => !enrolling && setPending(null)} title="Start this course?">
-        <div className={styles.modalBody}>
-          <p className={styles.modalText}>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
             {enrollment?.found && enrollment.courseTitle
               ? `You're currently in ${enrollment.courseTitle}. Switching to ${pending?.title ?? ''} will make it your active course instead.`
               : `${pending?.title ?? ''} will become your active course.`}
           </p>
           {enrollError && <Banner variant="error">{enrollError}</Banner>}
-          <div className={styles.modalActions}>
+          <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setPending(null)} disabled={enrolling}>
               Cancel
             </Button>

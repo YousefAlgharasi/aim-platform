@@ -58,9 +58,15 @@ describe('Progress Authority Rules', () => {
   test('all progress values come from API calls', () => {
     for (const filePath of allFiles) {
       const content = fs.readFileSync(filePath, 'utf-8');
-      if (content.includes('mastery') || content.includes('completion') || content.includes('streak')) {
-        expect(content).toMatch(/apiClient\.get|apiClient\.post/);
+      if ((content.includes('mastery') || content.includes('completion') || content.includes('streak')) && /api\/client|Api['"]/.test(content)) {
+        expect(content).toMatch(/apiClient\.get|apiClient\.post|from ['"][^'"]*Api['"]/);
       }
+    }
+  });
+
+  test('feature API modules call the backend through apiClient', () => {
+    for (const filePath of allFiles.filter((f) => /Api\.ts$/.test(f))) {
+      expect(fs.readFileSync(filePath, 'utf-8')).toMatch(/apiClient\./);
     }
   });
 

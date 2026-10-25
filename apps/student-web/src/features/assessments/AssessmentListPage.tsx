@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { deadlineStatusLabel, fetchAssessments, type AssessmentListItem } from './assessmentsApi';
-import { statusClass } from './assessmentUi';
-import styles from './Assessment.module.css';
+import { statusTone } from './assessmentUi';
+import { Badge, BODY, CARD, PageHeader } from '../placement/ui';
 
 export function AssessmentListPage() {
   const [assessments, setAssessments] = useState<AssessmentListItem[]>([]);
@@ -29,37 +28,38 @@ export function AssessmentListPage() {
   if (error) return <ErrorState message={error} onRetry={fetchAll} />;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.headerRow}>
-        <h1 className={styles.heading}>Assessments</h1>
-        <Link to="/assessments/deadlines" className={styles.headerLink}>Deadlines</Link>
-      </div>
+    <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
+      <PageHeader
+        eyebrow="Assessments"
+        title="Assessments"
+        subtitle="Quizzes and exams assigned to you."
+        action={
+          <Link
+            to="/assessments/deadlines"
+            className="shrink-0 inline-flex items-center h-10 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          >
+            Deadlines
+          </Link>
+        }
+      />
       {assessments.length === 0 ? (
         <EmptyState title="No assessments" message="Assessments will appear here when available." />
       ) : (
-        <div className={styles.list}>
+        <div className="grid gap-3 md:grid-cols-2">
           {assessments.map((a) => (
-            <Link key={a.id} to={`/assessments/${a.id}`} className={styles.cardLink}>
-              <Card>
-                <div className={styles.assessmentCard}>
-                  <div className={styles.badgeRow}>
-                    <span className={`${styles.typeBadge} ${a.type === 'quiz' ? styles.typeQuiz : styles.typeExam}`}>
-                      {a.type}
-                    </span>
-                    {a.deadlineStatus && (
-                      <span className={`${styles.statusBadge} ${statusClass(a.deadlineStatus)}`}>
-                        {deadlineStatusLabel(a.deadlineStatus)}
-                      </span>
-                    )}
-                  </div>
-                  <h2 className={styles.cardTitle}>{a.title}</h2>
-                  {a.description && (
-                    <div className={styles.cardMeta}>
-                      <span>{a.description}</span>
-                    </div>
-                  )}
-                </div>
-              </Card>
+            <Link
+              key={a.id}
+              to={`/assessments/${a.id}`}
+              className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-md transition-all duration-200`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={a.type === 'quiz' ? 'indigo' : 'violet'}>{a.type}</Badge>
+                {a.deadlineStatus && (
+                  <Badge tone={statusTone(a.deadlineStatus)}>{deadlineStatusLabel(a.deadlineStatus)}</Badge>
+                )}
+              </div>
+              <h2 className="m-0 text-base font-bold leading-snug text-slate-900 dark:text-white">{a.title}</h2>
+              {a.description && <p className={BODY}>{a.description}</p>}
             </Link>
           ))}
         </div>

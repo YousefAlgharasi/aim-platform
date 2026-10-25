@@ -53,8 +53,14 @@ describe('Reports Authority Rules', () => {
     for (const filePath of files) {
       const content = fs.readFileSync(filePath, 'utf-8');
       if (content.includes('report') && content.includes('fetch')) {
-        expect(content).toMatch(/apiClient\.get/);
+        expect(content).toMatch(/apiClient\.get|from ['"][^'"]*Api['"]/);
       }
+    }
+  });
+
+  test('feature API modules call the backend through apiClient', () => {
+    for (const filePath of files.filter((f) => /Api\.ts$/.test(f))) {
+      expect(fs.readFileSync(filePath, 'utf-8')).toMatch(/apiClient\./);
     }
   });
 

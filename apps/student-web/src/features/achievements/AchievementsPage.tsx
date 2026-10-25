@@ -5,7 +5,7 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { getErrorMessage } from '../../api/client';
 import { fetchAchievements, type Achievement } from './achievementsApi';
-import styles from './Achievements.module.css';
+import { TrophyIcon } from '../../components/common/Icons';
 
 type Tab = 'all' | 'unlocked' | 'locked';
 
@@ -69,42 +69,52 @@ export function AchievementsPage() {
   ];
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Achievements</h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Achievements</h1>
 
       {items.length === 0 ? (
         <EmptyState title="No achievements yet" message="Achievements will appear here as they become available." />
       ) : (
         <>
-          <Card>
-            <div className={styles.summary}>
-              <span className={styles.summaryIcon} aria-hidden="true">🏆</span>
-              <div className={styles.summaryText}>
-                <span className={styles.summaryValue}>
-                  {unlocked.length} of {items.length} badges unlocked
-                </span>
+          <div className="relative overflow-hidden rounded-3xl border border-indigo-400/20 bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 p-5 text-white shadow-xl shadow-indigo-500/25">
+            <div className="pointer-events-none absolute top-0 end-0 size-36 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative z-10 flex items-center gap-4">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-amber-300 backdrop-blur-md" aria-hidden="true">
+                <TrophyIcon className="size-6" />
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-base font-extrabold leading-tight">
+                    {unlocked.length} of {items.length} badges unlocked
+                  </span>
+                  <span className="text-xs font-extrabold">{pct}%</span>
+                </div>
                 <div
-                  className={styles.bar}
+                  className="h-2 overflow-hidden rounded-full bg-black/20 p-0.5"
                   role="progressbar"
                   aria-label="Badges unlocked"
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={pct}
                 >
-                  <div className={styles.barFill} style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-white to-indigo-100 transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <div className={styles.tabs} role="tablist" aria-label="Filter achievements">
+          <div className="flex gap-1 rounded-xl bg-slate-200/50 p-1 dark:bg-slate-800" role="tablist" aria-label="Filter achievements">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 type="button"
                 role="tab"
                 aria-selected={tab === t.key}
-                className={`${styles.tab} ${tab === t.key ? styles.tabActive : ''}`}
+                className={`min-h-10 flex-1 cursor-pointer rounded-lg border-none px-2 py-1.5 text-xs font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F46E5] ${
+                  tab === t.key
+                    ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-300'
+                    : 'bg-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
                 onClick={() => setTab(t.key)}
               >
                 {t.label}
@@ -122,24 +132,41 @@ export function AchievementsPage() {
               }
             />
           ) : (
-            <ul className={styles.grid}>
+            <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 lg:grid-cols-3">
               {visible.map((a) => (
                 <li key={a.key}>
-                  <Card className={a.unlocked ? '' : styles.lockedCard}>
-                    <div className={styles.badge}>
-                      <span className={styles.badgeIcon} aria-hidden="true">
+                  <Card className={`h-full ${a.unlocked ? '' : 'opacity-75'}`}>
+                    <div className="flex items-start gap-3.5">
+                      <span
+                        className={`flex size-11 shrink-0 items-center justify-center rounded-xl text-2xl ${
+                          a.unlocked
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60'
+                            : 'bg-slate-100 dark:bg-slate-700'
+                        }`}
+                        aria-hidden="true"
+                      >
                         {a.unlocked ? iconFor(a) : '🔒'}
                       </span>
-                      <span className={styles.badgeCategory}>{humanize(a.category)}</span>
-                      <span className={styles.badgeTitle}>{a.title}</span>
-                      <span className={styles.badgeDesc}>{a.description}</span>
-                      <span className={a.unlocked ? styles.badgeUnlocked : styles.badgeLocked}>
-                        {a.unlocked
-                          ? a.unlockedAt
-                            ? `Unlocked ${new Date(a.unlockedAt).toLocaleDateString()}`
-                            : 'Unlocked'
-                          : 'Locked'}
-                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                          {humanize(a.category)}
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{a.title}</span>
+                        <span className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{a.description}</span>
+                        <span
+                          className={`mt-1 self-start rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                            a.unlocked
+                              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400'
+                              : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                          }`}
+                        >
+                          {a.unlocked
+                            ? a.unlockedAt
+                              ? `Unlocked ${new Date(a.unlockedAt).toLocaleDateString()}`
+                              : 'Unlocked'
+                            : 'Locked'}
+                        </span>
+                      </div>
                     </div>
                   </Card>
                 </li>

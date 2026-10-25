@@ -7,7 +7,7 @@ import type {
   QuickStartLesson,
   RecommendedCourse,
 } from '../dashboardApi';
-import styles from './Widgets.module.css';
+import * as ui from './ui';
 
 interface ContinueWidgetProps {
   continueLesson: ContinueLearningLesson | null;
@@ -33,9 +33,9 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
           title="Find your starting point"
           message="Take the placement test so we can recommend a course and your first lesson."
         />
-        <div className={styles.actionsRow}>
-          <Link to="/placement" className={styles.primaryLink}>Take the placement test</Link>
-          <Link to="/curriculum" className={styles.viewAll}>Browse courses</Link>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Link to="/placement" className={ui.primaryLink}>Take the placement test</Link>
+          <Link to="/curriculum" className={ui.link}>Browse courses</Link>
         </div>
       </Card>
     );
@@ -45,49 +45,49 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
 
   return (
     <Card>
-      <div className={styles.listWidget}>
+      <div className="flex flex-col gap-3">
         {continueLesson ? (
           <>
-            <span className={styles.recType}>Continue learning</span>
-            <span className={styles.heroTitle}>{continueLesson.lessonTitle}</span>
+            <span className={ui.eyebrow}>Continue learning</span>
+            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{continueLesson.lessonTitle}</span>
             <div
-              className={styles.bar}
+              className={ui.barTrack}
               role="progressbar"
               aria-label="Lesson progress"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={pct}
             >
-              <div className={styles.barFill} style={{ width: `${pct}%` }} />
+              <div className={ui.barFill} style={{ width: `${pct}%` }} />
             </div>
-            <span className={styles.widgetMeta}>{pct}% complete</span>
-            <div className={styles.actionsRow}>
-              <Link to={`/lessons/${continueLesson.lessonId}`} className={styles.primaryLink}>Resume lesson</Link>
+            <span className={ui.meta}>{pct}% complete</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link to={`/lessons/${continueLesson.lessonId}`} className={ui.primaryLink}>Resume lesson</Link>
             </div>
           </>
         ) : quickStart ? (
           <>
-            <span className={styles.recType}>
+            <span className={ui.eyebrow}>
               Start here{quickStart.skillName ? ` · ${quickStart.skillName}` : ''}
             </span>
-            <span className={styles.heroTitle}>{quickStart.lessonTitle}</span>
-            {quickStart.lessonDescription && <span className={styles.recReason}>{quickStart.lessonDescription}</span>}
-            <div className={styles.actionsRow}>
-              <Link to={`/lessons/${quickStart.lessonId}`} className={styles.primaryLink}>Start lesson</Link>
+            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{quickStart.lessonTitle}</span>
+            {quickStart.lessonDescription && <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{quickStart.lessonDescription}</span>}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link to={`/lessons/${quickStart.lessonId}`} className={ui.primaryLink}>Start lesson</Link>
             </div>
           </>
         ) : null}
 
         {course && (
-          <div className={styles.courseRow}>
-            <div className={styles.widgetContent}>
-              <span className={styles.widgetLabel}>{enrolledCourse ? 'Current course' : 'Recommended course'}</span>
-              <span className={styles.recName}>{course.title}</span>
+          <div className="mt-1 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-700">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className={ui.label}>{enrolledCourse ? 'Current course' : 'Recommended course'}</span>
+              <span className="truncate text-sm font-bold text-slate-900 dark:text-white">{course.title}</span>
               {!enrolledCourse && recommendedCourse?.estimatedLevel && (
-                <span className={styles.recReason}>Level: {recommendedCourse.estimatedLevel}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">Level: {recommendedCourse.estimatedLevel}</span>
               )}
             </div>
-            <Link to={`/curriculum/${course.id}`} className={styles.viewAll}>Open course</Link>
+            <Link to={`/curriculum/${course.id}`} className={`${ui.link} shrink-0`}>Open course</Link>
           </div>
         )}
       </div>

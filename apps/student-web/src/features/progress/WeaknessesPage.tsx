@@ -1,33 +1,32 @@
-import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAimResults } from './useAimResults';
 import { formatDate, humanize, prettifySkillId } from './aimApi';
-import styles from './AimPages.module.css';
+import * as ui from './ui';
 
 function severityTone(severity: string): string {
   switch (severity.toLowerCase()) {
     case 'critical':
-      return styles.toneError;
+      return ui.tone.error;
     case 'developing':
-      return styles.toneWarning;
+      return ui.tone.warning;
     default:
-      return '';
+      return ui.tone.neutral;
   }
 }
 
 function statusTone(status: string): string {
   switch (status.toLowerCase()) {
     case 'open':
-      return styles.toneError;
+      return ui.tone.error;
     case 'improving':
-      return styles.toneWarning;
+      return ui.tone.warning;
     case 'resolved':
-      return styles.toneSuccess;
+      return ui.tone.success;
     default:
-      return '';
+      return ui.tone.neutral;
   }
 }
 
@@ -43,26 +42,26 @@ export function WeaknessesPage() {
   const records = data.weaknessRecords;
 
   return (
-    <div className={styles.container}>
-      <Link to="/progress" className={styles.backLink}>← Progress</Link>
-      <h1 className={styles.heading}>Areas to improve</h1>
-      <p className={styles.intro}>Skills the AIM engine detected you are struggling with, based on your attempts.</p>
+    <div className={ui.pageStack}>
+      <ui.BackLink to="/progress">Progress</ui.BackLink>
+      <h1 className={ui.h1}>Areas to improve</h1>
+      <p className={ui.intro}>Skills the AIM engine detected you are struggling with, based on your attempts.</p>
 
       {records.length === 0 ? (
         <EmptyState title="No weaknesses detected" message="Great work — no areas to improve have been detected yet." />
       ) : (
-        <div className={styles.list}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {records.map((w) => (
             <Card key={w.weaknessId}>
-              <div className={styles.item}>
-                <div className={styles.itemHeader}>
-                  <span className={styles.itemTitle} title={w.skillId}>{prettifySkillId(w.skillId)}</span>
-                  <div className={styles.badges}>
-                    <span className={`${styles.badge} ${severityTone(w.severity)}`}>{humanize(w.severity)}</span>
-                    <span className={`${styles.badge} ${statusTone(w.status)}`}>{humanize(w.status)}</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className={ui.itemTitle} title={w.skillId}>{prettifySkillId(w.skillId)}</span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={ui.badge(severityTone(w.severity))}>{humanize(w.severity)}</span>
+                    <span className={ui.badge(statusTone(w.status))}>{humanize(w.status)}</span>
                   </div>
                 </div>
-                <p className={styles.meta}>
+                <p className={ui.meta}>
                   Detected {formatDate(w.detectedAt)}
                   {w.resolvedAt ? ` · Resolved ${formatDate(w.resolvedAt)}` : ''}
                   {w.triggerAttemptIds.length > 0

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card } from '../../../components/common/Card';
 import type { DailyChallengeSummary } from '../dashboardApi';
-import styles from './Widgets.module.css';
+import * as ui from './ui';
 
 interface ChallengeWidgetProps {
   challenge: DailyChallengeSummary;
@@ -13,28 +13,34 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
   const pct = Math.min(100, Math.round((challenge.progressCount / target) * 100));
   return (
     <Card>
-      <div className={styles.listWidget}>
-        <div className={styles.headerRow}>
-          <span className={styles.recType}>Daily challenge</span>
-          <span className={challenge.completed ? styles.badgeSuccess : styles.widgetMeta}>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className={ui.eyebrow}>Daily challenge</span>
+          <span
+            className={
+              challenge.completed
+                ? 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                : 'rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-extrabold text-[#4F46E5] dark:bg-indigo-950/60 dark:text-indigo-400'
+            }
+          >
             {challenge.completed ? 'Completed' : `${challenge.progressCount}/${challenge.targetCount}`}
           </span>
         </div>
-        <span className={styles.heroTitle}>{challenge.title}</span>
-        <span className={styles.recReason}>{challenge.description}</span>
+        <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{challenge.title}</span>
+        <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{challenge.description}</span>
         <div
-          className={styles.bar}
+          className={ui.barTrack}
           role="progressbar"
           aria-label="Challenge progress"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={pct}
         >
-          <div className={styles.barFill} style={{ width: `${pct}%` }} />
+          <div className={challenge.completed ? 'h-full rounded-full bg-emerald-500' : ui.barFill} style={{ width: `${pct}%` }} />
         </div>
         {!challenge.completed && (
-          <div className={styles.actionsRow}>
-            <Link to="/curriculum" className={styles.viewAll}>Go to lessons</Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/curriculum" className={ui.primaryLink}>Go to lessons</Link>
           </div>
         )}
       </div>

@@ -28,23 +28,24 @@ import {
   type ReleaseNote,
   type OperationalStatus,
 } from './supportApi';
-import styles from './Support.module.css';
+import { ClipboardIcon, ChatIcon } from '../../components/common/Icons';
+import { PageHeader, SectionTitle, Field, StatusPill, ChevronIcon, selectCls, textareaCls, labelCls, h2Cls, subCls, pillCls } from '../profile/ui';
 
 type Panel = 'none' | 'ticket' | 'feedback';
 
-function ticketStatusClass(status: SupportTicket['status']): string {
+function ticketTone(status: SupportTicket['status']): 'success' | 'neutral' | 'indigo' {
   switch (status) {
-    case 'resolved': return styles.statusResolved;
-    case 'closed': return styles.statusClosed;
-    default: return styles.statusOpen;
+    case 'resolved': return 'success';
+    case 'closed': return 'neutral';
+    default: return 'indigo';
   }
 }
 
-function serviceStatusClass(status: string): string {
-  if (status === 'operational') return styles.serviceUp;
-  if (status === 'degraded' || status === 'maintenance') return styles.serviceDegraded;
-  if (status === 'partial_outage' || status === 'major_outage') return styles.serviceDown;
-  return '';
+function serviceTone(status: string): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (status === 'operational') return 'success';
+  if (status === 'degraded' || status === 'maintenance') return 'warning';
+  if (status === 'partial_outage' || status === 'major_outage') return 'danger';
+  return 'neutral';
 }
 
 export function SupportPage() {
@@ -173,57 +174,60 @@ export function SupportPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Help & Support</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader eyebrow="Support" title="Help & Support" subtitle="Get help, share feedback and check our status." />
 
       {success && <Banner variant="success">{success}</Banner>}
 
-      <div className={styles.grid}>
-        <Card>
-          <button type="button" className={styles.helpCard} onClick={() => openPanel('ticket')} aria-expanded={panel === 'ticket'}>
-            <span className={styles.helpIcon} aria-hidden="true">🎫</span>
-            <h2 className={styles.helpTitle}>Submit a Ticket</h2>
-            <span className={styles.helpDesc}>Report an issue or ask for help</span>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {([
+          { key: 'ticket' as const, icon: <ClipboardIcon className="size-5" />, title: 'Submit a Ticket', desc: 'Report an issue or ask for help' },
+          { key: 'feedback' as const, icon: <ChatIcon className="size-5" />, title: 'Send Feedback', desc: 'Share your thoughts and suggestions' },
+        ]).map(c => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => openPanel(c.key)}
+            aria-expanded={panel === c.key}
+            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
+              panel === c.key ? 'ring-2 ring-[#4F46E5]' : 'ring-1 ring-[#E2E8F0] dark:ring-slate-700'
+            }`}
+          >
+            <span className="size-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
+            <span className="flex flex-col gap-0.5 min-w-0">
+              <h2 className={h2Cls}>{c.title}</h2>
+              <span className="text-sm text-slate-500 dark:text-slate-400">{c.desc}</span>
+            </span>
           </button>
-        </Card>
-        <Card>
-          <button type="button" className={styles.helpCard} onClick={() => openPanel('feedback')} aria-expanded={panel === 'feedback'}>
-            <span className={styles.helpIcon} aria-hidden="true">💬</span>
-            <h2 className={styles.helpTitle}>Send Feedback</h2>
-            <span className={styles.helpDesc}>Share your thoughts and suggestions</span>
-          </button>
-        </Card>
+        ))}
       </div>
 
       {panel === 'ticket' && (
         <Card>
-          <form className={styles.formContent} onSubmit={handleSubmitTicket}>
-            <h2 className={styles.subtitle}>New Support Ticket</h2>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket}>
+            <SectionTitle>New Support Ticket</SectionTitle>
             {formError && <Banner variant="error">{formError}</Banner>}
-            <div className={styles.formRow}>
-              <div className={styles.formField}>
-                <label className={styles.formLabel} htmlFor="ticket-category">Category</label>
-                <select id="ticket-category" className={styles.formSelect} value={category} onChange={e => setCategory(e.target.value as TicketCategory)}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Category" htmlFor="ticket-category">
+                <select id="ticket-category" className={selectCls} value={category} onChange={e => setCategory(e.target.value as TicketCategory)}>
                   {(Object.keys(TICKET_CATEGORY_LABELS) as TicketCategory[]).map(c => (
                     <option key={c} value={c}>{TICKET_CATEGORY_LABELS[c]}</option>
                   ))}
                 </select>
-              </div>
-              <div className={styles.formField}>
-                <label className={styles.formLabel} htmlFor="ticket-severity">Severity</label>
-                <select id="ticket-severity" className={styles.formSelect} value={severity} onChange={e => setSeverity(e.target.value as TicketSeverity)}>
+              </Field>
+              <Field label="Severity" htmlFor="ticket-severity">
+                <select id="ticket-severity" className={selectCls} value={severity} onChange={e => setSeverity(e.target.value as TicketSeverity)}>
                   {(Object.keys(TICKET_SEVERITY_LABELS) as TicketSeverity[]).map(s => (
                     <option key={s} value={s}>{TICKET_SEVERITY_LABELS[s]}</option>
                   ))}
                 </select>
-              </div>
+              </Field>
             </div>
             <Input label="Subject" value={subject} maxLength={SUBJECT_MAX} onChange={e => setSubject(e.target.value)} required />
-            <div className={styles.formField}>
-              <label className={styles.formLabel} htmlFor="ticket-message">Message</label>
-              <textarea id="ticket-message" className={styles.formTextarea} value={message} onChange={e => setMessage(e.target.value)} required />
-            </div>
-            <div className={styles.formActions}>
+            <Field label="Message" htmlFor="ticket-message">
+              <textarea id="ticket-message" className={`${textareaCls} min-h-32`} value={message} onChange={e => setMessage(e.target.value)} required />
+            </Field>
+            <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={submitting}>Cancel</Button>
               <Button variant="primary" type="submit" disabled={submitting}>
                 {submitting ? 'Submitting…' : 'Submit Ticket'}
@@ -235,20 +239,19 @@ export function SupportPage() {
 
       {panel === 'feedback' && (
         <Card>
-          <form className={styles.formContent} onSubmit={handleSubmitFeedback}>
-            <h2 className={styles.subtitle}>Send Feedback</h2>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmitFeedback}>
+            <SectionTitle>Send Feedback</SectionTitle>
             {fbError && <Banner variant="error">{fbError}</Banner>}
-            <div className={styles.formField}>
-              <label className={styles.formLabel} htmlFor="feedback-category">Type</label>
-              <select id="feedback-category" className={styles.formSelect} value={fbCategory} onChange={e => setFbCategory(e.target.value as FeedbackCategory)}>
+            <Field label="Type" htmlFor="feedback-category">
+              <select id="feedback-category" className={selectCls} value={fbCategory} onChange={e => setFbCategory(e.target.value as FeedbackCategory)}>
                 {(Object.keys(FEEDBACK_CATEGORY_LABELS) as FeedbackCategory[]).map(c => (
                   <option key={c} value={c}>{FEEDBACK_CATEGORY_LABELS[c]}</option>
                 ))}
               </select>
-            </div>
-            <div className={styles.formField}>
-              <span className={styles.formLabel} id="feedback-rating-label">Rating (optional)</span>
-              <div className={styles.ratingRow} role="radiogroup" aria-labelledby="feedback-rating-label">
+            </Field>
+            <div className="flex flex-col gap-1.5">
+              <span className={labelCls} id="feedback-rating-label">Rating (optional)</span>
+              <div className="flex gap-1" role="radiogroup" aria-labelledby="feedback-rating-label">
                 {[1, 2, 3, 4, 5].map(n => (
                   <button
                     key={n}
@@ -256,7 +259,7 @@ export function SupportPage() {
                     role="radio"
                     aria-checked={fbRating === n}
                     aria-label={`${n} star${n > 1 ? 's' : ''}`}
-                    className={`${styles.ratingStar} ${n <= fbRating ? styles.ratingStarActive : ''}`}
+                    className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-amber-50 dark:hover:bg-slate-700 ${n <= fbRating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
                     onClick={() => setFbRating(prev => (prev === n ? 0 : n))}
                   >
                     ★
@@ -265,11 +268,10 @@ export function SupportPage() {
               </div>
             </div>
             <Input label="Title" value={fbTitle} maxLength={FEEDBACK_TITLE_MAX} onChange={e => setFbTitle(e.target.value)} required />
-            <div className={styles.formField}>
-              <label className={styles.formLabel} htmlFor="feedback-body">Your feedback</label>
-              <textarea id="feedback-body" className={styles.formTextarea} value={fbBody} onChange={e => setFbBody(e.target.value)} required />
-            </div>
-            <div className={styles.formActions}>
+            <Field label="Your feedback" htmlFor="feedback-body">
+              <textarea id="feedback-body" className={`${textareaCls} min-h-32`} value={fbBody} onChange={e => setFbBody(e.target.value)} required />
+            </Field>
+            <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={fbSubmitting}>Cancel</Button>
               <Button variant="primary" type="submit" disabled={fbSubmitting}>
                 {fbSubmitting ? 'Sending…' : 'Send Feedback'}
@@ -279,8 +281,8 @@ export function SupportPage() {
         </Card>
       )}
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>My Tickets</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>My Tickets</h2>
         {loading ? (
           <LoadingSpinner />
         ) : error ? (
@@ -288,45 +290,50 @@ export function SupportPage() {
         ) : tickets.length === 0 ? (
           <EmptyState title="No tickets yet" message="Submit a ticket above if you need help." />
         ) : (
-          <div className={styles.ticketList}>
+          <div className="grid gap-3 md:grid-cols-2">
             {tickets.map(ticket => (
-              <Card key={ticket.id}>
-                <Link to={`/support/tickets/${ticket.id}`} className={`${styles.ticketCard} ${styles.cardLink}`}>
-                  <span className={styles.ticketTitle}>{ticket.subject}</span>
-                  <div className={styles.ticketMeta}>
+              <Link
+                key={ticket.id}
+                to={`/support/tickets/${ticket.id}`}
+                className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm no-underline hover:shadow-md transition-shadow"
+              >
+                <span className="flex-1 min-w-0 flex flex-col gap-1.5">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{ticket.subject}</span>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                     <span>{TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category}</span>
                     <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
-                    <span className={`${styles.ticketStatus} ${ticketStatusClass(ticket.status)}`}>
+                    <StatusPill tone={ticketTone(ticket.status)}>
                       {TICKET_STATUS_LABELS[ticket.status] ?? ticket.status}
-                    </span>
-                  </div>
-                </Link>
-              </Card>
+                    </StatusPill>
+                  </span>
+                </span>
+                <ChevronIcon className="size-4 text-slate-400 shrink-0" />
+              </Link>
             ))}
           </div>
         )}
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>System Status</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>System Status</h2>
         <Card>
           {statusError ? (
             <ErrorState message={statusError} onRetry={loadStatus} />
           ) : statuses === null ? (
             <LoadingSpinner />
           ) : statuses.length === 0 ? (
-            <p className={styles.description}>No status information is available right now.</p>
+            <p className={subCls}>No status information is available right now.</p>
           ) : (
-            <div className={styles.statusPage}>
+            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               {statuses.map(s => (
-                <div key={s.id} className={styles.statusItem}>
-                  <div className={styles.statusText}>
-                    <span className={styles.serviceName}>{s.component}</span>
-                    {s.description && <span className={styles.description}>{s.description}</span>}
+                <div key={s.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{s.component}</span>
+                    {s.description && <span className={subCls}>{s.description}</span>}
                   </div>
-                  <span className={`${styles.serviceStatus} ${serviceStatusClass(s.status)}`}>
+                  <StatusPill tone={serviceTone(s.status)}>
                     {SERVICE_STATUS_LABELS[s.status] ?? s.status}
-                  </span>
+                  </StatusPill>
                 </div>
               ))}
             </div>
@@ -334,22 +341,25 @@ export function SupportPage() {
         </Card>
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>What's New</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>What's New</h2>
         {notesError ? (
           <ErrorState message={notesError} onRetry={loadNotes} />
         ) : notes === null ? (
           <LoadingSpinner />
         ) : notes.length === 0 ? (
-          <Card><p className={styles.description}>No release notes yet.</p></Card>
+          <Card><p className={subCls}>No release notes yet.</p></Card>
         ) : (
-          <div className={styles.releaseList}>
+          <div className="grid gap-3 md:grid-cols-2">
             {notes.map(note => (
               <Card key={note.id}>
-                <div className={styles.releaseCard}>
-                  <h3 className={styles.releaseVersion}>{note.title} <span className={styles.releaseDate}>v{note.version}</span></h3>
-                  {note.publishedAt && <span className={styles.releaseDate}>{new Date(note.publishedAt).toLocaleDateString()}</span>}
-                  {note.body && <p className={styles.releaseNotes}>{note.body}</p>}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white m-0">{note.title}</h3>
+                    <span className={pillCls}>v{note.version}</span>
+                  </div>
+                  {note.publishedAt && <span className="text-xs text-slate-400">{new Date(note.publishedAt).toLocaleDateString()}</span>}
+                  {note.body && <p className={`${subCls} whitespace-pre-wrap`}>{note.body}</p>}
                 </div>
               </Card>
             ))}

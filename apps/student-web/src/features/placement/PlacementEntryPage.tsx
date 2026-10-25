@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
@@ -22,7 +22,32 @@ import {
   type PlacementSection,
   type PlacementTest,
 } from './placementApi';
-import styles from './Placement.module.css';
+import { ClockIcon, ClipboardIcon, LightbulbIcon, TrophyIcon } from '../../components/common/Icons';
+import { BODY, CARD, H2, HeroBadge, PageHeader } from './ui';
+
+const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-5';
+
+function InfoRow({ icon, title, desc }: { icon: ReactNode; title: ReactNode; desc: ReactNode }) {
+  return (
+    <div className={`flex gap-4 items-center p-4 ${CARD}`}>
+      <div className="size-11 bg-indigo-50/80 dark:bg-indigo-950/60 rounded-xl flex items-center justify-center shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="m-0 text-[15px] font-bold leading-snug text-slate-900 dark:text-white">{title}</p>
+        <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-400 dark:text-slate-500">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function RestartModalBody({ text, confirmLabel, busy, onConfirm, onCancel }: { text: string; confirmLabel: string; busy: boolean; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className={BODY}>{text}</p>
+      <Button onClick={onConfirm} disabled={busy} fullWidth>{confirmLabel}</Button>
+      <Button variant="secondary" onClick={onCancel} fullWidth>Cancel</Button>
+    </div>
+  );
+}
 
 /**
  * Placement menu + intro (Flutter PlacementMenuPage / PlacementIntroPage / PlacementStartPage).
@@ -112,61 +137,44 @@ export function PlacementEntryPage() {
 
   const totalQuestions = sections.reduce((sum, s) => sum + (s.total_questions ?? 0), 0);
 
-  const testInfo = test && (
-    <div className={styles.entryContent}>
-      <p className={styles.description}>
-        {test.title} — {test.total_sections} section{test.total_sections === 1 ? '' : 's'}
-        {totalQuestions > 0 ? `, ${totalQuestions} questions` : ''}, about {test.estimated_minutes} minutes.
-      </p>
-      {sections.length > 0 && (
-        <ol className={styles.sectionList}>
-          {sections.map((s) => (
-            <li key={s.id} className={styles.sectionItem}>
-              <span>{s.title}</span>
-              <span className={styles.sectionMeta}>{s.total_questions} questions</span>
-            </li>
-          ))}
-        </ol>
-      )}
-      <p className={styles.description}>
-        The test is timed once you start. You can skip questions you don't know — your level is
-        calculated by AIM after you finish.
-      </p>
-    </div>
-  );
-
   // ---- Completed: compact result + retake -----------------------------------
   if (status.status === 'completed' && status.result && status.attemptId) {
     const level = formatPlacementLevel(status.result.estimated_level);
     return (
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Placement Test</h1>
+      <div className={SHELL}>
+        <PageHeader eyebrow="Level assessment" title="Placement Test" />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
-          <div className={styles.resultContent}>
-            <div className={styles.resultLevel}>
-              <span className={styles.resultLabel}>Your placement level</span>
-              <span className={styles.resultValue}>{level.code ?? level.label}</span>
-              {level.code && <span className={styles.resultSummary}>{level.label}</span>}
+          <div className="flex flex-col items-center text-center gap-4 py-2">
+            <div className="relative">
+              <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
+              <div className="relative size-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
+                <span className="font-extrabold text-3xl tracking-tight leading-none">{level.code ?? level.label}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mt-1">Level</span>
+              </div>
             </div>
-            <Link to={`/placement/${status.attemptId}/result`}>
-              <Button variant="secondary" fullWidth>View full result</Button>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Your placement level</span>
+              {level.code && <span className="text-sm text-slate-500 dark:text-slate-400">{level.label}</span>}
+            </div>
+            <Link to={`/placement/${status.attemptId}/result`} className="w-full sm:w-auto">
+              <Button variant="secondary" size="lg" fullWidth>View full result</Button>
             </Link>
           </div>
         </Card>
         {test && (
-          <Button variant="ghost" onClick={() => setConfirmRestart(true)} disabled={busy} fullWidth>
+          <Button variant="ghost" size="lg" onClick={() => setConfirmRestart(true)} disabled={busy} fullWidth>
             {busy ? 'Starting…' : 'Retake placement test'}
           </Button>
         )}
         <Modal open={confirmRestart} onClose={() => setConfirmRestart(false)} title="Retake placement test?">
-          <div className={styles.entryContent}>
-            <p className={styles.description}>
-              A new attempt will start now. Your new result will replace your current placement level.
-            </p>
-            <Button onClick={handleStart} disabled={busy} fullWidth>Retake test</Button>
-            <Button variant="secondary" onClick={() => setConfirmRestart(false)} fullWidth>Cancel</Button>
-          </div>
+          <RestartModalBody
+            text="A new attempt will start now. Your new result will replace your current placement level."
+            confirmLabel="Retake test"
+            busy={busy}
+            onConfirm={handleStart}
+            onCancel={() => setConfirmRestart(false)}
+          />
         </Modal>
       </div>
     );
@@ -176,19 +184,22 @@ export function PlacementEntryPage() {
   if (status.status === 'submitted' && status.attemptId) {
     const attemptId = status.attemptId;
     return (
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Placement Test</h1>
+      <div className={SHELL}>
+        <PageHeader eyebrow="Level assessment" title="Placement Test" />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
-          <div className={styles.entryContent}>
-            <h2 className={styles.subtitle}>Your test has been submitted</h2>
-            <p className={styles.description}>
-              Your answers are in. Finish scoring to see your placement level.
-            </p>
-            <Button onClick={() => handleFinishSubmitted(attemptId)} disabled={busy}>
-              {busy ? 'Finishing…' : 'See my result'}
-            </Button>
-            <Button variant="secondary" onClick={load} disabled={busy}>Check again</Button>
+          <div className="flex flex-col gap-3">
+            <div className="size-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
+            </div>
+            <h2 className={H2}>Your test has been submitted</h2>
+            <p className={BODY}>Your answers are in. Finish scoring to see your placement level.</p>
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <Button size="lg" onClick={() => handleFinishSubmitted(attemptId)} disabled={busy}>
+                {busy ? 'Finishing…' : 'See my result'}
+              </Button>
+              <Button size="lg" variant="secondary" onClick={load} disabled={busy}>Check again</Button>
+            </div>
           </div>
         </Card>
       </div>
@@ -197,8 +208,8 @@ export function PlacementEntryPage() {
 
   if (noActiveTest) {
     return (
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Placement Test</h1>
+      <div className={SHELL}>
+        <PageHeader eyebrow="Level assessment" title="Placement Test" />
         <EmptyState
           title="No placement test available"
           message="There is no placement test published right now. Please check back later."
@@ -214,32 +225,40 @@ export function PlacementEntryPage() {
     const attemptId = status.attemptId;
     const progress = loadPlacementProgress(attemptId);
     return (
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Placement Test</h1>
+      <div className={SHELL}>
+        <PageHeader eyebrow="Level assessment" title="Placement Test" />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
-          <div className={styles.entryContent}>
-            <h2 className={styles.subtitle}>You have a test in progress</h2>
-            <p className={styles.description}>
+          <div className="flex flex-col gap-3">
+            <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <ClockIcon className="size-5" />
+            </div>
+            <h2 className={H2}>You have a test in progress</h2>
+            <p className={BODY}>
               Continue where you left off, or start a new attempt. Starting over discards the current attempt.
             </p>
-            <Button
-              onClick={() => navigate(`/placement/${attemptId}`, { state: { expiresAt: progress?.expiresAt ?? null } })}
-              disabled={busy}
-            >
-              Continue test
-            </Button>
-            <Button variant="secondary" onClick={() => setConfirmRestart(true)} disabled={busy}>
-              {busy ? 'Starting…' : 'Start over'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <Button
+                size="lg"
+                onClick={() => navigate(`/placement/${attemptId}`, { state: { expiresAt: progress?.expiresAt ?? null } })}
+                disabled={busy}
+              >
+                Continue test
+              </Button>
+              <Button size="lg" variant="secondary" onClick={() => setConfirmRestart(true)} disabled={busy}>
+                {busy ? 'Starting…' : 'Start over'}
+              </Button>
+            </div>
           </div>
         </Card>
         <Modal open={confirmRestart} onClose={() => setConfirmRestart(false)} title="Start over?">
-          <div className={styles.entryContent}>
-            <p className={styles.description}>Your current attempt will be discarded and a new timed attempt will begin.</p>
-            <Button onClick={handleStart} disabled={busy} fullWidth>Start new attempt</Button>
-            <Button variant="secondary" onClick={() => setConfirmRestart(false)} fullWidth>Cancel</Button>
-          </div>
+          <RestartModalBody
+            text="Your current attempt will be discarded and a new timed attempt will begin."
+            confirmLabel="Start new attempt"
+            busy={busy}
+            onConfirm={handleStart}
+            onCancel={() => setConfirmRestart(false)}
+          />
         </Modal>
       </div>
     );
@@ -247,18 +266,60 @@ export function PlacementEntryPage() {
 
   // ---- Not taken -------------------------------------------------------------
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Placement Test</h1>
+    <div className={SHELL}>
+      <div className="flex flex-col gap-4">
+        <HeroBadge>
+          <ClipboardIcon className="size-8" />
+        </HeroBadge>
+        <PageHeader
+          eyebrow="Placement Test"
+          title={test?.title ?? 'Placement Test'}
+          subtitle="Calibrate your AI tutor to find your optimal starting point."
+        />
+      </div>
       {actionError && <Banner variant="error">{actionError}</Banner>}
-      <Card>
-        <div className={styles.entryContent}>
-          <h2 className={styles.subtitle}>Ready to begin?</h2>
-          {testInfo}
-          <Button onClick={handleStart} disabled={busy || !test}>
-            {busy ? 'Starting…' : 'Start placement test'}
-          </Button>
+
+      {test && (
+        <div className="grid gap-3 md:grid-cols-2">
+          <InfoRow
+            icon={<ClockIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />}
+            title={`About ${test.estimated_minutes} minutes`}
+            desc="The test is timed once you start."
+          />
+          <InfoRow
+            icon={<ClipboardIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />}
+            title={`${test.total_sections} section${test.total_sections === 1 ? '' : 's'}${totalQuestions > 0 ? ` · ${totalQuestions} questions` : ''}`}
+            desc="Work through each section in order."
+          />
+          <div className="md:col-span-2">
+            <InfoRow
+              icon={<LightbulbIcon className="size-5 text-amber-500 dark:text-amber-400" />}
+              title="Helpful tip"
+              desc="You can skip questions you don't know — your level is calculated by AIM after you finish."
+            />
+          </div>
         </div>
-      </Card>
+      )}
+
+      {sections.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Sections</h2>
+          <ol className="m-0 p-0 list-none grid gap-2.5 md:grid-cols-2">
+            {sections.map((s, i) => (
+              <li key={s.id} className={`flex items-center gap-3 px-4 py-3 ${CARD}`}>
+                <span className="size-8 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400 text-sm font-extrabold flex items-center justify-center">{i + 1}</span>
+                <span className="flex-1 min-w-0 text-sm font-semibold text-slate-900 dark:text-white">{s.title}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">{s.total_questions} questions</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      <Button size="lg" onClick={handleStart} disabled={busy || !test} fullWidth>
+        <TrophyIcon className="size-5" />
+        {busy ? 'Starting…' : 'Start placement test'}
+      </Button>
     </div>
   );
 }

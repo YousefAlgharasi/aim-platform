@@ -1,4 +1,3 @@
-import styles from './ErrorState.module.css';
 import { Button } from './Button';
 
 interface ErrorStateProps {
@@ -8,11 +7,16 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className={styles.container} role="alert">
-      <h3 className={styles.title}>Something went wrong</h3>
-      <p className={styles.message}>{message}</p>
+    <div
+      role="alert"
+      className="rounded-2xl border border-red-100 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 p-6 flex flex-col items-center text-center gap-2"
+    >
+      <h3 className="m-0 text-base font-bold text-red-600 dark:text-red-400">Something went wrong</h3>
+      <p className="m-0 text-sm text-red-600/80 dark:text-red-300/80 leading-relaxed">{message}</p>
       {onRetry && (
-        <Button variant="secondary" onClick={onRetry}>Try again</Button>
+        <div className="mt-2">
+          <Button variant="secondary" onClick={onRetry}>Try again</Button>
+        </div>
       )}
     </div>
   );

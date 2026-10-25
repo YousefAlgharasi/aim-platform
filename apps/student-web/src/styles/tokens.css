@@ -1,0 +1,101 @@
+/*
+ * Design tokens, aligned with design-prototype (indigo #4F46E5 on slate, 14px/16px radii).
+ * Feature CSS Modules read these variables; Tailwind utilities cover the rest.
+ */
+:root {
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  --type-display-size: 34px;
+  --type-h1-size: 28px;
+  --type-h2-size: 22px;
+  --type-h3-size: 17px;
+
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-500: #4f46e5;
+  --color-primary-600: #4338ca;
+  --color-primary-700: #3730a3;
+  --color-secondary-500: #7c3aed;
+  --color-accent-500: #f59e0b;
+
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  --color-surface: #ffffff;
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success: #059669;
+  --color-success-bg: #ecfdf5;
+  --color-warning: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-danger-500: #ef4444;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.dark {
+  color-scheme: dark;
+  --color-primary-50: rgba(79, 70, 229, 0.16);
+  --color-primary-100: rgba(79, 70, 229, 0.28);
+  --color-primary-500: #6366f1;
+  --color-primary-600: #818cf8;
+  --color-primary-700: #a5b4fc;
+
+  --color-neutral-0: #0f172a;
+  --color-neutral-50: #0b1220;
+  --color-neutral-100: #1e293b;
+  --color-neutral-200: #334155;
+  --color-neutral-300: #475569;
+  --color-neutral-400: #64748b;
+  --color-neutral-500: #94a3b8;
+  --color-neutral-600: #cbd5e1;
+  --color-neutral-700: #e2e8f0;
+  --color-neutral-800: #f1f5f9;
+  --color-neutral-900: #f8fafc;
+
+  --color-surface: #1e293b;
+  --color-success-50: rgba(5, 150, 105, 0.16);
+  --color-success-100: rgba(5, 150, 105, 0.26);
+  --color-success-600: #34d399;
+  --color-success-700: #6ee7b7;
+  --color-success: #34d399;
+  --color-success-bg: rgba(5, 150, 105, 0.16);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(217, 119, 6, 0.16);
+  --color-error: #f87171;
+  --color-error-bg: rgba(220, 38, 38, 0.16);
+  --color-danger-500: #f87171;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+}

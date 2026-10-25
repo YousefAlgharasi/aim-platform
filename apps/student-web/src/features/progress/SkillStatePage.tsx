@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
+import * as ui from './ui';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { useAimResults } from './useAimResults';
 import { masteryTier, prettifySkillId, tierLabel, toPercent, trendLabel } from './aimApi';
-import styles from './SkillStatePage.module.css';
 
 const OPEN_WEAKNESS_STATUSES = new Set(['open', 'improving']);
 
@@ -25,9 +25,9 @@ export function SkillStatePage() {
   );
 
   return (
-    <div className={styles.container}>
-      <Link to="/progress" className={styles.backLink}>← Progress</Link>
-      <h1 className={styles.heading}>Skills</h1>
+    <div className={ui.pageStack}>
+      <ui.BackLink to="/progress">Progress</ui.BackLink>
+      <h1 className={ui.h1}>Skills</h1>
 
       {skills.length === 0 ? (
         <EmptyState
@@ -35,7 +35,7 @@ export function SkillStatePage() {
           message="Your skill mastery appears here after you complete lessons, practice or assessments."
         />
       ) : (
-        <div className={styles.skillList}>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {skills.map((s) => {
             const pct = toPercent(s.masteryScore);
             const tier = masteryTier(s.masteryScore);
@@ -43,35 +43,35 @@ export function SkillStatePage() {
             const name = prettifySkillId(s.skillId);
             return (
               <Card key={s.skillId}>
-                <div className={styles.skillItem}>
-                  <div className={styles.skillHeader}>
-                    <span className={styles.skillName} title={s.skillId}>{name}</span>
-                    <span className={tier === 'needsWork' || weakSkillIds.has(s.skillId) ? styles.weaknessBadge : styles.tierBadge}>
+                <div className="flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-base font-bold text-slate-900 dark:text-white [overflow-wrap:anywhere]" title={s.skillId}>{name}</span>
+                    <span className={ui.badge(tier === 'needsWork' || weakSkillIds.has(s.skillId) ? ui.tone.error : ui.tone.primary)}>
                       {tierLabel[tier]}
                     </span>
                   </div>
                   <div
-                    className={styles.masteryBar}
+                    className={ui.barTrack}
                     role="progressbar"
                     aria-label={`${name} mastery`}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={pct}
                   >
-                    <div className={tier === 'needsWork' ? styles.masteryFillWeak : styles.masteryFill} style={{ width: `${pct}%` }} />
+                    <div className={tier === 'needsWork' ? ui.barFillWeak : ui.barFill} style={{ width: `${pct}%` }} />
                   </div>
-                  <div className={styles.skillHeader}>
-                    <span className={styles.masteryLabel}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       Mastery {pct}%{prev != null ? ` · was ${prev}%` : ''}
                     </span>
-                    <span className={styles.masteryLabel}>{trendLabel(s.masteryTrend)}</span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{trendLabel(s.masteryTrend)}</span>
                   </div>
-                  <span className={styles.masteryLabel}>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Confidence {toPercent(s.masteryConfidence)}% · Last evaluated{' '}
                     {new Date(s.lastEvaluatedAt).toLocaleDateString()}
                   </span>
                   {weakSkillIds.has(s.skillId) && (
-                    <p className={styles.recommendation}>
+                    <p className="m-0 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 [&_a]:font-semibold [&_a]:text-[#4F46E5] dark:[&_a]:text-indigo-400">
                       This skill is flagged as an area to improve. <Link to="/progress/weaknesses">See details</Link>
                     </p>
                   )}

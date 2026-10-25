@@ -12,7 +12,16 @@ import {
   humanize,
   type PlacementResult,
 } from './placementApi';
-import styles from './Placement.module.css';
+import { Badge, BODY, CARD, H2, PageHeader, type BadgeTone } from './ui';
+
+const SIGNAL_TONES: Record<string, BadgeTone> = {
+  strong: 'emerald',
+  developing: 'amber',
+  emerging: 'red',
+};
+
+const SHELL = 'mx-auto w-full max-w-3xl flex flex-col gap-6';
+const SECTION_TITLE = 'm-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white';
 
 // Same polling policy as Flutter PlacementResultNotifier.
 const MAX_POLL_ATTEMPTS = 10;
@@ -73,14 +82,12 @@ export function PlacementResultPage() {
   if (loading) return <LoadingSpinner />;
   if (pending) {
     return (
-      <div className={styles.container}>
-        <Card>
-          <div className={styles.resultContent}>
-            <LoadingSpinner />
-            <h2 className={styles.subtitle}>Calculating your level…</h2>
-            <p className={styles.resultSummary}>This usually takes a few seconds.</p>
-          </div>
-        </Card>
+      <div className={`${SHELL} max-w-xl`}>
+        <div className="w-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 border border-indigo-200/60 dark:border-indigo-800/60 rounded-2xl p-6 flex flex-col items-center text-center gap-3" role="status">
+          <LoadingSpinner />
+          <h2 className={H2}>Calculating your level…</h2>
+          <p className={BODY}>This usually takes a few seconds.</p>
+        </div>
       </div>
     );
   }
@@ -94,88 +101,96 @@ export function PlacementResultPage() {
   const speaking = result.additional_signals?.speaking ?? null;
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Placement Result</h1>
+    <div className={SHELL}>
+      <PageHeader eyebrow="Placement Test" title="Placement Result" />
 
-      <Card>
-        <div className={styles.resultContent}>
-          <div className={styles.resultLevel}>
-            <span className={styles.resultLabel}>Your level</span>
-            <span className={styles.resultValue}>{level.code ?? level.label}</span>
-            {level.code && <span className={styles.resultSummary}>{level.label}</span>}
+      <div className="bg-gradient-to-b from-indigo-50/60 via-white to-slate-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-2xl ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm p-6 flex flex-col items-center text-center gap-3">
+        <div className="relative mb-1">
+          <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
+          <div className="relative min-w-24 h-24 px-3 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
+            <span className="font-extrabold text-4xl tracking-tight leading-none">{level.code ?? level.label}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mt-1">Level</span>
           </div>
-          {result.note && <p className={styles.resultSummary}>{result.note}</p>}
-          {result.unlocked_course_ids?.length > 0 && (
-            <p className={styles.resultSummary}>
-              {result.unlocked_course_ids.length} course{result.unlocked_course_ids.length === 1 ? '' : 's'} unlocked for your level.
-            </p>
-          )}
         </div>
-      </Card>
+        <h2 className={H2}>Your level</h2>
+        {level.code && (
+          <span className="inline-block px-3 py-0.5 rounded-full bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] tracking-wider uppercase">
+            {level.label}
+          </span>
+        )}
+        {result.note && <p className={`${BODY} max-w-md`}>{result.note}</p>}
+        {result.unlocked_course_ids?.length > 0 && (
+          <p className="m-0 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            {result.unlocked_course_ids.length} course{result.unlocked_course_ids.length === 1 ? '' : 's'} unlocked for your level.
+          </p>
+        )}
+      </div>
 
       {skills.length > 0 && (
-        <section>
-          <h2 className={styles.subtitle}>Skill summary</h2>
-          <div className={styles.recList}>
+        <section className="flex flex-col gap-3">
+          <h2 className={SECTION_TITLE}>Skill summary</h2>
+          <div className="grid gap-2.5 md:grid-cols-2">
             {skills.map(([code, value]) => (
-              <Card key={code}>
-                <div className={styles.skillRow}>
-                  <span className={styles.recTitle}>{humanize(code)}</span>
-                  <span className={`${styles.signalBadge} ${styles[`signal_${value.signal}`] ?? ''}`}>
-                    {SIGNAL_LABELS[value.signal] ?? humanize(value.signal)}
-                  </span>
-                </div>
-              </Card>
+              <div key={code} className={`flex items-center justify-between gap-3 px-4 py-3.5 ${CARD}`}>
+                <span className="text-sm font-bold text-slate-900 dark:text-white">{humanize(code)}</span>
+                <Badge tone={SIGNAL_TONES[value.signal] ?? 'slate'}>
+                  {SIGNAL_LABELS[value.signal] ?? humanize(value.signal)}
+                </Badge>
+              </div>
             ))}
           </div>
         </section>
       )}
 
       {weaknesses.length > 0 && (
-        <section>
-          <h2 className={styles.subtitle}>Focus areas</h2>
-          <div className={styles.recList}>
+        <section className="flex flex-col gap-3">
+          <h2 className={SECTION_TITLE}>Focus areas</h2>
+          <div className="grid gap-2.5 md:grid-cols-2">
             {weaknesses.map((w) => (
-              <Card key={w.skill_code}>
-                <div className={styles.skillRow}>
-                  <span className={styles.recTitle}>{humanize(w.skill_code)}</span>
-                  <span className={styles.recType}>Priority {w.priority}</span>
-                </div>
-              </Card>
+              <div key={w.skill_code} className={`flex items-center justify-between gap-3 px-4 py-3.5 ${CARD}`}>
+                <span className="text-sm font-bold text-slate-900 dark:text-white">{humanize(w.skill_code)}</span>
+                <Badge tone="indigo">Priority {w.priority}</Badge>
+              </div>
             ))}
           </div>
         </section>
       )}
 
       {(writing || speaking) && (
-        <section>
-          <h2 className={styles.subtitle}>Writing &amp; speaking feedback</h2>
-          <div className={styles.recList}>
+        <section className="flex flex-col gap-3">
+          <h2 className={SECTION_TITLE}>Writing &amp; speaking feedback</h2>
+          <div className="grid gap-3 md:grid-cols-2">
             {writing && (
               <Card>
-                <span className={styles.recType}>Writing · {writing.score}/10</span>
-                <p className={styles.resultSummary}>{writing.feedback}</p>
+                <div className="flex flex-col gap-2">
+                  <Badge tone="indigo">Writing · {writing.score}/10</Badge>
+                  <p className={BODY}>{writing.feedback}</p>
+                </div>
               </Card>
             )}
             {speaking && (
               <Card>
-                <span className={styles.recType}>Speaking · {speaking.score}/10</span>
-                <p className={styles.resultSummary}>{speaking.feedback}</p>
-                {speaking.transcript && (
-                  <p className={styles.description}>“{speaking.transcript}”</p>
-                )}
+                <div className="flex flex-col gap-2">
+                  <Badge tone="violet">Speaking · {speaking.score}/10</Badge>
+                  <p className={BODY}>{speaking.feedback}</p>
+                  {speaking.transcript && (
+                    <p className="m-0 border-s-[3px] border-[#4F46E5] bg-[#F1F5F9] dark:bg-slate-900/60 rounded-e-lg p-3 text-sm italic text-slate-500 dark:text-slate-400">
+                      “{speaking.transcript}”
+                    </p>
+                  )}
+                </div>
               </Card>
             )}
           </div>
         </section>
       )}
 
-      <div className={styles.buttonStack}>
-        <Link to="/curriculum">
-          <Button variant="primary" fullWidth>Browse courses</Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link to="/curriculum" className="flex-1">
+          <Button variant="primary" size="lg" fullWidth>Browse courses</Button>
         </Link>
-        <Link to="/dashboard">
-          <Button variant="secondary" fullWidth>Go to Dashboard</Button>
+        <Link to="/dashboard" className="flex-1">
+          <Button variant="secondary" size="lg" fullWidth>Go to Dashboard</Button>
         </Link>
       </div>
     </div>

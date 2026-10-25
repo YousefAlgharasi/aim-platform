@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -15,13 +15,13 @@ import {
   type SupportTicket,
   type SupportTicketComment,
 } from './supportApi';
-import styles from './Support.module.css';
+import { PageHeader, BackLink, SectionTitle, Field, StatusPill, labelCls, bodyCls, textareaCls } from '../profile/ui';
 
-function statusClass(status: SupportTicket['status']): string {
+function statusTone(status: SupportTicket['status']): 'success' | 'neutral' | 'indigo' {
   switch (status) {
-    case 'resolved': return styles.statusResolved;
-    case 'closed': return styles.statusClosed;
-    default: return styles.statusOpen;
+    case 'resolved': return 'success';
+    case 'closed': return 'neutral';
+    default: return 'indigo';
   }
 }
 
@@ -73,86 +73,92 @@ export function TicketDetailPage() {
   const closed = ticket.status === 'closed';
 
   return (
-    <div className={styles.container}>
-      <Link to="/support" className={styles.backLink}>← Back to support</Link>
-      <h1 className={styles.heading}>{ticket.subject}</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader eyebrow="Support ticket" title={ticket.subject} back={<BackLink to="/support" label="Back to support" />} />
 
-      <Card>
-        <div className={styles.releaseCard}>
-          <div className={styles.detailGrid}>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Status</span>
-              <span>
-                <span className={`${styles.ticketStatus} ${statusClass(ticket.status)}`}>
-                  {TICKET_STATUS_LABELS[ticket.status] ?? ticket.status}
-                </span>
-              </span>
+      <div className="grid gap-5 lg:grid-cols-3 items-start">
+        <div className="lg:col-span-1">
+          <Card>
+            <div className="flex flex-col gap-3.5">
+              <dl className="m-0 grid grid-cols-2 lg:grid-cols-1 gap-3.5">
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Status</dt>
+                  <dd className="m-0">
+                    <StatusPill tone={statusTone(ticket.status)}>
+                      {TICKET_STATUS_LABELS[ticket.status] ?? ticket.status}
+                    </StatusPill>
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Category</dt>
+                  <dd className={bodyCls}>{TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category}</dd>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Severity</dt>
+                  <dd className={bodyCls}>{TICKET_SEVERITY_LABELS[ticket.severity] ?? ticket.severity}</dd>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Opened</dt>
+                  <dd className={bodyCls}>{new Date(ticket.createdAt).toLocaleString()}</dd>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <dt className={labelCls}>Last updated</dt>
+                  <dd className={bodyCls}>{new Date(ticket.updatedAt).toLocaleString()}</dd>
+                </div>
+              </dl>
             </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Category</span>
-              <span className={styles.detailValue}>{TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category}</span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Severity</span>
-              <span className={styles.detailValue}>{TICKET_SEVERITY_LABELS[ticket.severity] ?? ticket.severity}</span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Opened</span>
-              <span className={styles.detailValue}>{new Date(ticket.createdAt).toLocaleString()}</span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Last updated</span>
-              <span className={styles.detailValue}>{new Date(ticket.updatedAt).toLocaleString()}</span>
-            </div>
-          </div>
-          <p className={styles.releaseNotes}>{ticket.description}</p>
+          </Card>
         </div>
-      </Card>
 
-      {ticket.status === 'waiting_on_user' && (
-        <Banner variant="warning">Our support team is waiting for your reply.</Banner>
-      )}
+        <div className="lg:col-span-2 flex flex-col gap-5">
+          <Card>
+            <p className={`${bodyCls} whitespace-pre-wrap leading-relaxed`}>{ticket.description}</p>
+          </Card>
 
-      <Card>
-        <form className={styles.formContent} onSubmit={handleReply}>
-          <h2 className={styles.subtitle}>Add a reply</h2>
-          <p className={styles.description}>
-            Earlier replies on this ticket can't be shown here yet; only messages you send now appear below.
-          </p>
-          {sentComments.length > 0 && (
-            <ul className={styles.commentList}>
-              {sentComments.map(c => (
-                <li key={c.id} className={styles.comment}>
-                  <span className={styles.releaseNotes}>{c.body}</span>
-                  <span className={styles.releaseDate}>You · {new Date(c.createdAt).toLocaleString()}</span>
-                </li>
-              ))}
-            </ul>
+          {ticket.status === 'waiting_on_user' && (
+            <Banner variant="warning">Our support team is waiting for your reply.</Banner>
           )}
-          {replyError && <Banner variant="error">{replyError}</Banner>}
-          {closed ? (
-            <Banner variant="info">This ticket is closed. Open a new ticket if you still need help.</Banner>
-          ) : (
-            <>
-              <div className={styles.formField}>
-                <label className={styles.formLabel} htmlFor="ticket-reply">Message</label>
-                <textarea
-                  id="ticket-reply"
-                  className={styles.formTextarea}
-                  value={reply}
-                  onChange={e => setReply(e.target.value)}
-                  required
-                />
-              </div>
-              <div className={styles.formActions}>
-                <Button variant="primary" type="submit" disabled={sending || !reply.trim()}>
-                  {sending ? 'Sending…' : 'Send reply'}
-                </Button>
-              </div>
-            </>
-          )}
-        </form>
-      </Card>
+
+          <Card>
+            <form className="flex flex-col gap-4" onSubmit={handleReply}>
+              <SectionTitle hint="Earlier replies on this ticket can't be shown here yet; only messages you send now appear below.">
+                Add a reply
+              </SectionTitle>
+              {sentComments.length > 0 && (
+                <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
+                  {sentComments.map(c => (
+                    <li key={c.id} className="rounded-2xl rounded-ee-md bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 flex flex-col gap-1">
+                      <span className={`${bodyCls} whitespace-pre-wrap`}>{c.body}</span>
+                      <span className="text-[11px] font-semibold text-slate-400">You · {new Date(c.createdAt).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {replyError && <Banner variant="error">{replyError}</Banner>}
+              {closed ? (
+                <Banner variant="info">This ticket is closed. Open a new ticket if you still need help.</Banner>
+              ) : (
+                <>
+                  <Field label="Message" htmlFor="ticket-reply">
+                    <textarea
+                      id="ticket-reply"
+                      className={`${textareaCls} min-h-28`}
+                      value={reply}
+                      onChange={e => setReply(e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <div className="flex justify-end">
+                    <Button variant="primary" type="submit" disabled={sending || !reply.trim()}>
+                      {sending ? 'Sending…' : 'Send reply'}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </form>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

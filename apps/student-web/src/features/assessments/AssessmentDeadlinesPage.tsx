@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -11,8 +10,8 @@ import {
   type StudentDeadlineItem,
   type StudentDeadlines,
 } from './assessmentsApi';
-import { statusClass } from './assessmentUi';
-import styles from './Assessment.module.css';
+import { statusTone } from './assessmentUi';
+import { Badge, CARD, PageHeader } from '../placement/ui';
 
 // Bucket order and titles follow the Flutter DeadlinesPage. Grouping is backend-computed.
 const GROUPS: Array<{ key: keyof StudentDeadlines; title: string }> = [
@@ -26,26 +25,25 @@ const GROUPS: Array<{ key: keyof StudentDeadlines; title: string }> = [
 function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
   const closesAt = item.extendedClosesAt ?? item.closesAt;
   return (
-    <Link to={`/assessments/${item.assessmentId}`} className={styles.cardLink}>
-      <Card>
-        <div className={styles.assessmentCard}>
-          <div className={styles.badgeRow}>
-            <span className={`${styles.statusBadge} ${statusClass(item.status)}`}>{deadlineStatusLabel(item.status)}</span>
-            {item.extendedClosesAt && <span className={styles.deadlineText}>Extended</span>}
-          </div>
-          <h2 className={styles.cardTitle}>{item.assessmentTitle}</h2>
-          <div className={styles.cardMeta}>
-            {item.status === 'upcoming' ? (
-              <span>Opens {new Date(item.opensAt).toLocaleString()}</span>
-            ) : (
-              <span>
-                {item.status === 'closed' || item.status === 'missed' || item.status === 'expired' ? 'Closed' : 'Due'}{' '}
-                {new Date(closesAt).toLocaleString()}
-              </span>
-            )}
-          </div>
-        </div>
-      </Card>
+    <Link
+      to={`/assessments/${item.assessmentId}`}
+      className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-md transition-all duration-200`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={statusTone(item.status)}>{deadlineStatusLabel(item.status)}</Badge>
+        {item.extendedClosesAt && <Badge tone="indigo">Extended</Badge>}
+      </div>
+      <h3 className="m-0 text-base font-bold leading-snug text-slate-900 dark:text-white">{item.assessmentTitle}</h3>
+      <p className="m-0 text-xs font-medium text-slate-500 dark:text-slate-400">
+        {item.status === 'upcoming' ? (
+          <>Opens {new Date(item.opensAt).toLocaleString()}</>
+        ) : (
+          <>
+            {item.status === 'closed' || item.status === 'missed' || item.status === 'expired' ? 'Closed' : 'Due'}{' '}
+            {new Date(closesAt).toLocaleString()}
+          </>
+        )}
+      </p>
     </Link>
   );
 }
@@ -73,16 +71,21 @@ export function AssessmentDeadlinesPage() {
   const total = GROUPS.reduce((n, g) => n + deadlines[g.key].length, 0);
 
   return (
-    <div className={styles.container}>
-      <Link to="/assessments" className={styles.backLink}>← All assessments</Link>
-      <h1 className={styles.heading}>Deadlines</h1>
+    <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
+      <PageHeader
+        eyebrow="Assessments"
+        title="Deadlines"
+        subtitle="Everything that is open, upcoming or past due."
+        backTo="/assessments"
+        backLabel="All assessments"
+      />
       {total === 0 ? (
         <EmptyState title="No deadlines" message="You don't have any assessment deadlines right now." />
       ) : (
         GROUPS.filter((g) => deadlines[g.key].length > 0).map((g) => (
-          <section key={g.key}>
-            <h2 className={styles.subtitle}>{g.title}</h2>
-            <div className={styles.list}>
+          <section key={g.key} className="flex flex-col gap-3">
+            <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">{g.title}</h2>
+            <div className="grid gap-3 md:grid-cols-2">
               {deadlines[g.key].map((item) => (
                 <DeadlineCard key={`${item.deadlineId}-${item.assessmentId}`} item={item} />
               ))}

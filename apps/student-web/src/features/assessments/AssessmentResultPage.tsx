@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { fetchAttemptResult, type AttemptResult } from './assessmentsApi';
-import styles from './Assessment.module.css';
+import { Badge, CARD, H2, PageHeader, ProgressBar } from '../placement/ui';
 
 export function AssessmentResultPage() {
   const { assessmentId, attemptId } = useParams<{ assessmentId: string; attemptId: string }>();
@@ -29,52 +28,60 @@ export function AssessmentResultPage() {
   if (error) return <ErrorState message={error} onRetry={fetchResult} />;
   if (!result) return null;
 
-  return (
-    <div className={styles.detailContainer}>
-      <h1 className={styles.heading}>Result</h1>
+  const percent = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : null;
 
-      <Card>
-        <div className={styles.resultContent}>
-          <span className={styles.resultLabel}>Score</span>
-          <span className={styles.resultScore}>{result.score}/{result.maxScore}</span>
-          <span className={styles.deadlineText}>Graded {new Date(result.gradedAt).toLocaleString()}</span>
-          {result.maxScore > 0 && (
-            <span className={styles.resultLabel}>{Math.round((result.score / result.maxScore) * 100)}%</span>
-          )}
-          <span className={`${styles.resultGrade} ${result.passed ? styles.gradePassed : styles.gradeFailed}`}>
-            {result.passed ? 'Passed' : 'Not passed'}
-          </span>
-          {result.latePenaltyApplied && (
-            <p className={styles.resultSummary}>A late penalty was applied to this attempt.</p>
-          )}
+  return (
+    <div className="mx-auto w-full max-w-2xl flex flex-col gap-5">
+      <PageHeader eyebrow="Assessment" title="Result" backTo={`/assessments/${assessmentId}`} backLabel="Back to assessment" />
+
+      <div className="bg-gradient-to-b from-indigo-50/60 via-white to-slate-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-2xl ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm p-6 flex flex-col items-center text-center gap-3">
+        <div className="relative mb-1">
+          <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
+          <div className="relative min-w-24 h-24 px-4 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
+            <span className="font-extrabold text-3xl tracking-tight leading-none">{result.score}/{result.maxScore}</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mt-1">Score</span>
+          </div>
         </div>
-      </Card>
+        <Badge tone={result.passed ? 'emerald' : 'red'}>{result.passed ? 'Passed' : 'Not passed'}</Badge>
+        {percent !== null && (
+          <div className="w-full max-w-xs flex flex-col gap-1.5">
+            <ProgressBar value={percent} total={100} label="Score" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{percent}%</span>
+          </div>
+        )}
+        <p className="m-0 text-xs text-slate-400 dark:text-slate-500">Graded {new Date(result.gradedAt).toLocaleString()}</p>
+        {result.latePenaltyApplied && (
+          <p className="m-0 text-sm font-medium text-amber-600 dark:text-amber-400">A late penalty was applied to this attempt.</p>
+        )}
+      </div>
 
       {result.feedbackAllowed && result.breakdown.length > 0 && (
-        <Card>
-          <div>
-            <h2 className={styles.subtitle}>Score Breakdown</h2>
-            <div className={styles.breakdownList}>
-              {result.breakdown.map((item, index) => (
-                <div key={item.assessmentQuestionLinkId ?? index} className={styles.breakdownItem}>
-                  <span className={styles.breakdownLabel}>
-                    Question {index + 1}
-                    {item.isCorrect === undefined || item.isCorrect === null ? '' : item.isCorrect ? ' · Correct' : ' · Incorrect'}
-                  </span>
-                  <span className={styles.breakdownValue}>{item.pointsAwarded}/{item.pointsPossible}</span>
-                </div>
-              ))}
-            </div>
+        <section className={`${CARD} p-4 sm:p-5 flex flex-col gap-3`}>
+          <h2 className={H2}>Score Breakdown</h2>
+          <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+            {result.breakdown.map((item, index) => (
+              <div key={item.assessmentQuestionLinkId ?? index} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-slate-700 dark:text-slate-200 font-medium">
+                  Question {index + 1}
+                  {item.isCorrect != null && (
+                    <span className={`ms-2 text-xs font-bold ${item.isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {item.isCorrect ? 'Correct' : 'Incorrect'}
+                    </span>
+                  )}
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white shrink-0">{item.pointsAwarded}/{item.pointsPossible}</span>
+              </div>
+            ))}
           </div>
-        </Card>
+        </section>
       )}
 
-      <div className={styles.buttonStack}>
-        <Link to={`/assessments/${assessmentId}`}>
-          <Button variant="secondary" fullWidth>Back to Assessment</Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link to={`/assessments/${assessmentId}`} className="flex-1">
+          <Button variant="secondary" size="lg" fullWidth>Back to Assessment</Button>
         </Link>
-        <Link to="/assessments">
-          <Button variant="primary" fullWidth>All Assessments</Button>
+        <Link to="/assessments" className="flex-1">
+          <Button variant="primary" size="lg" fullWidth>All Assessments</Button>
         </Link>
       </div>
     </div>

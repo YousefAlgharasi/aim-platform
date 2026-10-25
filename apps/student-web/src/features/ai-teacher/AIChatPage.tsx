@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -13,7 +12,8 @@ import {
   type FeedbackRating,
 } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
-import styles from './AITeacher.module.css';
+import { SparkleIcon, MicIcon } from '../../components/common/Icons';
+import { BackLink, SendIcon, ThumbButton, pillLinkClass } from './ui';
 
 // Same quick-action prompts as Flutter's AiSuggestedPromptsRow.
 const SUGGESTED_PROMPTS = [
@@ -228,44 +228,54 @@ export function AIChatPage() {
   const isEmpty = messages.length === 0 && !sending;
 
   return (
-    <div className={styles.chatContainer}>
-      <div className={styles.chatHeader}>
-        <Link to="/ai-teacher" className={styles.iconLink} aria-label="Back to AI Teacher">
-          <span className={styles.backArrow} aria-hidden="true">←</span>
-        </Link>
-        <div className={styles.chatTitleGroup}>
-          <h1 className={styles.chatTitle}>AI Teacher</h1>
-          <span className={styles.chatSubtitle}>{navState.lessonTitle || 'Always here to help'}</span>
+    <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] max-w-3xl w-full mx-auto">
+      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+        <BackLink to="/ai-teacher" label="Back to AI Teacher" />
+        <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+          <SparkleIcon className="size-4 text-white" />
         </div>
-        <Link to={`/voice-teacher/${sessionId}`} className={styles.headerLink}>
-          Voice
+        <div className="flex-1 min-w-0">
+          <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight m-0">AI Teacher</h1>
+          <span className="block text-[11px] text-emerald-500 font-semibold truncate">
+            {navState.lessonTitle || 'Always here to help'}
+          </span>
+        </div>
+        <Link to={`/voice-teacher/${sessionId}`} className={pillLinkClass} aria-label="Switch to Voice Teacher">
+          <MicIcon className="size-4" />
+          <span className="hidden sm:inline">Voice</span>
         </Link>
-        <Link to="/ai-teacher/history" className={styles.headerLink}>
+        <Link to="/ai-teacher/history" className={pillLinkClass}>
           History
         </Link>
       </div>
 
-      <div className={styles.callouts}>
-        {safetyLimited && (
-          <Banner variant="warning">
-            <strong>AI Teacher is limited right now.</strong> Some responses in this conversation were held
-            back to keep things safe. You can keep chatting, or start a new conversation.
-          </Banner>
-        )}
-        {focusRecap && <Banner variant="info">{focusRecap}</Banner>}
-        {navState.lastSessionRecap && (
-          <Banner variant="success">
-            <strong>Welcome back.</strong> {navState.lastSessionRecap}
-          </Banner>
-        )}
-      </div>
+      {(safetyLimited || focusRecap || navState.lastSessionRecap) && (
+        <div className="flex flex-col gap-2 pt-3">
+          {safetyLimited && (
+            <Banner variant="warning">
+              <strong>AI Teacher is limited right now.</strong> Some responses in this conversation were held
+              back to keep things safe. You can keep chatting, or start a new conversation.
+            </Banner>
+          )}
+          {focusRecap && <Banner variant="info">{focusRecap}</Banner>}
+          {navState.lastSessionRecap && (
+            <Banner variant="success">
+              <strong>Welcome back.</strong> {navState.lastSessionRecap}
+            </Banner>
+          )}
+        </div>
+      )}
 
-      <div className={styles.messageList} role="log" aria-live="polite" aria-label="Chat messages">
+      <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label="Chat messages">
         {isEmpty && (
-          <div className={styles.chatEmpty}>
-            <span className={styles.entryIcon} aria-hidden="true">💬</span>
-            <p className={styles.historyTopic}>Ask me anything</p>
-            <p className={styles.description}>Start the conversation with a question or pick a suggestion below.</p>
+          <div className="flex flex-col items-center text-center gap-2 py-8">
+            <div className="size-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <SparkleIcon className="size-6 text-white" />
+            </div>
+            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Ask me anything</p>
+            <p className="m-0 text-sm text-slate-500 dark:text-slate-400 max-w-xs">
+              Start the conversation with a question or pick a suggestion below.
+            </p>
           </div>
         )}
 
@@ -276,41 +286,43 @@ export function AIChatPage() {
           return (
             <div
               key={msg.id}
-              className={`${styles.message} ${isStudent ? styles.messageUser : styles.messageAI}`}
+              className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isStudent ? 'self-end items-end' : 'self-start items-start'}`}
               aria-label={isStudent ? 'Your message' : 'AI Teacher'}
             >
-              <div className={styles.messageText}>{msg.text}</div>
-              <div className={styles.messageTime}>
-                {msg.channel === 'voice' && <span className={styles.channelTag}>🎙 Voice · </span>}
-                {formatTime(msg.createdAt)}
+              <div
+                className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                  isStudent
+                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-ee-none shadow-md shadow-indigo-500/15'
+                    : 'bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 rounded-es-none shadow-sm'
+                }`}
+              >
+                {msg.text}
               </div>
+              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1 px-1 flex items-center gap-1">
+                {msg.channel === 'voice' && (
+                  <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> Voice ·</span>
+                )}
+                {formatTime(msg.createdAt)}
+              </span>
               {canRate && (
-                <div className={styles.feedbackRow}>
-                  <span className={styles.feedbackLabel}>
+                <div className="flex items-center gap-2 mt-1 px-1">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     {entry?.status === 'done' ? 'Thanks for your feedback' : 'Was this helpful?'}
                   </span>
-                  <div className={styles.feedbackButtons}>
-                    <button
-                      type="button"
-                      className={`${styles.feedbackBtn} ${entry?.rating === 'helpful' ? styles.feedbackBtnActive : ''}`}
-                      onClick={() => submitFeedback(msg.id, 'helpful')}
-                      disabled={!!entry}
-                      aria-pressed={entry?.rating === 'helpful'}
-                      aria-label="Mark AI Teacher reply as helpful"
-                    >
-                      👍
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.feedbackBtn} ${entry?.rating === 'not_helpful' ? styles.feedbackBtnActive : ''}`}
-                      onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                      disabled={!!entry}
-                      aria-pressed={entry?.rating === 'not_helpful'}
-                      aria-label="Mark AI Teacher reply as not helpful"
-                    >
-                      👎
-                    </button>
-                  </div>
+                  <ThumbButton
+                    kind="up"
+                    active={entry?.rating === 'helpful'}
+                    disabled={!!entry}
+                    onClick={() => submitFeedback(msg.id, 'helpful')}
+                    label="Mark AI Teacher reply as helpful"
+                  />
+                  <ThumbButton
+                    kind="down"
+                    active={entry?.rating === 'not_helpful'}
+                    disabled={!!entry}
+                    onClick={() => submitFeedback(msg.id, 'not_helpful')}
+                    label="Mark AI Teacher reply as not helpful"
+                  />
                 </div>
               )}
             </div>
@@ -318,46 +330,72 @@ export function AIChatPage() {
         })}
 
         {sending && streamingText !== null && streamingText.length > 0 && (
-          <div className={`${styles.message} ${styles.messageAI}`} aria-busy="true">
-            <div className={styles.messageText}>{streamingText}</div>
+          <div className="flex flex-col max-w-[88%] sm:max-w-[78%] self-start items-start" aria-busy="true">
+            <div className="p-4 rounded-2xl rounded-es-none text-sm leading-relaxed whitespace-pre-wrap break-words bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 shadow-sm">
+              {streamingText}
+            </div>
           </div>
         )}
         {sending && !streamingText && (
-          <div className={styles.typingIndicator}>AI Teacher is thinking…</div>
+          <div
+            className="self-start bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5 shadow-sm"
+            role="status"
+          >
+            <span className="sr-only">AI Teacher is thinking…</span>
+            <div className="size-2 rounded-full bg-indigo-500 animate-bounce" aria-hidden="true" />
+            <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:150ms]" aria-hidden="true" />
+            <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:300ms]" aria-hidden="true" />
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {(sendError || feedbackError) && (
-        <div className={styles.inlineErrorBar} role="alert">
-          {sendError || feedbackError}
-        </div>
-      )}
+      <div className="sticky bottom-20 md:bottom-4 z-10 flex flex-col gap-2 pt-2 bg-[#F8FAFC]/90 dark:bg-slate-900/90 backdrop-blur-md">
+        {(sendError || feedbackError) && (
+          <div
+            className="rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-900 px-3 py-2 text-sm"
+            role="alert"
+          >
+            {sendError || feedbackError}
+          </div>
+        )}
 
-      {!sending && (
-        <div className={styles.promptRow} aria-label="Suggested prompts">
-          {SUGGESTED_PROMPTS.map((prompt) => (
-            <button key={prompt} type="button" className={styles.topicChip} onClick={() => send(prompt)}>
-              {prompt}
-            </button>
-          ))}
-        </div>
-      )}
+        {!sending && (
+          <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Suggested prompts">
+            {SUGGESTED_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => send(prompt)}
+                className="shrink-0 min-h-10 px-4 rounded-full bg-white dark:bg-slate-800 ring-1 ring-indigo-200 dark:ring-slate-700 text-[#4F46E5] dark:text-indigo-300 text-sm font-semibold cursor-pointer border-none hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
 
-      <div className={styles.inputArea}>
-        <textarea
-          className={styles.chatInput}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask a question…"
-          rows={1}
-          disabled={sending}
-          aria-label="Message input"
-        />
-        <Button variant="primary" onClick={() => send(input)} disabled={sending || !input.trim()}>
-          {sending ? 'Sending…' : 'Send'}
-        </Button>
+        <div className="flex items-end gap-2 bg-slate-100 dark:bg-slate-800 rounded-2xl p-2 ps-4 border border-slate-200/60 dark:border-slate-700">
+          <textarea
+            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask AI Teacher…"
+            rows={1}
+            disabled={sending}
+            aria-label="Message input"
+          />
+          <button
+            type="button"
+            onClick={() => send(input)}
+            disabled={sending || !input.trim()}
+            aria-label={sending ? 'Sending…' : 'Send message'}
+            className="size-10 shrink-0 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <SendIcon />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ import {
   INBOX_PAGE_SIZE,
   type NotificationEvent,
 } from './notificationsApi';
-import styles from './Notification.module.css';
+import { PageHeader, textLinkCls } from '../profile/ui';
 
 function textOf(value: unknown): string {
   return typeof value === 'string' ? value : '';
@@ -122,21 +122,26 @@ export function NotificationCenterPage() {
   const unreadCount = visible.filter(isUnread).length;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.headerRow}>
-        <h1 className={styles.heading}>Notifications</h1>
-        <div className={styles.headerActions}>
-          {unreadCount > 0 && (
-            <>
-              <span className={styles.unreadBadge} aria-label={`${unreadCount} unread`}>{unreadCount}</span>
-              <Button variant="secondary" size="sm" onClick={markAllRead} disabled={markingAll}>
-                {markingAll ? 'Marking…' : 'Mark all read'}
-              </Button>
-            </>
-          )}
-          <Link to="/notifications/preferences" className={styles.textLink}>Preferences</Link>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Inbox"
+        title="Notifications"
+        action={<Link to="/notifications/preferences" className={textLinkCls}>Preferences</Link>}
+      />
+
+      {unreadCount > 0 && (
+        <div className="flex items-center gap-3">
+          <span
+            className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-[#4F46E5] text-white text-xs font-extrabold"
+            aria-label={`${unreadCount} unread`}
+          >
+            {unreadCount}
+          </span>
+          <Button variant="secondary" size="sm" onClick={markAllRead} disabled={markingAll}>
+            {markingAll ? 'Marking…' : 'Mark all read'}
+          </Button>
         </div>
-      </div>
+      )}
 
       {actionError && <Banner variant="error">{actionError}</Banner>}
 
@@ -148,7 +153,7 @@ export function NotificationCenterPage() {
           onAction={hasMore ? loadMore : undefined}
         />
       ) : (
-        <div className={styles.list}>
+        <div className="flex flex-col gap-2.5">
           {visible.map(notif => {
             const unread = isUnread(notif);
             const busy = busyIds.has(notif.id);
@@ -158,7 +163,11 @@ export function NotificationCenterPage() {
             return (
               <div
                 key={notif.id}
-                className={`${styles.notifItem} ${unread ? styles.notifUnread : ''}`}
+                className={`flex items-start gap-3 p-4 rounded-2xl ring-1 shadow-sm cursor-pointer transition-colors ${
+                  unread
+                    ? 'bg-indigo-50/70 dark:bg-indigo-950/30 ring-indigo-100 dark:ring-indigo-900/60'
+                    : 'bg-white dark:bg-slate-800 ring-[#E2E8F0] dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60'
+                }`}
                 onClick={() => open(notif)}
                 role="button"
                 tabIndex={0}
@@ -166,26 +175,28 @@ export function NotificationCenterPage() {
                 aria-label={unread ? `Unread notification: ${title}` : title}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(notif); } }}
               >
-                <span className={`${styles.notifDot} ${unread ? '' : styles.notifDotRead}`} aria-hidden="true" />
-                <div className={styles.notifContent}>
-                  <span className={`${styles.notifTitle} ${unread ? styles.notifTitleUnread : ''}`}>{title}</span>
+                <span
+                  className={`mt-1.5 size-2.5 rounded-full shrink-0 ${unread ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                  aria-hidden="true"
+                />
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <span className={`text-sm text-slate-900 dark:text-white ${unread ? 'font-extrabold' : 'font-semibold'}`}>{title}</span>
                   {body && (
-                    <span className={`${styles.notifBody} ${expanded ? styles.notifBodyExpanded : ''}`}>{body}</span>
+                    <span className={`text-sm text-slate-500 dark:text-slate-400 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
                   )}
-                  <span className={styles.notifTime}>
+                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
                     {CATEGORY_LABELS[notif.category] ?? notif.category} · {new Date(notif.created_at).toLocaleString()}
                   </span>
                 </div>
-                <div className={styles.notifActions}>
-                  <button
-                    className={styles.dismissBtn}
-                    onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
-                    disabled={busy}
-                    aria-label={`Dismiss ${title}`}
-                  >
-                    ×
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xl disabled:opacity-50"
+                  onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
+                  disabled={busy}
+                  aria-label={`Dismiss ${title}`}
+                >
+                  ×
+                </button>
               </div>
             );
           })}
@@ -193,7 +204,7 @@ export function NotificationCenterPage() {
       )}
 
       {hasMore && visible.length > 0 && (
-        <div className={styles.loadMore}>
+        <div className="flex justify-center">
           <Button variant="ghost" onClick={loadMore} disabled={loadingMore}>
             {loadingMore ? 'Loading…' : 'Load more'}
           </Button>

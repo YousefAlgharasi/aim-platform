@@ -7,7 +7,8 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
-import styles from './AITeacher.module.css';
+import { MicIcon, SparkleIcon } from '../../components/common/Icons';
+import { BackLink, pillLinkClass } from './ui';
 
 /**
  * /ai-teacher/history — the student's active AI Teacher conversations
@@ -38,12 +39,13 @@ export function AIHistoryPage() {
   if (error) return <ErrorState message={error} onRetry={fetchHistory} />;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.heading}>Conversation History</h1>
-        <Link to="/ai-teacher" className={styles.headerLink}>
-          AI Teacher
-        </Link>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-3">
+        <BackLink to="/ai-teacher" label="Back to AI Teacher" />
+        <div className="flex-1 min-w-0">
+          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">AI Teacher</span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">Conversation History</h1>
+        </div>
       </div>
 
       {sessions.length === 0 ? (
@@ -54,24 +56,34 @@ export function AIHistoryPage() {
           onAction={() => navigate('/ai-teacher')}
         />
       ) : (
-        <div className={styles.historyList}>
+        <div className="grid gap-3 md:grid-cols-2">
           {sessions.map((session) => {
             const state: AIChatLocationState = { lessonTitle: session.contextTitle };
             return (
-              <Card key={session.sessionId}>
-                <div className={styles.historyRow}>
-                  <Link to={`/ai-teacher/${session.sessionId}`} state={state} className={styles.historyItem}>
-                    <span className={styles.historyTopic}>{sessionLabel(session)}</span>
-                    <span className={styles.historyMeta}>
-                      {session.status === 'active' ? 'Active' : 'Closed'} · {relativeTime(session.updatedAt)}
+              <Card key={session.sessionId} className="!p-3 sm:!p-3">
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/ai-teacher/${session.sessionId}`}
+                    state={state}
+                    className="flex-1 min-w-0 flex items-center gap-3 p-1 no-underline rounded-xl"
+                  >
+                    <span className="size-10 shrink-0 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 flex items-center justify-center">
+                      <SparkleIcon className="size-4.5" />
+                    </span>
+                    <span className="min-w-0 flex flex-col">
+                      <span className="font-semibold text-slate-900 dark:text-white truncate">{sessionLabel(session)}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {session.status === 'active' ? 'Active' : 'Closed'} · {relativeTime(session.updatedAt)}
+                      </span>
                     </span>
                   </Link>
                   <Link
                     to={`/voice-teacher/${session.sessionId}`}
-                    className={styles.headerLink}
+                    className={pillLinkClass}
                     aria-label={`Continue ${sessionLabel(session)} in Voice Teacher`}
                   >
-                    🎙 Voice
+                    <MicIcon className="size-4" />
+                    Voice
                   </Link>
                 </div>
               </Card>

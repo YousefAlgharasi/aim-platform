@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
-import styles from './ContentBlock.module.css';
 
 interface AuthAudioPlayerProps {
   /** Fetches the audio through the authenticated backend client. An empty blob means "no audio yet" (204). */
@@ -47,15 +46,15 @@ export function AuthAudioPlayer({ load, label = 'Play audio' }: AuthAudioPlayerP
   }
 
   return (
-    <div className={styles.audioPlayer}>
+    <div className="flex flex-col gap-2">
       {src ? (
-        <audio ref={audioRef} controls src={src} className={styles.audio} />
+        <audio ref={audioRef} controls src={src} className="w-full" />
       ) : (
         <Button type="button" variant="secondary" size="sm" onClick={handleLoad} disabled={loading}>
           {loading ? 'Loading audio…' : `🔊 ${label}`}
         </Button>
       )}
-      {message && <span className={styles.audioMessage}>{message}</span>}
+      {message && <span className="text-xs text-slate-500 dark:text-slate-400">{message}</span>}
     </div>
   );
 }

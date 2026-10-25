@@ -26,7 +26,7 @@ import {
   type Invoice,
   type InvoiceItem,
 } from './billingApi';
-import styles from './Billing.module.css';
+import { PageHeader, KV, StatusPill, ChevronIcon, h2Cls, subCls, pillCls, tableWrapCls, textLinkCls } from '../profile/ui';
 
 interface BillingData {
   plans: BillingPlan[];
@@ -120,78 +120,95 @@ export function BillingPage() {
   const priceById = (id: string) => data.prices.find(p => p.id === id);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.heading}>Billing</h1>
+    <div className="flex flex-col gap-8">
+      <PageHeader eyebrow="Account" title="Billing" subtitle="Your plan, usage and invoices." />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>Current subscription</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>Current subscription</h2>
         {liveSubscriptions.length === 0 ? (
           <Card>
-            <p className={styles.description}>You don't have an active subscription. Choose a plan below to get started.</p>
+            <p className={subCls}>You don't have an active subscription. Choose a plan below to get started.</p>
           </Card>
         ) : (
-          liveSubscriptions.map(sub => {
-            const plan = planById(sub.planId);
-            const price = plan ? priceById(plan.priceId) : undefined;
-            return (
-              <Card key={sub.id}>
-                <div className={styles.subscriptionInfo}>
-                  <div className={styles.rowBetween}>
-                    <h3 className={styles.planName}>{plan?.name ?? 'Subscription'}</h3>
-                    <span className={styles.currentBadge}>{humanizeKey(sub.status)}</span>
+          <div className="grid gap-4 md:grid-cols-2">
+            {liveSubscriptions.map(sub => {
+              const plan = planById(sub.planId);
+              const price = plan ? priceById(plan.priceId) : undefined;
+              return (
+                <div
+                  key={sub.id}
+                  className="rounded-2xl p-5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md flex flex-col gap-3"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? 'Subscription'}</h3>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20">
+                      {humanizeKey(sub.status)}
+                    </span>
                   </div>
-                  {price && (
-                    <div className={styles.subDetail}>
-                      <span className={styles.subLabel}>Price</span>
-                      <span className={styles.subValue}>
-                        {formatMoney(price.amount, price.currency)} / {INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}
-                      </span>
-                    </div>
-                  )}
-                  {sub.trialEnd && sub.status === 'trialing' && (
-                    <div className={styles.subDetail}>
-                      <span className={styles.subLabel}>Trial ends</span>
-                      <span className={styles.subValue}>{fmtDate(sub.trialEnd)}</span>
-                    </div>
-                  )}
-                  {sub.currentPeriodEnd && (
-                    <div className={styles.subDetail}>
-                      <span className={styles.subLabel}>{sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}</span>
-                      <span className={styles.subValue}>{fmtDate(sub.currentPeriodEnd)}</span>
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-1.5 text-sm">
+                    {price && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-indigo-100">Price</span>
+                        <span className="font-bold">
+                          {formatMoney(price.amount, price.currency)} / {INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}
+                        </span>
+                      </div>
+                    )}
+                    {sub.trialEnd && sub.status === 'trialing' && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-indigo-100">Trial ends</span>
+                        <span className="font-bold">{fmtDate(sub.trialEnd)}</span>
+                      </div>
+                    )}
+                    {sub.currentPeriodEnd && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-indigo-100">{sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}</span>
+                        <span className="font-bold">{fmtDate(sub.currentPeriodEnd)}</span>
+                      </div>
+                    )}
+                  </div>
                   {sub.status === 'past_due' && (
                     <Banner variant="warning">Your last payment failed. Please update your payment method with our payment provider.</Banner>
                   )}
                   {sub.cancelAtPeriodEnd ? (
-                    <p className={styles.description}>Cancellation requested — you keep access until the end of the current period.</p>
+                    <p className="text-sm text-indigo-100 m-0">Cancellation requested — you keep access until the end of the current period.</p>
                   ) : (
                     <div>
-                      <Button variant="ghost" size="sm" onClick={() => { setCancelError(''); setCancelTarget(sub); }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="!bg-white/15 !text-white hover:!bg-white/25"
+                        onClick={() => { setCancelError(''); setCancelTarget(sub); }}
+                      >
                         Cancel subscription
                       </Button>
                     </div>
                   )}
                 </div>
-              </Card>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </section>
 
       {activeEntitlements.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.subtitle}>What's included</h2>
+        <section className="flex flex-col gap-3">
+          <h2 className={h2Cls}>What's included</h2>
           <Card>
-            <ul className={styles.planFeatures}>
+            <ul className="list-none m-0 p-0 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {activeEntitlements.map(e => (
-                <li key={e.id} className={styles.planFeature}>
-                  <span className={styles.featureCheck} aria-hidden="true">{e.granted ? '✓' : '✕'}</span>
-                  <span>{humanizeKey(e.featureKey)}</span>
+                <li key={e.id} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
+                  <span
+                    className={`size-5 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 ${e.granted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300'}`}
+                    aria-hidden="true"
+                  >
+                    {e.granted ? '✓' : '✕'}
+                  </span>
+                  <span className="flex-1 min-w-0">{humanizeKey(e.featureKey)}</span>
                   {e.usageLimit !== null && (
-                    <span className={styles.planPeriod}>{e.usageCount} / {e.usageLimit}</span>
+                    <span className="text-xs font-semibold text-slate-400">{e.usageCount} / {e.usageLimit}</span>
                   )}
                 </li>
               ))}
@@ -200,106 +217,120 @@ export function BillingPage() {
         </section>
       )}
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>Plans</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>Plans</h2>
         {data.plans.length === 0 ? (
           <EmptyState title="No plans available" message="There are no plans available for purchase right now." />
         ) : (
-          <div className={styles.planGrid}>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.plans.map(plan => {
               const isCurrent = liveSubscriptions.some(s => s.planId === plan.id);
               const price = priceById(plan.priceId);
               const features = includedFeatureLabels(plan.features);
               return (
-                <Card key={plan.id}>
-                  <div className={`${styles.planCard} ${isCurrent ? styles.planCurrent : ''}`}>
-                    {isCurrent && <span className={styles.currentBadge}>Current</span>}
-                    <h3 className={styles.planName}>{plan.name}</h3>
-                    {price ? (
-                      <div>
-                        <span className={styles.planPrice}>{formatMoney(price.amount, price.currency)}</span>
-                        <span className={styles.planPeriod}>
-                          {price.billingInterval === 'one_time' ? ' one-time' : `/${INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}`}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className={styles.planPeriod}>Price unavailable</span>
-                    )}
-                    {plan.description && <p className={styles.description}>{plan.description}</p>}
-                    {features.length > 0 && (
-                      <ul className={styles.planFeatures}>
-                        {features.map(f => (
-                          <li key={f} className={styles.planFeature}>
-                            <span className={styles.featureCheck} aria-hidden="true">✓</span>{f}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {!isCurrent && (
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        disabled={!price}
-                        onClick={() => navigate(`/billing/checkout/${plan.id}`)}
-                      >
-                        Choose plan
-                      </Button>
-                    )}
+                <div
+                  key={plan.id}
+                  className={`rounded-2xl p-5 bg-white dark:bg-slate-800 shadow-sm flex flex-col gap-3.5 ${
+                    isCurrent ? 'ring-2 ring-[#4F46E5]' : 'ring-1 ring-[#E2E8F0] dark:ring-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{plan.name}</h3>
+                    {isCurrent && <span className={pillCls}>Current</span>}
                   </div>
-                </Card>
+                  {price ? (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-extrabold tracking-tight text-[#4F46E5] dark:text-indigo-400">{formatMoney(price.amount, price.currency)}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {price.billingInterval === 'one_time' ? ' one-time' : `/${INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}`}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Price unavailable</span>
+                  )}
+                  {plan.description && <p className={subCls}>{plan.description}</p>}
+                  {features.length > 0 && (
+                    <ul className="list-none m-0 p-0 flex flex-col gap-2 flex-1">
+                      {features.map(f => (
+                        <li key={f} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
+                          <span className="size-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-[11px] font-extrabold shrink-0" aria-hidden="true">✓</span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {!isCurrent && (
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      className="mt-auto"
+                      disabled={!price}
+                      onClick={() => navigate(`/billing/checkout/${plan.id}`)}
+                    >
+                      Choose plan
+                    </Button>
+                  )}
+                </div>
               );
             })}
           </div>
         )}
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.subtitle}>Invoice history</h2>
+      <section className="flex flex-col gap-3">
+        <h2 className={h2Cls}>Invoice history</h2>
         {data.invoices.length === 0 ? (
-          <Card><p className={styles.description}>No invoices yet.</p></Card>
+          <Card><p className={subCls}>No invoices yet.</p></Card>
         ) : (
-          <Card>
-            <div className={styles.invoiceList}>
+          <div className={tableWrapCls}>
+            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               {data.invoices.map(inv => (
-                <button key={inv.id} type="button" className={styles.invoiceItem} onClick={() => openInvoice(inv)}>
+                <button
+                  key={inv.id}
+                  type="button"
+                  className="flex items-center justify-between gap-3 px-4 py-3.5 min-h-[56px] bg-transparent border-none text-start cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  onClick={() => openInvoice(inv)}
+                >
                   <span>{fmtDate(inv.paidAt ?? inv.periodEnd ?? inv.createdAt)}</span>
-                  <div className={styles.invoiceMeta}>
-                    <span className={styles.invoiceAmount}>{formatMoney(inv.total, inv.currency)}</span>
-                    <span className={inv.status === 'paid' ? styles.statusPaid : styles.statusPending}>{inv.status}</span>
-                  </div>
+                  <span className="flex items-center gap-3">
+                    <span className="font-extrabold">{formatMoney(inv.total, inv.currency)}</span>
+                    <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{inv.status}</StatusPill>
+                    <ChevronIcon className="size-4 text-slate-400" />
+                  </span>
                 </button>
               ))}
             </div>
-          </Card>
+          </div>
         )}
       </section>
 
       {pastSubscriptions.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.subtitle}>Past subscriptions</h2>
-          <Card>
-            <div className={styles.invoiceList}>
+        <section className="flex flex-col gap-3">
+          <h2 className={h2Cls}>Past subscriptions</h2>
+          <div className={tableWrapCls}>
+            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               {pastSubscriptions.map(sub => (
-                <div key={sub.id} className={styles.subDetail}>
-                  <span>{planById(sub.planId)?.name ?? 'Subscription'}</span>
-                  <span className={styles.subLabel}>
+                <div key={sub.id} className="flex items-center justify-between gap-3 px-4 py-3.5 text-sm">
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">{planById(sub.planId)?.name ?? 'Subscription'}</span>
+                  <span className="text-slate-500 dark:text-slate-400">
                     {humanizeKey(sub.status)}{sub.canceledAt ? ` · ${fmtDate(sub.canceledAt)}` : ''}
                   </span>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </section>
       )}
 
       <Modal open={!!cancelTarget} onClose={() => !cancelling && setCancelTarget(null)} title="Cancel subscription?">
-        <div className={styles.subscriptionInfo}>
-          <p className={styles.description}>
+        <div className="flex flex-col gap-4">
+          <p className={subCls}>
             Your subscription will stay active until the end of the current billing period
             {cancelTarget?.currentPeriodEnd ? ` (${fmtDate(cancelTarget.currentPeriodEnd)})` : ''}, then it won't renew.
           </p>
           {cancelError && <Banner variant="error">{cancelError}</Banner>}
-          <div className={styles.actions}>
+          <div className="flex flex-wrap justify-end gap-2">
             <Button variant="ghost" onClick={() => setCancelTarget(null)} disabled={cancelling}>Keep subscription</Button>
             <Button variant="primary" onClick={confirmCancel} disabled={cancelling}>
               {cancelling ? 'Cancelling…' : 'Cancel subscription'}
@@ -314,45 +345,27 @@ export function BillingPage() {
         ) : invoiceError ? (
           <Banner variant="error">{invoiceError}</Banner>
         ) : invoiceDetail ? (
-          <div className={styles.orderSummary}>
-            <div className={styles.subDetail}>
-              <span className={styles.subLabel}>Status</span>
-              <span className={styles.subValue}>{invoiceDetail.invoice.status}</span>
-            </div>
+          <div className="flex flex-col gap-2.5">
+            <KV label="Status">{invoiceDetail.invoice.status}</KV>
             {(invoiceDetail.invoice.periodStart || invoiceDetail.invoice.periodEnd) && (
-              <div className={styles.subDetail}>
-                <span className={styles.subLabel}>Period</span>
-                <span className={styles.subValue}>
-                  {fmtDate(invoiceDetail.invoice.periodStart)} – {fmtDate(invoiceDetail.invoice.periodEnd)}
-                </span>
-              </div>
+              <KV label="Period">
+                {fmtDate(invoiceDetail.invoice.periodStart)} – {fmtDate(invoiceDetail.invoice.periodEnd)}
+              </KV>
             )}
             {invoiceDetail.invoice.paidAt && (
-              <div className={styles.subDetail}>
-                <span className={styles.subLabel}>Paid</span>
-                <span className={styles.subValue}>{fmtDate(invoiceDetail.invoice.paidAt)}</span>
-              </div>
+              <KV label="Paid">{fmtDate(invoiceDetail.invoice.paidAt)}</KV>
             )}
+            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
             {invoiceDetail.items.map(item => (
-              <div key={item.id} className={styles.orderRow}>
-                <span>{item.description}{item.quantity > 1 ? ` × ${item.quantity}` : ''}</span>
-                <span>{formatMoney(item.amount, item.currency)}</span>
-              </div>
+              <KV key={item.id} label={`${item.description}${item.quantity > 1 ? ` × ${item.quantity}` : ''}`}>
+                {formatMoney(item.amount, item.currency)}
+              </KV>
             ))}
-            <div className={styles.orderRow}>
-              <span>Subtotal</span>
-              <span>{formatMoney(invoiceDetail.invoice.subtotal, invoiceDetail.invoice.currency)}</span>
-            </div>
-            <div className={styles.orderRow}>
-              <span>Tax</span>
-              <span>{formatMoney(invoiceDetail.invoice.tax, invoiceDetail.invoice.currency)}</span>
-            </div>
-            <div className={`${styles.orderRow} ${styles.orderTotal}`}>
-              <span>Total</span>
-              <span>{formatMoney(invoiceDetail.invoice.total, invoiceDetail.invoice.currency)}</span>
-            </div>
+            <KV label="Subtotal">{formatMoney(invoiceDetail.invoice.subtotal, invoiceDetail.invoice.currency)}</KV>
+            <KV label="Tax">{formatMoney(invoiceDetail.invoice.tax, invoiceDetail.invoice.currency)}</KV>
+            <KV label="Total" strong>{formatMoney(invoiceDetail.invoice.total, invoiceDetail.invoice.currency)}</KV>
             {invoiceDetail.invoice.invoiceUrl && (
-              <a href={invoiceDetail.invoice.invoiceUrl} target="_blank" rel="noopener noreferrer" className={styles.link}>
+              <a href={invoiceDetail.invoice.invoiceUrl} target="_blank" rel="noopener noreferrer" className={`${textLinkCls} mt-2`}>
                 View invoice from payment provider
               </a>
             )}
