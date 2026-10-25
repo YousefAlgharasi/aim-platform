@@ -1,61 +1,46 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../api/client';
 import { Button } from '../../components/common/Button';
-import type { LessonData } from './LessonPlayerShell';
-import type { ApiError } from '../../types';
+import type { LessonPosition, LessonRouteState } from './LessonPlayerShell';
 
 interface LessonNavigationProps {
-  lesson: LessonData;
-  onStatusChange: () => void;
+  position: LessonPosition;
+  courseId?: string;
 }
 
-export function LessonNavigation({ lesson, onStatusChange }: LessonNavigationProps) {
+/**
+ * Previous / next lesson within the chapter. Lessons are completed only via
+ * practice (POST /lessons/:id/complete at the end of a practice session, as in
+ * Flutter), so there is no manual "complete" button here. "Next" is enabled
+ * once this lesson is completed — the backend gate requires it anyway.
+ */
+export function LessonNavigation({ position, courseId }: LessonNavigationProps) {
   const navigate = useNavigate();
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  function handleComplete() {
-    setSubmitting(true);
-    setError('');
-    apiClient.post(`/lessons/${lesson.id}/complete`, {})
-      .then(() => {
-        onStatusChange();
-        if (lesson.nextLessonId) {
-          navigate(`/lessons/${lesson.nextLessonId}`);
-        } else {
-          navigate(`/curriculum/${lesson.subjectId}`);
-        }
-      })
-      .catch((err: ApiError) => setError(err.message || 'Failed to complete lesson'))
-      .finally(() => setSubmitting(false));
-  }
+  const state: LessonRouteState = { courseId };
+  const { prev, next, self } = position;
+  const canGoNext = !!next && (next.completed || next.current || self?.completed === true);
 
   return (
     <>
-      {lesson.prevLessonId ? (
-        <Button variant="secondary" onClick={() => navigate(`/lessons/${lesson.prevLessonId}`)}>
+      {prev ? (
+        <Button variant="secondary" onClick={() => navigate(`/lessons/${prev.id}`, { state })}>
           ← Previous
         </Button>
       ) : (
         <span />
       )}
 
-      {error && <span style={{ color: 'var(--color-danger-500)', fontSize: '13px' }}>{error}</span>}
-
-      {lesson.status === 'completed' ? (
-        lesson.nextLessonId ? (
-          <Button variant="primary" onClick={() => navigate(`/lessons/${lesson.nextLessonId}`)}>
-            Next →
-          </Button>
-        ) : (
-          <Button variant="primary" onClick={() => navigate(`/curriculum/${lesson.subjectId}`)}>
-            Back to Course
-          </Button>
-        )
+      {next ? (
+        <Button
+          variant="primary"
+          onClick={() => navigate(`/lessons/${next.id}`, { state })}
+          disabled={!canGoNext}
+          title={canGoNext ? undefined : 'Complete this lesson to unlock the next one'}
+        >
+          {canGoNext ? 'Next lesson →' : '🔒 Next lesson'}
+        </Button>
       ) : (
-        <Button variant="primary" onClick={handleComplete} disabled={submitting}>
-          {submitting ? 'Completing…' : 'Complete & Continue'}
+        <Button variant="primary" onClick={() => navigate(courseId ? `/curriculum/${courseId}` : '/curriculum')}>
+          Back to course
         </Button>
       )}
     </>

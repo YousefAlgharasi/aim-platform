@@ -103,3 +103,73 @@
   font-size: 13px;
   color: var(--color-neutral-500, #7E849A);
 }
+
+.rowBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-12, 12px);
+}
+
+.muted {
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+  margin: 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8, 8px);
+}
+
+.chip {
+  font-size: 13px;
+  font-weight: var(--weight-medium, 500);
+  color: var(--color-warning, #8A6100);
+  background: var(--color-warning-bg, #FFF7E0);
+  padding: var(--space-4, 4px) var(--space-12, 12px);
+  border-radius: var(--radius-pill, 999px);
+}
+
+.plainList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12, 12px);
+}
+
+.recItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 4px);
+  font-size: 14px;
+}
+
+.recKind {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary-500, #8455E4);
+  font-weight: var(--weight-semibold, 600);
+}
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: var(--component-gap, 16px);
+}
+
+.linkCard {
+  text-decoration: none;
+  color: inherit;
+  font-weight: var(--weight-semibold, 600);
+}
+
+.linkCard:focus-visible,
+.viewAll:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}

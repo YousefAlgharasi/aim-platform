@@ -1,16 +1,27 @@
+import { Link } from 'react-router-dom';
 import { Card } from '../../../components/common/Card';
 import { EmptyState } from '../../../components/common/EmptyState';
+import type { StudentDeadlineItem } from '../dashboardApi';
 import styles from './Widgets.module.css';
 
-interface Deadline {
-  id: string;
-  title: string;
-  dueDate: string;
-  type: string;
+interface DeadlineWidgetProps {
+  /** Backend-grouped deadlines; status is backend-derived and shown as-is. */
+  deadlines: StudentDeadlineItem[];
 }
 
-interface DeadlineWidgetProps {
-  deadlines: Deadline[];
+const statusLabel: Record<string, string> = {
+  upcoming: 'Upcoming',
+  active: 'Open',
+  late: 'Late',
+  missed: 'Missed',
+  closed: 'Closed',
+};
+
+function formatDue(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
 export function DeadlineWidget({ deadlines }: DeadlineWidgetProps) {
@@ -25,16 +36,21 @@ export function DeadlineWidget({ deadlines }: DeadlineWidgetProps) {
   return (
     <Card>
       <div className={styles.listWidget}>
-        <h3 className={styles.listTitle}>Upcoming deadlines</h3>
+        <div className={styles.headerRow}>
+          <h3 className={styles.listTitle}>Upcoming deadlines</h3>
+          <Link to="/assessments" className={styles.viewAll}>All assessments</Link>
+        </div>
         <ul className={styles.deadlineList}>
-          {deadlines.map(d => (
-            <li key={d.id} className={styles.deadlineItem}>
-              <div>
-                <span className={styles.recType}>{d.type}</span>
-                <span className={styles.recName}>{d.title}</span>
-              </div>
+          {deadlines.map((d) => (
+            <li key={d.deadlineId} className={styles.deadlineItem}>
+              <Link to={`/assessments/${d.assessmentId}`} className={styles.recLink}>
+                <span className={`${styles.recType} ${d.status === 'late' ? styles.toneWarning : ''}`}>
+                  {statusLabel[d.status] ?? d.status}
+                </span>
+                <span className={styles.recName}>{d.assessmentTitle}</span>
+              </Link>
               <span className={styles.deadlineDate}>
-                {new Date(d.dueDate).toLocaleDateString()}
+                {d.status === 'upcoming' ? `Opens ${formatDue(d.opensAt)}` : `Due ${formatDue(d.extendedClosesAt ?? d.closesAt)}`}
               </span>
             </li>
           ))}

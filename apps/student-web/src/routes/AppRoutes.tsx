@@ -7,6 +7,7 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage';
 import { SessionExpiredPage } from '../features/auth/SessionExpiredPage';
+import { ResetPasswordPage } from '../features/auth/ResetPasswordPage';
 import { DashboardHome } from '../features/dashboard/DashboardHome';
 import { ProfilePage } from '../features/profile/ProfilePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
@@ -32,6 +33,17 @@ import { BillingPage } from '../features/billing/BillingPage';
 import { CheckoutPage } from '../features/billing/CheckoutPage';
 import { ReportsSummaryPage } from '../features/reports/ReportsSummaryPage';
 import { SupportPage } from '../features/support/SupportPage';
+import { PlacementGatePage } from '../features/placement/PlacementGatePage';
+import { AssessmentDeadlinesPage } from '../features/assessments/AssessmentDeadlinesPage';
+import { PracticeLessonStart } from '../features/practice/PracticeLessonStart';
+import { VoiceTeacherPage } from '../features/voice-teacher/VoiceTeacherPage';
+import { WeaknessesPage } from '../features/progress/WeaknessesPage';
+import { ReviewSchedulePage } from '../features/progress/ReviewSchedulePage';
+import { RecommendationsPage } from '../features/progress/RecommendationsPage';
+import { AchievementsPage } from '../features/achievements/AchievementsPage';
+import { CertificatesPage } from '../features/certificates/CertificatesPage';
+import { CertificateDetailPage } from '../features/certificates/CertificateDetailPage';
+import { TicketDetailPage } from '../features/support/TicketDetailPage';
 import { NotFoundPage } from '../components/common/NotFoundPage';
 import { ForbiddenPage } from '../components/common/ForbiddenPage';
 
@@ -43,6 +55,7 @@ export function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/session-expired" element={<SessionExpiredPage />} />
       </Route>
 
@@ -54,26 +67,38 @@ export function AppRoutes() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/progress" element={<ProgressSummary />} />
         <Route path="/progress/skills" element={<SkillStatePage />} />
+        <Route path="/progress/weaknesses" element={<WeaknessesPage />} />
+        <Route path="/progress/reviews" element={<ReviewSchedulePage />} />
+        <Route path="/progress/recommendations" element={<RecommendationsPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/certificates" element={<CertificatesPage />} />
+        <Route path="/certificates/:certificateId" element={<CertificateDetailPage />} />
         <Route path="/placement" element={<PlacementEntryPage />} />
+        <Route path="/placement/gate" element={<PlacementGatePage />} />
         <Route path="/placement/:id" element={<PlacementQuestionUI />} />
         <Route path="/placement/:id/result" element={<PlacementResultPage />} />
         <Route path="/curriculum" element={<CourseCatalog />} />
         <Route path="/curriculum/:subjectId" element={<CourseDetailPage />} />
         <Route path="/lessons/:lessonId" element={<LessonPlayerShell />} />
         <Route path="/practice/:sessionId" element={<PracticeShell />} />
+        <Route path="/practice/lesson/:lessonId" element={<PracticeLessonStart />} />
         <Route path="/assessments" element={<AssessmentListPage />} />
+        <Route path="/assessments/deadlines" element={<AssessmentDeadlinesPage />} />
         <Route path="/assessments/:assessmentId" element={<AssessmentDetailPage />} />
         <Route path="/assessments/:assessmentId/attempt/:attemptId" element={<AttemptScreen />} />
         <Route path="/assessments/:assessmentId/result/:attemptId" element={<AssessmentResultPage />} />
         <Route path="/ai-teacher" element={<AITeacherEntryPage />} />
         <Route path="/ai-teacher/history" element={<AIHistoryPage />} />
         <Route path="/ai-teacher/:conversationId" element={<AIChatPage />} />
+        <Route path="/voice-teacher" element={<VoiceTeacherPage />} />
+        <Route path="/voice-teacher/:sessionId" element={<VoiceTeacherPage />} />
         <Route path="/notifications" element={<NotificationCenterPage />} />
         <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
         <Route path="/billing" element={<BillingPage />} />
         <Route path="/billing/checkout/:planId" element={<CheckoutPage />} />
         <Route path="/reports" element={<ReportsSummaryPage />} />
         <Route path="/support" element={<SupportPage />} />
+        <Route path="/support/tickets/:ticketId" element={<TicketDetailPage />} />
       </Route>
 
       {/* Error routes */}

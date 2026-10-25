@@ -19,7 +19,11 @@ export function ForgotPasswordPage() {
     setError('');
     setLoading(true);
     try {
-      await apiClient.post('/auth/forgot-password', { email });
+      await apiClient.post(
+        '/auth/forgot-password',
+        { email: email.trim(), redirectUrl: `${window.location.origin}/reset-password` },
+        { auth: false },
+      );
       setSent(true);
     } catch (err) {
       setError((err as ApiError).message || 'Request failed');

@@ -2,14 +2,8 @@ interface AppConfig {
   apiBaseUrl: string;
 }
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
-
+// Defaults to same-origin `/api`, which nginx (production) or the CRA dev proxy
+// (src/setupProxy.js) forwards to the backend with the `/api` prefix stripped.
 export const config: AppConfig = {
-  apiBaseUrl: requireEnv('REACT_APP_API_BASE_URL'),
+  apiBaseUrl: process.env.REACT_APP_API_BASE_URL || '/api',
 };

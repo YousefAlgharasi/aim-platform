@@ -1,20 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Card } from '../../../components/common/Card';
 import { EmptyState } from '../../../components/common/EmptyState';
+import { humanize, prettifySkillId, type RecommendationEntry } from '../../progress/aimApi';
 import styles from './Widgets.module.css';
 
-interface Recommendation {
-  id: string;
-  title: string;
-  type: string;
-  reason: string;
-}
-
 interface RecommendationWidgetProps {
-  recommendations: Recommendation[];
+  /** Active AIM recommendations, already ordered by rank by the backend. */
+  recommendations: RecommendationEntry[];
+  limit?: number;
 }
 
-export function RecommendationWidget({ recommendations }: RecommendationWidgetProps) {
+export function RecommendationWidget({ recommendations, limit = 3 }: RecommendationWidgetProps) {
   if (recommendations.length === 0) {
     return (
       <Card>
@@ -29,13 +25,19 @@ export function RecommendationWidget({ recommendations }: RecommendationWidgetPr
   return (
     <Card>
       <div className={styles.listWidget}>
-        <h3 className={styles.listTitle}>Recommended for you</h3>
+        <div className={styles.headerRow}>
+          <h3 className={styles.listTitle}>Recommended for you</h3>
+          <Link to="/progress/recommendations" className={styles.viewAll}>View all</Link>
+        </div>
         <ul className={styles.recList}>
-          {recommendations.map(rec => (
+          {recommendations.slice(0, limit).map((rec) => (
             <li key={rec.id} className={styles.recItem}>
-              <Link to={`/lessons/${rec.id}`} className={styles.recLink}>
-                <span className={styles.recType}>{rec.type}</span>
-                <span className={styles.recName}>{rec.title}</span>
+              <Link
+                to={rec.targetLessonId ? `/lessons/${rec.targetLessonId}` : '/progress/recommendations'}
+                className={styles.recLink}
+              >
+                <span className={styles.recType}>{humanize(rec.kind)}</span>
+                <span className={styles.recName}>{prettifySkillId(rec.targetSkillId)}</span>
                 <span className={styles.recReason}>{rec.reason}</span>
               </Link>
             </li>

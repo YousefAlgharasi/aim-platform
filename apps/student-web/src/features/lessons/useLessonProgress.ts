@@ -1,34 +1,30 @@
 import { useCallback, useRef } from 'react';
-import { apiClient } from '../../api/client';
+import { completeLesson, recordLessonProgress } from './lessonsApi';
 
-interface ProgressEvent {
-  lessonId: string;
-  blockId?: string;
-  percent: number;
-}
-
+/**
+ * Lesson progress writes, matching Flutter's practice-session persistence:
+ *  - syncProgress: POST /lessons/:id/progress { percent } (backend clamps and keeps the max)
+ *  - markComplete: POST /lessons/:id/progress { percent: 100 } then POST /lessons/:id/complete
+ * Both may reject with 403 when the unlock gate (previous lesson / locked course) applies.
+ */
 export function useLessonProgress(lessonId: string) {
   const lastSyncedRef = useRef(0);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const syncProgress = useCallback((event: ProgressEvent) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(() => {
-      if (event.percent <= lastSyncedRef.current) return;
-
-      apiClient.post(`/lessons/${lessonId}/progress`, {
-        percent: event.percent,
-      }).then(() => {
-        lastSyncedRef.current = event.percent;
-      }).catch(() => {
-        // silent fail — next sync will retry
+  const syncProgress = useCallback((percent: number) => {
+    const safe = Math.min(Math.max(Math.round(percent), 0), 100);
+    if (safe <= lastSyncedRef.current) return Promise.resolve();
+    return recordLessonProgress(lessonId, safe)
+      .then(() => { lastSyncedRef.current = safe; })
+      .catch(() => {
+        // Best effort, like Flutter: the next update or completion retries.
       });
-    }, 1000);
   }, [lessonId]);
 
-  const markComplete = useCallback(() => {
-    return apiClient.post(`/lessons/${lessonId}/complete`, {});
+  const markComplete = useCallback(async () => {
+    await recordLessonProgress(lessonId, 100);
+    const ack = await completeLesson(lessonId);
+    lastSyncedRef.current = 100;
+    return ack;
   }, [lessonId]);
 
   return { syncProgress, markComplete };

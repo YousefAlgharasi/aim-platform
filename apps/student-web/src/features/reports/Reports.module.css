@@ -117,3 +117,77 @@
 .timelineEvent {
   color: var(--color-neutral-700, #374151);
 }
+
+.sectionTitle {
+  font-size: var(--type-h3-size, 18px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+}
+
+.muted {
+  font-size: 14px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+}
+
+.reportCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.reportHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+.reportTitleBlock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.categoryPill {
+  font-size: 11px;
+  font-weight: var(--weight-semibold, 600);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-100, #F1F2F6);
+  color: var(--color-neutral-600, #5C6178);
+}
+
+.reportResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  border-top: 1px solid var(--color-neutral-100, #F1F2F6);
+  padding-top: var(--space-12);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  text-align: start;
+  padding: var(--space-8) var(--space-12);
+  border-bottom: 1px solid var(--color-neutral-100, #F1F2F6);
+  white-space: nowrap;
+}
+
+.table th {
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-neutral-500, #7E849A);
+  font-size: 12px;
+}

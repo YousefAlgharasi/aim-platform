@@ -175,3 +175,80 @@
   background: var(--color-primary-100, #DBEAFE);
   color: var(--color-primary-700, #1D4ED8);
 }
+
+.backLink {
+  font-size: 14px;
+  color: var(--color-primary-500);
+  text-decoration: none;
+  align-self: flex-start;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.enrollBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.levelSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--component-gap);
+}
+
+.levelTitle {
+  font-size: var(--type-h2-size, 22px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+}
+
+.chapterToggle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.chapterToggle:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.chapterDesc {
+  font-size: 13px;
+  color: var(--color-neutral-600, #5C6178);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inlineError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  font-size: 13px;
+  color: var(--color-danger-500, #DC2626);
+}
+
+.plainLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.lessonLockedSoft {
+  opacity: 0.6;
+}

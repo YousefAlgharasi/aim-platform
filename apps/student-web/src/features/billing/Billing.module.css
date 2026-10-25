@@ -188,3 +188,60 @@
   margin: 0;
   line-height: 1.6;
 }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+button.invoiceItem {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.link {
+  font-size: 14px;
+  color: var(--color-primary-500);
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.statusIcon {
+  font-size: 40px;
+  text-align: center;
+}
+
+.statusTitle {
+  font-size: var(--type-h3-size, 18px);
+  font-weight: var(--weight-semibold, 600);
+  text-align: center;
+  margin: 0;
+}
+
+.center {
+  text-align: center;
+}

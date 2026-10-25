@@ -1,95 +1,103 @@
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
+import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
+import type { SessionQuestion, SessionSummary } from './practiceApi';
 import styles from './Practice.module.css';
 
-interface Mistake {
-  questionText: string;
-  yourAnswer: string;
-  correctAnswer: string;
-  explanation: string;
-}
-
-interface PracticeFeedbackData {
-  score: number;
-  total: number;
-  summary: string;
-  mistakes: Mistake[];
-  nextActions: Array<{
-    id: string;
-    title: string;
-    type: 'practice' | 'lesson' | 'review';
-  }>;
-}
+export type CompletionStatus = 'saving' | 'saved' | 'failed';
 
 interface PracticeFeedbackProps {
-  feedback: PracticeFeedbackData;
+  summary: SessionSummary;
+  questions: SessionQuestion[];
+  lessonId: string;
+  lessonTitle?: string;
+  courseId?: string;
+  completion: CompletionStatus;
+  completionError?: string;
+  onRetryCompletion: () => void;
+  onPracticeAgain: () => void;
 }
 
-export function PracticeFeedback({ feedback }: PracticeFeedbackProps) {
+/** Session summary from GET /sessions/:sessionId/summary — all counts are backend-evaluated. */
+export function PracticeFeedback({
+  summary,
+  questions,
+  lessonId,
+  lessonTitle,
+  courseId,
+  completion,
+  completionError,
+  onRetryCompletion,
+  onPracticeAgain,
+}: PracticeFeedbackProps) {
+  const byId = new Map(questions.map(q => [q.id, q]));
+  const lessonState = { courseId };
+
+  function answerText(itemId: string, answerValue: string) {
+    const option = byId.get(itemId)?.options.find(o => o.id === answerValue);
+    return option?.text ?? answerValue;
+  }
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.heading}>Practice Complete</h1>
+      <div className={styles.sessionHeader}>
+        <h1 className={styles.heading}>Practice complete</h1>
+        {lessonTitle && <span className={styles.sessionMeta}>{lessonTitle}</span>}
+      </div>
 
       <Card>
         <div className={styles.resultContent}>
-          <span className={styles.resultScore}>{feedback.score}/{feedback.total}</span>
-          <p className={styles.resultSummary}>{feedback.summary}</p>
+          <span className={styles.resultScore}>{summary.correctCount}/{summary.totalAttempts}</span>
+          <p className={styles.resultSummary}>
+            {summary.accuracyPercent}% accuracy · {summary.correctCount} correct, {summary.wrongCount} to review
+          </p>
         </div>
       </Card>
 
-      {feedback.mistakes.length > 0 && (
-        <section>
-          <h2 className={styles.heading} style={{ fontSize: 'var(--type-h2-size, 22px)' }}>
-            Review Mistakes
-          </h2>
-          {feedback.mistakes.map((mistake, i) => (
-            <Card key={i}>
+      {completion === 'saving' && <Banner variant="info">Saving your lesson progress…</Banner>}
+      {completion === 'saved' && <Banner variant="success">Lesson completed — the next lesson is unlocked.</Banner>}
+      {completion === 'failed' && (
+        <Banner variant="warning">
+          <div className={styles.bannerRow}>
+            <span>{completionError || "We couldn't mark this lesson as complete."}</span>
+            <Button size="sm" variant="secondary" onClick={onRetryCompletion}>Retry</Button>
+          </div>
+        </Banner>
+      )}
+
+      {summary.attempts.length > 0 && (
+        <section className={styles.reviewSection}>
+          <h2 className={styles.subheading}>Your answers</h2>
+          {summary.attempts.map((attempt, i) => (
+            <Card key={`${attempt.itemId}-${i}`}>
               <div className={styles.entryContent}>
-                <p style={{ fontWeight: 'var(--weight-semibold, 600)', margin: 0 }}>
-                  {mistake.questionText}
+                <p className={styles.reviewStem}>
+                  {i + 1}. {byId.get(attempt.itemId)?.stem ?? 'Question'}
                 </p>
-                <div className={`${styles.feedbackCard} ${styles.feedbackIncorrect}`}>
-                  <p className={styles.feedbackTitle}>Your answer: {mistake.yourAnswer}</p>
+                <div
+                  className={`${styles.feedbackCard} ${attempt.isCorrect ? styles.feedbackCorrect : styles.feedbackIncorrect}`}
+                >
+                  <p className={styles.feedbackTitle}>{attempt.isCorrect ? '✓ Correct' : '✗ Incorrect'}</p>
                   <p className={styles.feedbackExplanation}>
-                    Correct: {mistake.correctAnswer}
+                    Your answer: {answerText(attempt.itemId, attempt.answerValue) || '—'}
                   </p>
                 </div>
-                <p className={styles.description}>{mistake.explanation}</p>
               </div>
             </Card>
           ))}
         </section>
       )}
 
-      {feedback.nextActions.length > 0 && (
-        <section>
-          <h2 className={styles.heading} style={{ fontSize: 'var(--type-h2-size, 22px)' }}>
-            Next Steps
-          </h2>
-          {feedback.nextActions.map(action => (
-            <Card key={action.id}>
-              <Link
-                to={action.type === 'lesson' ? `/lessons/${action.id}` : `/practice/${action.id}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div className={styles.entryContent}>
-                  <span className={styles.sessionMeta}>
-                    <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-secondary-500, #8455E4)', fontWeight: 600, fontSize: '12px' }}>
-                      {action.type}
-                    </span>
-                  </span>
-                  <span style={{ fontWeight: 'var(--weight-medium, 500)' }}>{action.title}</span>
-                </div>
-              </Link>
-            </Card>
-          ))}
-        </section>
-      )}
-
-      <Link to="/dashboard">
-        <Button variant="primary" fullWidth>Back to Dashboard</Button>
-      </Link>
+      <div className={styles.actions}>
+        <Button variant="secondary" onClick={onPracticeAgain}>Practice again</Button>
+        <Link to={`/lessons/${lessonId}`} state={lessonState} className={styles.linkButton}>
+          Back to lesson
+        </Link>
+        <Link to={courseId ? `/curriculum/${courseId}` : '/curriculum'} className={styles.linkButtonPrimary}>
+          Continue course
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,53 +1,48 @@
 import { useState, useCallback } from 'react';
-import { apiClient } from '../../api/client';
-import type { ApiError } from '../../types';
+import { getErrorMessage } from '../../api/client';
+import { submitAttempt, type AttemptResponse } from './practiceApi';
 
-interface Feedback {
-  correct: boolean;
-  explanation: string;
-  correctAnswer?: string;
+export interface AttemptFeedback {
+  questionId: string;
+  answerValue: string;
+  /** Backend-evaluated; undefined when the backend didn't include feedback. */
+  isCorrect?: boolean;
 }
 
-interface PracticeResult {
-  score: number;
-  total: number;
-  summary: string;
-}
-
-interface SubmitResponse {
-  feedback?: Feedback;
-  result?: PracticeResult;
-}
-
+/**
+ * Submits one answer: POST /sessions/:sessionId/attempt?feedback=true
+ * { itemId, answerValue, startedAt, includeFeedback: true }. Correctness comes
+ * only from the backend response.
+ */
 export function usePracticeSubmit(sessionId: string) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [result, setResult] = useState<PracticeResult | null>(null);
+  const [feedback, setFeedback] = useState<AttemptFeedback | null>(null);
 
-  const submitAnswer = useCallback((questionId: string, answer: string) => {
-    setSubmitting(true);
-    setError('');
-    return apiClient.post<SubmitResponse>(`/practice/${sessionId}/answer`, {
-      questionId,
-      answer,
-    })
-      .then(res => {
-        if (res.result) setResult(res.result);
-        if (res.feedback) setFeedback(res.feedback);
-        return res;
-      })
-      .catch((err: ApiError) => {
-        setError(err.message || 'Failed to submit answer');
-        throw err;
-      })
-      .finally(() => setSubmitting(false));
-  }, [sessionId]);
+  const submitAnswer = useCallback(
+    (questionId: string, answerValue: string, shownAt: Date): Promise<AttemptResponse> => {
+      setSubmitting(true);
+      setError('');
+      // Like Flutter: nudge startedAt slightly into the past to avoid clock-drift issues.
+      const startedAt = new Date(Math.min(shownAt.getTime() - 2000, Date.now())).toISOString();
+      return submitAttempt(sessionId, { itemId: questionId, answerValue, startedAt })
+        .then(res => {
+          setFeedback({ questionId, answerValue, isCorrect: res.isCorrect });
+          return res;
+        })
+        .catch(err => {
+          setError(getErrorMessage(err, 'Failed to submit answer'));
+          throw err;
+        })
+        .finally(() => setSubmitting(false));
+    },
+    [sessionId],
+  );
 
   const clearFeedback = useCallback(() => {
     setFeedback(null);
     setError('');
   }, []);
 
-  return { submitAnswer, submitting, error, feedback, result, clearFeedback };
+  return { submitAnswer, submitting, error, feedback, clearFeedback };
 }

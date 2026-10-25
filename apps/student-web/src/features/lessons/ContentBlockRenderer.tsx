@@ -1,70 +1,99 @@
-import type { ContentBlock } from './LessonPlayerShell';
+import { AuthAudioPlayer } from './AuthAudioPlayer';
+import { fetchLessonAssetAudio, type LessonAsset } from './lessonsApi';
 import styles from './ContentBlock.module.css';
 
 interface ContentBlockRendererProps {
-  block: ContentBlock;
+  asset: LessonAsset;
+  stepNumber: number;
 }
 
-export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
-  switch (block.type) {
-    case 'text':
-      return (
-        <div className={styles.block}>
-          <p className={styles.textBlock}>{block.content}</p>
+const TYPE_LABEL: Record<string, string> = {
+  text: 'Reading',
+  image: 'Image',
+  audio: 'Listening',
+  video: 'Video',
+  document: 'Document',
+  vocabulary: 'Vocabulary',
+  exercise: 'Exercise',
+  external_reference: 'Reference',
+};
+
+const TYPE_ICON: Record<string, string> = {
+  text: '📝',
+  image: '🖼️',
+  audio: '🎧',
+  video: '▶️',
+  document: '📄',
+  vocabulary: '📖',
+  exercise: '✅',
+  external_reference: '🔗',
+};
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m} min${s ? ` ${s}s` : ''}` : `${s}s`;
+}
+
+function metaNumber(asset: LessonAsset, key: string): number | null {
+  const v = asset.metadata?.[key];
+  return typeof v === 'number' ? Math.round(v) : null;
+}
+
+/**
+ * Renders one published lesson asset (GET /curriculum/lesson-assets), mirroring
+ * Flutter's LessonContentRenderer: every value is backend-supplied verbatim.
+ */
+export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRendererProps) {
+  const meta: string[] = [TYPE_LABEL[asset.type] ?? asset.type];
+  if (asset.durationSeconds != null) meta.push(formatDuration(asset.durationSeconds));
+  const words = asset.type === 'vocabulary' ? metaNumber(asset, 'wordCount') : null;
+  if (words != null) meta.push(`${words} new words`);
+  const items = asset.type === 'exercise' ? metaNumber(asset, 'itemCount') : null;
+  if (items != null) meta.push(`${items} items`);
+
+  const script = asset.metadata?.script;
+  const hasScript = typeof script === 'string' && script.trim().length > 0;
+
+  return (
+    <article className={`${styles.block} ${styles.stepCard}`} aria-label={`Step ${stepNumber}: ${asset.title}`}>
+      <div className={styles.stepHeader}>
+        <span className={styles.stepIcon} aria-hidden="true">{TYPE_ICON[asset.type] ?? '📎'}</span>
+        <div className={styles.stepHeading}>
+          <span className={styles.stepMeta}>Step {stepNumber} · {meta.join(' · ')}</span>
+          <h3 className={styles.stepTitle}>{asset.title}</h3>
         </div>
-      );
+      </div>
 
-    case 'image':
-      return (
-        <div className={`${styles.block} ${styles.imageBlock}`}>
-          <img
-            src={block.content}
-            alt={block.metadata?.alt || ''}
-            className={styles.image}
-            loading="lazy"
-          />
-          {block.metadata?.caption && (
-            <span className={styles.caption}>{block.metadata.caption}</span>
-          )}
-        </div>
-      );
+      {asset.description && <p className={styles.textBlock}>{asset.description}</p>}
 
-    case 'video':
-      return (
-        <div className={`${styles.block} ${styles.videoBlock}`}>
-          <iframe
-            src={block.content}
-            title={block.metadata?.title || 'Video'}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      );
+      {asset.type === 'image' && (
+        asset.url ? (
+          <div className={styles.imageBlock}>
+            <img src={asset.url} alt={asset.altText ?? asset.title} className={styles.image} loading="lazy" />
+          </div>
+        ) : (
+          <p className={styles.caption}>Image unavailable for “{asset.title}”.</p>
+        )
+      )}
 
-    case 'code':
-      return (
-        <div className={styles.block}>
-          {block.metadata?.language && (
-            <div className={styles.codeLang}>{block.metadata.language}</div>
-          )}
-          <pre className={styles.codeBlock}>
-            <code>{block.content}</code>
-          </pre>
-        </div>
-      );
+      {asset.type === 'audio' && hasScript && (
+        <AuthAudioPlayer load={() => fetchLessonAssetAudio(asset.id)} label="Listen" />
+      )}
+      {asset.type === 'audio' && !hasScript && asset.url && (
+        <audio controls src={asset.url} className={styles.audio} preload="none" />
+      )}
 
-    case 'callout':
-      return (
-        <div className={`${styles.block} ${styles.calloutBlock}`}>
-          <span className={styles.calloutIcon} aria-hidden="true">💡</span>
-          <span>{block.content}</span>
-        </div>
-      );
+      {asset.type === 'video' && asset.url && asset.mimeType?.startsWith('video/') && (
+        <video controls src={asset.url} poster={asset.thumbnailUrl ?? undefined} className={styles.video} preload="metadata" />
+      )}
 
-    case 'divider':
-      return <hr className={styles.divider} />;
-
-    default:
-      return null;
-  }
+      {asset.url && asset.type !== 'image' && asset.type !== 'audio' &&
+        !(asset.type === 'video' && asset.mimeType?.startsWith('video/')) && (
+          <a href={asset.url} target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+            Open {TYPE_LABEL[asset.type]?.toLowerCase() ?? 'resource'} ↗
+          </a>
+      )}
+    </article>
+  );
 }

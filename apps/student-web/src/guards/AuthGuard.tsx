@@ -8,7 +8,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, sessionExpired } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -16,7 +16,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ returnTo: location.pathname }} replace />;
+    return (
+      <Navigate
+        to={sessionExpired ? '/session-expired' : '/login'}
+        state={{ returnTo: location.pathname }}
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

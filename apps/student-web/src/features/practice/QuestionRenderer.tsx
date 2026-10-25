@@ -1,54 +1,59 @@
+import { AuthAudioPlayer } from '../lessons/AuthAudioPlayer';
+import { fetchQuestionAudio, type SessionQuestion } from './practiceApi';
 import styles from './QuestionRenderer.module.css';
 
-interface Choice {
-  id: string;
-  text: string;
-}
-
-interface Question {
-  id: string;
-  type: 'multiple_choice' | 'true_false' | 'fill_blank' | 'short_answer';
-  text: string;
-  choices?: Choice[];
-}
-
 interface QuestionRendererProps {
-  question: Question;
+  question: SessionQuestion;
+  /** Selected option id (option-based questions) or the typed answer. */
   selectedAnswer: string;
   onAnswerChange: (answer: string) => void;
   disabled: boolean;
 }
 
+/**
+ * Renders a backend-delivered session question (GET /sessions/:id/questions).
+ * Option-based questions submit the option id verbatim (as Flutter does);
+ * the backend evaluates correctness — nothing is scored here.
+ */
 export function QuestionRenderer({ question, selectedAnswer, onAnswerChange, disabled }: QuestionRendererProps) {
-  return (
-    <div>
-      <p className={styles.questionText}>{question.text}</p>
+  const options = [...question.options].sort((a, b) => a.order - b.order);
+  const isOptionBased = options.length > 0;
+  const isListening = question.type === 'listening_choice';
+  const isLongText = !isOptionBased && question.type === 'free_text';
 
-      {(question.type === 'multiple_choice' || question.type === 'true_false') && question.choices && (
+  return (
+    <div className={styles.question}>
+      <p className={styles.questionText}>{question.stem}</p>
+
+      {isListening && (
+        <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label="Play recording" />
+      )}
+
+      {isOptionBased && (
         <fieldset className={styles.options}>
           <legend className={styles.srOnly}>Select your answer</legend>
-          {question.choices.map(choice => (
+          {options.map(option => (
             <label
-              key={choice.id}
-              className={`${styles.option} ${selectedAnswer === choice.id ? styles.optionSelected : ''} ${disabled ? styles.optionDisabled : ''}`}
+              key={option.id}
+              className={`${styles.option} ${selectedAnswer === option.id ? styles.optionSelected : ''} ${disabled ? styles.optionDisabled : ''}`}
             >
               <input
                 type="radio"
                 name={`question-${question.id}`}
-                value={choice.id}
-                checked={selectedAnswer === choice.id}
-                onChange={() => onAnswerChange(choice.id)}
+                value={option.id}
+                checked={selectedAnswer === option.id}
+                onChange={() => onAnswerChange(option.id)}
                 disabled={disabled}
                 className={styles.srOnly}
               />
               <span className={styles.optionRadio} aria-hidden="true" />
-              <span>{choice.text}</span>
+              <span>{option.text}</span>
             </label>
           ))}
         </fieldset>
       )}
 
-      {question.type === 'fill_blank' && (
+      {!isOptionBased && !isLongText && (
         <input
           type="text"
           className={styles.textInput}
@@ -57,10 +62,11 @@ export function QuestionRenderer({ question, selectedAnswer, onAnswerChange, dis
           disabled={disabled}
           placeholder="Type your answer…"
           aria-label="Your answer"
+          autoComplete="off"
         />
       )}
 
-      {question.type === 'short_answer' && (
+      {isLongText && (
         <textarea
           className={styles.textInput}
           value={selectedAnswer}

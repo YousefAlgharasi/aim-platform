@@ -98,3 +98,42 @@
   color: var(--color-neutral-500, #7E849A);
   white-space: nowrap;
 }
+
+.headerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 4px);
+}
+
+.subheading {
+  font-size: 15px;
+  color: var(--color-neutral-500, #7E849A);
+  margin: 0;
+}
+
+.bannerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12, 12px);
+  flex-wrap: wrap;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--component-gap, 16px);
+}
+
+@media (min-width: 768px) {
+  .twoCol {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.autoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--component-gap, 16px);
+  align-items: start;
+}

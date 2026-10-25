@@ -82,3 +82,25 @@
   background: var(--color-secondary-50, #F5F1FE);
   border-radius: var(--radius-sm);
 }
+
+.backLink {
+  font-size: 14px;
+  color: var(--color-primary-500);
+  text-decoration: none;
+  font-weight: var(--weight-medium, 500);
+  align-self: flex-start;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.tierBadge {
+  font-size: 12px;
+  font-weight: var(--weight-semibold, 600);
+  color: var(--color-accent-700, #0E7A6E);
+  background: var(--color-accent-50, #E6F7F5);
+  padding: var(--space-2, 2px) var(--space-8, 8px);
+  border-radius: var(--radius-pill, 999px);
+  white-space: nowrap;
+}

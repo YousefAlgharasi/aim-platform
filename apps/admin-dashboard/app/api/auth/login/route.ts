@@ -68,11 +68,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const isHttps =
+    request.headers.get('x-forwarded-proto') === 'https' ||
+    request.nextUrl.protocol === 'https:';
+
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_AUTH_TOKEN_COOKIE, accessToken, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttps,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24,
   });

@@ -93,3 +93,9 @@
   background: var(--color-neutral-50, #F7F8FA);
   opacity: 0.7;
 }
+
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}

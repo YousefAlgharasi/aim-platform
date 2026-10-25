@@ -296,3 +296,170 @@
   font-weight: var(--weight-semibold, 600);
   color: var(--color-neutral-800, #1F2937);
 }
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12, 12px);
+  flex-wrap: wrap;
+}
+
+.headerLink,
+.backLink {
+  font-size: 14px;
+  font-weight: var(--weight-medium, 500);
+  color: var(--color-primary-500);
+  text-decoration: none;
+}
+
+.headerLink:hover,
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8, 8px);
+  flex-wrap: wrap;
+  margin-block-end: var(--space-8, 8px);
+}
+
+.statusMissed {
+  background: var(--color-danger-100, #FEE2E2);
+  color: var(--color-danger-700, #B91C1C);
+}
+
+.attemptProgress {
+  font-size: 14px;
+  font-weight: var(--weight-medium, 500);
+  color: var(--color-neutral-600, #5C6178);
+}
+
+.questionLabel {
+  font-size: 11px;
+  font-weight: var(--weight-bold, 700);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary-500);
+}
+
+.questionPrompt {
+  font-size: var(--type-h3-size, 20px);
+  font-weight: var(--weight-semibold, 600);
+  margin: 0;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.options {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8, 8px);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12, 12px);
+  padding: var(--space-12, 12px) var(--space-16);
+  border: 2px solid var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 16px;
+}
+
+.option:hover {
+  border-color: var(--color-neutral-300, #CDD2DD);
+  background: var(--color-neutral-50, #F7F8FA);
+}
+
+.optionSelected {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #EDF1FF);
+}
+
+.optionKey {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: var(--weight-bold, 700);
+  background: var(--color-neutral-100, #F1F2F6);
+  color: var(--color-neutral-600, #5C6178);
+}
+
+.optionSelected .optionKey {
+  background: var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.textAnswer {
+  display: block;
+}
+
+.textArea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-12, 12px);
+  border: 2px solid var(--color-neutral-200, #E2E5EC);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+  background: var(--color-surface, #FFFFFF);
+  color: inherit;
+}
+
+.textArea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+
+.saveStatus {
+  min-height: 1.2em;
+  font-size: 13px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-danger-500, #EF4444);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12, 12px);
+}
+
+.buttonStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8, 8px);
+}

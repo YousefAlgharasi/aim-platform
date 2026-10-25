@@ -1,49 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { apiClient } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
-import type { ApiError } from '../../types';
+import { fetchAttemptResult, type AttemptResult } from './assessmentsApi';
 import styles from './Assessment.module.css';
-
-interface BreakdownItem {
-  assessmentQuestionLinkId: string;
-  sectionId: string | null;
-  pointsAwarded: number;
-  pointsPossible: number;
-  isCorrect?: boolean;
-}
-
-interface AssessmentResult {
-  resultId: string;
-  attemptId: string;
-  score: number;
-  maxScore: number;
-  passed: boolean;
-  latePenaltyApplied: boolean;
-  gradedAt: string;
-  feedbackAllowed: boolean;
-  breakdown: BreakdownItem[];
-}
 
 export function AssessmentResultPage() {
   const { assessmentId, attemptId } = useParams<{ assessmentId: string; attemptId: string }>();
-  const [result, setResult] = useState<AssessmentResult | null>(null);
+  const [result, setResult] = useState<AttemptResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  function fetchResult() {
+  const fetchResult = useCallback(() => {
     setLoading(true);
     setError('');
-    apiClient.get<AssessmentResult>(`/student/assessments/attempts/${attemptId}/result`)
+    fetchAttemptResult(attemptId ?? '')
       .then(setResult)
-      .catch((err: ApiError) => setError(err.message || 'Failed to load result'))
+      .catch((err) => setError(getErrorMessage(err, 'Failed to load result')))
       .finally(() => setLoading(false));
-  }
+  }, [attemptId]);
 
-  useEffect(() => { fetchResult(); }, [assessmentId, attemptId]);
+  useEffect(() => { fetchResult(); }, [fetchResult]);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorState message={error} onRetry={fetchResult} />;
@@ -57,9 +37,12 @@ export function AssessmentResultPage() {
         <div className={styles.resultContent}>
           <span className={styles.resultLabel}>Score</span>
           <span className={styles.resultScore}>{result.score}/{result.maxScore}</span>
-          <span className={styles.resultLabel}>{Math.round((result.score / result.maxScore) * 100)}%</span>
+          <span className={styles.deadlineText}>Graded {new Date(result.gradedAt).toLocaleString()}</span>
+          {result.maxScore > 0 && (
+            <span className={styles.resultLabel}>{Math.round((result.score / result.maxScore) * 100)}%</span>
+          )}
           <span className={`${styles.resultGrade} ${result.passed ? styles.gradePassed : styles.gradeFailed}`}>
-            {result.passed ? 'Passed' : 'Failed'}
+            {result.passed ? 'Passed' : 'Not passed'}
           </span>
           {result.latePenaltyApplied && (
             <p className={styles.resultSummary}>A late penalty was applied to this attempt.</p>
@@ -72,10 +55,11 @@ export function AssessmentResultPage() {
           <div>
             <h2 className={styles.subtitle}>Score Breakdown</h2>
             <div className={styles.breakdownList}>
-              {result.breakdown.map((item) => (
-                <div key={item.assessmentQuestionLinkId} className={styles.breakdownItem}>
+              {result.breakdown.map((item, index) => (
+                <div key={item.assessmentQuestionLinkId ?? index} className={styles.breakdownItem}>
                   <span className={styles.breakdownLabel}>
-                    {item.isCorrect === undefined ? '' : item.isCorrect ? 'Correct' : 'Incorrect'}
+                    Question {index + 1}
+                    {item.isCorrect === undefined || item.isCorrect === null ? '' : item.isCorrect ? ' · Correct' : ' · Incorrect'}
                   </span>
                   <span className={styles.breakdownValue}>{item.pointsAwarded}/{item.pointsPossible}</span>
                 </div>
@@ -85,7 +69,7 @@ export function AssessmentResultPage() {
         </Card>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+      <div className={styles.buttonStack}>
         <Link to={`/assessments/${assessmentId}`}>
           <Button variant="secondary" fullWidth>Back to Assessment</Button>
         </Link>

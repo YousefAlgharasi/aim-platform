@@ -221,3 +221,127 @@
 .serviceDegraded {
   color: var(--color-warning-500, #F59E0B);
 }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+button.helpCard {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  align-items: center;
+}
+
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardLink:hover .ticketTitle {
+  color: var(--color-primary-500);
+}
+
+.ticketMeta {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-16);
+}
+
+@media (min-width: 640px) {
+  .formRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.ratingRow {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.ratingStar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  padding: var(--space-4);
+  color: var(--color-neutral-300, #CDD2DD);
+}
+
+.ratingStarActive {
+  color: var(--color-warning-500, #F59E0B);
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.statusItem {
+  gap: var(--space-12);
+}
+
+.backLink {
+  font-size: 14px;
+  color: var(--color-primary-500);
+  text-decoration: none;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-12);
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  color: var(--color-neutral-500, #7E849A);
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: var(--weight-medium, 500);
+}
+
+.commentList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comment {
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-50, #F7F8FA);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
