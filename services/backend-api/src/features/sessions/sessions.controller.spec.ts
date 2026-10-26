@@ -328,6 +328,21 @@ describe('SessionsController.submitAttempt (P5-067)', () => {
     expect(result.aimOutcome).toBe('deferred');
   });
 
+  it('does not hold the response hostage to a slow AIM pipeline', async () => {
+    jest.useFakeTimers();
+    try {
+      const slowOrc = { trigger: jest.fn().mockReturnValue(new Promise(() => undefined)) };
+      const { ctrl } = makeCtrl({ orchestrator: slowOrc as never });
+      const pending = ctrl.submitAttempt(JWT_USER, SESSION_ID, BODY, '');
+      await jest.advanceTimersByTimeAsync(3500);
+      const result = await pending;
+      expect(result.aimOutcome).toBe('deferred');
+      expect(result.attemptId).toBeDefined();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('resolves item fields backend-side and passes them to recordAttempt', async () => {
     const { ctrl, las, sqs } = makeCtrl();
     await ctrl.submitAttempt(JWT_USER, SESSION_ID, BODY, '');
