@@ -15,6 +15,7 @@ import {
   submitAssessmentAttempt,
   type AttemptQuestion,
 } from './assessmentsApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
 import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
 
@@ -37,6 +38,7 @@ function formatRemaining(total: number) {
  * POST .../answers (upsert); POST .../submit grades on the backend.
  */
 export function AttemptScreen() {
+  const { t, formatNumber } = useI18n();
   const { assessmentId = '', attemptId = '' } = useParams<{ assessmentId: string; attemptId: string }>();
   const navigate = useNavigate();
 
@@ -71,11 +73,11 @@ export function AttemptScreen() {
       setCurrent(0);
     } catch (err) {
       if (isErrorCode(err, 'ATTEMPT_NOT_RESUMABLE')) setNotResumable(true);
-      else setError(assessmentErrorMessage(err, 'Failed to load this attempt'));
+      else setError(assessmentErrorMessage(err, t('Failed to load this attempt')));
     } finally {
       setLoading(false);
     }
-  }, [attemptId]);
+  }, [attemptId, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -101,14 +103,14 @@ export function AttemptScreen() {
       })
       .catch((err) => {
         setSaveState((s) => ({ ...s, [linkId]: 'error' }));
-        setSaveError(assessmentErrorMessage(err, 'Your answer could not be saved. Please try again.'));
+        setSaveError(assessmentErrorMessage(err, t('Your answer could not be saved. Please try again.')));
         return false;
       })
       .finally(() => {
         if (pending.current.get(linkId) === p) pending.current.delete(linkId);
       });
     pending.current.set(linkId, p);
-  }, [attemptId]);
+  }, [attemptId, t]);
 
   function selectOption(linkId: string, optionId: string) {
     setAnswers((a) => ({ ...a, [linkId]: optionId }));
@@ -144,7 +146,7 @@ export function AttemptScreen() {
     setSubmitError('');
     try {
       if (!(await flushPending())) {
-        setSubmitError('Some answers could not be saved. Retry saving them before submitting.');
+        setSubmitError(t('Some answers could not be saved. Retry saving them before submitting.'));
         setSubmitting(false);
         return;
       }
@@ -155,7 +157,7 @@ export function AttemptScreen() {
         navigate(`/assessments/${assessmentId}/result/${attemptId}`, { replace: true });
         return;
       }
-      setSubmitError(assessmentErrorMessage(err, 'Failed to submit your attempt'));
+      setSubmitError(assessmentErrorMessage(err, t('Failed to submit your attempt')));
       setSubmitting(false);
     }
   }
@@ -165,12 +167,12 @@ export function AttemptScreen() {
     return (
       <div className={SHELL}>
         <EmptyState
-          title="This attempt is closed"
-          message="It has already been submitted or can no longer be continued."
-          actionLabel="View result"
+          title={t('This attempt is closed')}
+          message={t('It has already been submitted or can no longer be continued.')}
+          actionLabel={t('View result')}
           onAction={() => navigate(`/assessments/${assessmentId}/result/${attemptId}`)}
         />
-        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">Back to assessment</Link>
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">{t('Back to assessment')}</Link>
       </div>
     );
   }
@@ -178,8 +180,8 @@ export function AttemptScreen() {
   if (!questions || questions.length === 0) {
     return (
       <div className={SHELL}>
-        <EmptyState title="No questions yet" message="This assessment doesn't have any questions yet." />
-        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">Back to assessment</Link>
+        <EmptyState title={t('No questions yet')} message={t("This assessment doesn't have any questions yet.")} />
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">{t('Back to assessment')}</Link>
       </div>
     );
   }
@@ -197,17 +199,17 @@ export function AttemptScreen() {
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Question {current + 1} of {questions.length} · {answeredCount} answered
+            {t('Question {current} of {total} · {answered} answered', { current: formatNumber(current + 1), total: formatNumber(questions.length), answered: formatNumber(answeredCount) })}
           </span>
           {remaining !== null && <TimerPill warning={remaining <= 60}>{formatRemaining(remaining)}</TimerPill>}
         </div>
-        <ProgressBar value={answeredCount} total={questions.length} label="Answered questions" />
+        <ProgressBar value={answeredCount} total={questions.length} label={t('Answered questions')} />
       </div>
 
-      {timeUp && <Banner variant="warning">Time is up. Submit your attempt now.</Banner>}
+      {timeUp && <Banner variant="warning">{t('Time is up. Submit your attempt now.')}</Banner>}
       {saveError && <Banner variant="error">{saveError}</Banner>}
 
-      <nav className="flex flex-wrap gap-1.5" aria-label="Questions">
+      <nav className="flex flex-wrap gap-1.5" aria-label={t('Questions')}>
         {questions.map((q, i) => {
           const answered = !!(answers[q.assessmentQuestionLinkId] ?? '').trim();
           const isCurrent = i === current;
@@ -224,16 +226,16 @@ export function AttemptScreen() {
               }`}
               onClick={() => setCurrent(i)}
               aria-current={isCurrent ? 'step' : undefined}
-              aria-label={`Question ${i + 1}${answered ? ', answered' : ''}`}
+              aria-label={answered ? t('Question {n}, answered', { n: i + 1 }) : t('Question {n}', { n: i + 1 })}
             >
-              {i + 1}
+              {formatNumber(i + 1)}
             </button>
           );
         })}
       </nav>
 
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
-        <span className={EYEBROW}>Question {current + 1}</span>
+        <span className={EYEBROW}>{t('Question {n}', { n: formatNumber(current + 1) })}</span>
         <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-[#0F172A] dark:text-white">{question.prompt}</h2>
 
         {question.type === 'listening_choice' && (
@@ -242,22 +244,22 @@ export function AttemptScreen() {
 
         {question.options.length === 0 && (
           <label className="block">
-            <span className="sr-only">Your answer</span>
+            <span className="sr-only">{t('Your answer')}</span>
             <textarea
               className={TEXTAREA}
               rows={3}
               value={answers[linkId] ?? ''}
               onChange={(e) => changeText(linkId, e.target.value)}
               disabled={submitting}
-              placeholder="Type your answer…"
+              placeholder={t('Type your answer…')}
             />
           </label>
         )}
 
         <span className="min-h-4 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
-          {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (
+          {state === 'saving' ? t('Saving…') : state === 'saved' ? t('Saved') : state === 'error' ? (
             <button type="button" className={LINK_BTN} onClick={() => saveAnswer(linkId, answers[linkId] ?? '')}>
-              Not saved — retry
+              {t('Not saved — retry')}
             </button>
           ) : ''}
         </span>
@@ -265,7 +267,7 @@ export function AttemptScreen() {
 
       {question.options.length > 0 && (
         <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-2.5" disabled={submitting}>
-          <legend className="sr-only">Select your answer</legend>
+          <legend className="sr-only">{t('Select your answer')}</legend>
           {question.options.map((option) => (
             <ChoiceRow
               key={option.id}
@@ -283,30 +285,30 @@ export function AttemptScreen() {
 
       <div className="flex gap-3">
         <Button variant="secondary" size="lg" className="flex-1" onClick={() => setCurrent((c) => c - 1)} disabled={current === 0}>
-          Previous
+          {t('Previous')}
         </Button>
         {current < questions.length - 1 ? (
-          <Button size="lg" className="flex-[2]" onClick={() => setCurrent((c) => c + 1)}>Next</Button>
+          <Button size="lg" className="flex-[2]" onClick={() => setCurrent((c) => c + 1)}>{t('Next')}</Button>
         ) : (
-          <Button size="lg" className="flex-[2]" onClick={() => setConfirmOpen(true)} disabled={submitting}>Review &amp; submit</Button>
+          <Button size="lg" className="flex-[2]" onClick={() => setConfirmOpen(true)} disabled={submitting}>{t('Review & submit')}</Button>
         )}
       </div>
 
       <Button variant="ghost" onClick={() => setConfirmOpen(true)} disabled={submitting} fullWidth>
-        Submit attempt
+        {t('Submit attempt')}
       </Button>
 
-      <Modal open={confirmOpen} onClose={() => !submitting && setConfirmOpen(false)} title="Submit attempt?">
+      <Modal open={confirmOpen} onClose={() => !submitting && setConfirmOpen(false)} title={t('Submit attempt?')}>
         <div className="flex flex-col gap-3">
           <p className={BODY}>
-            You answered {answeredCount} of {questions.length} questions. After submitting you can't change your answers.
+            {t("You answered {answered} of {total} questions. After submitting you can't change your answers.", { answered: formatNumber(answeredCount), total: formatNumber(questions.length) })}
           </p>
           {submitError && <Banner variant="error">{submitError}</Banner>}
           <Button onClick={handleSubmit} disabled={submitting} fullWidth>
-            {submitting ? 'Submitting…' : anySaving ? 'Saving answers…' : 'Submit'}
+            {submitting ? t('Submitting…') : anySaving ? t('Saving answers…') : t('Submit')}
           </Button>
           <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={submitting} fullWidth>
-            Keep working
+            {t('Keep working')}
           </Button>
         </div>
       </Modal>

@@ -1,6 +1,7 @@
 import { apiClient } from '../../api/client';
 import { config } from '../../config';
 import type { ApiError } from '../../types';
+import { t, formatDate } from '../../i18n';
 
 // Contracts mirror services/backend-api/src/features/ai-teacher/** and the
 // Flutter models in apps/mobile/lib/features/ai_teacher/data/models.
@@ -97,7 +98,7 @@ export function prettifyContextRef(contextRef: string): string {
 
 export function sessionLabel(session: Pick<ChatSessionListItem, 'contextRef' | 'contextTitle'>): string {
   if (session.contextTitle) return session.contextTitle;
-  if (session.contextRef === GENERAL_CONTEXT_REF) return 'General conversation';
+  if (session.contextRef === GENERAL_CONTEXT_REF) return t('General conversation');
   return prettifyContextRef(session.contextRef);
 }
 
@@ -106,14 +107,14 @@ export function relativeTime(iso: string): string {
   if (Number.isNaN(date.getTime())) return iso;
   const diffMs = Date.now() - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t('Just now');
+  if (minutes < 60) return t('{n}m ago', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('{n}h ago', { n: hours });
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (days === 1) return t('Yesterday');
+  if (days < 7) return t('{n}d ago', { n: days });
+  return formatDate(date, { month: 'short', day: 'numeric' });
 }
 
 export const aiTeacherApi = {
@@ -181,7 +182,7 @@ function unwrapEvent(payload: unknown): { type?: unknown; [k: string]: unknown }
     if (typeof obj.type === 'string') return obj;
     if (obj.success === false) {
       const err = obj.error as Partial<ApiError> | undefined;
-      throw streamError(err?.message || 'AI Teacher could not reply right now.', err?.statusCode ?? 0, err?.code);
+      throw streamError(err?.message || t('AI Teacher could not reply right now.'), err?.statusCode ?? 0, err?.code);
     }
     current = obj.data;
   }
@@ -218,7 +219,7 @@ export async function streamMessage(
     });
   } catch (err) {
     if ((err as { name?: string } | null)?.name === 'AbortError') throw err;
-    throw streamError("Can't reach the server. Check your connection and try again.", 0, 'NETWORK_ERROR');
+    throw streamError(t("Can't reach the server. Check your connection and try again."), 0, 'NETWORK_ERROR');
   }
 
   if (response.status === 401) throw new StreamUnauthorizedError();
@@ -227,7 +228,7 @@ export async function streamMessage(
     const body = await response.json().catch(() => null);
     const err = (body as { error?: Partial<ApiError> } | null)?.error;
     throw streamError(
-      err?.message || 'AI Teacher could not reply right now.',
+      err?.message || t('AI Teacher could not reply right now.'),
       err?.statusCode ?? response.status,
       err?.code ?? `HTTP_${response.status}`,
     );
@@ -238,10 +239,10 @@ export async function streamMessage(
     // Not a stream (e.g. an error envelope returned with a 2xx).
     const body = await response.json().catch(() => null);
     unwrapEvent(body);
-    throw streamError('AI Teacher could not reply right now.');
+    throw streamError(t('AI Teacher could not reply right now.'));
   }
 
-  if (!response.body) throw streamError('Streaming is not supported in this browser.', 0, 'STREAM_UNSUPPORTED');
+  if (!response.body) throw streamError(t('Streaming is not supported in this browser.'), 0, 'STREAM_UNSUPPORTED');
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -257,7 +258,7 @@ export async function streamMessage(
     });
     const data = dataLines.join('\n').trim();
     if (eventName === 'error') {
-      throw streamError(data || 'AI Teacher could not reply right now.', 0, 'STREAM_ERROR');
+      throw streamError(data || t('AI Teacher could not reply right now.'), 0, 'STREAM_ERROR');
     }
     if (!data) return;
     let parsed: unknown;

@@ -2,10 +2,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LogOutIcon, SparkleIcon } from '../components/common/Icons';
 import { navItems } from './navItems';
+import { useI18n } from '../i18n/I18nContext';
 
 /** Navigation list + user card. Rendered in the desktop sidebar and inside the mobile drawer. */
 export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -36,7 +38,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         </div>
 
-        <nav className="flex flex-col gap-0.5" aria-label="Main navigation">
+        <nav className="flex flex-col gap-0.5" aria-label={t('Main navigation')}>
           {navItems.map(({ to, label, icon }) => (
             <NavLink
               key={to}
@@ -52,7 +54,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               }
             >
               <span className="shrink-0">{icon}</span>
-              <span>{label}</span>
+              <span>{t(label)}</span>
             </NavLink>
           ))}
         </nav>
@@ -64,16 +66,17 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-xs font-bold text-red-500 bg-transparent border border-red-100 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer transition-colors"
       >
         <LogOutIcon className="size-4" />
-        Log out
+        {t('Log out')}
       </button>
     </div>
   );
 }
 
 export function Sidebar() {
+  const { t } = useI18n();
   return (
     <aside
-      aria-label="Sidebar"
+      aria-label={t('Sidebar')}
       className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-white dark:bg-slate-900 border-e border-slate-100 dark:border-slate-800"
     >
       <SidebarContent />

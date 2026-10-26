@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
@@ -16,9 +17,9 @@ import {
   cancelSubscription,
   formatMoney,
   includedFeatureLabels,
-  humanizeKey,
+  keyLabel,
   isLiveSubscription,
-  INTERVAL_LABELS,
+  intervalLabel,
   type BillingPlan,
   type BillingPrice,
   type BillingEntitlement,
@@ -36,12 +37,10 @@ interface BillingData {
   invoices: Invoice[];
 }
 
-function fmtDate(value: string | null | undefined): string {
-  return value ? new Date(value).toLocaleDateString() : '—';
-}
-
 export function BillingPage() {
   const navigate = useNavigate();
+  const { t, formatDate } = useI18n();
+  const fmtDate = (value: string | null | undefined): string => (value ? formatDate(value) : '—');
   const [data, setData] = useState<BillingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,7 +68,7 @@ export function BillingPage() {
           invoices: invoices ?? [],
         });
       })
-      .catch(err => setError(getErrorMessage(err, 'Failed to load billing')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load billing'))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -87,12 +86,12 @@ export function BillingPage() {
       }));
       setNotice(
         updated.currentPeriodEnd
-          ? `Your subscription will end on ${fmtDate(updated.currentPeriodEnd)}.`
-          : 'Your subscription has been cancelled.',
+          ? t('Your subscription will end on {date}.', { date: fmtDate(updated.currentPeriodEnd) })
+          : t('Your subscription has been cancelled.'),
       );
       setCancelTarget(null);
     } catch (err) {
-      setCancelError(getErrorMessage(err, 'Could not cancel subscription'));
+      setCancelError(getErrorMessage(err, t('Could not cancel subscription')));
     } finally {
       setCancelling(false);
     }
@@ -105,7 +104,7 @@ export function BillingPage() {
     setInvoiceLoading(true);
     fetchInvoice(inv.id)
       .then(setInvoiceDetail)
-      .catch(err => setInvoiceError(getErrorMessage(err, 'Failed to load invoice')))
+      .catch(err => setInvoiceError(getErrorMessage(err, t('Failed to load invoice'))))
       .finally(() => setInvoiceLoading(false));
   }
 
@@ -121,15 +120,15 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader eyebrow="Account" title="Billing" subtitle="Your plan, usage and invoices." />
+      <PageHeader eyebrow={t('Account')} title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>Current subscription</h2>
+        <h2 className={h2Cls}>{t('Current subscription')}</h2>
         {liveSubscriptions.length === 0 ? (
           <Card>
-            <p className={subCls}>You don't have an active subscription. Choose a plan below to get started.</p>
+            <p className={subCls}>{t("You don't have an active subscription. Choose a plan below to get started.")}</p>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
@@ -142,38 +141,38 @@ export function BillingPage() {
                   className="rounded-2xl p-5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md flex flex-col gap-3"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? 'Subscription'}</h3>
+                    <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
                     <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20">
-                      {humanizeKey(sub.status)}
+                      {keyLabel(sub.status)}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1.5 text-sm">
                     {price && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">Price</span>
+                        <span className="text-indigo-100">{t('Price')}</span>
                         <span className="font-bold">
-                          {formatMoney(price.amount, price.currency)} / {INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}
+                          {t('{price} / {interval}', { price: formatMoney(price.amount, price.currency), interval: intervalLabel(price.billingInterval) })}
                         </span>
                       </div>
                     )}
                     {sub.trialEnd && sub.status === 'trialing' && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">Trial ends</span>
+                        <span className="text-indigo-100">{t('Trial ends')}</span>
                         <span className="font-bold">{fmtDate(sub.trialEnd)}</span>
                       </div>
                     )}
                     {sub.currentPeriodEnd && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">{sub.cancelAtPeriodEnd ? 'Ends' : 'Renews'}</span>
+                        <span className="text-indigo-100">{sub.cancelAtPeriodEnd ? t('Ends') : t('Renews')}</span>
                         <span className="font-bold">{fmtDate(sub.currentPeriodEnd)}</span>
                       </div>
                     )}
                   </div>
                   {sub.status === 'past_due' && (
-                    <Banner variant="warning">Your last payment failed. Please update your payment method with our payment provider.</Banner>
+                    <Banner variant="warning">{t('Your last payment failed. Please update your payment method with our payment provider.')}</Banner>
                   )}
                   {sub.cancelAtPeriodEnd ? (
-                    <p className="text-sm text-indigo-100 m-0">Cancellation requested — you keep access until the end of the current period.</p>
+                    <p className="text-sm text-indigo-100 m-0">{t('Cancellation requested — you keep access until the end of the current period.')}</p>
                   ) : (
                     <div>
                       <Button
@@ -182,7 +181,7 @@ export function BillingPage() {
                         className="!bg-white/15 !text-white hover:!bg-white/25"
                         onClick={() => { setCancelError(''); setCancelTarget(sub); }}
                       >
-                        Cancel subscription
+                        {t('Cancel subscription')}
                       </Button>
                     </div>
                   )}
@@ -195,7 +194,7 @@ export function BillingPage() {
 
       {activeEntitlements.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className={h2Cls}>What's included</h2>
+          <h2 className={h2Cls}>{t("What's included")}</h2>
           <Card>
             <ul className="list-none m-0 p-0 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {activeEntitlements.map(e => (
@@ -206,7 +205,7 @@ export function BillingPage() {
                   >
                     {e.granted ? '✓' : '✕'}
                   </span>
-                  <span className="flex-1 min-w-0">{humanizeKey(e.featureKey)}</span>
+                  <span className="flex-1 min-w-0">{keyLabel(e.featureKey)}</span>
                   {e.usageLimit !== null && (
                     <span className="text-xs font-semibold text-slate-400">{e.usageCount} / {e.usageLimit}</span>
                   )}
@@ -218,9 +217,9 @@ export function BillingPage() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>Plans</h2>
+        <h2 className={h2Cls}>{t('Plans')}</h2>
         {data.plans.length === 0 ? (
-          <EmptyState title="No plans available" message="There are no plans available for purchase right now." />
+          <EmptyState title={t('No plans available')} message={t('There are no plans available for purchase right now.')} />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.plans.map(plan => {
@@ -236,17 +235,17 @@ export function BillingPage() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{plan.name}</h3>
-                    {isCurrent && <span className={pillCls}>Current</span>}
+                    {isCurrent && <span className={pillCls}>{t('Current')}</span>}
                   </div>
                   {price ? (
                     <div className="flex items-baseline gap-1">
                       <span className="text-3xl font-extrabold tracking-tight text-[#4F46E5] dark:text-indigo-400">{formatMoney(price.amount, price.currency)}</span>
                       <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {price.billingInterval === 'one_time' ? ' one-time' : `/${INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval}`}
+                        {price.billingInterval === 'one_time' ? ` ${intervalLabel('one_time')}` : `/${intervalLabel(price.billingInterval)}`}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm text-slate-500 dark:text-slate-400">Price unavailable</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">{t('Price unavailable')}</span>
                   )}
                   {plan.description && <p className={subCls}>{plan.description}</p>}
                   {features.length > 0 && (
@@ -268,7 +267,7 @@ export function BillingPage() {
                       disabled={!price}
                       onClick={() => navigate(`/billing/checkout/${plan.id}`)}
                     >
-                      Choose plan
+                      {t('Choose plan')}
                     </Button>
                   )}
                 </div>
@@ -279,9 +278,9 @@ export function BillingPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>Invoice history</h2>
+        <h2 className={h2Cls}>{t('Invoice history')}</h2>
         {data.invoices.length === 0 ? (
-          <Card><p className={subCls}>No invoices yet.</p></Card>
+          <Card><p className={subCls}>{t('No invoices yet.')}</p></Card>
         ) : (
           <div className={tableWrapCls}>
             <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
@@ -295,7 +294,7 @@ export function BillingPage() {
                   <span>{fmtDate(inv.paidAt ?? inv.periodEnd ?? inv.createdAt)}</span>
                   <span className="flex items-center gap-3">
                     <span className="font-extrabold">{formatMoney(inv.total, inv.currency)}</span>
-                    <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{inv.status}</StatusPill>
+                    <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{keyLabel(inv.status)}</StatusPill>
                     <ChevronIcon className="size-4 text-slate-400" />
                   </span>
                 </button>
@@ -307,14 +306,14 @@ export function BillingPage() {
 
       {pastSubscriptions.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className={h2Cls}>Past subscriptions</h2>
+          <h2 className={h2Cls}>{t('Past subscriptions')}</h2>
           <div className={tableWrapCls}>
             <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               {pastSubscriptions.map(sub => (
                 <div key={sub.id} className="flex items-center justify-between gap-3 px-4 py-3.5 text-sm">
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">{planById(sub.planId)?.name ?? 'Subscription'}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">{planById(sub.planId)?.name ?? t('Subscription')}</span>
                   <span className="text-slate-500 dark:text-slate-400">
-                    {humanizeKey(sub.status)}{sub.canceledAt ? ` · ${fmtDate(sub.canceledAt)}` : ''}
+                    {keyLabel(sub.status)}{sub.canceledAt ? ` · ${fmtDate(sub.canceledAt)}` : ''}
                   </span>
                 </div>
               ))}
@@ -323,50 +322,51 @@ export function BillingPage() {
         </section>
       )}
 
-      <Modal open={!!cancelTarget} onClose={() => !cancelling && setCancelTarget(null)} title="Cancel subscription?">
+      <Modal open={!!cancelTarget} onClose={() => !cancelling && setCancelTarget(null)} title={t('Cancel subscription?')}>
         <div className="flex flex-col gap-4">
           <p className={subCls}>
-            Your subscription will stay active until the end of the current billing period
-            {cancelTarget?.currentPeriodEnd ? ` (${fmtDate(cancelTarget.currentPeriodEnd)})` : ''}, then it won't renew.
+            {cancelTarget?.currentPeriodEnd
+              ? t("Your subscription will stay active until the end of the current billing period ({date}), then it won't renew.", { date: fmtDate(cancelTarget.currentPeriodEnd) })
+              : t("Your subscription will stay active until the end of the current billing period, then it won't renew.")}
           </p>
           {cancelError && <Banner variant="error">{cancelError}</Banner>}
           <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="ghost" onClick={() => setCancelTarget(null)} disabled={cancelling}>Keep subscription</Button>
+            <Button variant="ghost" onClick={() => setCancelTarget(null)} disabled={cancelling}>{t('Keep subscription')}</Button>
             <Button variant="primary" onClick={confirmCancel} disabled={cancelling}>
-              {cancelling ? 'Cancelling…' : 'Cancel subscription'}
+              {cancelling ? t('Cancelling…') : t('Cancel subscription')}
             </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal open={invoiceOpen} onClose={() => setInvoiceOpen(false)} title="Invoice">
+      <Modal open={invoiceOpen} onClose={() => setInvoiceOpen(false)} title={t('Invoice')}>
         {invoiceLoading ? (
           <LoadingSpinner />
         ) : invoiceError ? (
           <Banner variant="error">{invoiceError}</Banner>
         ) : invoiceDetail ? (
           <div className="flex flex-col gap-2.5">
-            <KV label="Status">{invoiceDetail.invoice.status}</KV>
+            <KV label={t('Status')}>{keyLabel(invoiceDetail.invoice.status)}</KV>
             {(invoiceDetail.invoice.periodStart || invoiceDetail.invoice.periodEnd) && (
-              <KV label="Period">
+              <KV label={t('Period')}>
                 {fmtDate(invoiceDetail.invoice.periodStart)} – {fmtDate(invoiceDetail.invoice.periodEnd)}
               </KV>
             )}
             {invoiceDetail.invoice.paidAt && (
-              <KV label="Paid">{fmtDate(invoiceDetail.invoice.paidAt)}</KV>
+              <KV label={t('Paid')}>{fmtDate(invoiceDetail.invoice.paidAt)}</KV>
             )}
             <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
             {invoiceDetail.items.map(item => (
-              <KV key={item.id} label={`${item.description}${item.quantity > 1 ? ` × ${item.quantity}` : ''}`}>
+              <KV key={item.id} label={item.quantity > 1 ? t('{description} × {quantity}', { description: item.description, quantity: item.quantity }) : item.description}>
                 {formatMoney(item.amount, item.currency)}
               </KV>
             ))}
-            <KV label="Subtotal">{formatMoney(invoiceDetail.invoice.subtotal, invoiceDetail.invoice.currency)}</KV>
-            <KV label="Tax">{formatMoney(invoiceDetail.invoice.tax, invoiceDetail.invoice.currency)}</KV>
-            <KV label="Total" strong>{formatMoney(invoiceDetail.invoice.total, invoiceDetail.invoice.currency)}</KV>
+            <KV label={t('Subtotal')}>{formatMoney(invoiceDetail.invoice.subtotal, invoiceDetail.invoice.currency)}</KV>
+            <KV label={t('Tax')}>{formatMoney(invoiceDetail.invoice.tax, invoiceDetail.invoice.currency)}</KV>
+            <KV label={t('Total')} strong>{formatMoney(invoiceDetail.invoice.total, invoiceDetail.invoice.currency)}</KV>
             {invoiceDetail.invoice.invoiceUrl && (
               <a href={invoiceDetail.invoice.invoiceUrl} target="_blank" rel="noopener noreferrer" className={`${textLinkCls} mt-2`}>
-                View invoice from payment provider
+                {t('View invoice from payment provider')}
               </a>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { useI18n } from '../../i18n/I18nContext';
 import type { LessonPosition, LessonRouteState } from './LessonPlayerShell';
 
 interface LessonNavigationProps {
@@ -15,6 +16,7 @@ interface LessonNavigationProps {
  */
 export function LessonNavigation({ position, courseId }: LessonNavigationProps) {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const state: LessonRouteState = { courseId };
   const { prev, next, self } = position;
   const canGoNext = !!next && (next.completed || next.current || self?.completed === true);
@@ -23,7 +25,7 @@ export function LessonNavigation({ position, courseId }: LessonNavigationProps) 
     <>
       {prev ? (
         <Button variant="secondary" onClick={() => navigate(`/lessons/${prev.id}`, { state })}>
-          ← Previous
+          {t('← Previous')}
         </Button>
       ) : (
         <span />
@@ -34,13 +36,13 @@ export function LessonNavigation({ position, courseId }: LessonNavigationProps) 
           variant="primary"
           onClick={() => navigate(`/lessons/${next.id}`, { state })}
           disabled={!canGoNext}
-          title={canGoNext ? undefined : 'Complete this lesson to unlock the next one'}
+          title={canGoNext ? undefined : t('Complete this lesson to unlock the next one')}
         >
-          {canGoNext ? 'Next lesson →' : '🔒 Next lesson'}
+          {canGoNext ? t('Next lesson →') : t('🔒 Next lesson')}
         </Button>
       ) : (
         <Button variant="primary" onClick={() => navigate(courseId ? `/curriculum/${courseId}` : '/curriculum')}>
-          Back to course
+          {t('Back to course')}
         </Button>
       )}
     </>

@@ -3,6 +3,7 @@ import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import type { SessionQuestion, SessionSummary } from './practiceApi';
 import { TrophyIcon } from '../../components/common/Icons';
+import { useI18n } from '../../i18n/I18nContext';
 import { linkButton, linkButtonPrimary, questionCard } from './practiceStyles';
 
 export type CompletionStatus = 'saving' | 'saved' | 'failed';
@@ -31,6 +32,7 @@ export function PracticeFeedback({
   onRetryCompletion,
   onPracticeAgain,
 }: PracticeFeedbackProps) {
+  const { t } = useI18n();
   const byId = new Map(questions.map(q => [q.id, q]));
   const lessonState = { courseId };
 
@@ -46,45 +48,45 @@ export function PracticeFeedback({
           <TrophyIcon className="size-11 text-white" />
         </div>
         <span className="text-amber-600 dark:text-amber-400 font-extrabold text-xs uppercase tracking-wider bg-amber-50 dark:bg-amber-950/60 px-3 py-1 rounded-full mb-2">
-          Practice complete
+          {t('Practice complete')}
         </span>
-        <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl sm:text-3xl tracking-tight m-0">Great job!</h1>
+        <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl sm:text-3xl tracking-tight m-0">{t('Great job!')}</h1>
         {lessonTitle && <span className="text-slate-500 dark:text-slate-400 text-sm mt-1">{lessonTitle}</span>}
       </div>
 
       <div className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 flex items-center justify-around shadow-sm">
         <div className="text-center">
-          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">Score</span>
+          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">{t('Score')}</span>
           <span className="text-[#4F46E5] dark:text-indigo-400 font-extrabold text-2xl">{summary.correctCount}/{summary.totalAttempts}</span>
         </div>
         <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
         <div className="text-center">
-          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">Accuracy</span>
+          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">{t('Accuracy')}</span>
           <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-2xl">{summary.accuracyPercent}%</span>
         </div>
       </div>
       <p className="text-center text-slate-500 dark:text-slate-400 text-sm m-0 -mt-2">
-        {summary.accuracyPercent}% accuracy · {summary.correctCount} correct, {summary.wrongCount} to review
+        {t('{pct}% accuracy · {correct} correct, {wrong} to review', { pct: summary.accuracyPercent, correct: summary.correctCount, wrong: summary.wrongCount })}
       </p>
 
-      {completion === 'saving' && <Banner variant="info">Saving your lesson progress…</Banner>}
-      {completion === 'saved' && <Banner variant="success">Lesson completed — the next lesson is unlocked.</Banner>}
+      {completion === 'saving' && <Banner variant="info">{t('Saving your lesson progress…')}</Banner>}
+      {completion === 'saved' && <Banner variant="success">{t('Lesson completed — the next lesson is unlocked.')}</Banner>}
       {completion === 'failed' && (
         <Banner variant="warning">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span>{completionError || "We couldn't mark this lesson as complete."}</span>
-            <Button size="sm" variant="secondary" onClick={onRetryCompletion}>Retry</Button>
+            <span>{completionError || t("We couldn't mark this lesson as complete.")}</span>
+            <Button size="sm" variant="secondary" onClick={onRetryCompletion}>{t('Retry')}</Button>
           </div>
         </Banner>
       )}
 
       {summary.attempts.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">Your answers</h2>
+          <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">{t('Your answers')}</h2>
           {summary.attempts.map((attempt, i) => (
             <div key={`${attempt.itemId}-${i}`} className={`${questionCard} flex flex-col gap-3`}>
               <p className="text-slate-900 dark:text-white font-bold text-sm leading-snug m-0">
-                {i + 1}. {byId.get(attempt.itemId)?.stem ?? 'Question'}
+                {i + 1}. {byId.get(attempt.itemId)?.stem ?? t('Question')}
               </p>
               <div
                 className={`rounded-xl p-3 ring-1 ${
@@ -93,9 +95,9 @@ export function PracticeFeedback({
                     : 'bg-rose-50 dark:bg-rose-950/40 ring-rose-200 dark:ring-rose-900 text-rose-800 dark:text-rose-300'
                 }`}
               >
-                <p className="font-extrabold text-sm m-0">{attempt.isCorrect ? '✓ Correct' : '✗ Incorrect'}</p>
+                <p className="font-extrabold text-sm m-0">{attempt.isCorrect ? t('✓ Correct') : t('✗ Incorrect')}</p>
                 <p className="text-sm m-0 mt-0.5 opacity-90">
-                  Your answer: {answerText(attempt.itemId, attempt.answerValue) || '—'}
+                  {t('Your answer: {answer}', { answer: answerText(attempt.itemId, attempt.answerValue) || '—' })}
                 </p>
               </div>
             </div>
@@ -104,12 +106,12 @@ export function PracticeFeedback({
       )}
 
       <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-        <Button variant="secondary" onClick={onPracticeAgain}>Practice again</Button>
+        <Button variant="secondary" onClick={onPracticeAgain}>{t('Practice again')}</Button>
         <Link to={`/lessons/${lessonId}`} state={lessonState} className={linkButton}>
-          Back to lesson
+          {t('Back to lesson')}
         </Link>
         <Link to={courseId ? `/curriculum/${courseId}` : '/curriculum'} className={linkButtonPrimary}>
-          Continue course
+          {t('Continue course')}
         </Link>
       </div>
     </div>

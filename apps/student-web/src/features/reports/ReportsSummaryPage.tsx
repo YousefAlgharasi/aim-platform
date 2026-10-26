@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
+import { t as tr, formatNumber, formatDateTime } from '../../i18n';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
@@ -27,17 +29,18 @@ interface RunState {
 
 function humanize(key: string): string {
   const s = key.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim();
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  const label = s.charAt(0).toUpperCase() + s.slice(1);
+  return tr(label);
 }
 
 function formatCell(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—';
-  if (typeof value === 'number') return value.toLocaleString();
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'number') return formatNumber(value);
+  if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
   if (typeof value === 'string') {
     if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
       const d = new Date(value);
-      if (!Number.isNaN(d.getTime())) return d.toLocaleString();
+      if (!Number.isNaN(d.getTime())) return formatDateTime(d);
     }
     return value;
   }
@@ -46,13 +49,14 @@ function formatCell(value: unknown): string {
 }
 
 function SectionView({ section }: { section: ReportSection }) {
+  const { t } = useI18n();
   const rows = Array.isArray(section.data) ? section.data : [];
   const columns = Array.from(new Set(rows.flatMap(r => Object.keys(r ?? {}))));
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{section.title}</h3>
       {rows.length === 0 ? (
-        <p className={subCls}>No data for this section yet.</p>
+        <p className={subCls}>{t('No data for this section yet.')}</p>
       ) : (
         <>
           {/* Phones: card list */}
@@ -98,6 +102,7 @@ function SectionView({ section }: { section: ReportSection }) {
 }
 
 export function ReportsSummaryPage() {
+  const { t, formatDateTime: fmtDateTime } = useI18n();
   const [reports, setReports] = useState<ReportDefinition[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -109,7 +114,7 @@ export function ReportsSummaryPage() {
     setError('');
     fetchReportDefinitions()
       .then(setReports)
-      .catch(err => setError(getErrorMessage(err, 'Failed to load reports')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load reports'))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -130,7 +135,7 @@ export function ReportsSummaryPage() {
         .then(run => {
           if (run.status === 'queued' || run.status === 'running') {
             if (attempt + 1 >= POLL_MAX_ATTEMPTS) {
-              update(key, { run, running: false, error: 'The report is taking longer than expected. Try again shortly.' });
+              update(key, { run, running: false, error: t('The report is taking longer than expected. Try again shortly.') });
             } else {
               update(key, { run });
               poll(key, runId, attempt + 1);
@@ -139,7 +144,7 @@ export function ReportsSummaryPage() {
             update(key, { run, running: false });
           }
         })
-        .catch(err => update(key, { running: false, error: getErrorMessage(err, 'Failed to check report status') }));
+        .catch(err => update(key, { running: false, error: getErrorMessage(err, t('Failed to check report status')) }));
     }, POLL_INTERVAL_MS);
   }
 
@@ -156,7 +161,7 @@ export function ReportsSummaryPage() {
           update(report.key, { run, running: false });
         }
       })
-      .catch(err => update(report.key, { running: false, error: getErrorMessage(err, 'Failed to run report') }));
+      .catch(err => update(report.key, { running: false, error: getErrorMessage(err, t('Failed to run report')) }));
   }
 
   if (loading) return <LoadingSpinner />;
@@ -165,12 +170,12 @@ export function ReportsSummaryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Insights" title="My Reports" subtitle="Generate summaries of your learning activity." />
+      <PageHeader eyebrow={t('Insights')} title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
 
       {reports.length === 0 ? (
         <EmptyState
-          title="No reports available"
-          message="There are no reports available to you yet."
+          title={t('No reports available')}
+          message={t('There are no reports available to you yet.')}
         />
       ) : (
         <div className="flex flex-col gap-4">
@@ -192,7 +197,7 @@ export function ReportsSummaryPage() {
                       onClick={() => handleRun(report)}
                       disabled={!!state?.running}
                     >
-                      {state?.running ? 'Generating…' : run ? 'Run again' : 'Generate report'}
+                      {state?.running ? t('Generating…') : run ? t('Run again') : t('Generate report')}
                     </Button>
                   </div>
                   {report.description && <p className={subCls}>{report.description}</p>}
@@ -200,15 +205,15 @@ export function ReportsSummaryPage() {
                   {state?.running && <LoadingSpinner />}
                   {state?.error && <Banner variant="error">{state.error}</Banner>}
                   {run?.status === 'failed' && (
-                    <Banner variant="error">{run.errorMessage || 'This report could not be generated.'}</Banner>
+                    <Banner variant="error">{run.errorMessage || t('This report could not be generated.')}</Banner>
                   )}
                   {result && (
                     <div className="flex flex-col gap-5 pt-4 border-t border-slate-100 dark:border-slate-700">
                       <span className="text-xs font-semibold text-slate-400">
-                        Generated {new Date(result.generatedAt).toLocaleString()}
+                        {t('Generated {time}', { time: fmtDateTime(result.generatedAt) })}
                       </span>
                       {result.sections.length === 0 ? (
-                        <p className={subCls}>This report has no data yet.</p>
+                        <p className={subCls}>{t('This report has no data yet.')}</p>
                       ) : (
                         result.sections.map((section, i) => <SectionView key={`${section.title}-${i}`} section={section} />)
                       )}

@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { t, formatDate as formatLocaleDate, plural } from '../../i18n';
 
 // Read-only AIM outputs. Mirrors Flutter features/aim_results (+ home datasource).
 // Backend: services/backend-api/src/features/aim/result/aim-result.controller.ts.
@@ -110,7 +111,7 @@ export function prettifySkillId(skillId: string): string {
     .filter(Boolean)
     .map((w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
-  return label || skillId;
+  return label ? t(label) : skillId;
 }
 
 export function toPercent(score: number | null | undefined): number {
@@ -125,6 +126,7 @@ export function masteryTier(score: number): 'strong' | 'developing' | 'needsWork
   return 'needsWork';
 }
 
+/** English keys; translate with `t(tierLabel[tier])` when rendering. */
 export const tierLabel: Record<ReturnType<typeof masteryTier>, string> = {
   strong: 'Strong',
   developing: 'Developing',
@@ -134,49 +136,74 @@ export const tierLabel: Record<ReturnType<typeof masteryTier>, string> = {
 export function trendLabel(trend: string): string {
   switch (trend) {
     case 'improving':
-      return 'Improving';
+      return t('Improving');
     case 'declining':
-      return 'Declining';
+      return t('Declining');
     case 'stable':
-      return 'Stable';
+      return t('Stable');
     default:
-      return 'Not enough data';
+      return t('Not enough data');
   }
 }
 
 export function humanize(value: string): string {
   if (!value) return '—';
   const s = value.replace(/_/g, ' ');
-  return s[0].toUpperCase() + s.slice(1);
+  return t(s[0].toUpperCase() + s.slice(1));
 }
 
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
+  return Number.isNaN(d.getTime()) ? iso : formatLocaleDate(d, { year: 'numeric', month: 'numeric', day: 'numeric' });
 }
 
 /** Relative due label (Flutter ReviewSchedulePage._dueLabel). */
 export function dueLabel(iso: string): string {
   const due = new Date(iso);
-  if (Number.isNaN(due.getTime())) return `Due ${iso}`;
+  if (Number.isNaN(due.getTime())) return t('Due {date}', { date: iso });
   const now = new Date();
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diff = Math.round((startOf(due) - startOf(now)) / 86_400_000);
-  if (diff === 0) return 'Due today';
-  if (diff === 1) return 'Due tomorrow';
-  if (diff > 1) return `Due in ${diff} days`;
-  if (diff === -1) return 'Due 1 day ago';
-  if (diff > -7) return `Due ${-diff} days ago`;
-  return `Due ${due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+  if (diff === 0) return t('Due today');
+  if (diff === 1) return t('Due tomorrow');
+  if (diff > 1) {
+    return plural(diff, {
+      one: t('Due in {n} days', { n: diff }),
+      two: t('Due in {n} days [two]', { n: diff }),
+      few: t('Due in {n} days [few]', { n: diff }),
+      other: t('Due in {n} days', { n: diff }),
+    });
+  }
+  if (diff === -1) return t('Due 1 day ago');
+  if (diff > -7) {
+    const n = -diff;
+    return plural(n, {
+      one: t('Due {n} days ago', { n }),
+      two: t('Due {n} days ago [two]', { n }),
+      few: t('Due {n} days ago [few]', { n }),
+      other: t('Due {n} days ago', { n }),
+    });
+  }
+  return t('Due {date}', { date: formatLocaleDate(due, { month: 'short', day: 'numeric' }) });
 }
 
 export function formatInterval(days: number): string {
   if (!Number.isFinite(days)) return '—';
   if (days < 1) {
     const hours = Math.max(1, Math.round(days * 24));
-    return `${hours} hour${hours === 1 ? '' : 's'}`;
+    return plural(hours, {
+      one: t('{n} hour', { n: hours }),
+      two: t('{n} hours [two]', { n: hours }),
+      few: t('{n} hours [few]', { n: hours }),
+      other: t('{n} hours', { n: hours }),
+    });
   }
   const d = Math.round(days * 10) / 10;
-  return `${d} day${d === 1 ? '' : 's'}`;
+  return plural(d, {
+    one: t('{n} day', { n: d }),
+    two: t('{n} days [two]', { n: d }),
+    few: t('{n} days [few]', { n: d }),
+    other: t('{n} days', { n: d }),
+  });
 }

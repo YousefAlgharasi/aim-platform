@@ -15,6 +15,8 @@ import {
   type LessonDetail,
   type StudentLessonSummary,
 } from './lessonsApi';
+import { useI18n } from '../../i18n/I18nContext';
+import { plural } from '../../i18n';
 import { BackArrowIcon } from '../curriculum/CurriculumIcons';
 import { CheckIcon, SparkleIcon, ZapIcon } from '../../components/common/Icons';
 
@@ -53,6 +55,7 @@ export function LessonPlayerShell() {
   const { lessonId = '' } = useParams<{ lessonId: string }>();
   const location = useLocation();
   const navState = (location.state ?? {}) as LessonRouteState;
+  const { t } = useI18n();
   const courseId = navState.courseId;
 
   const [lesson, setLesson] = useState<LessonDetail | null>(null);
@@ -77,18 +80,18 @@ export function LessonPlayerShell() {
           setPosition({ self: null, prev: null, next: null, locked: false });
         }
       })
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load lesson')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load lesson'))))
       .finally(() => setLoading(false));
-  }, [lessonId]);
+  }, [lessonId, t]);
 
   useEffect(() => { load(); }, [load]);
 
   const backTo = courseId ? `/curriculum/${courseId}` : '/curriculum';
-  const backLabel = courseId ? 'Back to course' : 'Back to courses';
+  const backLabel = courseId ? t('Back to course') : t('Back to courses');
 
   if (loading) return <LoadingSpinner />;
   if (error || !lesson) {
-    return <ErrorState message={error || 'Failed to load lesson'} onRetry={load} />;
+    return <ErrorState message={error || t('Failed to load lesson')} onRetry={load} />;
   }
 
   const completed = position.self?.completed === true;
@@ -113,20 +116,20 @@ export function LessonPlayerShell() {
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="text-indigo-100 text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
-            Lesson
+            {t('Lesson')}
           </span>
           {completed && (
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1">
-              <CheckIcon className="size-3 text-emerald-300" /> Completed
+              <CheckIcon className="size-3 text-emerald-300" /> {t('Completed')}
             </span>
           )}
         </div>
         <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight m-0 leading-tight mb-2 text-white">{lesson.title}</h1>
         {lesson.description && <p className="text-indigo-100/90 text-sm m-0 leading-relaxed mb-3">{lesson.description}</p>}
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-indigo-100">
-          <span className="bg-white/15 px-2.5 py-1 rounded-full">{assets.length} {assets.length === 1 ? 'step' : 'steps'}</span>
-          {totalSeconds > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">~{Math.max(1, Math.round(totalSeconds / 60))} min</span>}
-          {lesson.xpValue > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{lesson.xpValue} XP</span>}
+          <span className="bg-white/15 px-2.5 py-1 rounded-full">{plural(assets.length, { one: t('1 step'), two: t('2 steps'), few: t('{n} steps', { n: assets.length }), other: t('{n} steps', { n: assets.length }) })}</span>
+          {totalSeconds > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{t('~{n} min', { n: Math.max(1, Math.round(totalSeconds / 60)) })}</span>}
+          {lesson.xpValue > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{t('{n} XP', { n: lesson.xpValue })}</span>}
         </div>
         <div className="h-2 bg-black/20 rounded-full overflow-hidden p-0.5 mt-4" aria-hidden="true">
           <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: completed ? '100%' : '0%' }} />
@@ -135,17 +138,16 @@ export function LessonPlayerShell() {
 
       {position.locked && (
         <Banner variant="warning">
-          Complete the previous lesson before starting this one. You can read the content, but practice
-          and progress are unlocked in order.
+          {t('Complete the previous lesson before starting this one. You can read the content, but practice and progress are unlocked in order.')}
         </Banner>
       )}
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">What’s inside</h2>
+        <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">{t('What’s inside')}</h2>
         {assets.length === 0 ? (
           <EmptyState
-            title="No content yet"
-            message="This lesson doesn't have any published content steps yet. You can still practice its questions."
+            title={t('No content yet')}
+            message={t("This lesson doesn't have any published content steps yet. You can still practice its questions.")}
           />
         ) : (
           assets.map((asset, i) => <ContentBlockRenderer key={asset.id} asset={asset} stepNumber={i + 1} />)
@@ -155,21 +157,20 @@ export function LessonPlayerShell() {
       <div className="flex flex-col gap-3">
         {completed ? (
           <div className="px-1">
-            <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0">Lesson mastered! 🌟</h2>
+            <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0">{t('Lesson mastered! 🌟')}</h2>
             <p className="text-slate-400 dark:text-slate-500 text-xs m-0 mt-0.5">
-              Reinforce your knowledge or practice with quick exercises.
+              {t('Reinforce your knowledge or practice with quick exercises.')}
             </p>
           </div>
         ) : (
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed m-0 px-1">
-            Finish this lesson by completing its practice questions. Your answers are checked by AIM and
-            the lesson is marked complete when you reach the end.
+            {t('Finish this lesson by completing its practice questions. Your answers are checked by AIM and the lesson is marked complete when you reach the end.')}
           </p>
         )}
 
         {position.locked ? (
           <span className="flex items-center justify-center h-[54px] rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm font-semibold">
-            🔒 Practice unlocks after the previous lesson
+            {t('🔒 Practice unlocks after the previous lesson')}
           </span>
         ) : completed ? (
           <Link
@@ -181,8 +182,8 @@ export function LessonPlayerShell() {
               <ZapIcon className="size-6 text-white" />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block font-extrabold text-indigo-700 dark:text-indigo-300 text-base">Practice again ⚡</span>
-              <span className="block text-slate-600 dark:text-slate-300 text-xs mt-0.5">Test your comprehension with quick interactive exercises.</span>
+              <span className="block font-extrabold text-indigo-700 dark:text-indigo-300 text-base">{t('Practice again ⚡')}</span>
+              <span className="block text-slate-600 dark:text-slate-300 text-xs mt-0.5">{t('Test your comprehension with quick interactive exercises.')}</span>
             </span>
           </Link>
         ) : (
@@ -191,7 +192,7 @@ export function LessonPlayerShell() {
             state={practiceState}
             className="w-full h-[54px] rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-base no-underline shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2.5 hover:opacity-95 transition-all"
           >
-            Start practice to complete lesson ⚡
+            {t('Start practice to complete lesson ⚡')}
           </Link>
         )}
 
@@ -202,7 +203,7 @@ export function LessonPlayerShell() {
           <span className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
             <SparkleIcon className="size-6" />
           </span>
-          <span className="font-bold text-slate-900 dark:text-white text-sm">Ask AI tutor ✨</span>
+          <span className="font-bold text-slate-900 dark:text-white text-sm">{t('Ask AI tutor ✨')}</span>
         </Link>
       </div>
 

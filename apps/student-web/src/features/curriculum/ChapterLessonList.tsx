@@ -5,6 +5,7 @@ import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { fetchStudentLessons, type StudentLessonsResponse } from '../lessons/lessonsApi';
 import type { FinalExamSummary, LevelWithChapters, StudentChapter } from './curriculumApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { ChevronDownIcon, ChevronRightIcon, LockIcon } from './CurriculumIcons';
 import { CheckIcon, ClipboardIcon } from '../../components/common/Icons';
 
@@ -69,6 +70,7 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
   // before it (in course order) is fully complete (backend-computed status,
   // which includes passing the chapter quiz). The backend independently
   // enforces the previous-lesson gate on progress/completion.
+  const { t, plural } = useI18n();
   const ordered = levels.flatMap(l => l.chapters);
   const lockedById = new Map<string, boolean>();
   ordered.forEach((ch, i) => {
@@ -84,8 +86,8 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center px-1">
-        <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">Course Chapters</span>
-        <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">{ordered.length} Chapters</span>
+        <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">{t('Course Chapters')}</span>
+        <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">{plural(ordered.length, { one: t('1 Chapter'), two: t('2 Chapters'), few: t('{n} Chapters', { n: ordered.length }), other: t('{n} Chapters', { n: ordered.length }) })}</span>
       </div>
       {levels.map(({ level, chapters }) => (
         <section key={level.id} className="flex flex-col gap-3" aria-label={level.title}>
@@ -124,6 +126,7 @@ interface ChapterCardProps {
 }
 
 function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: ChapterCardProps) {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(defaultExpanded && !locked);
   const [data, setData] = useState<StudentLessonsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -134,21 +137,21 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
     setError('');
     fetchStudentLessons(chapter.chapterId)
       .then(setData)
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load lessons')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load lessons'))))
       .finally(() => setLoading(false));
-  }, [chapter.chapterId]);
+  }, [chapter.chapterId, t]);
 
   useEffect(() => {
     if (expanded && !data && !loading && !error) load();
   }, [expanded, data, loading, error, load]);
 
   const statusText = locked
-    ? 'Locked'
+    ? t('Locked')
     : chapter.status === 'completed'
-      ? 'Completed'
+      ? t('Completed')
       : chapter.status === 'in_progress'
-        ? 'In progress'
-        : 'Not started';
+        ? t('In progress')
+        : t('Not started');
 
   const lessons = data?.lessons ?? [];
   const currentIndex = lessons.findIndex(l => l.current);
@@ -176,12 +179,12 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
         aria-expanded={expanded}
       >
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-extrabold text-base ${badgeCls}`}>
-          {isCompleted ? <CheckIcon className="size-6 text-white" /> : locked ? <LockIcon className="size-5" /> : <span>Ch.{number}</span>}
+          {isCompleted ? <CheckIcon className="size-6 text-white" /> : locked ? <LockIcon className="size-5" /> : <span>{t('Ch.{n}', { n: number })}</span>}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center gap-2 mb-1">
             <h3 className="font-bold text-slate-900 dark:text-white text-base m-0 leading-tight">
-              Chapter {number}: {chapter.title}
+              {t('Chapter {n}: {title}', { n: number, title: chapter.title })}
             </h3>
             <ChevronDownIcon className={`size-4 text-slate-400 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </div>
@@ -191,7 +194,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden" aria-hidden="true">
               <div
-                className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`}
+                className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500'}`}
                 style={{ width: `${chapter.percent}%` }}
               />
             </div>
@@ -208,11 +211,11 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
           {error && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm p-3" role="alert">
               <span>{error}</span>
-              <Button size="sm" variant="secondary" onClick={load}>Retry</Button>
+              <Button size="sm" variant="secondary" onClick={load}>{t('Retry')}</Button>
             </div>
           )}
           {data && lessons.length === 0 && (
-            <p className="text-slate-400 dark:text-slate-500 text-sm m-0">No lessons published in this chapter yet.</p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm m-0">{t('No lessons published in this chapter yet.')}</p>
           )}
           {data && lessons.length > 0 && (
             <div className="flex flex-col gap-2" role="list">
@@ -233,15 +236,15 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                     </span>
                     <div className="flex-1 min-w-0">
                       <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Lesson {i + 1}
+                        {t('Lesson {n}', { n: i + 1 })}
                       </span>
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{lesson.title}</span>
                       {lesson.xpValue > 0 && (
-                        <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{lesson.xpValue} XP</span>
+                        <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('{n} XP', { n: lesson.xpValue })}</span>
                       )}
                     </div>
-                    {status === 'completed' && <Pill tone="done">Done</Pill>}
-                    {status === 'current' && <Pill tone="current">Current</Pill>}
+                    {status === 'completed' && <Pill tone="done">{t('Done')}</Pill>}
+                    {status === 'current' && <Pill tone="current">{t('Current')}</Pill>}
                     {status !== 'locked' && <ChevronRightIcon className="size-4 text-slate-400 dark:text-slate-500 shrink-0 rtl:rotate-180" />}
                   </>
                 );
@@ -253,7 +256,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                       className={`${ROW_BASE} ${ROW_LOCKED}`}
                       role="listitem"
                       aria-disabled="true"
-                      title="Complete the previous lesson first"
+                      title={t('Complete the previous lesson first')}
                     >
                       {content}
                     </div>
@@ -279,12 +282,12 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                     className={`${ROW_BASE} ${ROW_LOCKED}`}
                     role="listitem"
                     aria-disabled="true"
-                    title="Complete every lesson in this chapter to unlock the quiz"
+                    title={t('Complete every lesson in this chapter to unlock the quiz')}
                   >
                     <span className={statusPill('locked')} aria-hidden="true"><LockIcon className="size-4" /></span>
                     <div className="flex-1 min-w-0">
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">Chapter quiz · finish all lessons to unlock</span>
+                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('Chapter quiz · finish all lessons to unlock')}</span>
                     </div>
                   </div>
                 ) : (
@@ -298,9 +301,9 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                     </span>
                     <div className="flex-1 min-w-0">
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">Chapter quiz</span>
+                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('Chapter quiz')}</span>
                     </div>
-                    {data.quiz.completed && <Pill tone="done">Passed</Pill>}
+                    {data.quiz.completed && <Pill tone="done">{t('Passed')}</Pill>}
                     <ChevronRightIcon className="size-4 text-slate-400 dark:text-slate-500 shrink-0 rtl:rotate-180" />
                   </Link>
                 )
@@ -314,6 +317,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
 }
 
 function FinalExamCard({ exam }: { exam: FinalExamSummary }) {
+  const { t } = useI18n();
   const unlocked = exam.unlocked || exam.passed === true;
   const body = (
     <div className="flex items-start gap-4">
@@ -331,14 +335,16 @@ function FinalExamCard({ exam }: { exam: FinalExamSummary }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-1">
           <h3 className="font-bold text-slate-900 dark:text-white text-base m-0 leading-tight">{exam.title}</h3>
-          {exam.passed && <Pill tone="done">Passed</Pill>}
+          {exam.passed && <Pill tone="done">{t('Passed')}</Pill>}
         </div>
         <p className="text-slate-500 dark:text-slate-400 text-xs m-0 leading-relaxed">
           {exam.passed
-            ? `Final exam completed and passed${exam.score != null ? ` (score ${exam.score})` : ''}.`
+            ? exam.score != null
+              ? t('Final exam completed and passed (score {score}).', { score: exam.score })
+              : t('Final exam completed and passed.')
             : unlocked
-              ? 'All chapters complete — the final exam is ready.'
-              : 'Complete every chapter (lessons and quizzes) to unlock the final exam.'}
+              ? t('All chapters complete — the final exam is ready.')
+              : t('Complete every chapter (lessons and quizzes) to unlock the final exam.')}
         </p>
       </div>
     </div>

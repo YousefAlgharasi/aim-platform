@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -16,9 +17,12 @@ import {
   fetchOperationalStatus,
   TICKET_CATEGORY_LABELS,
   TICKET_SEVERITY_LABELS,
-  TICKET_STATUS_LABELS,
   FEEDBACK_CATEGORY_LABELS,
-  SERVICE_STATUS_LABELS,
+  ticketCategoryLabel,
+  ticketSeverityLabel,
+  ticketStatusLabel,
+  feedbackCategoryLabel,
+  serviceStatusLabel,
   SUBJECT_MAX,
   FEEDBACK_TITLE_MAX,
   type SupportTicket,
@@ -49,6 +53,7 @@ function serviceTone(status: string): 'success' | 'warning' | 'danger' | 'neutra
 }
 
 export function SupportPage() {
+  const { t, formatDate, plural } = useI18n();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -82,7 +87,7 @@ export function SupportPage() {
     setError('');
     fetchTickets()
       .then(setTickets)
-      .catch(err => setError(getErrorMessage(err, 'Failed to load your support tickets')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load your support tickets'))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -91,7 +96,7 @@ export function SupportPage() {
     setStatuses(null);
     fetchOperationalStatus()
       .then(setStatuses)
-      .catch(err => setStatusError(getErrorMessage(err, 'Failed to load system status')));
+      .catch(err => setStatusError(getErrorMessage(err, t('Failed to load system status'))));
   }, []);
 
   const loadNotes = useCallback(() => {
@@ -100,7 +105,7 @@ export function SupportPage() {
     fetchReleaseNotes()
       // The endpoint ignores `audience`; only show notes meant for students.
       .then(all => setNotes(all.filter(n => n.audience === 'all' || n.audience === 'students')))
-      .catch(err => setNotesError(getErrorMessage(err, 'Failed to load release notes')));
+      .catch(err => setNotesError(getErrorMessage(err, t('Failed to load release notes'))));
   }, []);
 
   useEffect(() => {
@@ -119,7 +124,7 @@ export function SupportPage() {
   async function handleSubmitTicket(e: FormEvent) {
     e.preventDefault();
     if (!subject.trim() || !message.trim()) {
-      setFormError('Please fill in a subject and a message.');
+      setFormError(t('Please fill in a subject and a message.'));
       return;
     }
     setSubmitting(true);
@@ -131,15 +136,15 @@ export function SupportPage() {
         subject: subject.trim(),
         description: message.trim(),
       });
-      setTickets(prev => [created, ...prev.filter(t => t.id !== created.id)]);
-      setSuccess('Ticket submitted. Our team will get back to you.');
+      setTickets(prev => [created, ...prev.filter(x => x.id !== created.id)]);
+      setSuccess(t('Ticket submitted. Our team will get back to you.'));
       setPanel('none');
       setSubject('');
       setMessage('');
       setCategory('general');
       setSeverity('medium');
     } catch (err) {
-      setFormError(getErrorMessage(err, 'Failed to submit ticket'));
+      setFormError(getErrorMessage(err, t('Failed to submit ticket')));
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +153,7 @@ export function SupportPage() {
   async function handleSubmitFeedback(e: FormEvent) {
     e.preventDefault();
     if (!fbTitle.trim() || !fbBody.trim()) {
-      setFbError('Please add a title and your feedback.');
+      setFbError(t('Please add a title and your feedback.'));
       return;
     }
     setFbSubmitting(true);
@@ -160,14 +165,14 @@ export function SupportPage() {
         title: fbTitle.trim(),
         body: fbBody.trim(),
       });
-      setSuccess('Thanks for your feedback!');
+      setSuccess(t('Thanks for your feedback!'));
       setPanel('none');
       setFbTitle('');
       setFbBody('');
       setFbRating(0);
       setFbCategory('suggestion');
     } catch (err) {
-      setFbError(getErrorMessage(err, 'Failed to send feedback'));
+      setFbError(getErrorMessage(err, t('Failed to send feedback')));
     } finally {
       setFbSubmitting(false);
     }
@@ -175,14 +180,14 @@ export function SupportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Support" title="Help & Support" subtitle="Get help, share feedback and check our status." />
+      <PageHeader eyebrow={t('Support')} title={t('Help & Support')} subtitle={t('Get help, share feedback and check our status.')} />
 
       {success && <Banner variant="success">{success}</Banner>}
 
       <div className="grid gap-4 sm:grid-cols-2">
         {([
-          { key: 'ticket' as const, icon: <ClipboardIcon className="size-5" />, title: 'Submit a Ticket', desc: 'Report an issue or ask for help' },
-          { key: 'feedback' as const, icon: <ChatIcon className="size-5" />, title: 'Send Feedback', desc: 'Share your thoughts and suggestions' },
+          { key: 'ticket' as const, icon: <ClipboardIcon className="size-5" />, title: t('Submit a Ticket'), desc: t('Report an issue or ask for help') },
+          { key: 'feedback' as const, icon: <ChatIcon className="size-5" />, title: t('Send Feedback'), desc: t('Share your thoughts and suggestions') },
         ]).map(c => (
           <button
             key={c.key}
@@ -205,32 +210,32 @@ export function SupportPage() {
       {panel === 'ticket' && (
         <Card>
           <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket}>
-            <SectionTitle>New Support Ticket</SectionTitle>
+            <SectionTitle>{t('New Support Ticket')}</SectionTitle>
             {formError && <Banner variant="error">{formError}</Banner>}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Category" htmlFor="ticket-category">
+              <Field label={t('Category')} htmlFor="ticket-category">
                 <select id="ticket-category" className={selectCls} value={category} onChange={e => setCategory(e.target.value as TicketCategory)}>
                   {(Object.keys(TICKET_CATEGORY_LABELS) as TicketCategory[]).map(c => (
-                    <option key={c} value={c}>{TICKET_CATEGORY_LABELS[c]}</option>
+                    <option key={c} value={c}>{ticketCategoryLabel(c)}</option>
                   ))}
                 </select>
               </Field>
-              <Field label="Severity" htmlFor="ticket-severity">
+              <Field label={t('Severity')} htmlFor="ticket-severity">
                 <select id="ticket-severity" className={selectCls} value={severity} onChange={e => setSeverity(e.target.value as TicketSeverity)}>
                   {(Object.keys(TICKET_SEVERITY_LABELS) as TicketSeverity[]).map(s => (
-                    <option key={s} value={s}>{TICKET_SEVERITY_LABELS[s]}</option>
+                    <option key={s} value={s}>{ticketSeverityLabel(s)}</option>
                   ))}
                 </select>
               </Field>
             </div>
-            <Input label="Subject" value={subject} maxLength={SUBJECT_MAX} onChange={e => setSubject(e.target.value)} required />
-            <Field label="Message" htmlFor="ticket-message">
+            <Input label={t('Subject')} value={subject} maxLength={SUBJECT_MAX} onChange={e => setSubject(e.target.value)} required />
+            <Field label={t('Message')} htmlFor="ticket-message">
               <textarea id="ticket-message" className={`${textareaCls} min-h-32`} value={message} onChange={e => setMessage(e.target.value)} required />
             </Field>
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={submitting}>Cancel</Button>
+              <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={submitting}>{t('Cancel')}</Button>
               <Button variant="primary" type="submit" disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit Ticket'}
+                {submitting ? t('Submitting…') : t('Submit Ticket')}
               </Button>
             </div>
           </form>
@@ -240,17 +245,17 @@ export function SupportPage() {
       {panel === 'feedback' && (
         <Card>
           <form className="flex flex-col gap-4" onSubmit={handleSubmitFeedback}>
-            <SectionTitle>Send Feedback</SectionTitle>
+            <SectionTitle>{t('Send Feedback')}</SectionTitle>
             {fbError && <Banner variant="error">{fbError}</Banner>}
-            <Field label="Type" htmlFor="feedback-category">
+            <Field label={t('Type')} htmlFor="feedback-category">
               <select id="feedback-category" className={selectCls} value={fbCategory} onChange={e => setFbCategory(e.target.value as FeedbackCategory)}>
                 {(Object.keys(FEEDBACK_CATEGORY_LABELS) as FeedbackCategory[]).map(c => (
-                  <option key={c} value={c}>{FEEDBACK_CATEGORY_LABELS[c]}</option>
+                  <option key={c} value={c}>{feedbackCategoryLabel(c)}</option>
                 ))}
               </select>
             </Field>
             <div className="flex flex-col gap-1.5">
-              <span className={labelCls} id="feedback-rating-label">Rating (optional)</span>
+              <span className={labelCls} id="feedback-rating-label">{t('Rating (optional)')}</span>
               <div className="flex gap-1" role="radiogroup" aria-labelledby="feedback-rating-label">
                 {[1, 2, 3, 4, 5].map(n => (
                   <button
@@ -258,7 +263,7 @@ export function SupportPage() {
                     type="button"
                     role="radio"
                     aria-checked={fbRating === n}
-                    aria-label={`${n} star${n > 1 ? 's' : ''}`}
+                    aria-label={plural(n, { one: t('1 star'), two: t('2 stars'), few: t('{n} stars', { n }), other: t('{n} stars', { n }) })}
                     className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-amber-50 dark:hover:bg-slate-700 ${n <= fbRating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
                     onClick={() => setFbRating(prev => (prev === n ? 0 : n))}
                   >
@@ -267,14 +272,14 @@ export function SupportPage() {
                 ))}
               </div>
             </div>
-            <Input label="Title" value={fbTitle} maxLength={FEEDBACK_TITLE_MAX} onChange={e => setFbTitle(e.target.value)} required />
-            <Field label="Your feedback" htmlFor="feedback-body">
+            <Input label={t('Title')} value={fbTitle} maxLength={FEEDBACK_TITLE_MAX} onChange={e => setFbTitle(e.target.value)} required />
+            <Field label={t('Your feedback')} htmlFor="feedback-body">
               <textarea id="feedback-body" className={`${textareaCls} min-h-32`} value={fbBody} onChange={e => setFbBody(e.target.value)} required />
             </Field>
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={fbSubmitting}>Cancel</Button>
+              <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={fbSubmitting}>{t('Cancel')}</Button>
               <Button variant="primary" type="submit" disabled={fbSubmitting}>
-                {fbSubmitting ? 'Sending…' : 'Send Feedback'}
+                {fbSubmitting ? t('Sending…') : t('Send Feedback')}
               </Button>
             </div>
           </form>
@@ -282,13 +287,13 @@ export function SupportPage() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>My Tickets</h2>
+        <h2 className={h2Cls}>{t('My Tickets')}</h2>
         {loading ? (
           <LoadingSpinner />
         ) : error ? (
           <ErrorState message={error} onRetry={loadTickets} />
         ) : tickets.length === 0 ? (
-          <EmptyState title="No tickets yet" message="Submit a ticket above if you need help." />
+          <EmptyState title={t('No tickets yet')} message={t('Submit a ticket above if you need help.')} />
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {tickets.map(ticket => (
@@ -300,10 +305,10 @@ export function SupportPage() {
                 <span className="flex-1 min-w-0 flex flex-col gap-1.5">
                   <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{ticket.subject}</span>
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category}</span>
-                    <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                    <span>{ticketCategoryLabel(ticket.category)}</span>
+                    <span>{formatDate(ticket.createdAt)}</span>
                     <StatusPill tone={ticketTone(ticket.status)}>
-                      {TICKET_STATUS_LABELS[ticket.status] ?? ticket.status}
+                      {ticketStatusLabel(ticket.status)}
                     </StatusPill>
                   </span>
                 </span>
@@ -315,14 +320,14 @@ export function SupportPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>System Status</h2>
+        <h2 className={h2Cls}>{t('System Status')}</h2>
         <Card>
           {statusError ? (
             <ErrorState message={statusError} onRetry={loadStatus} />
           ) : statuses === null ? (
             <LoadingSpinner />
           ) : statuses.length === 0 ? (
-            <p className={subCls}>No status information is available right now.</p>
+            <p className={subCls}>{t('No status information is available right now.')}</p>
           ) : (
             <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
               {statuses.map(s => (
@@ -332,7 +337,7 @@ export function SupportPage() {
                     {s.description && <span className={subCls}>{s.description}</span>}
                   </div>
                   <StatusPill tone={serviceTone(s.status)}>
-                    {SERVICE_STATUS_LABELS[s.status] ?? s.status}
+                    {serviceStatusLabel(s.status)}
                   </StatusPill>
                 </div>
               ))}
@@ -342,13 +347,13 @@ export function SupportPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>What's New</h2>
+        <h2 className={h2Cls}>{t("What's New")}</h2>
         {notesError ? (
           <ErrorState message={notesError} onRetry={loadNotes} />
         ) : notes === null ? (
           <LoadingSpinner />
         ) : notes.length === 0 ? (
-          <Card><p className={subCls}>No release notes yet.</p></Card>
+          <Card><p className={subCls}>{t('No release notes yet.')}</p></Card>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {notes.map(note => (
@@ -356,9 +361,9 @@ export function SupportPage() {
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white m-0">{note.title}</h3>
-                    <span className={pillCls}>v{note.version}</span>
+                    <span className={pillCls} dir="ltr">v{note.version}</span>
                   </div>
-                  {note.publishedAt && <span className="text-xs text-slate-400">{new Date(note.publishedAt).toLocaleDateString()}</span>}
+                  {note.publishedAt && <span className="text-xs text-slate-400">{formatDate(note.publishedAt)}</span>}
                   {note.body && <p className={`${subCls} whitespace-pre-wrap`}>{note.body}</p>}
                 </div>
               </Card>

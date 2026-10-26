@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { SPEAKING_AUDIO_TYPES, SPEAKING_MAX_BYTES } from './placementApi';
 
 
@@ -16,6 +17,7 @@ interface QuestionAudioProps {
 }
 
 export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
+  const { t } = useI18n();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,14 +42,14 @@ export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
       urlRef.current = objectUrl;
       setUrl(objectUrl);
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not load the audio.'));
+      setError(getErrorMessage(err, t('Could not load the audio.')));
     } finally {
       setLoading(false);
     }
   }
 
   if (missing) {
-    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">Audio for this question isn't available yet.</p>;
+    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t("Audio for this question isn't available yet.")}</p>;
   }
 
   return (
@@ -65,14 +67,14 @@ export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
             <svg className="size-5 text-white" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
           </span>
           <span className="text-sm font-semibold text-[#4F46E5] dark:text-indigo-400">
-            {loading ? 'Loading audio…' : 'Play audio'}
+            {loading ? t('Loading audio…') : t('Play audio')}
           </span>
         </button>
       )}
       {error && (
         <p className="m-0 text-xs text-red-600 dark:text-red-400" role="alert">
           {error}{' '}
-          <button type="button" className="border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer" onClick={handleLoad}>Retry</button>
+          <button type="button" className="border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer" onClick={handleLoad}>{t('Retry')}</button>
         </p>
       )}
     </div>
@@ -97,6 +99,7 @@ interface SpeakingRecorderProps {
 }
 
 export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps) {
+  const { t } = useI18n();
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -152,15 +155,15 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
         const rawType = (recorder.mimeType || mimeType || 'audio/webm').split(';')[0].trim();
         const blob = new Blob(chunksRef.current, { type: rawType });
         if (!SPEAKING_AUDIO_TYPES.includes(rawType)) {
-          setError(`Your browser recorded an unsupported audio format (${rawType}).`);
+          setError(t('Your browser recorded an unsupported audio format ({type}).', { type: rawType }));
           return;
         }
         if (blob.size === 0) {
-          setError('No audio was captured. Please try again.');
+          setError(t('No audio was captured. Please try again.'));
           return;
         }
         if (blob.size > SPEAKING_MAX_BYTES) {
-          setError('The recording is too large. Please record a shorter answer.');
+          setError(t('The recording is too large. Please record a shorter answer.'));
           return;
         }
         setPreview(blob);
@@ -179,7 +182,7 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
     } catch {
       stopTracks();
       setRecording(false);
-      setError('Microphone access is needed to record your answer. Check your browser permissions.');
+      setError(t('Microphone access is needed to record your answer. Check your browser permissions.'));
     }
   }
 
@@ -188,7 +191,7 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
   }
 
   if (!supported) {
-    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">Your browser does not support audio recording. You can skip this question.</p>;
+    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t('Your browser does not support audio recording. You can skip this question.')}</p>;
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -202,7 +205,7 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
           type="button"
           onClick={recording ? stop : start}
           disabled={!recording && disabled}
-          aria-label={recording ? 'Stop recording' : previewUrl ? 'Record again' : 'Start recording'}
+          aria-label={recording ? t('Stop recording') : previewUrl ? t('Record again') : t('Start recording')}
           className={`relative size-24 rounded-full border-0 cursor-pointer flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${
             recording ? 'bg-red-500 hover:bg-red-600 shadow-red-200 dark:shadow-red-950' : 'bg-[#4F46E5] hover:bg-[#4338CA] shadow-indigo-200 dark:shadow-indigo-950'
           }`}
@@ -219,11 +222,11 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
       </div>
       <div className="text-center">
         <p className={`m-0 text-sm font-medium ${recording ? 'text-red-500 dark:text-red-400' : 'text-[#64748B] dark:text-slate-400'}`}>
-          {recording ? 'Recording… tap to stop' : previewUrl ? 'Tap to record again' : 'Tap to start recording'}
+          {recording ? t('Recording… tap to stop') : previewUrl ? t('Tap to record again') : t('Tap to start recording')}
         </p>
         {recording && (
           <p className="m-0 mt-1.5 font-mono text-xs font-semibold tracking-widest text-[#4F46E5] dark:text-indigo-400" aria-live="polite">
-            Recording {mm}:{ss} / 01:00
+            {t('Recording {time} / 01:00', { time: `${mm}:${ss}` })}
           </p>
         )}
       </div>

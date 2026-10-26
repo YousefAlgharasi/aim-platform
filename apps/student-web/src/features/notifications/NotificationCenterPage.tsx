@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -11,7 +12,7 @@ import {
   markNotificationRead,
   dismissNotification,
   isUnread,
-  CATEGORY_LABELS,
+  categoryLabel,
   INBOX_PAGE_SIZE,
   type NotificationEvent,
 } from './notificationsApi';
@@ -22,6 +23,7 @@ function textOf(value: unknown): string {
 }
 
 export function NotificationCenterPage() {
+  const { t, formatDateTime } = useI18n();
   const [notifications, setNotifications] = useState<NotificationEvent[]>([]);
   const [fetchedCount, setFetchedCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -43,7 +45,7 @@ export function NotificationCenterPage() {
         setFetchedCount(page.length);
         setHasMore(page.length === INBOX_PAGE_SIZE);
       })
-      .catch(err => setError(getErrorMessage(err, 'Failed to load notifications')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load notifications'))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -61,7 +63,7 @@ export function NotificationCenterPage() {
         setFetchedCount(c => c + page.length);
         setHasMore(page.length === INBOX_PAGE_SIZE);
       })
-      .catch(err => setActionError(getErrorMessage(err, 'Failed to load more notifications')))
+      .catch(err => setActionError(getErrorMessage(err, t('Failed to load more notifications'))))
       .finally(() => setLoadingMore(false));
   }
 
@@ -83,7 +85,7 @@ export function NotificationCenterPage() {
     setActionError('');
     markNotificationRead(eventId)
       .then(replace)
-      .catch(err => setActionError(getErrorMessage(err, 'Could not mark notification as read')))
+      .catch(err => setActionError(getErrorMessage(err, t('Could not mark notification as read'))))
       .finally(() => setBusy(eventId, false));
   }
 
@@ -93,7 +95,7 @@ export function NotificationCenterPage() {
     setActionError('');
     dismissNotification(eventId)
       .then(replace)
-      .catch(err => setActionError(getErrorMessage(err, 'Could not dismiss notification')))
+      .catch(err => setActionError(getErrorMessage(err, t('Could not dismiss notification'))))
       .finally(() => setBusy(eventId, false));
   }
 
@@ -105,7 +107,7 @@ export function NotificationCenterPage() {
     const results = await Promise.allSettled(unread.map(n => markNotificationRead(n.id)));
     results.forEach(r => { if (r.status === 'fulfilled') replace(r.value); });
     if (results.some(r => r.status === 'rejected')) {
-      setActionError('Some notifications could not be marked as read. Please try again.');
+      setActionError(t('Some notifications could not be marked as read. Please try again.'));
     }
     setMarkingAll(false);
   }
@@ -124,21 +126,21 @@ export function NotificationCenterPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Inbox"
-        title="Notifications"
-        action={<Link to="/notifications/preferences" className={textLinkCls}>Preferences</Link>}
+        eyebrow={t('Inbox')}
+        title={t('Notifications')}
+        action={<Link to="/notifications/preferences" className={textLinkCls}>{t('Preferences')}</Link>}
       />
 
       {unreadCount > 0 && (
         <div className="flex items-center gap-3">
           <span
             className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-[#4F46E5] text-white text-xs font-extrabold"
-            aria-label={`${unreadCount} unread`}
+            aria-label={t('{count} unread', { count: unreadCount })}
           >
             {unreadCount}
           </span>
           <Button variant="secondary" size="sm" onClick={markAllRead} disabled={markingAll}>
-            {markingAll ? 'Marking…' : 'Mark all read'}
+            {markingAll ? t('Marking…') : t('Mark all read')}
           </Button>
         </div>
       )}
@@ -147,9 +149,9 @@ export function NotificationCenterPage() {
 
       {visible.length === 0 ? (
         <EmptyState
-          title="No notifications"
-          message="You're all caught up!"
-          actionLabel={hasMore ? 'Load older notifications' : undefined}
+          title={t('No notifications')}
+          message={t("You're all caught up!")}
+          actionLabel={hasMore ? t('Load older notifications') : undefined}
           onAction={hasMore ? loadMore : undefined}
         />
       ) : (
@@ -157,7 +159,7 @@ export function NotificationCenterPage() {
           {visible.map(notif => {
             const unread = isUnread(notif);
             const busy = busyIds.has(notif.id);
-            const title = textOf(notif.payload?.title) || CATEGORY_LABELS[notif.category] || notif.category;
+            const title = textOf(notif.payload?.title) || categoryLabel(notif.category);
             const body = textOf(notif.payload?.body);
             const expanded = expandedId === notif.id;
             return (
@@ -172,7 +174,7 @@ export function NotificationCenterPage() {
                 role="button"
                 tabIndex={0}
                 aria-expanded={expanded}
-                aria-label={unread ? `Unread notification: ${title}` : title}
+                aria-label={unread ? t('Unread notification: {title}', { title }) : title}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(notif); } }}
               >
                 <span
@@ -185,7 +187,7 @@ export function NotificationCenterPage() {
                     <span className={`text-sm text-slate-500 dark:text-slate-400 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
                   )}
                   <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-                    {CATEGORY_LABELS[notif.category] ?? notif.category} · {new Date(notif.created_at).toLocaleString()}
+                    {categoryLabel(notif.category)} · {formatDateTime(notif.created_at)}
                   </span>
                 </div>
                 <button
@@ -193,7 +195,7 @@ export function NotificationCenterPage() {
                   className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xl disabled:opacity-50"
                   onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
                   disabled={busy}
-                  aria-label={`Dismiss ${title}`}
+                  aria-label={t('Dismiss {title}', { title })}
                 >
                   ×
                 </button>
@@ -206,7 +208,7 @@ export function NotificationCenterPage() {
       {hasMore && visible.length > 0 && (
         <div className="flex justify-center">
           <Button variant="ghost" onClick={loadMore} disabled={loadingMore}>
-            {loadingMore ? 'Loading…' : 'Load more'}
+            {loadingMore ? t('Loading…') : t('Load more')}
           </Button>
         </div>
       )}

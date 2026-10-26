@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { t, getLocale, formatNumber } from '../../i18n';
 
 // Backend: services/backend-api/src/features/billing/*.controller.ts + billing.entities.ts
 // Flutter: apps/mobile/lib/features/billing/data/{datasources,models}
@@ -117,7 +118,7 @@ export interface CheckoutStatus {
 export function formatMoney(amountMinor: number, currency: string): string {
   const code = (currency || 'usd').toUpperCase();
   try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: code }).format(amountMinor / 100);
+    return new Intl.NumberFormat(getLocale() === 'ar' ? 'ar-u-nu-latn' : undefined, { style: 'currency', currency: code }).format(amountMinor / 100);
   } catch {
     return `${(amountMinor / 100).toFixed(2)} ${code}`;
   }
@@ -128,6 +129,12 @@ export const INTERVAL_LABELS: Record<string, string> = {
   year: 'year',
   one_time: 'one-time',
 };
+
+/** Translated billing interval ("month", "year", "one-time"); unknown values pass through. */
+export function intervalLabel(interval: string): string {
+  const key = INTERVAL_LABELS[interval];
+  return key ? t(key) : interval;
+}
 
 export function isLiveSubscription(s: Subscription): boolean {
   return s.status === 'active' || s.status === 'trialing' || s.status === 'past_due';
@@ -178,17 +185,25 @@ export function fetchRecentCheckouts(): Promise<CheckoutStatus[]> {
 
 export function humanizeKey(key: string): string {
   const spaced = key.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim();
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
+  const sentence = spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
+  // Keep well-known acronyms upper-case ("Ai teacher access" -> "AI teacher access").
+  return sentence.replace(/\bai\b/gi, 'AI').replace(/\bAi\b/g, 'AI');
+}
+
+/** Translated label for a backend key such as `ai_teacher_access` or a status like `past_due`. */
+export function keyLabel(key: string): string {
+  return t(humanizeKey(key));
 }
 
 /** Same rules as Flutter pricing_page.dart `_includedFeatureLabels`. */
 export function includedFeatureLabels(features: Record<string, unknown> | null | undefined): string[] {
   const labels: string[] = [];
   Object.entries(features ?? {}).forEach(([key, value]) => {
-    const label = humanizeKey(key);
+    const label = keyLabel(key);
     if (value === true) labels.push(label);
-    else if (typeof value === 'number' && value !== 0) labels.push(value < 0 ? `Unlimited ${label}` : `${value} ${label}`);
-    else if (typeof value === 'string' && value) labels.push(`${label}: ${value}`);
+    else if (typeof value === 'number' && value !== 0) {
+      labels.push(value < 0 ? t('Unlimited {label}', { label }) : t('{count} {label}', { count: formatNumber(value), label }));
+    } else if (typeof value === 'string' && value) labels.push(t('{label}: {value}', { label, value: t(value) }));
   });
   return labels;
 }

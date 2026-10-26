@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -9,6 +10,7 @@ import { fetchMyCertificates, formatIssued, overallPercent, totalPoints, type Ce
 
 /** Port of Flutter certificates_list_page.dart (GET /certificates/my). */
 export function CertificatesPage() {
+  const { t } = useI18n();
   const [items, setItems] = useState<Certificate[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,11 +21,11 @@ export function CertificatesPage() {
     try {
       setItems(await fetchMyCertificates());
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not load your certificates.'));
+      setError(getErrorMessage(err, t('Could not load your certificates.')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -35,12 +37,12 @@ export function CertificatesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Certificates</h1>
+      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Certificates')}</h1>
 
       {items.length === 0 ? (
         <EmptyState
-          title="No certificates yet"
-          message="Complete a course and pass its final exam to earn your first certificate."
+          title={t('No certificates yet')}
+          message={t('Complete a course and pass its final exam to earn your first certificate.')}
         />
       ) : (
         <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
@@ -54,9 +56,9 @@ export function CertificatesPage() {
                     <div className="flex items-center gap-3.5">
                       <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-2xl dark:bg-indigo-950/60" aria-hidden="true">🎓</span>
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Certificate of completion</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">{c.courseTitle || 'Course'}</span>
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Issued {formatIssued(c.issuedAt)}</span>
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t('Certificate of completion')}</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{c.courseTitle || t('Course')}</span>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{t('Issued {date}', { date: formatIssued(c.issuedAt) })}</span>
                       </div>
                       {pct != null && (
                         <div className="flex shrink-0 flex-col items-end">

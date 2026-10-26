@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../i18n/I18nContext';
 
 // Presentation helpers shared by the account-area feature pages (profile, settings,
 // notifications, billing, support, reports). Visual language from design-prototype.
@@ -38,6 +39,8 @@ export const backBtnCls =
   'size-10 shrink-0 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-slate-700 transition-colors border-none cursor-pointer no-underline';
 
 export function BackLink({ to, label = 'Back' }: { to: string; label?: string }) {
+  const { t } = useI18n();
+  label = t(label);
   return (
     <Link to={to} aria-label={label} title={label} className={backBtnCls}>
       <BackIcon />

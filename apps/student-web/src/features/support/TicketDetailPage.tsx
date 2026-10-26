@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
@@ -9,9 +10,9 @@ import { ErrorState } from '../../components/common/ErrorState';
 import {
   fetchTicket,
   addTicketComment,
-  TICKET_CATEGORY_LABELS,
-  TICKET_SEVERITY_LABELS,
-  TICKET_STATUS_LABELS,
+  ticketCategoryLabel,
+  ticketSeverityLabel,
+  ticketStatusLabel,
   type SupportTicket,
   type SupportTicketComment,
 } from './supportApi';
@@ -30,6 +31,7 @@ function statusTone(status: SupportTicket['status']): 'success' | 'neutral' | 'i
 // replies sent from this page during this visit can be shown.
 export function TicketDetailPage() {
   const { ticketId = '' } = useParams<{ ticketId: string }>();
+  const { t, formatDateTime } = useI18n();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,9 +46,9 @@ export function TicketDetailPage() {
     setError('');
     fetchTicket(ticketId)
       .then(setTicket)
-      .catch(err => setError(getErrorMessage(err, 'Failed to load ticket')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load ticket'))))
       .finally(() => setLoading(false));
-  }, [ticketId]);
+  }, [ticketId, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -61,20 +63,20 @@ export function TicketDetailPage() {
       setSentComments(prev => [...prev, comment]);
       setReply('');
     } catch (err) {
-      setReplyError(getErrorMessage(err, 'Failed to send reply'));
+      setReplyError(getErrorMessage(err, t('Failed to send reply')));
     } finally {
       setSending(false);
     }
   }
 
   if (loading) return <LoadingSpinner />;
-  if (error || !ticket) return <ErrorState message={error || 'Ticket not found'} onRetry={load} />;
+  if (error || !ticket) return <ErrorState message={error || t('Ticket not found')} onRetry={load} />;
 
   const closed = ticket.status === 'closed';
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Support ticket" title={ticket.subject} back={<BackLink to="/support" label="Back to support" />} />
+      <PageHeader eyebrow={t('Support ticket')} title={ticket.subject} back={<BackLink to="/support" label="Back to support" />} />
 
       <div className="grid gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1">
@@ -82,28 +84,28 @@ export function TicketDetailPage() {
             <div className="flex flex-col gap-3.5">
               <dl className="m-0 grid grid-cols-2 lg:grid-cols-1 gap-3.5">
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Status</dt>
+                  <dt className={labelCls}>{t('Status')}</dt>
                   <dd className="m-0">
                     <StatusPill tone={statusTone(ticket.status)}>
-                      {TICKET_STATUS_LABELS[ticket.status] ?? ticket.status}
+                      {ticketStatusLabel(ticket.status)}
                     </StatusPill>
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Category</dt>
-                  <dd className={bodyCls}>{TICKET_CATEGORY_LABELS[ticket.category] ?? ticket.category}</dd>
+                  <dt className={labelCls}>{t('Category')}</dt>
+                  <dd className={bodyCls}>{ticketCategoryLabel(ticket.category)}</dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Severity</dt>
-                  <dd className={bodyCls}>{TICKET_SEVERITY_LABELS[ticket.severity] ?? ticket.severity}</dd>
+                  <dt className={labelCls}>{t('Severity')}</dt>
+                  <dd className={bodyCls}>{ticketSeverityLabel(ticket.severity)}</dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Opened</dt>
-                  <dd className={bodyCls}>{new Date(ticket.createdAt).toLocaleString()}</dd>
+                  <dt className={labelCls}>{t('Opened')}</dt>
+                  <dd className={bodyCls}>{formatDateTime(ticket.createdAt)}</dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Last updated</dt>
-                  <dd className={bodyCls}>{new Date(ticket.updatedAt).toLocaleString()}</dd>
+                  <dt className={labelCls}>{t('Last updated')}</dt>
+                  <dd className={bodyCls}>{formatDateTime(ticket.updatedAt)}</dd>
                 </div>
               </dl>
             </div>
@@ -116,30 +118,30 @@ export function TicketDetailPage() {
           </Card>
 
           {ticket.status === 'waiting_on_user' && (
-            <Banner variant="warning">Our support team is waiting for your reply.</Banner>
+            <Banner variant="warning">{t('Our support team is waiting for your reply.')}</Banner>
           )}
 
           <Card>
             <form className="flex flex-col gap-4" onSubmit={handleReply}>
-              <SectionTitle hint="Earlier replies on this ticket can't be shown here yet; only messages you send now appear below.">
-                Add a reply
+              <SectionTitle hint={t("Earlier replies on this ticket can't be shown here yet; only messages you send now appear below.")}>
+                {t('Add a reply')}
               </SectionTitle>
               {sentComments.length > 0 && (
                 <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
                   {sentComments.map(c => (
                     <li key={c.id} className="rounded-2xl rounded-ee-md bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 flex flex-col gap-1">
                       <span className={`${bodyCls} whitespace-pre-wrap`}>{c.body}</span>
-                      <span className="text-[11px] font-semibold text-slate-400">You · {new Date(c.createdAt).toLocaleString()}</span>
+                      <span className="text-[11px] font-semibold text-slate-400">{t('You')} · {formatDateTime(c.createdAt)}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {replyError && <Banner variant="error">{replyError}</Banner>}
               {closed ? (
-                <Banner variant="info">This ticket is closed. Open a new ticket if you still need help.</Banner>
+                <Banner variant="info">{t('This ticket is closed. Open a new ticket if you still need help.')}</Banner>
               ) : (
                 <>
-                  <Field label="Message" htmlFor="ticket-reply">
+                  <Field label={t('Message')} htmlFor="ticket-reply">
                     <textarea
                       id="ticket-reply"
                       className={`${textareaCls} min-h-28`}
@@ -150,7 +152,7 @@ export function TicketDetailPage() {
                   </Field>
                   <div className="flex justify-end">
                     <Button variant="primary" type="submit" disabled={sending || !reply.trim()}>
-                      {sending ? 'Sending…' : 'Send reply'}
+                      {sending ? t('Sending…') : t('Send reply')}
                     </Button>
                   </div>
                 </>

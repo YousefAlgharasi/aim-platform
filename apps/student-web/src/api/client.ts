@@ -1,5 +1,6 @@
 import { config } from '../config';
 import type { ApiError } from '../types';
+import { t } from '../i18n';
 
 // Backend envelope: { success: true, data, meta } | { success: false, error: { code, message, statusCode, details } }
 // See services/backend-api/src/common/api/api-response.types.ts.
@@ -145,7 +146,7 @@ class ApiClient {
       const networkError: ApiError = {
         code: 'NETWORK_ERROR',
         statusCode: 0,
-        message: "Can't reach the server. Check your connection and try again.",
+        message: t("Can't reach the server. Check your connection and try again."),
       };
       throw networkError;
     }

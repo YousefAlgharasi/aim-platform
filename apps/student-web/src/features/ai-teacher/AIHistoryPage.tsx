@@ -9,6 +9,7 @@ import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } fr
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { MicIcon, SparkleIcon } from '../../components/common/Icons';
 import { BackLink, pillLinkClass } from './ui';
+import { useI18n } from '../../i18n/I18nContext';
 
 /**
  * /ai-teacher/history — the student's active AI Teacher conversations
@@ -16,6 +17,7 @@ import { BackLink, pillLinkClass } from './ui';
  * conversation can be reopened in chat or in Voice Teacher.
  */
 export function AIHistoryPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<ChatSessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,9 +29,9 @@ export function AIHistoryPage() {
     aiTeacherApi
       .listSessions()
       .then((res) => setSessions(res.sessions ?? []))
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load history')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load history'))))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchHistory();
@@ -41,18 +43,18 @@ export function AIHistoryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <BackLink to="/ai-teacher" label="Back to AI Teacher" />
+        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
         <div className="flex-1 min-w-0">
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">AI Teacher</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">Conversation History</h1>
+          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('AI Teacher')}</span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Conversation History')}</h1>
         </div>
       </div>
 
       {sessions.length === 0 ? (
         <EmptyState
-          title="No conversations yet"
-          message="Start a conversation with your AI Teacher to see it here."
-          actionLabel="Go to AI Teacher"
+          title={t('No conversations yet')}
+          message={t('Start a conversation with your AI Teacher to see it here.')}
+          actionLabel={t('Go to AI Teacher')}
           onAction={() => navigate('/ai-teacher')}
         />
       ) : (
@@ -73,17 +75,17 @@ export function AIHistoryPage() {
                     <span className="min-w-0 flex flex-col">
                       <span className="font-semibold text-slate-900 dark:text-white truncate">{sessionLabel(session)}</span>
                       <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {session.status === 'active' ? 'Active' : 'Closed'} · {relativeTime(session.updatedAt)}
+                        {session.status === 'active' ? t('Active') : t('Closed')} · {relativeTime(session.updatedAt)}
                       </span>
                     </span>
                   </Link>
                   <Link
                     to={`/voice-teacher/${session.sessionId}`}
                     className={pillLinkClass}
-                    aria-label={`Continue ${sessionLabel(session)} in Voice Teacher`}
+                    aria-label={t('Continue {title} in Voice Teacher', { title: sessionLabel(session) })}
                   >
                     <MicIcon className="size-4" />
-                    Voice
+                    {t('Voice')}
                   </Link>
                 </div>
               </Card>

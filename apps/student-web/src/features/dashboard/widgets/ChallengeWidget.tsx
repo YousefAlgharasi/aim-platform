@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../../i18n/I18nContext';
 import { Card } from '../../../components/common/Card';
 import type { DailyChallengeSummary } from '../dashboardApi';
 import * as ui from './ui';
@@ -9,13 +10,14 @@ interface ChallengeWidgetProps {
 
 /** Today's backend-assigned challenge (GET /student/engagement/summary → challenge). */
 export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
+  const { t } = useI18n();
   const target = Math.max(challenge.targetCount, 1);
   const pct = Math.min(100, Math.round((challenge.progressCount / target) * 100));
   return (
     <Card>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <span className={ui.eyebrow}>Daily challenge</span>
+          <span className={ui.eyebrow}>{t('Daily challenge')}</span>
           <span
             className={
               challenge.completed
@@ -23,7 +25,7 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
                 : 'rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-extrabold text-[#4F46E5] dark:bg-indigo-950/60 dark:text-indigo-400'
             }
           >
-            {challenge.completed ? 'Completed' : `${challenge.progressCount}/${challenge.targetCount}`}
+            {challenge.completed ? t('Completed') : `${challenge.progressCount}/${challenge.targetCount}`}
           </span>
         </div>
         <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{challenge.title}</span>
@@ -31,7 +33,7 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
         <div
           className={ui.barTrack}
           role="progressbar"
-          aria-label="Challenge progress"
+          aria-label={t('Challenge progress')}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={pct}
@@ -40,7 +42,7 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
         </div>
         {!challenge.completed && (
           <div className="flex flex-wrap items-center gap-3">
-            <Link to="/curriculum" className={ui.primaryLink}>Go to lessons</Link>
+            <Link to="/curriculum" className={ui.primaryLink}>{t('Go to lessons')}</Link>
           </div>
         )}
       </div>

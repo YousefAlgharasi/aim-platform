@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -14,7 +15,7 @@ import {
   fetchCheckoutStatus,
   fetchRecentCheckouts,
   formatMoney,
-  INTERVAL_LABELS,
+  intervalLabel,
   type BillingPlan,
   type BillingPrice,
   type CheckoutStatus,
@@ -51,6 +52,7 @@ function writeStoredSession(planId: string, sessionId: string | null) {
 export function CheckoutPage() {
   const { planId = '' } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const result = searchParams.get('result');
 
@@ -79,7 +81,7 @@ export function CheckoutPage() {
         setPlan(foundPlan);
         setPrice(foundPlan ? pricing.prices.find(p => p.id === foundPlan.priceId) || null : null);
       })
-      .catch(err => setLoadError(getErrorMessage(err, 'Failed to load checkout')))
+      .catch(err => setLoadError(getErrorMessage(err, t('Failed to load checkout'))))
       .finally(() => setLoading(false));
   }, [planId]);
 
@@ -113,12 +115,12 @@ export function CheckoutPage() {
           }
         })
         .catch(err => {
-          setStatusError(getErrorMessage(err, 'Could not check payment status'));
+          setStatusError(getErrorMessage(err, t('Could not check payment status')));
           stopPolling();
         });
     };
     tick();
-  }, [planId, stopPolling]);
+  }, [planId, stopPolling, t]);
 
   useEffect(() => stopPolling, [stopPolling]);
 
@@ -138,11 +140,11 @@ export function CheckoutPage() {
           setSessionId(latest.sessionId);
           startPolling(latest.sessionId);
         } else {
-          setStatusError('We could not find your checkout session.');
+          setStatusError(t('We could not find your checkout session.'));
         }
       })
-      .catch(err => setStatusError(getErrorMessage(err, 'Could not check payment status')));
-  }, [result, planId, startPolling]);
+      .catch(err => setStatusError(getErrorMessage(err, t('Could not check payment status'))));
+  }, [result, planId, startPolling, t]);
 
   async function handleCheckout() {
     if (!price) return;
@@ -166,7 +168,7 @@ export function CheckoutPage() {
       startPolling(session.id);
       setProcessing(false);
     } catch (err) {
-      setError(getErrorMessage(err, 'Checkout failed'));
+      setError(getErrorMessage(err, t('Checkout failed')));
       setProcessing(false);
     }
   }
@@ -189,49 +191,49 @@ export function CheckoutPage() {
     const state = status?.status ?? 'pending';
     return (
       <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
-        <PageHeader eyebrow="Billing" title="Checkout" back={<BackLink to="/billing" label="Back to billing" />} />
+        <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
         <Card>
           <div className="flex flex-col gap-4 items-stretch">
             {statusError ? (
               <>
                 <Banner variant="error">{statusError}</Banner>
                 <div className="flex flex-wrap gap-2">
-                  {sessionId && <Button variant="secondary" onClick={() => startPolling(sessionId)}>Check again</Button>}
-                  <Button variant="ghost" onClick={startOver}>Start over</Button>
+                  {sessionId && <Button variant="secondary" onClick={() => startPolling(sessionId)}>{t('Check again')}</Button>}
+                  <Button variant="ghost" onClick={startOver}>{t('Start over')}</Button>
                 </div>
               </>
             ) : state === 'completed' ? (
               <>
                 <div className="size-14 rounded-2xl mx-auto bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✓</div>
-                <h2 className={`${h2Cls} text-center`}>Payment successful</h2>
+                <h2 className={`${h2Cls} text-center`}>{t('Payment successful')}</h2>
                 <p className={`${subCls} text-center`}>
-                  {plan ? `You're now subscribed to ${plan.name}.` : 'Your subscription is active.'}
+                  {plan ? t("You're now subscribed to {plan}.", { plan: plan.name }) : t('Your subscription is active.')}
                 </p>
-                <Link to="/billing" className="no-underline"><Button variant="primary" size="lg" fullWidth>Go to billing</Button></Link>
+                <Link to="/billing" className="no-underline"><Button variant="primary" size="lg" fullWidth>{t('Go to billing')}</Button></Link>
               </>
             ) : state === 'failed' || state === 'expired' ? (
               <>
                 <div className="size-14 rounded-2xl mx-auto bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✕</div>
-                <h2 className={`${h2Cls} text-center`}>{state === 'expired' ? 'Checkout expired' : 'Payment failed'}</h2>
-                <p className={`${subCls} text-center`}>No charge was completed. You can try again.</p>
-                <Button variant="primary" size="lg" fullWidth onClick={startOver}>Try again</Button>
+                <h2 className={`${h2Cls} text-center`}>{state === 'expired' ? t('Checkout expired') : t('Payment failed')}</h2>
+                <p className={`${subCls} text-center`}>{t('No charge was completed. You can try again.')}</p>
+                <Button variant="primary" size="lg" fullWidth onClick={startOver}>{t('Try again')}</Button>
               </>
             ) : (
               <>
-                <h2 className={`${h2Cls} text-center`}>Waiting for payment confirmation…</h2>
+                <h2 className={`${h2Cls} text-center`}>{t('Waiting for payment confirmation…')}</h2>
                 {polling && <LoadingSpinner />}
                 {status?.checkoutUrl && (
-                  <a href={status.checkoutUrl} className={`${textLinkCls} text-center`}>Continue to payment page</a>
+                  <a href={status.checkoutUrl} className={`${textLinkCls} text-center`}>{t('Continue to payment page')}</a>
                 )}
                 {!status?.checkoutUrl && status && !polling && (
                   <p className={`${subCls} text-center`}>
-                    The payment provider hasn't confirmed this checkout yet. This can take a moment.
+                    {t("The payment provider hasn't confirmed this checkout yet. This can take a moment.")}
                   </p>
                 )}
                 {pollTimedOut && sessionId && (
                   <div className="flex flex-wrap justify-center gap-2">
-                    <Button variant="secondary" onClick={() => startPolling(sessionId)}>Check again</Button>
-                    <Button variant="ghost" onClick={startOver}>Start over</Button>
+                    <Button variant="secondary" onClick={() => startPolling(sessionId)}>{t('Check again')}</Button>
+                    <Button variant="ghost" onClick={startOver}>{t('Start over')}</Button>
                   </div>
                 )}
               </>
@@ -245,9 +247,9 @@ export function CheckoutPage() {
   if (!plan) {
     return (
       <EmptyState
-        title="Plan not found"
-        message="This plan is no longer available."
-        actionLabel="Back to billing"
+        title={t('Plan not found')}
+        message={t('This plan is no longer available.')}
+        actionLabel={t('Back to billing')}
         onAction={() => navigate('/billing')}
       />
     );
@@ -256,9 +258,9 @@ export function CheckoutPage() {
   // ----- Start view -----
   return (
     <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
-      <PageHeader eyebrow="Billing" title="Checkout" back={<BackLink to="/billing" label="Back to billing" />} />
+      <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
 
-      {result === 'cancel' && <Banner variant="info">Payment was cancelled. You have not been charged.</Banner>}
+      {result === 'cancel' && <Banner variant="info">{t('Payment was cancelled. You have not been charged.')}</Banner>}
 
       <Card>
         <div className="flex flex-col gap-3">
@@ -266,21 +268,21 @@ export function CheckoutPage() {
           {plan.description && <p className={subCls}>{plan.description}</p>}
           {price ? (
             <div className="rounded-xl bg-slate-50 dark:bg-slate-900/40 px-4 py-3">
-              <KV label={`Plan (${INTERVAL_LABELS[price.billingInterval] ?? price.billingInterval})`} strong>
+              <KV label={t('Plan ({interval})', { interval: intervalLabel(price.billingInterval) })} strong>
                 {formatMoney(price.amount, price.currency)}
               </KV>
             </div>
           ) : (
-            <Banner variant="warning">This plan has no active price and can't be purchased right now.</Banner>
+            <Banner variant="warning">{t("This plan has no active price and can't be purchased right now.")}</Banner>
           )}
           <p className={subCls}>
-            Any discount from a promotion code is applied by the payment provider on the next page.
+            {t('Any discount from a promotion code is applied by the payment provider on the next page.')}
           </p>
         </div>
       </Card>
 
       <Input
-        label="Promotion code (optional)"
+        label={t('Promotion code (optional)')}
         value={promoCode}
         onChange={e => setPromoCode(e.target.value)}
         disabled={processing}
@@ -290,13 +292,13 @@ export function CheckoutPage() {
       {error && <Banner variant="error">{error}</Banner>}
 
       <Button variant="primary" size="lg" fullWidth onClick={handleCheckout} disabled={processing || !price}>
-        {processing ? 'Processing…' : 'Continue to Payment'}
+        {processing ? t('Processing…') : t('Continue to Payment')}
       </Button>
 
       <p className={`${subCls} text-center`}>
-        Payment is processed securely through our payment provider.
+        {t('Payment is processed securely through our payment provider.')}
       </p>
-      <Link to="/billing" className={`${textLinkCls} text-center`}>Back to billing</Link>
+      <Link to="/billing" className={`${textLinkCls} text-center`}>{t('Back to billing')}</Link>
     </div>
   );
 }

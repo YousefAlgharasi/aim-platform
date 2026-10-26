@@ -4,12 +4,14 @@ import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { useI18n } from '../../i18n/I18nContext';
 import { useAimResults } from './useAimResults';
 import { masteryTier, prettifySkillId, tierLabel, toPercent, trendLabel } from './aimApi';
 
 const OPEN_WEAKNESS_STATUSES = new Set(['open', 'improving']);
 
 export function SkillStatePage() {
+  const { t, formatDate } = useI18n();
   const { data, loading, error, reload } = useAimResults();
 
   if (loading) return <LoadingSpinner />;
@@ -26,13 +28,13 @@ export function SkillStatePage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">Progress</ui.BackLink>
-      <h1 className={ui.h1}>Skills</h1>
+      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
+      <h1 className={ui.h1}>{t('Skills')}</h1>
 
       {skills.length === 0 ? (
         <EmptyState
-          title="No skill data yet"
-          message="Your skill mastery appears here after you complete lessons, practice or assessments."
+          title={t('No skill data yet')}
+          message={t('Your skill mastery appears here after you complete lessons, practice or assessments.')}
         />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -47,13 +49,13 @@ export function SkillStatePage() {
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-base font-bold text-slate-900 dark:text-white [overflow-wrap:anywhere]" title={s.skillId}>{name}</span>
                     <span className={ui.badge(tier === 'needsWork' || weakSkillIds.has(s.skillId) ? ui.tone.error : ui.tone.primary)}>
-                      {tierLabel[tier]}
+                      {t(tierLabel[tier])}
                     </span>
                   </div>
                   <div
                     className={ui.barTrack}
                     role="progressbar"
-                    aria-label={`${name} mastery`}
+                    aria-label={t('{name} mastery', { name })}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={pct}
@@ -62,17 +64,17 @@ export function SkillStatePage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      Mastery {pct}%{prev != null ? ` · was ${prev}%` : ''}
+                      {t('Mastery {pct}%', { pct })}{prev != null ? ` · ${t('was {pct}%', { pct: prev })}` : ''}
                     </span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{trendLabel(s.masteryTrend)}</span>
                   </div>
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Confidence {toPercent(s.masteryConfidence)}% · Last evaluated{' '}
-                    {new Date(s.lastEvaluatedAt).toLocaleDateString()}
+                    {t('Confidence {pct}%', { pct: toPercent(s.masteryConfidence) })} ·{' '}
+                    {t('Last evaluated {date}', { date: formatDate(s.lastEvaluatedAt) })}
                   </span>
                   {weakSkillIds.has(s.skillId) && (
                     <p className="m-0 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 [&_a]:font-semibold [&_a]:text-[#4F46E5] dark:[&_a]:text-indigo-400">
-                      This skill is flagged as an area to improve. <Link to="/progress/weaknesses">See details</Link>
+                      {t('This skill is flagged as an area to improve.')} <Link to="/progress/weaknesses">{t('See details')}</Link>
                     </p>
                   )}
                 </div>

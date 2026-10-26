@@ -1,6 +1,7 @@
 import { AuthAudioPlayer } from '../lessons/AuthAudioPlayer';
 import { CheckIcon } from '../../components/common/Icons';
 import { fetchQuestionAudio, type SessionQuestion } from './practiceApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { questionCard } from './practiceStyles';
 
 interface QuestionRendererProps {
@@ -33,6 +34,7 @@ export function QuestionRenderer({
   questionTotal,
   result,
 }: QuestionRendererProps) {
+  const { t } = useI18n();
   const options = [...question.options].sort((a, b) => a.order - b.order);
   const isOptionBased = options.length > 0;
   const isListening = question.type === 'listening_choice';
@@ -44,19 +46,19 @@ export function QuestionRenderer({
         <div>
           {questionNumber != null && questionTotal != null && (
             <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[11px] uppercase tracking-wider block mb-2">
-              Question {questionNumber} of {questionTotal}
+              {t('Question {n} of {total}', { n: questionNumber, total: questionTotal })}
             </span>
           )}
           <p className="text-slate-900 dark:text-white font-bold text-lg leading-snug m-0">{question.stem}</p>
         </div>
         {isListening && (
-          <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label="Play recording" />
+          <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label={t('Play recording')} />
         )}
       </div>
 
       {isOptionBased && (
         <fieldset className="flex flex-col gap-2.5 border-0 p-0 m-0 min-w-0">
-          <legend className="sr-only">Select your answer</legend>
+          <legend className="sr-only">{t('Select your answer')}</legend>
           {options.map(option => {
             const isSelected = selectedAnswer === option.id;
             let cardStyle =
@@ -101,8 +103,8 @@ export function QuestionRenderer({
           value={selectedAnswer}
           onChange={e => onAnswerChange(e.target.value)}
           disabled={disabled}
-          placeholder="Type your answer…"
-          aria-label="Your answer"
+          placeholder={t('Type your answer…')}
+          aria-label={t('Your answer')}
           autoComplete="off"
         />
       )}
@@ -113,9 +115,9 @@ export function QuestionRenderer({
           value={selectedAnswer}
           onChange={e => onAnswerChange(e.target.value)}
           disabled={disabled}
-          placeholder="Type your answer…"
+          placeholder={t('Type your answer…')}
           rows={4}
-          aria-label="Your answer"
+          aria-label={t('Your answer')}
         />
       )}
     </div>

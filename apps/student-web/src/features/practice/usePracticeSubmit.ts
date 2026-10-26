@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getErrorMessage } from '../../api/client';
+import { t } from '../../i18n';
 import { submitAttempt, type AttemptResponse } from './practiceApi';
 
 export interface AttemptFeedback {
@@ -31,7 +32,7 @@ export function usePracticeSubmit(sessionId: string) {
           return res;
         })
         .catch(err => {
-          setError(getErrorMessage(err, 'Failed to submit answer'));
+          setError(getErrorMessage(err, t('Failed to submit answer')));
           throw err;
         })
         .finally(() => setSubmitting(false));

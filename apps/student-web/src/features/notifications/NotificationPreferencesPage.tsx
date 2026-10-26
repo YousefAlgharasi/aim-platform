@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
@@ -15,8 +16,8 @@ import {
   setReminderStatus,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_CATEGORIES,
-  CHANNEL_LABELS,
-  CATEGORY_LABELS,
+  channelLabel,
+  categoryLabel,
   type NotificationChannel,
   type NotificationCategory,
   type NotificationPreference,
@@ -32,6 +33,16 @@ const REMINDER_KIND_LABELS: Record<string, string> = {
   streak: 'Streak',
   custom: 'Custom',
 };
+
+function statusLabelFor(status: string, t: (s: string) => string): string {
+  switch (status) {
+    case 'active': return t('active');
+    case 'paused': return t('paused');
+    case 'completed': return t('completed');
+    case 'cancelled': return t('cancelled');
+    default: return status;
+  }
+}
 
 function browserTimezone(): string {
   try {
@@ -50,6 +61,8 @@ function hhmm(value: string | null | undefined, fallback: string): string {
 const prefKey = (channel: string, category: string) => `${channel}:${category}`;
 
 export function NotificationPreferencesPage() {
+  const { t, formatDateTime } = useI18n();
+  const statusLabel = (s: string) => statusLabelFor(s, t);
   const [prefs, setPrefs] = useState<NotificationPreference[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,7 +91,7 @@ export function NotificationPreferencesPage() {
     setError('');
     fetchPreferences()
       .then(setPrefs)
-      .catch(err => setError(getErrorMessage(err, 'Failed to load preferences')))
+      .catch(err => setError(getErrorMessage(err, t('Failed to load preferences'))))
       .finally(() => setLoading(false));
   }, []);
 
@@ -96,7 +109,7 @@ export function NotificationPreferencesPage() {
     setQuietLoadError('');
     fetchQuietHours()
       .then(applyQuietHours)
-      .catch(err => setQuietLoadError(getErrorMessage(err, 'Failed to load quiet hours')))
+      .catch(err => setQuietLoadError(getErrorMessage(err, t('Failed to load quiet hours'))))
       .finally(() => setQuietLoading(false));
   }, [applyQuietHours]);
 
@@ -105,7 +118,7 @@ export function NotificationPreferencesPage() {
     setRemindersError('');
     fetchReminders()
       .then(setReminders)
-      .catch(err => setRemindersError(getErrorMessage(err, 'Failed to load reminders')))
+      .catch(err => setRemindersError(getErrorMessage(err, t('Failed to load reminders'))))
       .finally(() => setRemindersLoading(false));
   }, []);
 
@@ -134,7 +147,7 @@ export function NotificationPreferencesPage() {
           return [...others, saved];
         });
       })
-      .catch(err => setPrefError(getErrorMessage(err, 'Could not update preference')))
+      .catch(err => setPrefError(getErrorMessage(err, t('Could not update preference'))))
       .finally(() => setSavingPrefs(prev => {
         const next = new Set(prev);
         next.delete(key);
@@ -154,9 +167,9 @@ export function NotificationPreferencesPage() {
         timezone: timezone.trim() || browserTimezone(),
       });
       applyQuietHours(saved ?? null);
-      setQuietStatus({ variant: 'success', message: quietEnabled ? 'Quiet hours saved.' : 'Quiet hours turned off.' });
+      setQuietStatus({ variant: 'success', message: quietEnabled ? t('Quiet hours saved.') : t('Quiet hours turned off.') });
     } catch (err) {
-      setQuietStatus({ variant: 'error', message: getErrorMessage(err, 'Could not save quiet hours') });
+      setQuietStatus({ variant: 'error', message: getErrorMessage(err, t('Could not save quiet hours')) });
     } finally {
       setSavingQuiet(false);
     }
@@ -164,12 +177,12 @@ export function NotificationPreferencesPage() {
 
   function reminderAction(schedule: ReminderSchedule, action: 'pause' | 'resume' | 'cancel') {
     if (busyReminders.has(schedule.id)) return;
-    if (action === 'cancel' && !window.confirm('Cancel this reminder? This cannot be undone.')) return;
+    if (action === 'cancel' && !window.confirm(t('Cancel this reminder? This cannot be undone.'))) return;
     setReminderActionError('');
     setBusyReminders(prev => new Set(prev).add(schedule.id));
     setReminderStatus(schedule.id, action)
       .then(updated => setReminders(prev => prev.map(r => (r.id === updated.id ? updated : r))))
-      .catch(err => setReminderActionError(getErrorMessage(err, `Could not ${action} reminder`)))
+      .catch(err => setReminderActionError(getErrorMessage(err, action === 'pause' ? t('Could not pause reminder') : action === 'resume' ? t('Could not resume reminder') : t('Could not cancel reminder'))))
       .finally(() => setBusyReminders(prev => {
         const next = new Set(prev);
         next.delete(schedule.id);
@@ -183,30 +196,30 @@ export function NotificationPreferencesPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="Notifications"
-        title="Notification Preferences"
-        action={<Link to="/notifications" className={textLinkCls}>Inbox</Link>}
+        eyebrow={t('Notifications')}
+        title={t('Notification Preferences')}
+        action={<Link to="/notifications" className={textLinkCls}>{t('Inbox')}</Link>}
       />
 
       <div className="grid gap-5 lg:grid-cols-2 items-start">
         <div className="lg:col-span-2">
           <Card>
             <div className="flex flex-col gap-4">
-              <SectionTitle hint="Choose how you hear about each topic. Push notifications are delivered to the AIM mobile app.">
-                Channels
+              <SectionTitle hint={t('Choose how you hear about each topic. Push notifications are delivered to the AIM mobile app.')}>
+                {t('Channels')}
               </SectionTitle>
               {prefError && <Banner variant="error">{prefError}</Banner>}
               <div className="grid gap-3 md:grid-cols-2">
                 {NOTIFICATION_CATEGORIES.map(category => (
                   <div key={category} className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 p-3.5 flex flex-col gap-1">
-                    <span className="text-sm font-extrabold text-slate-900 dark:text-white">{CATEGORY_LABELS[category] ?? category}</span>
+                    <span className="text-sm font-extrabold text-slate-900 dark:text-white">{categoryLabel(category)}</span>
                     {NOTIFICATION_CHANNELS.map(channel => {
                       const enabled = isEnabled(channel, category);
                       const saving = savingPrefs.has(prefKey(channel, category));
-                      const label = `${CHANNEL_LABELS[channel]} notifications for ${CATEGORY_LABELS[category] ?? category}`;
+                      const label = t('{channel} notifications for {category}', { channel: channelLabel(channel), category: categoryLabel(category) });
                       return (
                         <div key={channel} className="flex items-center justify-between gap-3 min-h-[40px]">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">{CHANNEL_LABELS[channel]}</span>
+                          <span className="text-sm text-slate-500 dark:text-slate-400">{channelLabel(channel)}</span>
                           <button
                             type="button"
                             onClick={() => togglePref(channel, category)}
@@ -230,26 +243,26 @@ export function NotificationPreferencesPage() {
 
         <Card>
           <form className="flex flex-col gap-4" onSubmit={saveQuietHours}>
-            <SectionTitle>Quiet hours</SectionTitle>
+            <SectionTitle>{t('Quiet hours')}</SectionTitle>
             {quietLoading ? (
               <LoadingSpinner />
             ) : quietLoadError ? (
               <>
                 <Banner variant="error">{quietLoadError}</Banner>
-                <div><Button type="button" variant="ghost" size="sm" onClick={loadQuietHours}>Retry</Button></div>
+                <div><Button type="button" variant="ghost" size="sm" onClick={loadQuietHours}>{t('Retry')}</Button></div>
               </>
             ) : (
               <>
-                <p className={subCls}>Non-urgent notifications are held during this window.</p>
+                <p className={subCls}>{t('Non-urgent notifications are held during this window.')}</p>
                 {quietStatus && <Banner variant={quietStatus.variant}>{quietStatus.message}</Banner>}
                 <div className="flex items-center justify-between gap-3 min-h-[40px]">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">Enable quiet hours</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{t('Enable quiet hours')}</span>
                   <button
                     type="button"
                     onClick={() => { setQuietEnabled(v => !v); setQuietStatus(null); }}
                     role="switch"
                     aria-checked={quietEnabled}
-                    aria-label="Enable quiet hours"
+                    aria-label={t('Enable quiet hours')}
                     className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors ${quietEnabled ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'}`}
                   >
                     <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${quietEnabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
@@ -257,7 +270,7 @@ export function NotificationPreferencesPage() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
-                    From
+                    {t('From')}
                     <input
                       type="time"
                       className={inputCls}
@@ -268,7 +281,7 @@ export function NotificationPreferencesPage() {
                     />
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
-                    To
+                    {t('To')}
                     <input
                       type="time"
                       className={inputCls}
@@ -279,9 +292,10 @@ export function NotificationPreferencesPage() {
                     />
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5 sm:col-span-2`}>
-                    Timezone
+                    {t('Timezone')}
                     <input
                       type="text"
+                      dir="ltr"
                       className={inputCls}
                       value={timezone}
                       maxLength={64}
@@ -293,7 +307,7 @@ export function NotificationPreferencesPage() {
                 </div>
                 <div>
                   <Button type="submit" size="sm" disabled={savingQuiet}>
-                    {savingQuiet ? 'Saving…' : 'Save quiet hours'}
+                    {savingQuiet ? t('Saving…') : t('Save quiet hours')}
                   </Button>
                 </div>
               </>
@@ -303,16 +317,16 @@ export function NotificationPreferencesPage() {
 
         <Card>
           <div className="flex flex-col gap-4">
-            <SectionTitle>Reminders</SectionTitle>
+            <SectionTitle>{t('Reminders')}</SectionTitle>
             {remindersLoading ? (
               <LoadingSpinner />
             ) : remindersError ? (
               <>
                 <Banner variant="error">{remindersError}</Banner>
-                <div><Button variant="ghost" size="sm" onClick={loadReminders}>Retry</Button></div>
+                <div><Button variant="ghost" size="sm" onClick={loadReminders}>{t('Retry')}</Button></div>
               </>
             ) : reminders.length === 0 ? (
-              <p className={subCls}>You have no scheduled reminders.</p>
+              <p className={subCls}>{t('You have no scheduled reminders.')}</p>
             ) : (
               <>
                 {reminderActionError && <Banner variant="error">{reminderActionError}</Banner>}
@@ -324,22 +338,22 @@ export function NotificationPreferencesPage() {
                       <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                         <div className="flex flex-col gap-1 min-w-0">
                           <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
-                            {REMINDER_KIND_LABELS[r.kind] ?? r.kind}
-                            <StatusPill tone={r.status === 'active' ? 'success' : r.status === 'paused' ? 'warning' : 'neutral'}>{r.status}</StatusPill>
+                            {REMINDER_KIND_LABELS[r.kind] ? t(REMINDER_KIND_LABELS[r.kind]) : r.kind}
+                            <StatusPill tone={r.status === 'active' ? 'success' : r.status === 'paused' ? 'warning' : 'neutral'}>{statusLabel(r.status)}</StatusPill>
                           </span>
                           <span className="text-xs text-slate-500 dark:text-slate-400">
                             {r.cadence}
-                            {!finished && r.next_run_at && ` · next ${new Date(r.next_run_at).toLocaleString()}`}
+                            {!finished && r.next_run_at && ` · ${t('next {time}', { time: formatDateTime(r.next_run_at) })}`}
                           </span>
                         </div>
                         {!finished && (
                           <div className="flex gap-2">
                             {r.status === 'paused' ? (
-                              <Button variant="secondary" size="sm" onClick={() => reminderAction(r, 'resume')} disabled={busy}>Resume</Button>
+                              <Button variant="secondary" size="sm" onClick={() => reminderAction(r, 'resume')} disabled={busy}>{t('Resume')}</Button>
                             ) : (
-                              <Button variant="secondary" size="sm" onClick={() => reminderAction(r, 'pause')} disabled={busy}>Pause</Button>
+                              <Button variant="secondary" size="sm" onClick={() => reminderAction(r, 'pause')} disabled={busy}>{t('Pause')}</Button>
                             )}
-                            <Button variant="ghost" size="sm" onClick={() => reminderAction(r, 'cancel')} disabled={busy}>Cancel</Button>
+                            <Button variant="ghost" size="sm" onClick={() => reminderAction(r, 'cancel')} disabled={busy}>{t('Cancel')}</Button>
                           </div>
                         )}
                       </div>

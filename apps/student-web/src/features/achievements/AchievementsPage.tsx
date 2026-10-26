@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { getErrorMessage } from '../../api/client';
+import { t } from '../../i18n';
 import { fetchAchievements, type Achievement } from './achievementsApi';
 import { TrophyIcon } from '../../components/common/Icons';
 
@@ -25,13 +27,14 @@ function iconFor(a: Achievement): string {
 }
 
 function humanize(value: string): string {
-  if (!value) return 'Other';
+  if (!value) return t('Other');
   const s = value.replace(/_/g, ' ');
-  return s[0].toUpperCase() + s.slice(1);
+  return t(s[0].toUpperCase() + s.slice(1));
 }
 
 /** Port of Flutter features/achievements (achievements_page.dart). */
 export function AchievementsPage() {
+  const { t, formatDate } = useI18n();
   const [items, setItems] = useState<Achievement[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,11 +46,11 @@ export function AchievementsPage() {
     try {
       setItems(await fetchAchievements());
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not load your achievements.'));
+      setError(getErrorMessage(err, t('Could not load your achievements.')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -63,17 +66,17 @@ export function AchievementsPage() {
   const pct = items.length === 0 ? 0 : Math.round((unlocked.length / items.length) * 100);
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'all', label: `All (${items.length})` },
-    { key: 'unlocked', label: `Unlocked (${unlocked.length})` },
-    { key: 'locked', label: `Locked (${locked.length})` },
+    { key: 'all', label: t('All ({n})', { n: items.length }) },
+    { key: 'unlocked', label: t('Unlocked ({n})', { n: unlocked.length }) },
+    { key: 'locked', label: t('Locked ({n})', { n: locked.length }) },
   ];
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Achievements</h1>
+      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Achievements')}</h1>
 
       {items.length === 0 ? (
-        <EmptyState title="No achievements yet" message="Achievements will appear here as they become available." />
+        <EmptyState title={t('No achievements yet')} message={t('Achievements will appear here as they become available.')} />
       ) : (
         <>
           <div className="relative overflow-hidden rounded-3xl border border-indigo-400/20 bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 p-5 text-white shadow-xl shadow-indigo-500/25">
@@ -85,14 +88,14 @@ export function AchievementsPage() {
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-base font-extrabold leading-tight">
-                    {unlocked.length} of {items.length} badges unlocked
+                    {t('{done} of {total} badges unlocked', { done: unlocked.length, total: items.length })}
                   </span>
                   <span className="text-xs font-extrabold">{pct}%</span>
                 </div>
                 <div
                   className="h-2 overflow-hidden rounded-full bg-black/20 p-0.5"
                   role="progressbar"
-                  aria-label="Badges unlocked"
+                  aria-label={t('Badges unlocked')}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={pct}
@@ -103,32 +106,32 @@ export function AchievementsPage() {
             </div>
           </div>
 
-          <div className="flex gap-1 rounded-xl bg-slate-200/50 p-1 dark:bg-slate-800" role="tablist" aria-label="Filter achievements">
-            {tabs.map((t) => (
+          <div className="flex gap-1 rounded-xl bg-slate-200/50 p-1 dark:bg-slate-800" role="tablist" aria-label={t('Filter achievements')}>
+            {tabs.map((tb) => (
               <button
-                key={t.key}
+                key={tb.key}
                 type="button"
                 role="tab"
-                aria-selected={tab === t.key}
+                aria-selected={tab === tb.key}
                 className={`min-h-10 flex-1 cursor-pointer rounded-lg border-none px-2 py-1.5 text-xs font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F46E5] ${
-                  tab === t.key
+                  tab === tb.key
                     ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-300'
                     : 'bg-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
                 }`}
-                onClick={() => setTab(t.key)}
+                onClick={() => setTab(tb.key)}
               >
-                {t.label}
+                {tb.label}
               </button>
             ))}
           </div>
 
           {visible.length === 0 ? (
             <EmptyState
-              title={tab === 'unlocked' ? 'Nothing unlocked yet' : 'All unlocked!'}
+              title={tab === 'unlocked' ? t('Nothing unlocked yet') : t('All unlocked!')}
               message={
                 tab === 'unlocked'
-                  ? 'Complete lessons and keep your streak going to unlock badges.'
-                  : 'You have unlocked every available badge.'
+                  ? t('Complete lessons and keep your streak going to unlock badges.')
+                  : t('You have unlocked every available badge.')
               }
             />
           ) : (
@@ -162,9 +165,9 @@ export function AchievementsPage() {
                         >
                           {a.unlocked
                             ? a.unlockedAt
-                              ? `Unlocked ${new Date(a.unlockedAt).toLocaleDateString()}`
-                              : 'Unlocked'
-                            : 'Locked'}
+                              ? t('Unlocked {date}', { date: formatDate(a.unlockedAt) })
+                              : t('Unlocked')
+                            : t('Locked')}
                         </span>
                       </div>
                     </div>

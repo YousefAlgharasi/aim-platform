@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { EyeIcon, SparkleIcon } from '../common/Icons';
+import { useI18n } from '../../i18n/I18nContext';
 
 // Building blocks shared by the auth screens, taken from design-prototype's
 // LoginPage / RegisterPage / ForgotPasswordPage markup.
@@ -59,11 +60,12 @@ export function TextLinkButton({ onClick, children }: { onClick: () => void; chi
 
 /** Eye toggle used in the password fields (prototype EyeIcon button). */
 export function PasswordToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-label={shown ? 'Hide password' : 'Show password'}
+      aria-label={shown ? t('Hide password') : t('Show password')}
       className="bg-transparent border-none cursor-pointer p-0 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center"
     >
       <EyeIcon off={shown} />

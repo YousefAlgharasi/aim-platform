@@ -21,6 +21,7 @@ import {
 } from './practiceApi';
 import { linkButton, linkButtonPrimary } from './practiceStyles';
 import { BackArrowIcon } from '../curriculum/CurriculumIcons';
+import { useI18n } from '../../i18n/I18nContext';
 
 type Status = 'loading' | 'locked' | 'expired' | 'failed' | 'empty' | 'active' | 'finished';
 
@@ -44,6 +45,7 @@ export function PracticeShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const navState = (location.state ?? {}) as LessonRouteState;
+  const { t } = useI18n();
 
   const [status, setStatus] = useState<Status>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -65,8 +67,8 @@ export function PracticeShell() {
     setSummaryError('');
     fetchSessionSummary(sessionId)
       .then(setSummary)
-      .catch(err => setSummaryError(getErrorMessage(err, 'Failed to load your results')));
-  }, [sessionId]);
+      .catch(err => setSummaryError(getErrorMessage(err, t('Failed to load your results'))));
+  }, [sessionId, t]);
 
   const persistCompletion = useCallback(() => {
     setCompletion('saving');
@@ -77,11 +79,11 @@ export function PracticeShell() {
         setCompletion('failed');
         setCompletionError(
           isStatus(err, 403)
-            ? getErrorMessage(err, 'Complete the previous lesson before this one can be completed.')
-            : getErrorMessage(err, "We couldn't mark this lesson as complete."),
+            ? getErrorMessage(err, t('Complete the previous lesson before this one can be completed.'))
+            : getErrorMessage(err, t("We couldn't mark this lesson as complete.")),
         );
       });
-  }, [markComplete]);
+  }, [markComplete, t]);
 
   const finish = useCallback(() => {
     setStatus('finished');
@@ -115,12 +117,12 @@ export function PracticeShell() {
         setStatus('active');
       })
       .catch(err => {
-        setErrorMessage(getErrorMessage(err, 'Failed to start practice session'));
+        setErrorMessage(getErrorMessage(err, t('Failed to start practice session')));
         if (isStatus(err, 403)) setStatus('locked');
         else if (isStatus(err, 404)) setStatus('expired');
         else setStatus('failed');
       });
-  }, [sessionId, lessonId, finish]);
+  }, [sessionId, lessonId, finish, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -153,7 +155,7 @@ export function PracticeShell() {
 
   const lessonLink = (
     <Link to={lessonId ? `/lessons/${lessonId}` : '/curriculum'} state={navState} className={linkButton}>
-      {lessonId ? 'Back to lesson' : 'Browse courses'}
+      {lessonId ? t('Back to lesson') : t('Browse courses')}
     </Link>
   );
 
@@ -161,9 +163,9 @@ export function PracticeShell() {
     return (
       <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
-          title="Choose a lesson to practice"
-          message="Practice sessions are started from a lesson. Open a lesson and select “Start practice”."
-          actionLabel="Browse courses"
+          title={t('Choose a lesson to practice')}
+          message={t('Practice sessions are started from a lesson. Open a lesson and select “Start practice”.')}
+          actionLabel={t('Browse courses')}
           onAction={() => navigate('/curriculum')}
         />
       </div>
@@ -176,8 +178,8 @@ export function PracticeShell() {
     return (
       <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
-          title="Practice locked"
-          message={errorMessage || 'This lesson is locked for you right now. Finish the earlier lessons first.'}
+          title={t('Practice locked')}
+          message={errorMessage || t('This lesson is locked for you right now. Finish the earlier lessons first.')}
         />
         {lessonLink}
       </div>
@@ -188,9 +190,9 @@ export function PracticeShell() {
     return (
       <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
-          title="This practice session has ended"
-          message="The session is no longer active. Start a new one to keep practicing."
-          actionLabel="Start new session"
+          title={t('This practice session has ended')}
+          message={t('The session is no longer active. Start a new one to keep practicing.')}
+          actionLabel={t('Start new session')}
           onAction={restart}
         />
         {lessonLink}
@@ -204,8 +206,8 @@ export function PracticeShell() {
     return (
       <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
         <EmptyState
-          title="No practice questions yet"
-          message="This lesson doesn't have any published practice questions yet. Try the AI tutor to work through it instead."
+          title={t('No practice questions yet')}
+          message={t("This lesson doesn't have any published practice questions yet. Try the AI tutor to work through it instead.")}
         />
         <div className="flex flex-wrap gap-3">
           {lessonLink}
@@ -213,7 +215,7 @@ export function PracticeShell() {
             to={`/ai-teacher?lessonId=${encodeURIComponent(lessonId)}${navState.lessonTitle ? `&lessonTitle=${encodeURIComponent(navState.lessonTitle)}` : ''}`}
             className={linkButtonPrimary}
           >
-            Ask AI tutor
+            {t('Ask AI tutor')}
           </Link>
         </div>
       </div>
@@ -250,13 +252,13 @@ export function PracticeShell() {
         <Link
           to={`/lessons/${lessonId}`}
           state={navState}
-          aria-label="Back to lesson"
+          aria-label={t('Back to lesson')}
           className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
         >
           <BackArrowIcon />
         </Link>
         <div className="min-w-0">
-          <h1 className="text-xs font-extrabold text-[#4F46E5] dark:text-indigo-400 uppercase tracking-wider m-0">Practice Session</h1>
+          <h1 className="text-xs font-extrabold text-[#4F46E5] dark:text-indigo-400 uppercase tracking-wider m-0">{t('Practice Session')}</h1>
           {navState.lessonTitle && (
             <span className="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{navState.lessonTitle}</span>
           )}
@@ -269,10 +271,10 @@ export function PracticeShell() {
         aria-valuenow={progressPct}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Practice progress"
+        aria-label={t('Practice progress')}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500 transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -299,15 +301,15 @@ export function PracticeShell() {
           >
             <p className="font-extrabold text-base m-0">
               {feedback.isCorrect === true
-                ? '✓ Correct!'
+                ? t('✓ Correct!')
                 : feedback.isCorrect === false
-                  ? '✗ Not quite'
-                  : 'Answer recorded'}
+                  ? t('✗ Not quite')
+                  : t('Answer recorded')}
             </p>
             <p className="text-sm m-0 mt-1 opacity-90">
               {feedback.isCorrect === false
-                ? 'Keep going — AIM uses this to tailor your next practice.'
-                : 'Your answer was saved.'}
+                ? t('Keep going — AIM uses this to tailor your next practice.')
+                : t('Your answer was saved.')}
             </p>
           </div>
         )}
@@ -316,11 +318,11 @@ export function PracticeShell() {
 
         {answered ? (
           <Button variant="primary" fullWidth onClick={handleNext}>
-            {index + 1 < questions.length ? 'Next question →' : 'Finish practice'}
+            {index + 1 < questions.length ? t('Next question →') : t('Finish practice')}
           </Button>
         ) : (
           <Button variant="primary" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
-            {submitting ? 'Checking…' : 'Check answer'}
+            {submitting ? t('Checking…') : t('Check answer')}
           </Button>
         )}
       </div>

@@ -4,6 +4,7 @@ import { getErrorMessage } from '../../api/client';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { startPracticeSession } from './practiceApi';
+import { useI18n } from '../../i18n/I18nContext';
 import type { LessonRouteState } from '../lessons/LessonPlayerShell';
 
 /**
@@ -15,6 +16,7 @@ export function PracticeLessonStart() {
   const { lessonId = '' } = useParams<{ lessonId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [error, setError] = useState('');
   const startedFor = useRef<string | null>(null);
 
@@ -27,8 +29,8 @@ export function PracticeLessonStart() {
           state: location.state as LessonRouteState | null,
         });
       })
-      .catch(err => setError(getErrorMessage(err, 'Failed to start practice session')));
-  }, [lessonId, location.state, navigate]);
+      .catch(err => setError(getErrorMessage(err, t('Failed to start practice session'))));
+  }, [lessonId, location.state, navigate, t]);
 
   useEffect(() => {
     // Guard against double-invocation (React StrictMode) creating two sessions.

@@ -55,12 +55,3 @@ export const navItems: NavItem[] = [
   { to: '/support', label: 'Support', icon: <LifeBuoyIcon className="size-5" /> },
   { to: '/settings', label: 'Settings', icon: <UserIcon className="size-5" /> },
 ];
-
-/** Bottom bar on phones: the five most-used destinations; everything else is in the menu drawer. */
-export const mobileNavItems: NavItem[] = [
-  { to: '/', label: 'Home', icon: <HomeIcon className="size-5" /> },
-  { to: '/curriculum', label: 'Learn', icon: <BookIcon className="size-5" /> },
-  { to: '/progress', label: 'Progress', icon: <ChartIcon className="size-5" /> },
-  { to: '/ai-teacher', label: 'AI', icon: <ChatIcon className="size-5" /> },
-  { to: '/profile', label: 'Profile', icon: <UserIcon className="size-5" /> },
-];

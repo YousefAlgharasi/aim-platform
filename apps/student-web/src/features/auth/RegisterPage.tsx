@@ -6,8 +6,10 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, AuthFooterLink, MailBadge, PasswordToggle } from '../../components/auth/AuthParts';
+import { useI18n } from '../../i18n/I18nContext';
 
 export function RegisterPage() {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,11 +26,11 @@ export function RegisterPage() {
     e.preventDefault();
     setError('');
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('Password must be at least 8 characters.'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('Passwords do not match.'));
       return;
     }
     setLoading(true);
@@ -40,7 +42,7 @@ export function RegisterPage() {
         navigate('/', { replace: true });
       }
     } catch (err) {
-      setError(getErrorMessage(err, 'Registration failed'));
+      setError(getErrorMessage(err, t('Registration failed')));
     } finally {
       setLoading(false);
     }
@@ -52,30 +54,30 @@ export function RegisterPage() {
         <AuthLogo />
         <div className="flex flex-col items-center text-center my-auto">
           <MailBadge />
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0 mb-2">Check Your Email</h1>
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0 mb-2">{t('Check Your Email')}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
-            We sent a confirmation link to{' '}
-            <span className="font-semibold text-slate-700 dark:text-slate-200">{email}</span>. Confirm your account, then sign in.
+            {t('We sent a confirmation link to {email}. Confirm your account, then sign in.', { email })}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/login')}>Back to Sign In</Button>
+        <Button size="lg" fullWidth onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
       </>
     );
   }
 
   return (
     <>
+      <div>
       <AuthHeader
-        eyebrow="Start your journey"
-        title="Create an account"
-        subtitle="Takes less than a minute. Enter your details below."
+        eyebrow={t('Start your journey')}
+        title={t('Create an account')}
+        subtitle={t('Takes less than a minute. Enter your details below.')}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 my-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
         {error && <Banner variant="error">{error}</Banner>}
-        <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+        <Input label={t('Full name')} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
         <Input
-          label="Email address"
+          label={t('Email address')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +85,7 @@ export function RegisterPage() {
           autoComplete="email"
         />
         <Input
-          label="Password"
+          label={t('Password')}
           type={showPass ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -92,7 +94,7 @@ export function RegisterPage() {
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
-          label="Confirm password"
+          label={t('Confirm password')}
           type={showConfirm ? 'text' : 'password'}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -102,12 +104,13 @@ export function RegisterPage() {
         />
         <div className="mt-2">
           <Button type="submit" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading ? t('Creating account…') : t('Create account')}
           </Button>
         </div>
       </form>
+      </div>
 
-      <AuthFooterLink prompt="Already have an account?" action="Log in" onClick={() => navigate('/login')} />
+      <AuthFooterLink prompt={t('Already have an account?')} action={t('Log in')} onClick={() => navigate('/login')} />
     </>
   );
 }

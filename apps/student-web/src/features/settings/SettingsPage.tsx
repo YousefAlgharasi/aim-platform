@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../i18n/I18nContext';
 import { apiClient, getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
@@ -12,45 +13,20 @@ import { LogOutIcon } from '../../components/common/Icons';
 import { PageHeader, SectionTitle, LinkRow, selectCls, subCls } from '../profile/ui';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
-// language (profile.preferredLanguage), daily learning commitment
-// (PUT /student/engagement/goal), notification preferences, password reset
+// language (profile.preferredLanguage), notification preferences, password reset
 // email (POST /auth/forgot-password) and sign out.
-
-interface DailyGoalSummary {
-  targetLessons: number;
-  completedToday: number;
-  streakDays: number;
-}
-
-interface EngagementSummaryResponse {
-  goal: DailyGoalSummary;
-}
-
-// Same commitment presets as Flutter ('5' → 1, '15' → 2, '30' → 3 lessons/day).
-const COMMITMENT_OPTIONS = [
-  { lessons: 1, label: 'Casual — about 5 min/day (1 lesson)' },
-  { lessons: 2, label: 'Recommended — about 15 min/day (2 lessons)' },
-  { lessons: 3, label: 'Intensive — about 30 min/day (3 lessons)' },
-];
 
 type Status = { variant: 'success' | 'error'; message: string } | null;
 
 export function SettingsPage() {
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const { t, locale, setLocale } = useI18n();
 
   // Language
-  const [language, setLanguage] = useState<'en' | 'ar'>(user?.locale === 'ar' ? 'ar' : 'en');
+  const [language, setLanguage] = useState<'en' | 'ar'>(locale);
   const [savingLanguage, setSavingLanguage] = useState(false);
   const [languageStatus, setLanguageStatus] = useState<Status>(null);
-
-  // Daily goal
-  const [goal, setGoal] = useState<DailyGoalSummary | null>(null);
-  const [goalLessons, setGoalLessons] = useState<number>(2);
-  const [goalLoading, setGoalLoading] = useState(true);
-  const [goalLoadError, setGoalLoadError] = useState('');
-  const [savingGoal, setSavingGoal] = useState(false);
-  const [goalStatus, setGoalStatus] = useState<Status>(null);
 
   // Password reset
   const [sendingReset, setSendingReset] = useState(false);
@@ -61,22 +37,8 @@ export function SettingsPage() {
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (user?.locale) setLanguage(user.locale === 'ar' ? 'ar' : 'en');
-  }, [user?.locale]);
-
-  const loadGoal = useCallback(() => {
-    setGoalLoading(true);
-    setGoalLoadError('');
-    apiClient.get<EngagementSummaryResponse>('/student/engagement/summary')
-      .then(summary => {
-        setGoal(summary.goal);
-        setGoalLessons(summary.goal.targetLessons);
-      })
-      .catch(err => setGoalLoadError(getErrorMessage(err, 'Failed to load your daily goal')))
-      .finally(() => setGoalLoading(false));
-  }, []);
-
-  useEffect(() => { loadGoal(); }, [loadGoal]);
+    setLanguage(locale);
+  }, [locale]);
 
   async function saveLanguage() {
     setSavingLanguage(true);
@@ -84,28 +46,13 @@ export function SettingsPage() {
     try {
       await updateProfile({ preferredLanguage: language });
       await refreshUser().catch(() => undefined);
-      setLanguageStatus({ variant: 'success', message: 'Language saved to your profile.' });
+      setLanguageStatus({ variant: 'success', message: t('Language saved to your profile.') });
+      // Switch the whole app language immediately (also persists the choice).
+      setLocale(language);
     } catch (err) {
-      setLanguageStatus({ variant: 'error', message: getErrorMessage(err, 'Failed to save language') });
+      setLanguageStatus({ variant: 'error', message: getErrorMessage(err, t('Failed to save language')) });
     } finally {
       setSavingLanguage(false);
-    }
-  }
-
-  async function saveGoal() {
-    setSavingGoal(true);
-    setGoalStatus(null);
-    try {
-      const updated = await apiClient.put<DailyGoalSummary>('/student/engagement/goal', {
-        dailyGoalLessons: goalLessons,
-      });
-      setGoal(updated);
-      setGoalLessons(updated.targetLessons);
-      setGoalStatus({ variant: 'success', message: 'Daily goal updated.' });
-    } catch (err) {
-      setGoalStatus({ variant: 'error', message: getErrorMessage(err, 'Failed to update daily goal') });
-    } finally {
-      setSavingGoal(false);
     }
   }
 
@@ -119,9 +66,9 @@ export function SettingsPage() {
         { email: user.email, redirectUrl: `${window.location.origin}/reset-password` },
         { auth: false },
       );
-      setResetStatus({ variant: 'success', message: `We sent a password reset link to ${user.email}.` });
+      setResetStatus({ variant: 'success', message: t('We sent a password reset link to {email}.', { email: user.email }) });
     } catch (err) {
-      setResetStatus({ variant: 'error', message: getErrorMessage(err, 'Failed to send reset email') });
+      setResetStatus({ variant: 'error', message: getErrorMessage(err, t('Failed to send reset email')) });
     } finally {
       setSendingReset(false);
     }
@@ -138,24 +85,19 @@ export function SettingsPage() {
     }
   }
 
-  const goalOptions = COMMITMENT_OPTIONS.some(o => o.lessons === goalLessons)
-    ? COMMITMENT_OPTIONS
-    : [{ lessons: goalLessons, label: `${goalLessons} lessons per day (current)` }, ...COMMITMENT_OPTIONS];
-
-
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Account" title="Settings" subtitle={user?.email} />
+      <PageHeader eyebrow={t('Account')} title={t('Settings')} subtitle={user?.email} />
 
       <div className="grid gap-5 md:grid-cols-2 items-start">
         <Card>
           <div className="flex flex-col gap-3.5">
             <div className="flex items-center gap-3">
               <span className="size-9 rounded-xl bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0 font-extrabold text-sm" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></span>
-              <SectionTitle hint="Saved to your profile and used across AIM.">Language</SectionTitle>
+              <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>
             </div>
             {languageStatus && <Banner variant={languageStatus.variant}>{languageStatus.message}</Banner>}
-            <label htmlFor="settings-language" className="sr-only">Preferred language</label>
+            <label htmlFor="settings-language" className="sr-only">{t('Preferred language')}</label>
             <select
               id="settings-language"
               className={selectCls}
@@ -169,91 +111,49 @@ export function SettingsPage() {
                 variant="secondary"
                 size="sm"
                 onClick={saveLanguage}
-                disabled={savingLanguage || language === (user?.locale === 'ar' ? 'ar' : 'en')}
+                disabled={savingLanguage || language === locale}
               >
-                {savingLanguage ? 'Saving…' : 'Save language'}
+                {savingLanguage ? t('Saving…') : t('Save language')}
               </Button>
             </div>
           </div>
         </Card>
 
         <Card>
-          <div className="flex flex-col gap-3.5">
-            <SectionTitle>Daily learning goal</SectionTitle>
-            {goalLoading ? (
-              <LoadingSpinner />
-            ) : goalLoadError ? (
-              <div className="flex flex-col gap-3">
-                <Banner variant="error">{goalLoadError}</Banner>
-                <div><Button variant="ghost" size="sm" onClick={loadGoal}>Retry</Button></div>
-              </div>
-            ) : (
-              <>
-                {goal && (
-                  <p className={subCls}>
-                    Today: {goal.completedToday} of {goal.targetLessons} lessons · {goal.streakDays}-day streak
-                  </p>
-                )}
-                {goalStatus && <Banner variant={goalStatus.variant}>{goalStatus.message}</Banner>}
-                <label htmlFor="settings-goal" className="sr-only">Daily commitment</label>
-                <select
-                  id="settings-goal"
-                  className={selectCls}
-                  value={goalLessons}
-                  onChange={e => { setGoalLessons(Number(e.target.value)); setGoalStatus(null); }}
-                >
-                  {goalOptions.map(o => <option key={o.lessons} value={o.lessons}>{o.label}</option>)}
-                </select>
-                <div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={saveGoal}
-                    disabled={savingGoal || goal?.targetLessons === goalLessons}
-                  >
-                    {savingGoal ? 'Saving…' : 'Save goal'}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </Card>
-
-        <Card>
           <div className="flex flex-col gap-1">
-            <SectionTitle>Notifications</SectionTitle>
+            <SectionTitle>{t('Notifications')}</SectionTitle>
             <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
-              <li><LinkRow to="/notifications/preferences">Notification channels, quiet hours &amp; reminders</LinkRow></li>
-              <li><LinkRow to="/notifications">Notification inbox</LinkRow></li>
+              <li><LinkRow to="/notifications/preferences">{t('Notification channels, quiet hours & reminders')}</LinkRow></li>
+              <li><LinkRow to="/notifications">{t('Notification inbox')}</LinkRow></li>
             </ul>
           </div>
         </Card>
 
         <Card>
           <div className="flex flex-col gap-1">
-            <SectionTitle>Account</SectionTitle>
+            <SectionTitle>{t('Account')}</SectionTitle>
             <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
-              <li><LinkRow to="/profile">Edit profile</LinkRow></li>
-              <li><LinkRow to="/billing">Subscription &amp; billing</LinkRow></li>
-              <li><LinkRow to="/support">Help &amp; support</LinkRow></li>
+              <li><LinkRow to="/profile">{t('Edit profile')}</LinkRow></li>
+              <li><LinkRow to="/billing">{t('Subscription & billing')}</LinkRow></li>
+              <li><LinkRow to="/support">{t('Help & support')}</LinkRow></li>
             </ul>
           </div>
         </Card>
 
         <Card>
           <div className="flex flex-col gap-3.5">
-            <SectionTitle hint="We'll email you a secure link to set a new password.">Security</SectionTitle>
+            <SectionTitle hint={t("We'll email you a secure link to set a new password.")}>{t('Security')}</SectionTitle>
             {resetStatus && <Banner variant={resetStatus.variant}>{resetStatus.message}</Banner>}
             <div>
               <Button variant="secondary" size="sm" onClick={sendPasswordReset} disabled={sendingReset || !user?.email}>
-                {sendingReset ? 'Sending…' : 'Send password reset email'}
+                {sendingReset ? t('Sending…') : t('Send password reset email')}
               </Button>
             </div>
           </div>
         </Card>
 
         <div className="rounded-2xl p-4 sm:p-5 bg-red-50 dark:bg-red-950/30 ring-1 ring-red-100 dark:ring-red-900/50 flex flex-col gap-3.5">
-          <h2 className="text-base font-extrabold tracking-tight text-red-600 dark:text-red-300 m-0">Sign out</h2>
+          <h2 className="text-base font-extrabold tracking-tight text-red-600 dark:text-red-300 m-0">{t('Sign out')}</h2>
           <div>
             <Button
               variant="secondary"
@@ -263,19 +163,19 @@ export function SettingsPage() {
               className="!text-red-600 dark:!text-red-300"
             >
               <LogOutIcon className="size-4" />
-              Sign out
+              {t('Sign out')}
             </Button>
           </div>
         </div>
       </div>
 
-      <Modal open={confirmLogout} onClose={() => !loggingOut && setConfirmLogout(false)} title="Sign out?">
+      <Modal open={confirmLogout} onClose={() => !loggingOut && setConfirmLogout(false)} title={t('Sign out?')}>
         <div className="flex flex-col gap-4">
-          <p className={subCls}>You'll need to sign in again to continue learning.</p>
+          <p className={subCls}>{t("You'll need to sign in again to continue learning.")}</p>
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setConfirmLogout(false)} disabled={loggingOut}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setConfirmLogout(false)} disabled={loggingOut}>{t('Cancel')}</Button>
             <Button variant="primary" onClick={handleLogout} disabled={loggingOut}>
-              {loggingOut ? 'Signing out…' : 'Sign out'}
+              {loggingOut ? t('Signing out…') : t('Sign out')}
             </Button>
           </div>
         </div>

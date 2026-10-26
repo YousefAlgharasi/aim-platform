@@ -1,6 +1,7 @@
 import { useState, FormEvent, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
@@ -28,6 +29,7 @@ const QUICK_LINKS = [
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
+  const { t } = useI18n();
   const [profile, setProfile] = useState<ProfileMeResponse | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'ar'>('en');
@@ -54,7 +56,7 @@ export function ProfilePage() {
     setFetchError('');
     fetchProfile()
       .then(applyProfile)
-      .catch(err => setFetchError(getErrorMessage(err, 'Failed to load profile')))
+      .catch(err => setFetchError(getErrorMessage(err, t('Failed to load profile'))))
       .finally(() => setLoading(false));
   }, [applyProfile]);
 
@@ -79,7 +81,7 @@ export function ProfilePage() {
     setSuccess('');
     const name = displayName.trim();
     if (name.length > DISPLAY_NAME_MAX) {
-      setNameError(`Display name must be ${DISPLAY_NAME_MAX} characters or fewer.`);
+      setNameError(t('Display name must be {max} characters or fewer.', { max: DISPLAY_NAME_MAX }));
       return;
     }
     setNameError('');
@@ -91,11 +93,11 @@ export function ProfilePage() {
         timezone: timezone || undefined,
       });
       applyProfile(updated);
-      setSuccess('Profile updated');
+      setSuccess(t('Profile updated'));
       // Refresh the auth user so the header name and locale update.
       await refreshUser().catch(() => undefined);
     } catch (err) {
-      setError(getErrorMessage(err, 'Update failed'));
+      setError(getErrorMessage(err, t('Update failed')));
     } finally {
       setSaving(false);
     }
@@ -105,7 +107,7 @@ export function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Account" title="Profile" />
+      <PageHeader eyebrow={t('Account')} title={t('Profile')} />
 
       <div className="grid gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1 flex flex-col gap-5">
@@ -125,18 +127,18 @@ export function ProfilePage() {
               </div>
               <dl className="m-0 flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>Email</dt>
+                  <dt className={labelCls}>{t('Email')}</dt>
                   <dd className={`${bodyCls} break-all`}>{user.email}</dd>
                 </div>
                 {profile?.userType && (
                   <div className="flex flex-col gap-1">
-                    <dt className={labelCls}>Account type</dt>
+                    <dt className={labelCls}>{t('Account type')}</dt>
                     <dd className={bodyCls}>{profile.userType}</dd>
                   </div>
                 )}
                 {user.roles.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <dt className={labelCls}>Roles</dt>
+                    <dt className={labelCls}>{t('Roles')}</dt>
                     <dd className="m-0 flex flex-wrap gap-2">
                       {user.roles.map(r => <span key={r} className={pillCls}>{r}</span>)}
                     </dd>
@@ -147,11 +149,11 @@ export function ProfilePage() {
           </Card>
 
           <Card>
-            <nav className="flex flex-col gap-1" aria-label="Account links">
-              <SectionTitle>More</SectionTitle>
+            <nav className="flex flex-col gap-1" aria-label={t('Account links')}>
+              <SectionTitle>{t('More')}</SectionTitle>
               <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
                 {QUICK_LINKS.map(l => (
-                  <li key={l.to}><LinkRow to={l.to}>{l.label}</LinkRow></li>
+                  <li key={l.to}><LinkRow to={l.to}>{t(l.label)}</LinkRow></li>
                 ))}
               </ul>
             </nav>
@@ -162,12 +164,12 @@ export function ProfilePage() {
           <Card>
             {studentProfile ? (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-                <SectionTitle>Edit profile</SectionTitle>
+                <SectionTitle>{t('Edit profile')}</SectionTitle>
                 {success && <Banner variant="success">{success}</Banner>}
                 {error && <Banner variant="error">{error}</Banner>}
 
                 <Input
-                  label="Display name"
+                  label={t('Display name')}
                   type="text"
                   value={displayName}
                   maxLength={DISPLAY_NAME_MAX}
@@ -175,7 +177,7 @@ export function ProfilePage() {
                   error={nameError || undefined}
                 />
 
-                <Field label="Preferred language" htmlFor="profile-language">
+                <Field label={t('Preferred language')} htmlFor="profile-language">
                   <select
                     id="profile-language"
                     className={selectCls}
@@ -186,25 +188,25 @@ export function ProfilePage() {
                   </select>
                 </Field>
 
-                <Field label="Timezone" htmlFor="profile-timezone">
+                <Field label={t('Timezone')} htmlFor="profile-timezone">
                   <select
                     id="profile-timezone"
                     className={selectCls}
                     value={timezone}
                     onChange={e => { setTimezone(e.target.value); markDirty(); }}
                   >
-                    <option value="" disabled>Select a timezone</option>
+                    <option value="" disabled>{t('Select a timezone')}</option>
                     {timezoneOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </Field>
 
                 <Button type="submit" size="lg" disabled={saving || !dirty}>
-                  {saving ? 'Saving...' : 'Save changes'}
+                  {saving ? t('Saving...') : t('Save changes')}
                 </Button>
               </form>
             ) : (
               <Banner variant="info">
-                This account has no student profile, so there are no editable student profile fields.
+                {t('This account has no student profile, so there are no editable student profile fields.')}
               </Banner>
             )}
           </Card>

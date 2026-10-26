@@ -3,6 +3,7 @@
 // eligibility, grading and scores are all backend-computed; displayed as-is.
 
 import { apiClient } from '../../api/client';
+import { t } from '../../i18n';
 
 export type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
 
@@ -217,5 +218,6 @@ export const DEADLINE_STATUS_LABELS: Record<string, string> = {
 
 export function deadlineStatusLabel(status: string | null | undefined): string {
   if (!status) return '';
-  return DEADLINE_STATUS_LABELS[status] ?? status;
+  const label = DEADLINE_STATUS_LABELS[status];
+  return label ? t(label) : status;
 }

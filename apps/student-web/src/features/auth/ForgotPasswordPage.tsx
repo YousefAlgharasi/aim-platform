@@ -5,8 +5,10 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, AuthFooterLink, MailBadge } from '../../components/auth/AuthParts';
+import { useI18n } from '../../i18n/I18nContext';
 
 export function ForgotPasswordPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +26,7 @@ export function ForgotPasswordPage() {
       );
       setSent(true);
     } catch (err) {
-      setError(getErrorMessage(err, 'Request failed'));
+      setError(getErrorMessage(err, t('Request failed')));
     } finally {
       setLoading(false);
     }
@@ -41,18 +43,17 @@ export function ForgotPasswordPage() {
         <AuthLogo />
         <div className="flex flex-col items-center text-center my-auto">
           <MailBadge />
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0 mb-2">Check Your Email</h1>
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0 mb-2">{t('Check Your Email')}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
-            If an account exists for{' '}
-            <span className="font-semibold text-slate-700 dark:text-slate-200">{email}</span>, we sent a password reset link. Open it to continue.
+            {t('If an account exists for {email}, we sent a password reset link. Open it to continue.', { email })}
           </p>
         </div>
         <div className="flex flex-col gap-2">
           {error && <Banner variant="error">{error}</Banner>}
           <Button variant="ghost" fullWidth disabled={loading} onClick={() => void send()}>
-            {loading ? 'Sending…' : "Didn't get it? Resend email"}
+            {loading ? t('Sending…') : t("Didn't get it? Resend email")}
           </Button>
-          <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>Back to Sign In</Button>
+          <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
         </div>
       </>
     );
@@ -60,16 +61,17 @@ export function ForgotPasswordPage() {
 
   return (
     <>
+      <div>
       <AuthHeader
-        eyebrow="Forgot Password?"
-        title={<>Reset your<br />password</>}
-        subtitle="Enter the email linked to your account and we'll send you a link to reset your password."
+        eyebrow={t('Forgot Password?')}
+        title={t('Reset your password')}
+        subtitle={t("Enter the email linked to your account and we'll send you a link to reset your password.")}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 my-auto pt-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
         {error && <Banner variant="error">{error}</Banner>}
         <Input
-          label="Email address"
+          label={t('Email address')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -78,12 +80,13 @@ export function ForgotPasswordPage() {
         />
         <div className="mt-2">
           <Button type="submit" size="lg" fullWidth disabled={loading || !email.trim()}>
-            {loading ? 'Sending…' : 'Send Reset Link'}
+            {loading ? t('Sending…') : t('Send Reset Link')}
           </Button>
         </div>
       </form>
+      </div>
 
-      <AuthFooterLink prompt="Remembered your password?" action="Back to Sign In" onClick={() => navigate('/login')} />
+      <AuthFooterLink prompt={t('Remembered your password?')} action={t('Back to Sign In')} onClick={() => navigate('/login')} />
     </>
   );
 }

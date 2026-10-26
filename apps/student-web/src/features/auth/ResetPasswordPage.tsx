@@ -5,6 +5,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, PasswordToggle, SuccessBadge } from '../../components/auth/AuthParts';
+import { useI18n } from '../../i18n/I18nContext';
 
 /** Supabase's recovery link lands here as /reset-password#access_token=…&type=recovery. */
 function readRecoveryToken(): string | null {
@@ -13,6 +14,7 @@ function readRecoveryToken(): string | null {
 }
 
 export function ResetPasswordPage() {
+  const { t } = useI18n();
   const recoveryToken = useMemo(readRecoveryToken, []);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -25,11 +27,11 @@ export function ResetPasswordPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('Password must be at least 8 characters.'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('Passwords do not match.'));
       return;
     }
     setError('');
@@ -39,7 +41,7 @@ export function ResetPasswordPage() {
       window.history.replaceState(null, '', window.location.pathname);
       setDone(true);
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not reset password. The link may have expired.'));
+      setError(getErrorMessage(err, t('Could not reset password. The link may have expired.')));
     } finally {
       setLoading(false);
     }
@@ -50,12 +52,12 @@ export function ResetPasswordPage() {
       <>
         <div className="my-auto flex flex-col items-center text-center">
           <SuccessBadge />
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight m-0">Password Reset!</h1>
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight m-0">{t('Password Reset!')}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 max-w-[260px] leading-relaxed">
-            Your password has been updated. Sign in with your new password.
+            {t('Your password has been updated. Sign in with your new password.')}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/login')}>Back to Sign In</Button>
+        <Button size="lg" fullWidth onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
       </>
     );
   }
@@ -65,27 +67,28 @@ export function ResetPasswordPage() {
       <>
         <AuthLogo />
         <div className="my-auto text-center flex flex-col items-center gap-2">
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">Invalid reset link</h1>
+          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">{t('Invalid reset link')}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
-            This link is missing or has expired. Request a new one.
+            {t('This link is missing or has expired. Request a new one.')}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/forgot-password')}>Send a new reset link</Button>
+        <Button size="lg" fullWidth onClick={() => navigate('/forgot-password')}>{t('Send a new reset link')}</Button>
       </>
     );
   }
 
   return (
     <>
+      <div>
       <AuthHeader
-        eyebrow="Reset Password"
-        title={<>Create a new<br />password</>}
-        subtitle="Choose a strong password you haven't used before."
+        eyebrow={t('Reset Password')}
+        title={t('Create a new password')}
+        subtitle={t("Choose a strong password you haven't used before.")}
       />
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 my-auto pt-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
         {error && <Banner variant="error">{error}</Banner>}
         <Input
-          label="New password"
+          label={t('New password')}
           type={showPass ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -94,7 +97,7 @@ export function ResetPasswordPage() {
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
-          label="Confirm new password"
+          label={t('Confirm new password')}
           type={showPass ? 'text' : 'password'}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -103,10 +106,11 @@ export function ResetPasswordPage() {
         />
         <div className="mt-2">
           <Button type="submit" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Resetting…' : 'Reset Password'}
+            {loading ? t('Resetting…') : t('Reset Password')}
           </Button>
         </div>
       </form>
+      </div>
     </>
   );
 }

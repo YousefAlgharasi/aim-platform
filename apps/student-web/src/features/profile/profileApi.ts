@@ -37,7 +37,7 @@ export interface UpdateStudentProfileInput {
 
 export const LANGUAGE_OPTIONS: { value: 'en' | 'ar'; label: string }[] = [
   { value: 'en', label: 'English' },
-  { value: 'ar', label: 'العربية (Arabic)' },
+  { value: 'ar', label: 'العربية' },
 ];
 
 // Same curated IANA list as Flutter's edit_profile_page.dart.

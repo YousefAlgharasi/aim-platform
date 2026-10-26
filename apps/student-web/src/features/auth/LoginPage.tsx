@@ -6,8 +6,10 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthHeader, AuthFooterLink, PasswordToggle, TextLinkButton } from '../../components/auth/AuthParts';
+import { useI18n } from '../../i18n/I18nContext';
 
 export function LoginPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -26,7 +28,7 @@ export function LoginPage() {
       await login(email, password);
       navigate(returnTo, { replace: true });
     } catch (err) {
-      setError(getErrorMessage(err, 'Login failed'));
+      setError(getErrorMessage(err, t('Login failed')));
     } finally {
       setLoading(false);
     }
@@ -34,16 +36,17 @@ export function LoginPage() {
 
   return (
     <>
+      <div>
       <AuthHeader
-        eyebrow="Welcome back"
-        title={<>Sign in to your<br />account</>}
-        subtitle="Happy to see you again. Enter your email and password to continue."
+        eyebrow={t('Welcome back')}
+        title={t('Sign in to your account')}
+        subtitle={t('Happy to see you again. Enter your email and password to continue.')}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 my-auto pt-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
         {error && <Banner variant="error">{error}</Banner>}
         <Input
-          label="Email address"
+          label={t('Email address')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -51,7 +54,7 @@ export function LoginPage() {
           autoComplete="email"
         />
         <Input
-          label="Password"
+          label={t('Password')}
           type={showPass ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -61,17 +64,18 @@ export function LoginPage() {
         />
 
         <div className="text-right">
-          <TextLinkButton onClick={() => navigate('/forgot-password')}>Forgot password?</TextLinkButton>
+          <TextLinkButton onClick={() => navigate('/forgot-password')}>{t('Forgot password?')}</TextLinkButton>
         </div>
 
         <div className="mt-2">
           <Button type="submit" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t('Signing in…') : t('Sign in')}
           </Button>
         </div>
       </form>
+      </div>
 
-      <AuthFooterLink prompt="Don't have an account?" action="Create account" onClick={() => navigate('/register')} />
+      <AuthFooterLink prompt={t("Don't have an account?")} action={t('Create account')} onClick={() => navigate('/register')} />
     </>
   );
 }

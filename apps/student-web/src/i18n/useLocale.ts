@@ -1,26 +1,9 @@
-import { useMemo } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useI18n } from './I18nContext';
 
-export type Locale = 'en' | 'ar';
+export type { Locale } from './index';
 
-export function useLocale(): {
-  locale: Locale;
-  dir: 'ltr' | 'rtl';
-  formatDate: (date: string | Date) => string;
-  formatNumber: (num: number) => string;
-} {
-  const { user } = useAuth();
-  const locale: Locale = (user?.locale as Locale) || 'en';
-
-  return useMemo(() => ({
-    locale,
-    dir: locale === 'ar' ? 'rtl' : 'ltr',
-    formatDate: (date: string | Date) => {
-      const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US');
-    },
-    formatNumber: (num: number) => {
-      return num.toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US');
-    },
-  }), [locale]);
+/** Kept for existing callers; prefer `useI18n()`. */
+export function useLocale() {
+  const { locale, dir, formatDate, formatNumber } = useI18n();
+  return { locale, dir, formatDate, formatNumber };
 }

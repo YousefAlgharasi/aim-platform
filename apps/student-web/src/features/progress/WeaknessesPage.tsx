@@ -2,6 +2,7 @@ import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { useI18n } from '../../i18n/I18nContext';
 import { useAimResults } from './useAimResults';
 import { formatDate, humanize, prettifySkillId } from './aimApi';
 import * as ui from './ui';
@@ -32,6 +33,7 @@ function statusTone(status: string): string {
 
 /** Port of Flutter progress/ui/pages/weakness_summary_page.dart (GET /aim/students/:id/weakness-records). */
 export function WeaknessesPage() {
+  const { t, plural } = useI18n();
   const { data, loading, error, reload } = useAimResults();
 
   if (loading) return <LoadingSpinner />;
@@ -43,12 +45,12 @@ export function WeaknessesPage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">Progress</ui.BackLink>
-      <h1 className={ui.h1}>Areas to improve</h1>
-      <p className={ui.intro}>Skills the AIM engine detected you are struggling with, based on your attempts.</p>
+      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
+      <h1 className={ui.h1}>{t('Areas to improve')}</h1>
+      <p className={ui.intro}>{t('Skills the AIM engine detected you are struggling with, based on your attempts.')}</p>
 
       {records.length === 0 ? (
-        <EmptyState title="No weaknesses detected" message="Great work — no areas to improve have been detected yet." />
+        <EmptyState title={t('No weaknesses detected')} message={t('Great work — no areas to improve have been detected yet.')} />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {records.map((w) => (
@@ -62,10 +64,15 @@ export function WeaknessesPage() {
                   </div>
                 </div>
                 <p className={ui.meta}>
-                  Detected {formatDate(w.detectedAt)}
-                  {w.resolvedAt ? ` · Resolved ${formatDate(w.resolvedAt)}` : ''}
+                  {t('Detected {date}', { date: formatDate(w.detectedAt) })}
+                  {w.resolvedAt ? ` · ${t('Resolved {date}', { date: formatDate(w.resolvedAt) })}` : ''}
                   {w.triggerAttemptIds.length > 0
-                    ? ` · Based on ${w.triggerAttemptIds.length} attempt${w.triggerAttemptIds.length === 1 ? '' : 's'}`
+                    ? ` · ${plural(w.triggerAttemptIds.length, {
+                        one: t('Based on {n} attempt', { n: w.triggerAttemptIds.length }),
+                        two: t('Based on {n} attempts [two]', { n: w.triggerAttemptIds.length }),
+                        few: t('Based on {n} attempts [few]', { n: w.triggerAttemptIds.length }),
+                        other: t('Based on {n} attempts', { n: w.triggerAttemptIds.length }),
+                      })}`
                     : ''}
                 </p>
               </div>

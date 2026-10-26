@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { fetchAimResults, type AimResults } from './aimApi';
 
 /**
@@ -10,6 +11,7 @@ import { fetchAimResults, type AimResults } from './aimApi';
  */
 export function useAimResults() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const studentId = user?.id;
   const [data, setData] = useState<AimResults | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,7 @@ export function useAimResults() {
   const load = useCallback(async () => {
     if (!studentId) {
       setLoading(false);
-      setError('Your session is missing a student account.');
+      setError(t('Your session is missing a student account.'));
       return;
     }
     setLoading(true);
@@ -26,11 +28,11 @@ export function useAimResults() {
     try {
       setData(await fetchAimResults(studentId));
     } catch (err) {
-      setError(getErrorMessage(err, 'Could not load your progress.'));
+      setError(getErrorMessage(err, t('Could not load your progress.')));
     } finally {
       setLoading(false);
     }
-  }, [studentId]);
+  }, [studentId, t]);
 
   useEffect(() => {
     load();

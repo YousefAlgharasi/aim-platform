@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { t } from '../../i18n';
 
 // Backend: services/backend-api/src/features/notifications/{inbox,preferences,reminders}.controller.ts
 // Controllers are mounted at `api/v1/notifications` on the backend, so the
@@ -35,6 +36,18 @@ export const CATEGORY_LABELS: Record<string, string> = {
   parent_summary: 'Progress digests',
   system_alert: 'System alerts',
 };
+
+/** Translated channel name (resolved at call time so it follows the active language). */
+export function channelLabel(channel: string): string {
+  const key = CHANNEL_LABELS[channel as NotificationChannel];
+  return key ? t(key) : channel;
+}
+
+/** Translated category name; unknown categories fall back to the raw value. */
+export function categoryLabel(category: string): string {
+  const key = CATEGORY_LABELS[category];
+  return key ? t(key) : category;
+}
 
 export interface NotificationEvent {
   id: string;

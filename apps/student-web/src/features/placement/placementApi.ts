@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '../../api/client';
 import type { ApiError } from '../../types';
+import { t } from '../../i18n';
 
 // ---------------------------------------------------------------------------
 // Types (exact backend JSON keys)
@@ -226,9 +227,35 @@ const CEFR_CODES: Record<string, string> = {
   advanced: 'C1',
 };
 
+const LEVEL_LABELS: Record<string, string> = {
+  beginner: 'Beginner',
+  elementary: 'Elementary',
+  intermediate: 'Intermediate',
+  upper_intermediate: 'Upper Intermediate',
+  advanced: 'Advanced',
+};
+
+const SKILL_LABELS: Record<string, string> = {
+  grammar: 'Grammar',
+  vocabulary: 'Vocabulary',
+  reading: 'Reading',
+  listening: 'Listening',
+  writing: 'Writing',
+  speaking: 'Speaking',
+  pronunciation: 'Pronunciation',
+  comprehension: 'Comprehension',
+};
+
 export function formatPlacementLevel(level: string): { label: string; code: string | null } {
-  const code = CEFR_CODES[level.toLowerCase()] ?? null;
-  return { label: humanize(level), code };
+  const key = level.toLowerCase();
+  const code = CEFR_CODES[key] ?? null;
+  return { label: LEVEL_LABELS[key] ? t(LEVEL_LABELS[key]) : humanize(level), code };
+}
+
+/** Translated label for a skill code (e.g. `grammar`); unknown codes fall back to a humanized label. */
+export function skillLabel(code: string): string {
+  const key = code.toLowerCase();
+  return SKILL_LABELS[key] ? t(SKILL_LABELS[key]) : humanize(code);
 }
 
 export function humanize(value: string): string {
@@ -328,7 +355,7 @@ export function usePlacementGate(enabled = true): PlacementGateState {
             loading: false,
             shouldShowGate: false,
             decision: null,
-            error: (err as { message?: string })?.message || 'Failed to check placement status',
+            error: (err as { message?: string })?.message || t('Failed to check placement status'),
           });
         }
       });

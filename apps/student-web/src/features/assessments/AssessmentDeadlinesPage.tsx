@@ -10,6 +10,7 @@ import {
   type StudentDeadlineItem,
   type StudentDeadlines,
 } from './assessmentsApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { statusTone } from './assessmentUi';
 import { Badge, CARD, PageHeader } from '../placement/ui';
 
@@ -23,6 +24,7 @@ const GROUPS: Array<{ key: keyof StudentDeadlines; title: string }> = [
 ];
 
 function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
+  const { t, formatDateTime } = useI18n();
   const closesAt = item.extendedClosesAt ?? item.closesAt;
   return (
     <Link
@@ -31,16 +33,17 @@ function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
     >
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={statusTone(item.status)}>{deadlineStatusLabel(item.status)}</Badge>
-        {item.extendedClosesAt && <Badge tone="indigo">Extended</Badge>}
+        {item.extendedClosesAt && <Badge tone="indigo">{t('Extended')}</Badge>}
       </div>
       <h3 className="m-0 text-base font-bold leading-snug text-slate-900 dark:text-white">{item.assessmentTitle}</h3>
       <p className="m-0 text-xs font-medium text-slate-500 dark:text-slate-400">
         {item.status === 'upcoming' ? (
-          <>Opens {new Date(item.opensAt).toLocaleString()}</>
+          <>{t('Opens {date}', { date: formatDateTime(item.opensAt) })}</>
         ) : (
           <>
-            {item.status === 'closed' || item.status === 'missed' || item.status === 'expired' ? 'Closed' : 'Due'}{' '}
-            {new Date(closesAt).toLocaleString()}
+            {item.status === 'closed' || item.status === 'missed' || item.status === 'expired'
+              ? t('Closed {date}', { date: formatDateTime(closesAt) })
+              : t('Due {date}', { date: formatDateTime(closesAt) })}
           </>
         )}
       </p>
@@ -49,6 +52,7 @@ function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
 }
 
 export function AssessmentDeadlinesPage() {
+  const { t } = useI18n();
   const [deadlines, setDeadlines] = useState<StudentDeadlines | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,9 +62,9 @@ export function AssessmentDeadlinesPage() {
     setError('');
     fetchAssessmentDeadlines()
       .then(setDeadlines)
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load deadlines')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load deadlines'))))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -73,18 +77,18 @@ export function AssessmentDeadlinesPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow="Assessments"
-        title="Deadlines"
-        subtitle="Everything that is open, upcoming or past due."
+        eyebrow={t('Assessments')}
+        title={t('Deadlines')}
+        subtitle={t('Everything that is open, upcoming or past due.')}
         backTo="/assessments"
-        backLabel="All assessments"
+        backLabel={t('All assessments')}
       />
       {total === 0 ? (
-        <EmptyState title="No deadlines" message="You don't have any assessment deadlines right now." />
+        <EmptyState title={t('No deadlines')} message={t("You don't have any assessment deadlines right now.")} />
       ) : (
         GROUPS.filter((g) => deadlines[g.key].length > 0).map((g) => (
           <section key={g.key} className="flex flex-col gap-3">
-            <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">{g.title}</h2>
+            <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">{t(g.title)}</h2>
             <div className="grid gap-3 md:grid-cols-2">
               {deadlines[g.key].map((item) => (
                 <DeadlineCard key={`${item.deadlineId}-${item.assessmentId}`} item={item} />

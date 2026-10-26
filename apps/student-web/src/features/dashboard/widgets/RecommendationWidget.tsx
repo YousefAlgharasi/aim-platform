@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../../i18n/I18nContext';
 import { Card } from '../../../components/common/Card';
 import { EmptyState } from '../../../components/common/EmptyState';
 import { humanize, prettifySkillId, type RecommendationEntry } from '../../progress/aimApi';
@@ -11,12 +12,13 @@ interface RecommendationWidgetProps {
 }
 
 export function RecommendationWidget({ recommendations, limit = 3 }: RecommendationWidgetProps) {
+  const { t } = useI18n();
   if (recommendations.length === 0) {
     return (
       <Card>
         <EmptyState
-          title="No recommendations"
-          message="Complete more lessons to get personalized recommendations."
+          title={t('No recommendations')}
+          message={t('Complete more lessons to get personalized recommendations.')}
         />
       </Card>
     );
@@ -26,8 +28,8 @@ export function RecommendationWidget({ recommendations, limit = 3 }: Recommendat
     <Card>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 className={ui.cardTitle}>Recommended for you</h3>
-          <Link to="/progress/recommendations" className={ui.link}>View all</Link>
+          <h3 className={ui.cardTitle}>{t('Recommended for you')}</h3>
+          <Link to="/progress/recommendations" className={ui.link}>{t('View all')}</Link>
         </div>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {recommendations.slice(0, limit).map((rec) => (

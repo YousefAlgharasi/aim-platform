@@ -14,6 +14,7 @@ import {
   type CurrentEnrollment,
   type StudentCourse,
 } from './curriculumApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
 
 const STATUS_LABEL: Record<StudentCourse['status'], string> = {
@@ -26,6 +27,7 @@ export const COURSE_LOCKED_MESSAGE = 'Finish your current level to unlock this c
 
 export function CourseCatalog() {
   const navigate = useNavigate();
+  const { t, plural } = useI18n();
   const [courses, setCourses] = useState<StudentCourse[]>([]);
   const [enrollment, setEnrollment] = useState<CurrentEnrollment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,9 +49,9 @@ export function CourseCatalog() {
         setCourses(courseList);
         setEnrollment(current);
       })
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load courses')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load courses'))))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -58,7 +60,7 @@ export function CourseCatalog() {
   function handleOpen(course: StudentCourse) {
     setNotice('');
     if (course.locked) {
-      setNotice(COURSE_LOCKED_MESSAGE);
+      setNotice(t(COURSE_LOCKED_MESSAGE));
       return;
     }
     if (course.courseId === currentCourseId) {
@@ -80,7 +82,7 @@ export function CourseCatalog() {
         navigate(`/curriculum/${id}`);
       })
       .catch((err) =>
-        setEnrollError(getErrorMessage(err, "Couldn't start this course. Please check your connection and try again.")),
+        setEnrollError(getErrorMessage(err, t("Couldn't start this course. Please check your connection and try again."))),
       )
       .finally(() => setEnrolling(false));
   }
@@ -88,14 +90,14 @@ export function CourseCatalog() {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (courses.length === 0) {
-    return <EmptyState title="No courses available" message="Courses will appear here once they are published." />;
+    return <EmptyState title={t('No courses available')} message={t('Courses will appear here once they are published.')} />;
   }
 
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">Learn</span>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">Courses</h1>
+        <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Learn')}</span>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{t('Courses')}</h1>
       </div>
       {notice && <Banner variant="info">{notice}</Banner>}
 
@@ -123,7 +125,7 @@ export function CourseCatalog() {
                 }
               }}
               aria-disabled={course.locked || undefined}
-              aria-label={`${course.title}${course.locked ? ' (locked)' : ''}`}
+              aria-label={course.locked ? t('{title} (locked)', { title: course.title }) : course.title}
             >
               <div className="flex flex-wrap items-center gap-1.5">
                 {course.levelCode && (
@@ -133,12 +135,12 @@ export function CourseCatalog() {
                 )}
                 {isCurrent && (
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-indigo-600 px-2.5 py-1 rounded-full">
-                    Current course
+                    {t('Current course')}
                   </span>
                 )}
                 {course.locked && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
-                    <LockIcon className="size-3" /> Locked
+                    <LockIcon className="size-3" /> {t('Locked')}
                   </span>
                 )}
               </div>
@@ -147,9 +149,9 @@ export function CourseCatalog() {
                 <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0 line-clamp-2">{course.description}</p>
               )}
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-400 dark:text-slate-500">
-                <span>{course.lessonCount} lessons</span>
-                {course.quizCount > 0 && <span>{course.quizCount} quizzes</span>}
-                {course.examCount > 0 && <span>Final exam</span>}
+                <span>{plural(course.lessonCount, { one: t('1 lesson'), two: t('2 lessons'), few: t('{n} lessons [few]', { n: course.lessonCount }), other: t('{n} lessons', { n: course.lessonCount }) })}</span>
+                {course.quizCount > 0 && <span>{plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) })}</span>}
+                {course.examCount > 0 && <span>{t('Final exam')}</span>}
               </div>
               <div className="mt-auto pt-1">
                 <div
@@ -158,15 +160,15 @@ export function CourseCatalog() {
                   aria-valuenow={course.percent}
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label={`${course.title} progress`}
+                  aria-label={t('{title} progress', { title: course.title })}
                 >
                   <div
-                    className={`h-full rounded-full ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'}`}
+                    className={`h-full rounded-full ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500'}`}
                     style={{ width: `${course.percent}%` }}
                   />
                 </div>
                 <span className="block mt-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {STATUS_LABEL[course.status] ?? course.status} · {course.percent}%
+                  {STATUS_LABEL[course.status] ? t(STATUS_LABEL[course.status]) : course.status} · {course.percent}%
                 </span>
               </div>
             </div>
@@ -174,20 +176,20 @@ export function CourseCatalog() {
         })}
       </div>
 
-      <Modal open={!!pending} onClose={() => !enrolling && setPending(null)} title="Start this course?">
+      <Modal open={!!pending} onClose={() => !enrolling && setPending(null)} title={t('Start this course?')}>
         <div className="flex flex-col gap-4">
           <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
             {enrollment?.found && enrollment.courseTitle
-              ? `You're currently in ${enrollment.courseTitle}. Switching to ${pending?.title ?? ''} will make it your active course instead.`
-              : `${pending?.title ?? ''} will become your active course.`}
+              ? t("You're currently in {current}. Switching to {next} will make it your active course instead.", { current: enrollment.courseTitle, next: pending?.title ?? '' })
+              : t('{title} will become your active course.', { title: pending?.title ?? '' })}
           </p>
           {enrollError && <Banner variant="error">{enrollError}</Banner>}
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setPending(null)} disabled={enrolling}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button variant="primary" onClick={confirmEnroll} disabled={enrolling}>
-              {enrolling ? 'Starting…' : 'Start course'}
+              {enrolling ? t('Starting…') : t('Start course')}
             </Button>
           </div>
         </div>

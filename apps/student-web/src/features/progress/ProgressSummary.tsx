@@ -5,6 +5,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { fetchEngagementSummary, type DailyGoalSummary } from '../dashboard/dashboardApi';
+import { useI18n } from '../../i18n/I18nContext';
 import { useAimResults } from './useAimResults';
 import { dueLabel, humanize, masteryTier, prettifySkillId, tierLabel, toPercent } from './aimApi';
 import * as ui from './ui';
@@ -14,6 +15,7 @@ const OPEN_WEAKNESS_STATUSES = new Set(['open', 'improving']);
 const OPEN_REVIEW_STATUSES = new Set(['due', 'pending', 'rescheduled']);
 
 export function ProgressSummary() {
+  const { t } = useI18n();
   const { data, loading, error, reload } = useAimResults();
   // Day streak is supplementary (Flutter reads it from the Home engagement summary);
   // its failure must not block the AIM data.
@@ -61,32 +63,32 @@ export function ProgressSummary() {
   const header = (title: string, to: string) => (
     <div className="flex items-center justify-between px-1">
       <h2 className={ui.sectionTitle}>{title}</h2>
-      <Link to={to} className={ui.link}>View all</Link>
+      <Link to={to} className={ui.link}>{t('View all')}</Link>
     </div>
   );
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>Progress</h1>
+      <h1 className={ui.h1}>{t('Progress')}</h1>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {tile(skillStates.length, 'Skills tracked')}
-        {tile(avgMastery == null ? '—' : `${avgMastery}%`, 'Average mastery')}
-        {tile(openReviews.length, 'Reviews scheduled')}
-        {tile(goal ? goal.streakDays : '—', 'Day streak', <FlameIcon className="size-5 text-amber-400 fill-amber-400" />)}
+        {tile(skillStates.length, t('Skills tracked'))}
+        {tile(avgMastery == null ? '—' : `${avgMastery}%`, t('Average mastery'))}
+        {tile(openReviews.length, t('Reviews scheduled'))}
+        {tile(goal ? goal.streakDays : '—', t('Day streak'), <FlameIcon className="size-5 text-amber-400 fill-amber-400" />)}
       </div>
 
       {isEmpty ? (
         <EmptyState
-          title="No progress yet"
-          message="Complete lessons and practice to see your skill mastery, weaknesses and review schedule here."
+          title={t('No progress yet')}
+          message={t('Complete lessons and practice to see your skill mastery, weaknesses and review schedule here.')}
         />
       ) : (
         <>
           <section className="flex flex-col gap-3">
-            {header('Skills', '/progress/skills')}
+            {header(t('Skills'), '/progress/skills')}
             {topSkills.length === 0 ? (
-              <Card><p className={ui.muted}>No skill mastery data yet.</p></Card>
+              <Card><p className={ui.muted}>{t('No skill mastery data yet.')}</p></Card>
             ) : (
               <Card>
                 <div className="flex flex-col gap-4">
@@ -96,12 +98,12 @@ export function ProgressSummary() {
                       <div key={s.skillId} className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-bold text-slate-900 dark:text-white">{prettifySkillId(s.skillId)}</span>
-                          <span className={ui.badge(ui.tone.primary)}>{tierLabel[masteryTier(s.masteryScore)]}</span>
+                          <span className={ui.badge(ui.tone.primary)}>{t(tierLabel[masteryTier(s.masteryScore)])}</span>
                         </div>
                         <div
                           className={ui.barTrack}
                           role="progressbar"
-                          aria-label={`${prettifySkillId(s.skillId)} mastery`}
+                          aria-label={t('{name} mastery', { name: prettifySkillId(s.skillId) })}
                           aria-valuemin={0}
                           aria-valuemax={100}
                           aria-valuenow={pct}
@@ -109,8 +111,8 @@ export function ProgressSummary() {
                           <div className={ui.barFill} style={{ width: `${pct}%` }} />
                         </div>
                         <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                          <span>Mastery {pct}%</span>
-                          <span>Confidence {toPercent(s.masteryConfidence)}%</span>
+                          <span>{t('Mastery {pct}%', { pct })}</span>
+                          <span>{t('Confidence {pct}%', { pct: toPercent(s.masteryConfidence) })}</span>
                         </div>
                       </div>
                     );
@@ -122,10 +124,10 @@ export function ProgressSummary() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <section className="flex flex-col gap-3">
-              {header('Areas to improve', '/progress/weaknesses')}
+              {header(t('Areas to improve'), '/progress/weaknesses')}
               <Card>
                 {openWeaknesses.length === 0 ? (
-                  <p className={ui.muted}>No open weaknesses. Keep it up!</p>
+                  <p className={ui.muted}>{t('No open weaknesses. Keep it up!')}</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {openWeaknesses.slice(0, 8).map((w) => (
@@ -139,10 +141,10 @@ export function ProgressSummary() {
             </section>
 
             <section className="flex flex-col gap-3">
-              {header('Review schedule', '/progress/reviews')}
+              {header(t('Review schedule'), '/progress/reviews')}
               <Card>
                 {openReviews.length === 0 ? (
-                  <p className={ui.muted}>Nothing to review right now.</p>
+                  <p className={ui.muted}>{t('Nothing to review right now.')}</p>
                 ) : (
                   <ul className="m-0 flex list-none flex-col gap-3 p-0">
                     {openReviews.slice(0, 4).map((r) => (
@@ -158,10 +160,10 @@ export function ProgressSummary() {
           </div>
 
           <section className="flex flex-col gap-3">
-            {header('Recommendations', '/progress/recommendations')}
+            {header(t('Recommendations'), '/progress/recommendations')}
             <Card>
               {recommendations.length === 0 ? (
-                <p className={ui.muted}>No recommendations right now.</p>
+                <p className={ui.muted}>{t('No recommendations right now.')}</p>
               ) : (
                 <ul className="m-0 flex list-none flex-col gap-3 p-0">
                   {recommendations.slice(0, 3).map((r) => (
@@ -171,7 +173,7 @@ export function ProgressSummary() {
                       </span>
                       <span>{r.reason}</span>
                       {r.targetLessonId && (
-                        <Link to={`/lessons/${r.targetLessonId}`} className={ui.link}>Open lesson</Link>
+                        <Link to={`/lessons/${r.targetLessonId}`} className={ui.link}>{t('Open lesson')}</Link>
                       )}
                     </li>
                   ))}
@@ -183,7 +185,7 @@ export function ProgressSummary() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className={`${ui.sectionTitle} px-1`}>More</h2>
+        <h2 className={`${ui.sectionTitle} px-1`}>{t('More')}</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
             ['/achievements', 'Achievements'],
@@ -195,7 +197,7 @@ export function ProgressSummary() {
               to={to}
               className="block rounded-2xl text-sm font-bold text-slate-900 no-underline transition-all hover:-translate-y-0.5 dark:text-white [&>div]:h-full [&>div]:hover:ring-indigo-300"
             >
-              <Card>{text}</Card>
+              <Card>{t(text)}</Card>
             </Link>
           ))}
         </div>

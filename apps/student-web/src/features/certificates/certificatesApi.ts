@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { formatDate } from '../../i18n';
 
 // services/backend-api/src/features/certificates/certificate.types.ts
 
@@ -76,5 +77,5 @@ export function formatIssued(iso: string): string {
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
     ? iso
-    : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    : formatDate(d, { year: 'numeric', month: 'long', day: 'numeric' });
 }

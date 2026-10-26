@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ALLOWED_AUDIO_MIME_TYPES, MAX_RECORDING_MS } from './voiceTeacherApi';
+import { t } from '../../i18n';
 
 export type RecorderStatus = 'idle' | 'requesting' | 'recording' | 'denied' | 'unsupported' | 'error';
 
@@ -100,10 +101,10 @@ export function useVoiceRecorder(onAutoStop?: (result: RecordingResult | null) =
         setStatus('denied');
       } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
         setStatus('error');
-        setErrorMessage('No microphone was found. Connect a microphone and try again.');
+        setErrorMessage(t('No microphone was found. Connect a microphone and try again.'));
       } else {
         setStatus('error');
-        setErrorMessage('Could not access the microphone. Please try again.');
+        setErrorMessage(t('Could not access the microphone. Please try again.'));
       }
       return false;
     }
@@ -115,7 +116,7 @@ export function useVoiceRecorder(onAutoStop?: (result: RecordingResult | null) =
     } catch {
       stream.getTracks().forEach((t) => t.stop());
       setStatus('error');
-      setErrorMessage('Recording is not supported in this browser.');
+      setErrorMessage(t('Recording is not supported in this browser.'));
       return false;
     }
 
@@ -152,7 +153,7 @@ export function useVoiceRecorder(onAutoStop?: (result: RecordingResult | null) =
       releaseStream();
       recorderRef.current = null;
       setStatus('error');
-      setErrorMessage('Recording failed. Please try again.');
+      setErrorMessage(t('Recording failed. Please try again.'));
       stopResolverRef.current?.(null);
       stopResolverRef.current = null;
     };

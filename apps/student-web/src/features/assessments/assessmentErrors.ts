@@ -1,4 +1,5 @@
 import { getErrorMessage } from '../../api/client';
+import { t } from '../../i18n';
 
 // Some assessment endpoints throw plain Nest exceptions whose message is the
 // code itself (e.g. ConflictException('MAX_ATTEMPTS_REACHED')); map those to text.
@@ -31,7 +32,7 @@ export function isErrorCode(err: unknown, code: string): boolean {
 export function assessmentErrorMessage(err: unknown, fallback: string): string {
   const code = codeOf(err);
   const message = messageOf(err);
-  if (message && FRIENDLY[message]) return FRIENDLY[message];
-  if (code && FRIENDLY[code] && (!message || message === code)) return FRIENDLY[code];
+  if (message && FRIENDLY[message]) return t(FRIENDLY[message]);
+  if (code && FRIENDLY[code] && (!message || message === code)) return t(FRIENDLY[code]);
   return getErrorMessage(err, fallback);
 }

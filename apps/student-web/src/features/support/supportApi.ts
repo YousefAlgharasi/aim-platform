@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { t } from '../../i18n';
 
 // Backend: services/backend-api/src/features/operations/
 //   support-ticket.controller.ts, feedback.controller.ts, release-notes.controller.ts,
@@ -101,6 +102,14 @@ export const SERVICE_STATUS_LABELS: Record<string, string> = {
   major_outage: 'Major outage',
   maintenance: 'Maintenance',
 };
+
+// Translated label helpers (resolved at call time; unknown values pass through).
+const tr = (map: Record<string, string>, key: string): string => (map[key] ? t(map[key]) : key);
+export const ticketCategoryLabel = (c: string) => tr(TICKET_CATEGORY_LABELS, c);
+export const ticketSeverityLabel = (s: string) => tr(TICKET_SEVERITY_LABELS, s);
+export const ticketStatusLabel = (s: string) => tr(TICKET_STATUS_LABELS, s);
+export const feedbackCategoryLabel = (c: string) => tr(FEEDBACK_CATEGORY_LABELS, c);
+export const serviceStatusLabel = (s: string) => tr(SERVICE_STATUS_LABELS, s);
 
 export const SUBJECT_MAX = 500;
 export const FEEDBACK_TITLE_MAX = 300;

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
+import { useI18n } from '../../i18n/I18nContext';
 import { Button } from '../../components/common/Button';
 
 interface AuthAudioPlayerProps {
@@ -12,7 +13,9 @@ interface AuthAudioPlayerProps {
  * Loads backend-synthesized audio on demand (the backend synthesizes lazily,
  * so we only request it when the student asks) and plays it from an object URL.
  */
-export function AuthAudioPlayer({ load, label = 'Play audio' }: AuthAudioPlayerProps) {
+export function AuthAudioPlayer({ load, label }: AuthAudioPlayerProps) {
+  const { t } = useI18n();
+  const shownLabel = label ?? t('Play audio');
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,7 +36,7 @@ export function AuthAudioPlayer({ load, label = 'Play audio' }: AuthAudioPlayerP
     load()
       .then((blob) => {
         if (!blob || blob.size === 0) {
-          setMessage('Audio for this item isn’t available yet.');
+          setMessage(t('Audio for this item isn’t available yet.'));
           return;
         }
         if (urlRef.current) URL.revokeObjectURL(urlRef.current);
@@ -41,7 +44,7 @@ export function AuthAudioPlayer({ load, label = 'Play audio' }: AuthAudioPlayerP
         urlRef.current = url;
         setSrc(url);
       })
-      .catch((err) => setMessage(getErrorMessage(err, 'Failed to load audio')))
+      .catch((err) => setMessage(getErrorMessage(err, t('Failed to load audio'))))
       .finally(() => setLoading(false));
   }
 
@@ -51,7 +54,7 @@ export function AuthAudioPlayer({ load, label = 'Play audio' }: AuthAudioPlayerP
         <audio ref={audioRef} controls src={src} className="w-full" />
       ) : (
         <Button type="button" variant="secondary" size="sm" onClick={handleLoad} disabled={loading}>
-          {loading ? 'Loading audio…' : `🔊 ${label}`}
+          {loading ? t('Loading audio…') : `🔊 ${shownLabel}`}
         </Button>
       )}
       {message && <span className="text-xs text-slate-500 dark:text-slate-400">{message}</span>}

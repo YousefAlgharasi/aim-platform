@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useRef } from 'react';
+import { useI18n } from '../../i18n/I18nContext';
 
 interface ModalProps {
   open: boolean;
@@ -8,6 +9,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children }: ModalProps) {
+  const { t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('Close')}
           className="size-8 rounded-full flex items-center justify-center border-none cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
         >
           ✕

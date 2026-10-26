@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckIcon } from '../../components/common/Icons';
+import { t } from '../../i18n';
 
 /**
  * Small presentational helpers shared by the placement and assessments screens.
@@ -29,7 +30,7 @@ export function PageHeader({
   subtitle,
   action,
   backTo,
-  backLabel = 'Back',
+  backLabel,
 }: {
   eyebrow?: ReactNode;
   title: ReactNode;
@@ -43,7 +44,7 @@ export function PageHeader({
       {backTo && (
         <Link
           to={backTo}
-          aria-label={backLabel}
+          aria-label={backLabel ?? t('Back')}
           className="size-10 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
         >
           <svg className="size-5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

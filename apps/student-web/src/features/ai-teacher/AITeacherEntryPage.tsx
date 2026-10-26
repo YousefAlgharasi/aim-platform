@@ -15,6 +15,7 @@ import {
 } from './aiTeacherApi';
 import { pillLinkClass } from './ui';
 import chatIllustration from './assets/undraw_chat_ai.svg';
+import { useI18n } from '../../i18n/I18nContext';
 
 /** Router state handed to AIChatPage after a session start. */
 export interface AIChatLocationState {
@@ -37,6 +38,7 @@ function chatState(lessonTitle: string | null): AIChatLocationState {
  * lesson's chat and voice turns share one conversation.
  */
 export function AITeacherEntryPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const lessonId = searchParams.get('lessonId');
@@ -66,11 +68,11 @@ export function AITeacherEntryPage() {
           navigate(`/ai-teacher/${session.sessionId}`, { replace: !!deepLinkContextRef, state });
         })
         .catch((err) => {
-          setStartError(getErrorMessage(err, 'Failed to start AI Teacher chat'));
+          setStartError(getErrorMessage(err, t('Failed to start AI Teacher chat')));
           setStarting(false);
         });
     },
-    [navigate, deepLinkContextRef],
+    [navigate, deepLinkContextRef, t],
   );
 
   const fetchSessions = useCallback(() => {
@@ -79,9 +81,9 @@ export function AITeacherEntryPage() {
     aiTeacherApi
       .listSessions()
       .then((res) => setSessions(res.sessions ?? []))
-      .catch((err) => setLoadError(getErrorMessage(err, 'Failed to load AI Teacher')))
+      .catch((err) => setLoadError(getErrorMessage(err, t('Failed to load AI Teacher'))))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (deepLinkContextRef) {
@@ -114,11 +116,11 @@ export function AITeacherEntryPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">Your tutor</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">AI Teacher</h1>
+          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Your tutor')}</span>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{t('AI Teacher')}</h1>
         </div>
         <Link to="/ai-teacher/history" className={pillLinkClass}>
-          History
+          {t('History')}
         </Link>
       </div>
 
@@ -129,7 +131,7 @@ export function AITeacherEntryPage() {
             <SparkleIcon className="size-5 text-white" />
           </div>
           <p className="text-base sm:text-lg font-semibold leading-relaxed m-0 max-w-md">
-            Ask questions, get explanations, and receive personalized help from your AI teacher.
+            {t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
           </p>
           {startError && (
             <p className="m-0 rounded-xl bg-red-50 text-red-700 ring-1 ring-red-200 px-3 py-2 text-sm" role="alert">
@@ -143,21 +145,21 @@ export function AITeacherEntryPage() {
               disabled={starting}
               className="flex-1 h-[54px] rounded-[14px] bg-white text-[#4F46E5] font-semibold border-none cursor-pointer hover:bg-indigo-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {starting ? 'Starting…' : 'Chat with AI Teacher'}
+              {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
               className="flex-1 h-[54px] rounded-[14px] bg-white/15 ring-1 ring-white/30 text-white font-semibold no-underline flex items-center justify-center gap-2 hover:bg-white/25 transition-colors"
             >
               <MicIcon className="size-4.5 text-white" />
-              Talk with Voice Teacher
+              {t('Talk with Voice Teacher')}
             </Link>
           </div>
         </div>
 
         {recent.length > 0 && (
           <section>
-            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white mt-0 mb-3">Recent Conversations</h2>
+            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white mt-0 mb-3">{t('Recent Conversations')}</h2>
             <div className="flex flex-col gap-3">
               {recent.map((session) => (
                 <Card key={session.sessionId} className="!p-0">

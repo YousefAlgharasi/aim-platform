@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../i18n/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Card } from '../../components/common/Card';
 import { Banner } from '../../components/common/Banner';
@@ -16,7 +17,6 @@ import {
   fetchEngagementSummary,
   fetchQuickStartLesson,
   fetchRecommendedCourse,
-  updateDailyGoal,
   type ContinueLearningLesson,
   type CurrentEnrollment,
   type EngagementStats,
@@ -120,6 +120,7 @@ function homeDeadlines(d: StudentDeadlines | null): StudentDeadlineItem[] {
 
 export function DashboardHome() {
   const { user } = useAuth();
+  const { t, plural } = useI18n();
   const studentId = user?.id;
 
   const [data, setData] = useState<DashboardData | null>(null);
@@ -162,7 +163,7 @@ export function DashboardHome() {
     if (failed.length === results.length) {
       const first = results[0];
       setFatalError(
-        getErrorMessage(first.status === 'rejected' ? first.reason : null, 'Could not load your dashboard.'),
+        getErrorMessage(first.status === 'rejected' ? first.reason : null, t('Could not load your dashboard.')),
       );
       setData(null);
       setLoading(false);
@@ -184,18 +185,11 @@ export function DashboardHome() {
     });
     setFailedSections(failed);
     setLoading(false);
-  }, [studentId]);
+  }, [studentId, t]);
 
   useEffect(() => {
     load();
   }, [load]);
-
-  const handleUpdateGoal = useCallback(async (target: number) => {
-    const goal = await updateDailyGoal(target);
-    setData((prev) =>
-      prev ? { ...prev, summary: { goal, challenge: prev.summary?.challenge ?? null } } : prev,
-    );
-  }, []);
 
   const stats = data?.stats ?? null;
   const courseTitle =
@@ -211,11 +205,11 @@ export function DashboardHome() {
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="m-0 text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
-              {user?.name ? `Welcome back, ${user.name}` : 'Welcome back'}
+              {user?.name ? t('Welcome back, {name}', { name: user.name }) : t('Welcome back')}
             </h1>
             {data && (stats || courseTitle) && (
               <p className="m-0 mt-1 text-xs sm:text-sm font-medium text-indigo-100/90">
-                {stats ? `Level ${stats.level}` : ''}
+                {stats ? t('Level {level}', { level: stats.level }) : ''}
                 {stats && courseTitle ? ' · ' : ''}
                 {courseTitle ?? ''}
               </p>
@@ -224,7 +218,14 @@ export function DashboardHome() {
           {streakDays != null && (
             <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/20 px-3 py-1 text-xs font-extrabold shadow-sm backdrop-blur-md">
               <FlameIcon className="size-4 text-amber-300 fill-amber-300" />
-              <span>{streakDays} {streakDays === 1 ? 'Day' : 'Days'}</span>
+              <span>
+                {plural(streakDays, {
+                  one: t('{n} Day', { n: streakDays }),
+                  two: t('{n} Days [two]', { n: streakDays }),
+                  few: t('{n} Days [few]', { n: streakDays }),
+                  other: t('{n} Days', { n: streakDays }),
+                })}
+              </span>
             </div>
           )}
         </div>
@@ -239,35 +240,31 @@ export function DashboardHome() {
           {failedSections.length > 0 && (
             <Banner variant="warning">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <span>Some sections couldn't be loaded ({failedSections.join(', ')}).</span>
+                <span>{t("Some sections couldn't be loaded ({sections}).", { sections: failedSections.map((s) => t(s)).join(', ') })}</span>
                 <Button size="sm" variant="secondary" onClick={load}>
-                  Retry
+                  {t('Retry')}
                 </Button>
               </div>
             </Banner>
           )}
 
-          <section aria-label="Your stats" className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            <StreakWidget
-              key={data.summary?.goal.targetLessons ?? 'none'}
-              goal={data.summary?.goal ?? null}
-              onUpdateGoal={data.summary ? handleUpdateGoal : undefined}
-            />
+          <section aria-label={t('Your stats')} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <StreakWidget goal={data.summary?.goal ?? null} />
             <ProgressWidget
               completionPercent={stats?.levelProgressPercent ?? 0}
-              label={stats ? `Level ${stats.level}` : 'Level unavailable'}
+              label={stats ? t('Level {level}', { level: stats.level }) : t('Level unavailable')}
               meta={
                 stats
                   ? stats.nextLevel != null && stats.nextLevelMinXp != null
-                    ? `${Math.max(0, stats.nextLevelMinXp - stats.totalXp)} XP to level ${stats.nextLevel}`
-                    : 'Highest level reached'
+                    ? t('{xp} XP to level {level}', { xp: Math.max(0, stats.nextLevelMinXp - stats.totalXp), level: stats.nextLevel })
+                    : t('Highest level reached')
                   : undefined
               }
             />
             <StatsWidget stats={stats} />
           </section>
 
-          <section aria-label="Learning" className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <section aria-label={t('Learning')} className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ContinueWidget
               continueLesson={data.continueLesson}
               quickStart={data.quickStart}
@@ -284,7 +281,7 @@ export function DashboardHome() {
             )}
           </section>
 
-          <section aria-label="Activity and deadlines" className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <section aria-label={t('Activity and deadlines')} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {data.summary?.challenge && (
               <ActivityWidget days={stats?.weeklyActivity ?? []} weeklyDeltaPercent={stats?.weeklyDeltaPercent} />
             )}
@@ -295,7 +292,7 @@ export function DashboardHome() {
       ) : null}
 
       <section className="flex flex-col gap-3">
-        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Quick links</h2>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Quick links')}</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map((link) => (
             <Link
@@ -304,9 +301,9 @@ export function DashboardHome() {
               className="block rounded-2xl no-underline transition-all duration-200 hover:-translate-y-0.5 [&>div]:h-full [&>div]:hover:ring-indigo-300 dark:[&>div]:hover:ring-indigo-500/60"
             >
               <Card>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{link.type}</span>
-                <p className="m-0 mt-1 text-sm font-bold text-slate-900 dark:text-white">{link.title}</p>
-                <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{link.description}</p>
+                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t(link.type)}</span>
+                <p className="m-0 mt-1 text-sm font-bold text-slate-900 dark:text-white">{t(link.title)}</p>
+                <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(link.description)}</p>
               </Card>
             </Link>
           ))}

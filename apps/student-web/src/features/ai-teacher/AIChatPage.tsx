@@ -14,6 +14,7 @@ import {
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { SparkleIcon, MicIcon } from '../../components/common/Icons';
 import { BackLink, SendIcon, ThumbButton, pillLinkClass } from './ui';
+import { useI18n } from '../../i18n/I18nContext';
 
 // Same quick-action prompts as Flutter's AiSuggestedPromptsRow.
 const SUGGESTED_PROMPTS = [
@@ -26,12 +27,13 @@ const SUGGESTED_PROMPTS = [
 
 type FeedbackEntry = { rating: FeedbackRating | null; status: 'submitting' | 'done' };
 
-function formatTime(iso: string): string {
+function formatMsgTime(iso: string, formatTime: (v: string | number | Date, o?: Intl.DateTimeFormatOptions) => string): string {
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(date.getTime()) ? '' : formatTime(date, { hour: '2-digit', minute: '2-digit' });
 }
 
 export function AIChatPage() {
+  const { t, formatTime } = useI18n();
   const { conversationId: sessionId = '' } = useParams<{ conversationId: string }>();
   const location = useLocation();
   const navState = (location.state ?? {}) as AIChatLocationState;
@@ -91,9 +93,9 @@ export function AIChatPage() {
         setFocusRecap(res.focusRecap ?? null);
         loadSafetyStatus();
       })
-      .catch((err) => setLoadError(getErrorMessage(err, 'AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.')))
+      .catch((err) => setLoadError(getErrorMessage(err, t('AI Teacher is temporarily unavailable. Your progress is safe, and you can try again.'))))
       .finally(() => setLoading(false));
-  }, [sessionId, loadSafetyStatus]);
+  }, [sessionId, loadSafetyStatus, t]);
 
   useEffect(() => {
     setMessages(null);
@@ -123,7 +125,7 @@ export function AIChatPage() {
           delete next[messageId];
           return next;
         });
-        setFeedbackError(getErrorMessage(err, 'Could not send feedback. Please try again.'));
+        setFeedbackError(getErrorMessage(err, t('Could not send feedback. Please try again.')));
       });
   }
 
@@ -197,7 +199,7 @@ export function AIChatPage() {
       }
     } catch (err) {
       if ((err as { name?: string } | null)?.name === 'AbortError' || !mountedRef.current) return;
-      setSendError(getErrorMessage(err, 'Failed to send your message. Please try again.'));
+      setSendError(getErrorMessage(err, t('Failed to send your message. Please try again.')));
       // The student message may have been persisted before the failure.
       const refreshed = await refreshHistory();
       if (!refreshed && mountedRef.current) {
@@ -230,22 +232,22 @@ export function AIChatPage() {
   return (
     <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] max-w-3xl w-full mx-auto">
       <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <BackLink to="/ai-teacher" label="Back to AI Teacher" />
+        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
         <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm">
           <SparkleIcon className="size-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight m-0">AI Teacher</h1>
+          <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight m-0">{t('AI Teacher')}</h1>
           <span className="block text-[11px] text-emerald-500 font-semibold truncate">
-            {navState.lessonTitle || 'Always here to help'}
+            {navState.lessonTitle || t('Always here to help')}
           </span>
         </div>
-        <Link to={`/voice-teacher/${sessionId}`} className={pillLinkClass} aria-label="Switch to Voice Teacher">
+        <Link to={`/voice-teacher/${sessionId}`} className={pillLinkClass} aria-label={t('Switch to Voice Teacher')}>
           <MicIcon className="size-4" />
-          <span className="hidden sm:inline">Voice</span>
+          <span className="hidden sm:inline">{t('Voice')}</span>
         </Link>
         <Link to="/ai-teacher/history" className={pillLinkClass}>
-          History
+          {t('History')}
         </Link>
       </div>
 
@@ -253,28 +255,28 @@ export function AIChatPage() {
         <div className="flex flex-col gap-2 pt-3">
           {safetyLimited && (
             <Banner variant="warning">
-              <strong>AI Teacher is limited right now.</strong> Some responses in this conversation were held
-              back to keep things safe. You can keep chatting, or start a new conversation.
+              <strong>{t('AI Teacher is limited right now.')}</strong>{' '}
+              {t('Some responses in this conversation were held back to keep things safe. You can keep chatting, or start a new conversation.')}
             </Banner>
           )}
           {focusRecap && <Banner variant="info">{focusRecap}</Banner>}
           {navState.lastSessionRecap && (
             <Banner variant="success">
-              <strong>Welcome back.</strong> {navState.lastSessionRecap}
+              <strong>{t('Welcome back.')}</strong> {navState.lastSessionRecap}
             </Banner>
           )}
         </div>
       )}
 
-      <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label="Chat messages">
+      <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label={t('Chat messages')}>
         {isEmpty && (
           <div className="flex flex-col items-center text-center gap-2 py-8">
             <div className="size-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
               <SparkleIcon className="size-6 text-white" />
             </div>
-            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Ask me anything</p>
+            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Ask me anything')}</p>
             <p className="m-0 text-sm text-slate-500 dark:text-slate-400 max-w-xs">
-              Start the conversation with a question or pick a suggestion below.
+              {t('Start the conversation with a question or pick a suggestion below.')}
             </p>
           </div>
         )}
@@ -287,7 +289,7 @@ export function AIChatPage() {
             <div
               key={msg.id}
               className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isStudent ? 'self-end items-end' : 'self-start items-start'}`}
-              aria-label={isStudent ? 'Your message' : 'AI Teacher'}
+              aria-label={isStudent ? t('Your message') : t('AI Teacher')}
             >
               <div
                 className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
@@ -300,28 +302,28 @@ export function AIChatPage() {
               </div>
               <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1 px-1 flex items-center gap-1">
                 {msg.channel === 'voice' && (
-                  <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> Voice ·</span>
+                  <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> {t('Voice')} ·</span>
                 )}
-                {formatTime(msg.createdAt)}
+                {formatMsgTime(msg.createdAt, formatTime)}
               </span>
               {canRate && (
                 <div className="flex items-center gap-2 mt-1 px-1">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {entry?.status === 'done' ? 'Thanks for your feedback' : 'Was this helpful?'}
+                    {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
                   </span>
                   <ThumbButton
                     kind="up"
                     active={entry?.rating === 'helpful'}
                     disabled={!!entry}
                     onClick={() => submitFeedback(msg.id, 'helpful')}
-                    label="Mark AI Teacher reply as helpful"
+                    label={t('Mark AI Teacher reply as helpful')}
                   />
                   <ThumbButton
                     kind="down"
                     active={entry?.rating === 'not_helpful'}
                     disabled={!!entry}
                     onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                    label="Mark AI Teacher reply as not helpful"
+                    label={t('Mark AI Teacher reply as not helpful')}
                   />
                 </div>
               )}
@@ -341,7 +343,7 @@ export function AIChatPage() {
             className="self-start bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5 shadow-sm"
             role="status"
           >
-            <span className="sr-only">AI Teacher is thinking…</span>
+            <span className="sr-only">{t('AI Teacher is thinking…')}</span>
             <div className="size-2 rounded-full bg-indigo-500 animate-bounce" aria-hidden="true" />
             <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:150ms]" aria-hidden="true" />
             <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:300ms]" aria-hidden="true" />
@@ -350,7 +352,7 @@ export function AIChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="sticky bottom-20 md:bottom-4 z-10 flex flex-col gap-2 pt-2 bg-[#F8FAFC]/90 dark:bg-slate-900/90 backdrop-blur-md">
+      <div className="sticky bottom-4 z-10 flex flex-col gap-2 pt-2 bg-[#F8FAFC]/90 dark:bg-slate-900/90 backdrop-blur-md">
         {(sendError || feedbackError) && (
           <div
             className="rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-900 px-3 py-2 text-sm"
@@ -361,15 +363,15 @@ export function AIChatPage() {
         )}
 
         {!sending && (
-          <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Suggested prompts">
+          <div className="flex gap-2 overflow-x-auto pb-1" aria-label={t('Suggested prompts')}>
             {SUGGESTED_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
-                onClick={() => send(prompt)}
+                onClick={() => send(t(prompt))}
                 className="shrink-0 min-h-10 px-4 rounded-full bg-white dark:bg-slate-800 ring-1 ring-indigo-200 dark:ring-slate-700 text-[#4F46E5] dark:text-indigo-300 text-sm font-semibold cursor-pointer border-none hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors"
               >
-                {prompt}
+                {t(prompt)}
               </button>
             ))}
           </div>
@@ -381,16 +383,16 @@ export function AIChatPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask AI Teacher…"
+            placeholder={t('Ask AI Teacher…')}
             rows={1}
             disabled={sending}
-            aria-label="Message input"
+            aria-label={t('Message input')}
           />
           <button
             type="button"
             onClick={() => send(input)}
             disabled={sending || !input.trim()}
-            aria-label={sending ? 'Sending…' : 'Send message'}
+            aria-label={sending ? t('Sending…') : t('Send message')}
             className="size-10 shrink-0 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <SendIcon />

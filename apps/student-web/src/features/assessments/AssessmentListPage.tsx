@@ -5,10 +5,12 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { deadlineStatusLabel, fetchAssessments, type AssessmentListItem } from './assessmentsApi';
-import { statusTone } from './assessmentUi';
+import { useI18n } from '../../i18n/I18nContext';
+import { statusTone, assessmentTypeLabel } from './assessmentUi';
 import { Badge, BODY, CARD, PageHeader } from '../placement/ui';
 
 export function AssessmentListPage() {
+  const { t } = useI18n();
   const [assessments, setAssessments] = useState<AssessmentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,9 +20,9 @@ export function AssessmentListPage() {
     setError('');
     fetchAssessments()
       .then((a) => setAssessments(a ?? []))
-      .catch((err) => setError(getErrorMessage(err, 'Failed to load assessments')))
+      .catch((err) => setError(getErrorMessage(err, t('Failed to load assessments'))))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -30,20 +32,20 @@ export function AssessmentListPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow="Assessments"
-        title="Assessments"
-        subtitle="Quizzes and exams assigned to you."
+        eyebrow={t('Assessments')}
+        title={t('Assessments')}
+        subtitle={t('Quizzes and exams assigned to you.')}
         action={
           <Link
             to="/assessments/deadlines"
             className="shrink-0 inline-flex items-center h-10 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            Deadlines
+            {t('Deadlines')}
           </Link>
         }
       />
       {assessments.length === 0 ? (
-        <EmptyState title="No assessments" message="Assessments will appear here when available." />
+        <EmptyState title={t('No assessments')} message={t('Assessments will appear here when available.')} />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {assessments.map((a) => (
@@ -53,7 +55,7 @@ export function AssessmentListPage() {
               className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-md transition-all duration-200`}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={a.type === 'quiz' ? 'indigo' : 'violet'}>{a.type}</Badge>
+                <Badge tone={a.type === 'quiz' ? 'indigo' : 'violet'}>{assessmentTypeLabel(a.type)}</Badge>
                 {a.deadlineStatus && (
                   <Badge tone={statusTone(a.deadlineStatus)}>{deadlineStatusLabel(a.deadlineStatus)}</Badge>
                 )}

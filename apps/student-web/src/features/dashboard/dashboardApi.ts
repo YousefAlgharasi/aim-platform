@@ -55,13 +55,7 @@ export function fetchEngagementStats(): Promise<EngagementStats | null> {
   return apiClient.get<EngagementStats | null>('/student/engagement/stats');
 }
 
-/** PUT /student/engagement/goal — body is exactly `{ dailyGoalLessons }`; backend clamps to 1..20. */
-export function updateDailyGoal(dailyGoalLessons: number): Promise<DailyGoalSummary> {
-  return apiClient.put<DailyGoalSummary>('/student/engagement/goal', { dailyGoalLessons });
-}
 
-export const DAILY_GOAL_MIN = 1;
-export const DAILY_GOAL_MAX = 20;
 
 // ── Lessons (services/backend-api/src/features/lessons/lesson-progress.types.ts) ──
 

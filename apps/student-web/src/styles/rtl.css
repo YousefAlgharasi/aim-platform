@@ -1,11 +1,14 @@
-[dir="rtl"] {
+/* Direction is set on <html dir="rtl|ltr"> by I18nProvider; layouts use logical utilities. */
+html[dir='rtl'] body {
+  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  line-height: 1.7;
+}
+
+/* Keep numbers, emails and code readable inside right-to-left text. */
+html[dir='rtl'] input[type='email'],
+html[dir='rtl'] input[type='password'],
+html[dir='rtl'] input[type='tel'],
+html[dir='rtl'] input[type='url'] {
+  direction: ltr;
   text-align: right;
-}
-
-[dir="rtl"] .back-link::before {
-  content: '→';
-}
-
-[dir="ltr"] .back-link::before {
-  content: '←';
 }
