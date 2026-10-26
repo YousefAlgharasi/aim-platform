@@ -106,7 +106,7 @@ class _SkillStatePageState extends ConsumerState<SkillStatePage> {
         children: [
           const _SkillStateHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading skill states'),
               AppAsyncFailure(:final message) =>
@@ -122,7 +122,7 @@ class _SkillStatePageState extends ConsumerState<SkillStatePage> {
                       skillStates: data.skillStates, onRefresh: _refresh),
               AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading skill states'),
-            },
+            }),
           ),
         ],
       ),

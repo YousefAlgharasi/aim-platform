@@ -88,7 +88,7 @@ class _ParentTicketListPageState extends ConsumerState<ParentTicketListPage> {
         children: [
           const _ParentTicketListHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading your tickets',
                 ),
@@ -120,7 +120,7 @@ class _ParentTicketListPageState extends ConsumerState<ParentTicketListPage> {
                         );
                       },
                     ),
-            },
+            }),
           ),
         ],
       ),

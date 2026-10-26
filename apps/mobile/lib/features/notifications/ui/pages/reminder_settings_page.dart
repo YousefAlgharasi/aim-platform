@@ -131,7 +131,7 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
         children: [
           const _ReminderSettingsHeader(),
           Expanded(
-            child: switch (remindersState) {
+            child: SafeArea(top: false, child: switch (remindersState) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
                 const AIMFullScreenLoading(
@@ -170,7 +170,7 @@ class _ReminderSettingsPageState extends ConsumerState<ReminderSettingsPage> {
                         );
                       },
                     ),
-            },
+            }),
           ),
         ],
       ),

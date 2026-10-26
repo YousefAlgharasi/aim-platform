@@ -127,7 +127,9 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
             ),
           ),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(
+              top: false,
+              child: switch (state) {
               AppAsyncLoading() => AIMFullScreenLoading(
                   semanticLabel: l10n.reviewScheduleLoadingSemantic),
               AppAsyncFailure(:final message) =>
@@ -145,6 +147,7 @@ class _ReviewSchedulePageState extends ConsumerState<ReviewSchedulePage> {
               AppAsyncIdle() => AIMFullScreenLoading(
                   semanticLabel: l10n.reviewScheduleLoadingSemantic),
             },
+            ),
           ),
         ],
       ),

@@ -113,7 +113,9 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
             ),
           ),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(
+              top: false,
+              child: switch (state) {
               AppAsyncLoading() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading recommendations'),
               AppAsyncFailure(:final message) =>
@@ -133,6 +135,7 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
               AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading recommendations'),
             },
+            ),
           ),
         ],
       ),

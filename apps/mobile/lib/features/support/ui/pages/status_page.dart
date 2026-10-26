@@ -202,7 +202,7 @@ class _StatusPageState extends ConsumerState<StatusPage> {
         children: [
           const _StatusHeader(),
           Expanded(
-            child: ListView(
+            child: SafeArea(top: false, child: ListView(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -271,7 +271,7 @@ class _StatusPageState extends ConsumerState<StatusPage> {
                   ),
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),

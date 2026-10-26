@@ -97,7 +97,10 @@ class ParentHelpCenterPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _ParentHelpCenterHeader(),
-          Padding(
+          SafeArea(
+            top: false,
+            bottom: false,
+            child: Padding(
             padding: const EdgeInsets.fromLTRB(
               AimSpacing.screenPaddingMobile,
               AimSpacing.sectionGap,
@@ -125,8 +128,9 @@ class ParentHelpCenterPage extends StatelessWidget {
               ),
             ),
           ),
+          ),
           Expanded(
-            child: ListView.separated(
+            child: SafeArea(top: false, bottom: false, child: ListView.separated(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -136,7 +140,7 @@ class ParentHelpCenterPage extends StatelessWidget {
                   const SizedBox(height: AimSpacing.listItemGap),
               itemBuilder: (context, index) =>
                   HelpCategoryAccordionCard(category: _categories[index]),
-            ),
+            )),
           ),
           SafeArea(
             top: false,

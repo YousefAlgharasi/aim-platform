@@ -130,7 +130,7 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
             ),
         ],
       ),
-      body: switch (resumeState) {
+      body: SafeArea(top: false, child: switch (resumeState) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Resuming attempt',
           ),
@@ -147,7 +147,7 @@ class _AttemptPageState extends ConsumerState<AttemptPage> {
         AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Resuming attempt',
           ),
-      },
+      }),
     );
   }
 }

@@ -47,7 +47,7 @@ class AiTeacherSettingsPage extends ConsumerWidget {
         children: [
           const _AiTeacherSettingsHeader(),
           Expanded(
-            child: ListView(
+            child: SafeArea(top: false, child: ListView(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -89,7 +89,7 @@ class AiTeacherSettingsPage extends ConsumerWidget {
                   ),
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),
@@ -142,9 +142,11 @@ class _AiTeacherSettingsHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AimSpacing.space12),
-            Text(
-              'AI Teacher settings',
-              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            Expanded(
+              child: Text(
+                'AI Teacher settings',
+                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+              ),
             ),
           ],
         ),

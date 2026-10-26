@@ -252,19 +252,24 @@ class _HeroBadge extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Container(
-                    margin: const EdgeInsets.all(-6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(26),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFF6366F1).withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
+                ),
+              ),
+              // Soft halo (slightly larger than the badge)
+              Positioned(
+                left: -6,
+                top: -6,
+                right: -6,
+                bottom: -6,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        spreadRadius: 0,
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -132,7 +132,7 @@ class _NotificationDetailPageState
         children: [
           const _NotificationDetailHeader(),
           Expanded(
-            child: SingleChildScrollView(
+            child: SafeArea(top: false, child: SingleChildScrollView(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 AimSpacing.screenPaddingMobile,
                 AimSpacing.sectionGap,
@@ -207,7 +207,7 @@ class _NotificationDetailPageState
                     ),
                 ],
               ),
-            ),
+            )),
           ),
         ],
       ),

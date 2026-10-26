@@ -124,7 +124,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
         children: [
           const _CheckoutHeader(),
           Expanded(
-            child: SingleChildScrollView(
+            child: SafeArea(top: false, child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -204,7 +204,7 @@ class _CheckoutStartPageState extends ConsumerState<CheckoutStartPage> {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
         ],
       ),

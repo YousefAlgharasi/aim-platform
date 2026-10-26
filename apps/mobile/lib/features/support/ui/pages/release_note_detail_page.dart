@@ -44,11 +44,11 @@ class ReleaseNoteDetailPage extends StatelessWidget {
         children: [
           const _ReleaseNoteDetailHeader(),
           Expanded(
-            child: AIMEmptyState(
+            child: SafeArea(top: false, child: AIMEmptyState(
               icon: const Icon(Icons.new_releases_outlined),
               title: l10n.supportReleaseNoteNotAvailable,
               subtitle: l10n.supportReleaseNoteNotAvailableSubtitle,
-            ),
+            )),
           ),
         ],
       ),

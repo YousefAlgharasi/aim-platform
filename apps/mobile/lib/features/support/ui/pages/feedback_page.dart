@@ -84,7 +84,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
         children: [
           const _FeedbackHeader(),
           Expanded(
-            child: ListView(
+            child: SafeArea(top: false, child: ListView(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -141,7 +141,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
                   semanticLabel: l10n.commonSubmit,
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),

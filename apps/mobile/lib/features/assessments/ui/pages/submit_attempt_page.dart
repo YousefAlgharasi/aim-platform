@@ -117,7 +117,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
         title: widget.assessmentTitle,
         onBack: _submitting ? null : () => context.pop(),
       ),
-      body: Padding(
+      body: SafeArea(top: false, child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(
           AimSpacing.screenPaddingMobile,
           AimSpacing.sectionGap,
@@ -190,7 +190,7 @@ class _SubmitAttemptPageState extends ConsumerState<SubmitAttemptPage> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

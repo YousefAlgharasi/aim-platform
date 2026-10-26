@@ -124,7 +124,7 @@ class _NotificationPreferencesPageState
         children: [
           const _NotificationPreferencesHeader(),
           Expanded(
-            child: switch (preferencesState) {
+            child: SafeArea(top: false, child: switch (preferencesState) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
                 const AIMFullScreenLoading(
@@ -186,10 +186,12 @@ class _NotificationPreferencesPageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Manage lesson reminders',
-                              style: AimTextStyles.bodyMd.copyWith(
-                                color: surfaces.textPrimary,
+                            Expanded(
+                              child: Text(
+                                'Manage lesson reminders',
+                                style: AimTextStyles.bodyMd.copyWith(
+                                  color: surfaces.textPrimary,
+                                ),
                               ),
                             ),
                             Icon(
@@ -204,7 +206,7 @@ class _NotificationPreferencesPageState
                     ],
                   ),
                 ),
-            },
+            }),
           ),
         ],
       ),
@@ -257,9 +259,11 @@ class _NotificationPreferencesHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AimSpacing.space12),
-            Text(
+            Expanded(
+              child: Text(
               'Notification settings',
               style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+            ),
             ),
           ],
         ),
