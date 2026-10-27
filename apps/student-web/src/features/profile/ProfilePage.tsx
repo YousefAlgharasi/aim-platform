@@ -17,6 +17,7 @@ import {
   TIMEZONE_OPTIONS,
   type ProfileMeResponse,
 } from './profileApi';
+import { validateMaxLength, mapApiFieldErrors } from '../../utils/validation';
 import { PageHeader, SectionTitle, Field, LinkRow, selectCls, labelCls, bodyCls, pillCls } from './ui';
 
 const QUICK_LINKS = [
@@ -77,11 +78,14 @@ export function ProfilePage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (saving) return;
     setError('');
     setSuccess('');
     const name = displayName.trim();
-    if (name.length > DISPLAY_NAME_MAX) {
-      setNameError(t('Display name must be {max} characters or fewer.', { max: DISPLAY_NAME_MAX }));
+    const tooLong = validateMaxLength(name, DISPLAY_NAME_MAX, t('Display name must be {max} characters or fewer.', { max: DISPLAY_NAME_MAX }));
+    if (tooLong) {
+      setNameError(tooLong);
+      document.getElementById('profile-display-name')?.focus();
       return;
     }
     setNameError('');
@@ -97,7 +101,9 @@ export function ProfilePage() {
       // Refresh the auth user so the header name and locale update.
       await refreshUser().catch(() => undefined);
     } catch (err) {
-      setError(getErrorMessage(err, t('Update failed')));
+      const mapped = mapApiFieldErrors(err, ['displayName'] as const);
+      if (mapped.displayName) setNameError(mapped.displayName);
+      else setError(getErrorMessage(err, t('Update failed')));
     } finally {
       setSaving(false);
     }
@@ -169,6 +175,7 @@ export function ProfilePage() {
                 {error && <Banner variant="error">{error}</Banner>}
 
                 <Input
+                  id="profile-display-name"
                   label={t('Display name')}
                   type="text"
                   value={displayName}

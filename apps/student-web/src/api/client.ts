@@ -1,6 +1,6 @@
 import { config } from '../config';
 import type { ApiError } from '../types';
-import { t } from '../i18n';
+import { getLocale, t } from '../i18n';
 
 // Backend envelope: { success: true, data, meta } | { success: false, error: { code, message, statusCode, details } }
 // See services/backend-api/src/common/api/api-response.types.ts.
@@ -215,7 +215,15 @@ class ApiClient {
 export const apiClient = new ApiClient(config.apiBaseUrl);
 
 /** Message for any caught error, preferring the backend's envelope message. */
+const ARABIC_RE = /[\u0600-\u06FF]/;
+
 export function getErrorMessage(err: unknown, fallback = 'Something went wrong. Please try again.'): string {
   const message = (err as { message?: unknown } | null)?.message;
-  return typeof message === 'string' && message ? message : fallback;
+  const localizedFallback = t(fallback);
+  if (typeof message !== 'string' || !message) return localizedFallback;
+  const translated = t(message);
+  // Backend messages are English. In Arabic, show only ones with a translation;
+  // otherwise use the (already localized) caller fallback.
+  if (getLocale() === 'ar' && translated === message && !ARABIC_RE.test(message)) return localizedFallback;
+  return translated;
 }

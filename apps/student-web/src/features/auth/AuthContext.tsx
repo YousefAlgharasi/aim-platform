@@ -31,6 +31,7 @@ interface AuthState {
   /** True after the session ended because the refresh token was rejected. */
   sessionExpired: boolean;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<{ requiresEmailConfirmation: boolean }>;
   logout: () => Promise<void>;
   /** Re-reads /auth/me, e.g. after the profile was edited. */
@@ -110,6 +111,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [startSession],
   );
 
+  const googleLogin = useCallback(
+    async (idToken: string) => {
+      const result = await apiClient.post<LoginResponse>('/auth/google', { idToken }, { auth: false });
+      await startSession(result);
+    },
+    [startSession],
+  );
+
   const register = useCallback(
     async (email: string, password: string, name: string) => {
       const result = await apiClient.post<RegisterResponse>(
@@ -149,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, sessionExpired, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, sessionExpired, login, googleLogin, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

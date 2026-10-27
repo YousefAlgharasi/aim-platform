@@ -5,6 +5,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, AuthFooterLink, MailBadge } from '../../components/auth/AuthParts';
+import { mapApiFieldErrors, validateEmail } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
 
 export function ForgotPasswordPage() {
@@ -12,10 +13,12 @@ export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function send() {
+    if (loading) return;
     setError('');
     setLoading(true);
     try {
@@ -26,7 +29,10 @@ export function ForgotPasswordPage() {
       );
       setSent(true);
     } catch (err) {
-      setError(getErrorMessage(err, t('Request failed')));
+      const mapped = mapApiFieldErrors(err, ['email'] as const);
+      // On the "sent" screen there is no email field, so surface it as a banner.
+      if (mapped.email && !sent) setEmailError(mapped.email);
+      else setError(getErrorMessage(err, t('Request failed')));
     } finally {
       setLoading(false);
     }
@@ -34,7 +40,13 @@ export function ForgotPasswordPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (email.trim()) void send();
+    const invalid = validateEmail(email);
+    setEmailError(invalid);
+    if (invalid) {
+      document.getElementById('forgot-email')?.focus();
+      return;
+    }
+    void send();
   }
 
   if (sent) {
@@ -68,18 +80,23 @@ export function ForgotPasswordPage() {
         subtitle={t("Enter the email linked to your account and we'll send you a link to reset your password.")}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
         <Input
+          id="forgot-email"
+          name="email"
+          spellCheck={false}
           label={t('Email address')}
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setEmailError(undefined); }}
+          onBlur={() => email && setEmailError(validateEmail(email))}
+          error={emailError}
           required
           autoComplete="email"
         />
         <div className="mt-2">
-          <Button type="submit" size="lg" fullWidth disabled={loading || !email.trim()}>
+          <Button type="submit" size="lg" fullWidth disabled={loading}>
             {loading ? t('Sending…') : t('Send Reset Link')}
           </Button>
         </div>

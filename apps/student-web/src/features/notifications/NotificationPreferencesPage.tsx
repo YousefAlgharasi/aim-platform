@@ -24,6 +24,7 @@ import {
   type QuietHours,
   type ReminderSchedule,
 } from './notificationsApi';
+import { collectErrors, focusFirstInvalid, hasErrors, validateRequired, type FieldErrors } from '../../utils/validation';
 import { PageHeader, SectionTitle, StatusPill, textLinkCls, subCls, labelCls, inputCls } from '../profile/ui';
 
 const REMINDER_KIND_LABELS: Record<string, string> = {
@@ -77,6 +78,7 @@ export function NotificationPreferencesPage() {
   const [endTime, setEndTime] = useState('07:00');
   const [timezone, setTimezone] = useState(browserTimezone());
   const [savingQuiet, setSavingQuiet] = useState(false);
+  const [quietErrors, setQuietErrors] = useState<FieldErrors<'start' | 'end' | 'timezone'>>({});
   const [quietStatus, setQuietStatus] = useState<{ variant: 'success' | 'error'; message: string } | null>(null);
 
   // Reminders
@@ -157,6 +159,20 @@ export function NotificationPreferencesPage() {
 
   async function saveQuietHours(e: FormEvent) {
     e.preventDefault();
+    if (savingQuiet) return;
+    // Times and timezone only matter while quiet hours are on.
+    const errors = quietEnabled
+      ? collectErrors({
+          start: startTime ? undefined : t('Start time is required.'),
+          end: endTime ? undefined : t('End time is required.'),
+          timezone: validateRequired(timezone, t('Timezone is required.')),
+        })
+      : {};
+    setQuietErrors(errors);
+    if (hasErrors(errors)) {
+      focusFirstInvalid([['start', 'quiet-start'], ['end', 'quiet-end'], ['timezone', 'quiet-timezone']], errors);
+      return;
+    }
     setSavingQuiet(true);
     setQuietStatus(null);
     try {
@@ -242,7 +258,7 @@ export function NotificationPreferencesPage() {
         </div>
 
         <Card>
-          <form className="flex flex-col gap-4" onSubmit={saveQuietHours}>
+          <form className="flex flex-col gap-4" onSubmit={saveQuietHours} noValidate>
             <SectionTitle>{t('Quiet hours')}</SectionTitle>
             {quietLoading ? (
               <LoadingSpinner />
@@ -272,37 +288,49 @@ export function NotificationPreferencesPage() {
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
                     {t('From')}
                     <input
+                      id="quiet-start"
                       type="time"
                       className={inputCls}
                       value={startTime}
-                      onChange={e => setStartTime(e.target.value)}
+                      onChange={e => { setStartTime(e.target.value); setQuietErrors(f => ({ ...f, start: undefined })); }}
                       disabled={!quietEnabled}
+                      aria-invalid={!!quietErrors.start}
+                      aria-describedby={quietErrors.start ? 'quiet-start-error' : undefined}
                       required
                     />
+                    {quietErrors.start && <span id="quiet-start-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.start}</span>}
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
                     {t('To')}
                     <input
+                      id="quiet-end"
                       type="time"
                       className={inputCls}
                       value={endTime}
-                      onChange={e => setEndTime(e.target.value)}
+                      onChange={e => { setEndTime(e.target.value); setQuietErrors(f => ({ ...f, end: undefined })); }}
                       disabled={!quietEnabled}
+                      aria-invalid={!!quietErrors.end}
+                      aria-describedby={quietErrors.end ? 'quiet-end-error' : undefined}
                       required
                     />
+                    {quietErrors.end && <span id="quiet-end-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.end}</span>}
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5 sm:col-span-2`}>
                     {t('Timezone')}
                     <input
+                      id="quiet-timezone"
                       type="text"
                       dir="ltr"
                       className={inputCls}
                       value={timezone}
                       maxLength={64}
-                      onChange={e => setTimezone(e.target.value)}
+                      onChange={e => { setTimezone(e.target.value); setQuietErrors(f => ({ ...f, timezone: undefined })); }}
                       disabled={!quietEnabled}
+                      aria-invalid={!!quietErrors.timezone}
+                      aria-describedby={quietErrors.timezone ? 'quiet-timezone-error' : undefined}
                       required
                     />
+                    {quietErrors.timezone && <span id="quiet-timezone-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.timezone}</span>}
                   </label>
                 </div>
                 <div>

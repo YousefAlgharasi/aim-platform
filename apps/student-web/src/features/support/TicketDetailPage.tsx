@@ -39,6 +39,7 @@ export function TicketDetailPage() {
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [replyError, setReplyError] = useState('');
+  const [replyFieldError, setReplyFieldError] = useState<string | undefined>();
   const [sentComments, setSentComments] = useState<SupportTicketComment[]>([]);
 
   const load = useCallback(() => {
@@ -54,10 +55,16 @@ export function TicketDetailPage() {
 
   async function handleReply(e: FormEvent) {
     e.preventDefault();
+    if (sending) return;
     const body = reply.trim();
-    if (!body) return;
+    if (!body) {
+      setReplyFieldError(t('Reply cannot be empty.'));
+      document.getElementById('ticket-reply')?.focus();
+      return;
+    }
     setSending(true);
     setReplyError('');
+    setReplyFieldError(undefined);
     try {
       const comment = await addTicketComment(ticketId, body);
       setSentComments(prev => [...prev, comment]);
@@ -122,7 +129,7 @@ export function TicketDetailPage() {
           )}
 
           <Card>
-            <form className="flex flex-col gap-4" onSubmit={handleReply}>
+            <form className="flex flex-col gap-4" onSubmit={handleReply} noValidate>
               <SectionTitle hint={t("Earlier replies on this ticket can't be shown here yet; only messages you send now appear below.")}>
                 {t('Add a reply')}
               </SectionTitle>
@@ -141,17 +148,19 @@ export function TicketDetailPage() {
                 <Banner variant="info">{t('This ticket is closed. Open a new ticket if you still need help.')}</Banner>
               ) : (
                 <>
-                  <Field label={t('Message')} htmlFor="ticket-reply">
+                  <Field label={t('Message')} htmlFor="ticket-reply" error={replyFieldError}>
                     <textarea
                       id="ticket-reply"
                       className={`${textareaCls} min-h-28`}
                       value={reply}
-                      onChange={e => setReply(e.target.value)}
+                      onChange={e => { setReply(e.target.value); setReplyFieldError(undefined); }}
+                      aria-invalid={!!replyFieldError}
+                      aria-describedby={replyFieldError ? 'ticket-reply-error' : undefined}
                       required
                     />
                   </Field>
                   <div className="flex justify-end">
-                    <Button variant="primary" type="submit" disabled={sending || !reply.trim()}>
+                    <Button variant="primary" type="submit" disabled={sending}>
                       {sending ? t('Sending…') : t('Send reply')}
                     </Button>
                   </div>

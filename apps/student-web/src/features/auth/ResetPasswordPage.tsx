@@ -5,6 +5,7 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, PasswordToggle, SuccessBadge } from '../../components/auth/AuthParts';
+import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateConfirm, validateNewPassword, type FieldErrors } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
 
 /** Supabase's recovery link lands here as /reset-password#access_token=…&type=recovery. */
@@ -20,18 +21,21 @@ export function ResetPasswordPage() {
   const [confirm, setConfirm] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<'password' | 'confirm'>>({});
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (password.length < 8) {
-      setError(t('Password must be at least 8 characters.'));
-      return;
-    }
-    if (password !== confirm) {
-      setError(t('Passwords do not match.'));
+    if (loading) return;
+    const errors = collectErrors({
+      password: validateNewPassword(password),
+      confirm: validateConfirm(password, confirm),
+    });
+    setFieldErrors(errors);
+    if (hasErrors(errors)) {
+      focusFirstInvalid([['password', 'reset-password'], ['confirm', 'reset-confirm']], errors);
       return;
     }
     setError('');
@@ -41,7 +45,9 @@ export function ResetPasswordPage() {
       window.history.replaceState(null, '', window.location.pathname);
       setDone(true);
     } catch (err) {
-      setError(getErrorMessage(err, t('Could not reset password. The link may have expired.')));
+      const mapped = mapApiFieldErrors(err, ['password'] as const);
+      setFieldErrors(mapped);
+      setError(hasErrors(mapped) ? '' : getErrorMessage(err, t('Could not reset password. The link may have expired.')));
     } finally {
       setLoading(false);
     }
@@ -85,22 +91,28 @@ export function ResetPasswordPage() {
         title={t('Create a new password')}
         subtitle={t("Choose a strong password you haven't used before.")}
       />
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
         <Input
+          id="reset-password"
           label={t('New password')}
           type={showPass ? 'text' : 'password'}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setFieldErrors((f) => ({ ...f, password: undefined, confirm: undefined })); }}
+          onBlur={() => password && setFieldErrors((f) => ({ ...f, password: validateNewPassword(password) }))}
+          error={fieldErrors.password}
           required
           autoComplete="new-password"
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
+          id="reset-confirm"
           label={t('Confirm new password')}
           type={showPass ? 'text' : 'password'}
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={(e) => { setConfirm(e.target.value); setFieldErrors((f) => ({ ...f, confirm: undefined })); }}
+          onBlur={() => confirm && setFieldErrors((f) => ({ ...f, confirm: validateConfirm(password, confirm) }))}
+          error={fieldErrors.confirm}
           required
           autoComplete="new-password"
         />

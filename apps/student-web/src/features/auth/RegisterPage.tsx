@@ -6,7 +6,11 @@ import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { AuthLogo, AuthHeader, AuthFooterLink, MailBadge, PasswordToggle } from '../../components/auth/AuthParts';
+import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateConfirm, validateEmail, validateNewPassword, validateRequired, type FieldErrors } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
+
+// Matches the profile display-name limit (DISPLAY_NAME_MAX in features/profile/profileApi.ts).
+const NAME_MAX = 80;
 
 export function RegisterPage() {
   const { t } = useI18n();
@@ -17,6 +21,7 @@ export function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<'name' | 'email' | 'password' | 'confirm'>>({});
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -24,25 +29,40 @@ export function RegisterPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError('');
-    if (password.length < 8) {
-      setError(t('Password must be at least 8 characters.'));
-      return;
-    }
-    if (password !== confirm) {
-      setError(t('Passwords do not match.'));
+    const errors = collectErrors({
+      name: validateRequired(name, t('Full name is required.')) ?? (name.trim().length > NAME_MAX ? t('Full name must be {max} characters or fewer.', { max: NAME_MAX }) : undefined),
+      email: validateEmail(email),
+      password: validateNewPassword(password),
+      confirm: validateConfirm(password, confirm),
+    });
+    setFieldErrors(errors);
+    if (hasErrors(errors)) {
+      focusFirstInvalid(
+        [['name', 'register-name'], ['email', 'register-email'], ['password', 'register-password'], ['confirm', 'register-confirm']],
+        errors,
+      );
       return;
     }
     setLoading(true);
     try {
-      const { requiresEmailConfirmation } = await register(email, password, name);
+      const { requiresEmailConfirmation } = await register(email.trim(), password, name.trim());
       if (requiresEmailConfirmation) {
         setConfirmationSent(true);
       } else {
         navigate('/', { replace: true });
       }
     } catch (err) {
-      setError(getErrorMessage(err, t('Registration failed')));
+      if ((err as { code?: string } | null)?.code === 'CONFLICT') {
+        setFieldErrors({ email: t('An account with this email already exists. Try signing in instead.') });
+        setError('');
+        document.getElementById('register-email')?.focus();
+        return;
+      }
+      const mapped = mapApiFieldErrors(err, ['email', 'password'] as const);
+      setFieldErrors(mapped);
+      setError(hasErrors(mapped) ? '' : getErrorMessage(err, t('Registration failed')));
     } finally {
       setLoading(false);
     }
@@ -73,31 +93,51 @@ export function RegisterPage() {
         subtitle={t('Takes less than a minute. Enter your details below.')}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
-        <Input label={t('Full name')} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
         <Input
+          id="register-name"
+          label={t('Full name')}
+          value={name}
+          maxLength={NAME_MAX}
+          onChange={(e) => { setName(e.target.value); setFieldErrors((f) => ({ ...f, name: undefined })); }}
+          error={fieldErrors.name}
+          required
+          autoComplete="name"
+        />
+        <Input
+          id="register-email"
+          name="email"
+          spellCheck={false}
           label={t('Email address')}
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setFieldErrors((f) => ({ ...f, email: undefined })); }}
+          onBlur={() => email && setFieldErrors((f) => ({ ...f, email: validateEmail(email) }))}
+          error={fieldErrors.email}
           required
           autoComplete="email"
         />
         <Input
+          id="register-password"
           label={t('Password')}
           type={showPass ? 'text' : 'password'}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setFieldErrors((f) => ({ ...f, password: undefined, confirm: undefined })); }}
+          onBlur={() => password && setFieldErrors((f) => ({ ...f, password: validateNewPassword(password) }))}
+          error={fieldErrors.password}
           required
           autoComplete="new-password"
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
+          id="register-confirm"
           label={t('Confirm password')}
           type={showConfirm ? 'text' : 'password'}
           value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
+          onChange={(e) => { setConfirm(e.target.value); setFieldErrors((f) => ({ ...f, confirm: undefined })); }}
+          onBlur={() => confirm && setFieldErrors((f) => ({ ...f, confirm: validateConfirm(password, confirm) }))}
+          error={fieldErrors.confirm}
           required
           autoComplete="new-password"
           rightSlot={<PasswordToggle shown={showConfirm} onToggle={() => setShowConfirm(!showConfirm)} />}

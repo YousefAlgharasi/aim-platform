@@ -79,11 +79,16 @@ export function SectionTitle({ children, hint }: { children: ReactNode; hint?: R
   );
 }
 
-export function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: ReactNode }) {
+export function Field({ label, htmlFor, error, children }: { label: string; htmlFor?: string; error?: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className={labelCls}>{label}</label>
       {children}
+      {error && (
+        <span id={htmlFor ? `${htmlFor}-error` : undefined} role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

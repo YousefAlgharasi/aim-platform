@@ -32,6 +32,7 @@ import {
   type ReleaseNote,
   type OperationalStatus,
 } from './supportApi';
+import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateMaxLength, validateRequired, type FieldErrors } from '../../utils/validation';
 import { ClipboardIcon, ChatIcon } from '../../components/common/Icons';
 import { PageHeader, SectionTitle, Field, StatusPill, ChevronIcon, selectCls, textareaCls, labelCls, h2Cls, subCls, pillCls } from '../profile/ui';
 
@@ -67,6 +68,7 @@ export function SupportPage() {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [ticketErrors, setTicketErrors] = useState<FieldErrors<'subject' | 'description'>>({});
 
   // Feedback form
   const [fbCategory, setFbCategory] = useState<FeedbackCategory>('suggestion');
@@ -75,6 +77,7 @@ export function SupportPage() {
   const [fbBody, setFbBody] = useState('');
   const [fbSubmitting, setFbSubmitting] = useState(false);
   const [fbError, setFbError] = useState('');
+  const [fbErrors, setFbErrors] = useState<FieldErrors<'title' | 'body'>>({});
 
   // Status + release notes
   const [statuses, setStatuses] = useState<OperationalStatus[] | null>(null);
@@ -119,12 +122,22 @@ export function SupportPage() {
     setSuccess('');
     setFormError('');
     setFbError('');
+    setTicketErrors({});
+    setFbErrors({});
   }
 
   async function handleSubmitTicket(e: FormEvent) {
     e.preventDefault();
-    if (!subject.trim() || !message.trim()) {
-      setFormError(t('Please fill in a subject and a message.'));
+    if (submitting) return;
+    const errors = collectErrors({
+      subject:
+        validateRequired(subject, t('Subject is required.')) ??
+        validateMaxLength(subject, SUBJECT_MAX, t('Subject must be {max} characters or fewer.', { max: SUBJECT_MAX })),
+      description: validateRequired(message, t('Message is required.')),
+    });
+    setTicketErrors(errors);
+    if (hasErrors(errors)) {
+      focusFirstInvalid([['subject', 'ticket-subject'], ['description', 'ticket-message']], errors);
       return;
     }
     setSubmitting(true);
@@ -144,7 +157,9 @@ export function SupportPage() {
       setCategory('general');
       setSeverity('medium');
     } catch (err) {
-      setFormError(getErrorMessage(err, t('Failed to submit ticket')));
+      const mapped = mapApiFieldErrors(err, ['subject', 'description'] as const);
+      setTicketErrors(mapped);
+      setFormError(hasErrors(mapped) ? '' : getErrorMessage(err, t('Failed to submit ticket')));
     } finally {
       setSubmitting(false);
     }
@@ -152,8 +167,16 @@ export function SupportPage() {
 
   async function handleSubmitFeedback(e: FormEvent) {
     e.preventDefault();
-    if (!fbTitle.trim() || !fbBody.trim()) {
-      setFbError(t('Please add a title and your feedback.'));
+    if (fbSubmitting) return;
+    const errors = collectErrors({
+      title:
+        validateRequired(fbTitle, t('Title is required.')) ??
+        validateMaxLength(fbTitle, FEEDBACK_TITLE_MAX, t('Title must be {max} characters or fewer.', { max: FEEDBACK_TITLE_MAX })),
+      body: validateRequired(fbBody, t('Feedback is required.')),
+    });
+    setFbErrors(errors);
+    if (hasErrors(errors)) {
+      focusFirstInvalid([['title', 'feedback-title'], ['body', 'feedback-body']], errors);
       return;
     }
     setFbSubmitting(true);
@@ -172,7 +195,9 @@ export function SupportPage() {
       setFbRating(0);
       setFbCategory('suggestion');
     } catch (err) {
-      setFbError(getErrorMessage(err, t('Failed to send feedback')));
+      const mapped = mapApiFieldErrors(err, ['title', 'body'] as const);
+      setFbErrors(mapped);
+      setFbError(hasErrors(mapped) ? '' : getErrorMessage(err, t('Failed to send feedback')));
     } finally {
       setFbSubmitting(false);
     }
@@ -209,7 +234,7 @@ export function SupportPage() {
 
       {panel === 'ticket' && (
         <Card>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket}>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket} noValidate>
             <SectionTitle>{t('New Support Ticket')}</SectionTitle>
             {formError && <Banner variant="error">{formError}</Banner>}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -228,9 +253,25 @@ export function SupportPage() {
                 </select>
               </Field>
             </div>
-            <Input label={t('Subject')} value={subject} maxLength={SUBJECT_MAX} onChange={e => setSubject(e.target.value)} required />
-            <Field label={t('Message')} htmlFor="ticket-message">
-              <textarea id="ticket-message" className={`${textareaCls} min-h-32`} value={message} onChange={e => setMessage(e.target.value)} required />
+            <Input
+              id="ticket-subject"
+              label={t('Subject')}
+              value={subject}
+              maxLength={SUBJECT_MAX}
+              onChange={e => { setSubject(e.target.value); setTicketErrors(f => ({ ...f, subject: undefined })); }}
+              error={ticketErrors.subject}
+              required
+            />
+            <Field label={t('Message')} htmlFor="ticket-message" error={ticketErrors.description}>
+              <textarea
+                id="ticket-message"
+                className={`${textareaCls} min-h-32`}
+                value={message}
+                onChange={e => { setMessage(e.target.value); setTicketErrors(f => ({ ...f, description: undefined })); }}
+                aria-invalid={!!ticketErrors.description}
+                aria-describedby={ticketErrors.description ? 'ticket-message-error' : undefined}
+                required
+              />
             </Field>
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={submitting}>{t('Cancel')}</Button>
@@ -244,7 +285,7 @@ export function SupportPage() {
 
       {panel === 'feedback' && (
         <Card>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmitFeedback}>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmitFeedback} noValidate>
             <SectionTitle>{t('Send Feedback')}</SectionTitle>
             {fbError && <Banner variant="error">{fbError}</Banner>}
             <Field label={t('Type')} htmlFor="feedback-category">
@@ -272,9 +313,25 @@ export function SupportPage() {
                 ))}
               </div>
             </div>
-            <Input label={t('Title')} value={fbTitle} maxLength={FEEDBACK_TITLE_MAX} onChange={e => setFbTitle(e.target.value)} required />
-            <Field label={t('Your feedback')} htmlFor="feedback-body">
-              <textarea id="feedback-body" className={`${textareaCls} min-h-32`} value={fbBody} onChange={e => setFbBody(e.target.value)} required />
+            <Input
+              id="feedback-title"
+              label={t('Title')}
+              value={fbTitle}
+              maxLength={FEEDBACK_TITLE_MAX}
+              onChange={e => { setFbTitle(e.target.value); setFbErrors(f => ({ ...f, title: undefined })); }}
+              error={fbErrors.title}
+              required
+            />
+            <Field label={t('Your feedback')} htmlFor="feedback-body" error={fbErrors.body}>
+              <textarea
+                id="feedback-body"
+                className={`${textareaCls} min-h-32`}
+                value={fbBody}
+                onChange={e => { setFbBody(e.target.value); setFbErrors(f => ({ ...f, body: undefined })); }}
+                aria-invalid={!!fbErrors.body}
+                aria-describedby={fbErrors.body ? 'feedback-body-error' : undefined}
+                required
+              />
             </Field>
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => setPanel('none')} disabled={fbSubmitting}>{t('Cancel')}</Button>
