@@ -26,7 +26,7 @@ import { BackArrowIcon } from './CurriculumIcons';
 export function CourseDetailPage() {
   const { subjectId: courseId = '' } = useParams<{ subjectId: string }>();
   const navigate = useNavigate();
-  const { t, plural } = useI18n();
+  const { t } = useI18n();
   const [course, setCourse] = useState<StudentCourse | null>(null);
   const [enrollment, setEnrollment] = useState<CurrentEnrollment | null>(null);
   const [levels, setLevels] = useState<LevelWithChapters[]>([]);

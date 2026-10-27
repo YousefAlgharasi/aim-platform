@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '../../components/common/Button';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { SPEAKING_AUDIO_TYPES, SPEAKING_MAX_BYTES } from './placementApi';
