@@ -227,7 +227,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         children: [
           const _TicketDetailHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading ticket',
                 ),
@@ -301,7 +301,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                     ),
                   ],
                 ),
-            },
+            }),
           ),
         ],
       ),

@@ -92,7 +92,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
         children: [
           const _CreateTicketHeader(),
           Expanded(
-            child: ListView(
+            child: SafeArea(top: false, child: ListView(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -147,7 +147,7 @@ class _CreateTicketPageState extends ConsumerState<CreateTicketPage> {
                   semanticLabel: l10n.supportSubmitTicket,
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),

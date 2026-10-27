@@ -199,7 +199,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             onSave: _submit,
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: SafeArea(top: false, child: SingleChildScrollView(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 AimSpacing.screenPaddingMobile,
                 AimSpacing.sectionGap,
@@ -280,7 +280,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
         ],
       ),

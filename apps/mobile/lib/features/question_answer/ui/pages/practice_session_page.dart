@@ -136,7 +136,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           if (context.canPop()) context.pop();
         },
       ),
-      body: body,
+      body: SafeArea(top: false, child: body),
     );
   }
 }

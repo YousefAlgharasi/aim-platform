@@ -38,7 +38,7 @@ class ReleaseNotesPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _ReleaseNotesHeader(),
-          Expanded(child: buildEmptyState(context)),
+          Expanded(child: SafeArea(top: false, child: buildEmptyState(context))),
         ],
       ),
     );

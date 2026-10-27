@@ -132,7 +132,7 @@ class _AiTeacherSessionHistoryPageState
         children: [
           const _SessionHistoryHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading AI Teacher conversations',
                 ),
@@ -144,7 +144,7 @@ class _AiTeacherSessionHistoryPageState
                   chatState: data,
                   onTap: _openSession,
                 ),
-            },
+            }),
           ),
         ],
       ),

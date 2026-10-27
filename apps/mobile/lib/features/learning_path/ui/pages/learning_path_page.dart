@@ -118,7 +118,7 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
         children: [
           const _LearningPathHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() => AIMFullScreenLoading(
                   semanticLabel: loadingLabel,
                 ),
@@ -133,7 +133,7 @@ class _LearningPathPageState extends ConsumerState<LearningPathPage> {
               AppAsyncIdle() => AIMFullScreenLoading(
                   semanticLabel: loadingLabel,
                 ),
-            },
+            }),
           ),
         ],
       ),

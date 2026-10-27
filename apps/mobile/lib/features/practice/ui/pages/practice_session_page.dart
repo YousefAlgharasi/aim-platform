@@ -166,17 +166,21 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
         } else {
           ref.read(questionAnswerSessionProvider.notifier).updateWrittenAnswer(_writtenAnswer.trim());
         }
-        await ref
-            .read(questionAnswerSessionProvider.notifier)
-            .submitAnswer(
+        await ref.read(questionAnswerSessionProvider.notifier).submitAnswer(
               bearerToken: token,
               sessionId: state.sessionId!,
-            )
-            .timeout(const Duration(seconds: 8), onTimeout: () {});
+            );
       }
 
       final submitState = ref.read(questionAnswerSessionProvider);
-      final isCorrect = submitState.attemptResult?.isCorrect ?? false;
+      final backendIsCorrect = submitState.attemptResult?.isCorrect;
+      if (token != null && state.sessionId != null && backendIsCorrect == null) {
+        // The backend never confirmed the answer (timeout, network error, or
+        // no verdict). Do not record it as wrong — let the student retry.
+        _showSubmitError(submitState.submitError);
+        return;
+      }
+      final isCorrect = backendIsCorrect ?? false;
 
       final answerText = isOptionBased
           ? (currentQ.options.where((o) => o.id == _selectedOptionId).firstOrNull?.text ?? '')
@@ -203,30 +207,27 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
         await ref.read(practiceSessionProvider.notifier).advance();
       }
     } catch (_) {
-      if (mounted) {
-        final answerText = isOptionBased
-            ? (currentQ.options.where((o) => o.id == _selectedOptionId).firstOrNull?.text ?? '')
-            : _writtenAnswer.trim();
-        setState(() {
-          _questionSummaries.add(_PracticeQuestionSummary(
-            questionNumber: state.currentIndex + 1,
-            stem: currentQ.stem,
-            userAnswer: answerText,
-            isCorrect: false,
-          ));
-          _wrongCount++;
-          _selectedOptionId = null;
-          _writtenAnswer = '';
-          _questionShownAt = DateTime.now();
-        });
-        ref.read(questionAnswerSessionProvider.notifier).reset();
-        await ref.read(practiceSessionProvider.notifier).advance();
-      }
+      if (mounted) _showSubmitError(null);
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  void _showSubmitError(String? message) {
+    if (!mounted) return;
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message ??
+              (isArabic
+                  ? 'تعذّر إرسال إجابتك. حاول مرة أخرى.'
+                  : "Couldn't submit your answer. Please try again."),
+        ),
+      ),
+    );
   }
 
   // Fallback quiz handlers

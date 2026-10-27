@@ -97,7 +97,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
             ? context.pop()
             : context.go(AppRoutePaths.assessments),
       ),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',
           ),
@@ -112,7 +112,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
         AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result',
           ),
-      },
+      }),
     );
   }
 }

@@ -373,11 +373,18 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
               ),
             ),
           ),
-          Text(
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
             l10n?.achievementsTitle ?? 'Achievements',
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
             style: AimTextStyles.h3.copyWith(
               color: surfaces.textPrimary,
               fontWeight: AimFontWeights.bold,
+            ),
+          ),
             ),
           ),
           Row(
@@ -432,7 +439,8 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
+          Expanded(
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -443,12 +451,14 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                     size: 22,
                   ),
                   const SizedBox(width: 6),
-                  Text(
+                  Flexible(
+                    child: Text(
                     l10n?.achievementsMilestonesTitle ?? 'AIM Milestones',
                     style: AimTextStyles.bodyLg.copyWith(
                       color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.bold,
                     ),
+                  ),
                   ),
                 ],
               ),
@@ -461,6 +471,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                 ),
               ),
             ],
+          ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

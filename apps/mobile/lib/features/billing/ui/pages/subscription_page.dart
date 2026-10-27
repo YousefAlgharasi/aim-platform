@@ -57,7 +57,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
         children: [
           const _SubscriptionHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading subscription data',
                 ),
@@ -69,7 +69,7 @@ class _SubscriptionPageState extends ConsumerState<SubscriptionPage> {
                   data: data,
                   onRefresh: _refresh,
                 ),
-            },
+            }),
           ),
         ],
       ),

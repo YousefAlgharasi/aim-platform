@@ -137,6 +137,9 @@ export interface SubmitAttemptResponse {
 // Controller
 // ---------------------------------------------------------------------------
 
+/** Max time the attempt response waits on the AIM pipeline before returning. */
+const AIM_PIPELINE_RESPONSE_WAIT_MS = 3000;
+
 @ApiTags(OPENAPI_TAGS.sessions)
 @Controller('sessions')
 export class SessionsController {
@@ -358,22 +361,33 @@ export class SessionsController {
     let aimPipelineTriggered = false;
     let aimOutcome: 'ok' | 'deferred' = 'deferred';
 
-    try {
-      const pipelineResult: AimPipelineOutcome = await this.aimOrchestrator.trigger({
+    // The student's verdict is already computed and persisted, so the response
+    // must not be held hostage by a slow AIM pipeline (the mobile client gives
+    // up on slow responses). Wait a bounded time for the outcome; if the
+    // pipeline is still running it continues in the background.
+    const pipelinePromise: Promise<AimPipelineOutcome | null> = this.aimOrchestrator
+      .trigger({
         studentId: user.id,
         sessionId,
         attemptId: attemptResult.attemptId,
         xRequestId: xRequestId ?? '',
-      });
+      })
+      .catch(() => null); // Pipeline failure must not fail the HTTP response.
 
+    const pipelineResult = await Promise.race([
+      pipelinePromise,
+      new Promise<'pending'>((resolve) => {
+        const timer = setTimeout(() => resolve('pending'), AIM_PIPELINE_RESPONSE_WAIT_MS);
+        timer.unref?.();
+      }),
+    ]);
+
+    if (pipelineResult === 'pending') {
+      aimPipelineTriggered = true;
+      aimOutcome = 'deferred';
+    } else if (pipelineResult !== null) {
       aimPipelineTriggered = true;
       aimOutcome = pipelineResult.ok ? 'ok' : 'deferred';
-    } catch {
-      // Pipeline failure must not fail the HTTP response.
-      // The attempt is already persisted; AIM analysis will be retried
-      // by the backend's retry/recovery mechanism.
-      aimPipelineTriggered = false;
-      aimOutcome = 'deferred';
     }
 
     // -----------------------------------------------------------------------

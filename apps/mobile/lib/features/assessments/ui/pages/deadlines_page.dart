@@ -123,7 +123,7 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
           }
         },
       ),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() => AIMFullScreenLoading(
             semanticLabel: l10n.deadlinesLoadingSemantic,
           ),
@@ -138,7 +138,7 @@ class _DeadlinesPageState extends ConsumerState<DeadlinesPage> {
         AppAsyncIdle() => AIMFullScreenLoading(
             semanticLabel: l10n.deadlinesLoadingSemantic,
           ),
-      },
+      }),
     );
   }
 }

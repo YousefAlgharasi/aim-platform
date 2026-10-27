@@ -291,7 +291,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
         ],
       ),
-      body: ListView(
+      body: SafeArea(top: false, child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           // 1. Profile & Learning Commitment Card
@@ -383,7 +383,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    Flexible(
+                      child: Text(
                       l10n.settingsEmailAddress.toUpperCase(),
                       style: AimTextStyles.caption.copyWith(
                         color: surfaces.textSecondary,
@@ -391,6 +392,8 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                         fontSize: 11,
                       ),
                     ),
+                    ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
@@ -787,7 +790,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
           ),
           const SizedBox(height: 48),
         ],
-      ),
+      )),
     );
   }
 

@@ -94,7 +94,7 @@ class _AnalyticsSummaryPageState extends ConsumerState<AnalyticsSummaryPage> {
         children: [
           const _AnalyticsHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading analytics summary'),
               AppAsyncFailure(:final message) =>
@@ -109,7 +109,7 @@ class _AnalyticsSummaryPageState extends ConsumerState<AnalyticsSummaryPage> {
                   : _ReportList(reports: data, onRefresh: _refresh),
               AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading analytics summary'),
-            },
+            }),
           ),
         ],
       ),

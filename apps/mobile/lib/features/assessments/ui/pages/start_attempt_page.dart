@@ -94,7 +94,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
         title: AppLocalizations.of(context).assessmentsStartAttemptTitle,
         onBack: () => context.pop(),
       ),
-      body: Padding(
+      body: SafeArea(top: false, child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AimSpacing.screenPaddingMobile,
           vertical: AimSpacing.sectionGap,
@@ -153,7 +153,7 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 

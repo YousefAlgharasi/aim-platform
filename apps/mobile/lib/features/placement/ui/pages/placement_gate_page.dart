@@ -136,7 +136,18 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                               child: child,
                             ),
                           ),
-                          child: _buildCurrentStep(isChoosing),
+                          child: LayoutBuilder(
+                            key: ValueKey(_currentStep),
+                            builder: (context, box) => SingleChildScrollView(
+                              child: ConstrainedBox(
+                                constraints:
+                                    BoxConstraints(minHeight: box.maxHeight),
+                                child: IntrinsicHeight(
+                                  child: _buildCurrentStep(isChoosing),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],

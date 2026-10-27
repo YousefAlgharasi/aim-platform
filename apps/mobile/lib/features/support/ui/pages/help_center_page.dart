@@ -153,7 +153,7 @@ class HelpCenterPage extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: ListView.separated(
+            child: SafeArea(top: false, bottom: false, child: ListView.separated(
               padding: const EdgeInsets.symmetric(
                 horizontal: AimSpacing.screenPaddingMobile,
                 vertical: AimSpacing.sectionGap,
@@ -163,7 +163,7 @@ class HelpCenterPage extends StatelessWidget {
                   const SizedBox(height: AimSpacing.listItemGap),
               itemBuilder: (context, index) =>
                   HelpCategoryAccordionCard(category: _categories[index]),
-            ),
+            )),
           ),
           SafeArea(
             top: false,

@@ -209,7 +209,8 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
                 icon: Icon(Icons.close, color: surfaces.textPrimary, size: 22),
                 onPressed: () => context.pop(),
               ),
-              Row(
+              Flexible(
+                child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
@@ -224,14 +225,18 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
                     ),
                   ),
                   const SizedBox(width: AimSpacing.space8),
-                  Text(
-                    l10n.voiceAiTitle,
-                    style: AimTextStyles.caption.copyWith(
-                      fontWeight: AimFontWeights.extrabold,
-                      color: surfaces.textPrimary,
+                  Flexible(
+                    child: Text(
+                      l10n.voiceAiTitle,
+                      overflow: TextOverflow.ellipsis,
+                      style: AimTextStyles.caption.copyWith(
+                        fontWeight: AimFontWeights.extrabold,
+                        color: surfaces.textPrimary,
+                      ),
                     ),
                   ),
                 ],
+              ),
               ),
               Text(
                 l10n.voiceAiStep(_step),
@@ -424,12 +429,14 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
           children: [
             const Icon(Icons.volume_up, size: 14, color: AimColors.primary500),
             const SizedBox(width: 6),
-            Text(
+            Flexible(
+              child: Text(
               l10n.voiceAiStatusAiSpeaking,
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.primary500,
                 fontWeight: AimFontWeights.bold,
               ),
+            ),
             ),
           ],
         ),
@@ -446,12 +453,14 @@ class _LiveAiLessonChatPageState extends State<LiveAiLessonChatPage> {
           children: [
             const Icon(Icons.mic, size: 14, color: AimColors.error500),
             const SizedBox(width: 6),
-            Text(
+            Flexible(
+              child: Text(
               l10n.voiceAiStatusListening(_secs.toString().padLeft(2, '0')),
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.error500,
                 fontWeight: AimFontWeights.bold,
               ),
+            ),
             ),
           ],
         ),

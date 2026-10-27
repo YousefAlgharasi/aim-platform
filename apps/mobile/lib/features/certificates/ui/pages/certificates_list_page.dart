@@ -50,7 +50,7 @@ class _CertificatesListPageState extends ConsumerState<CertificatesListPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() => AIMFullScreenLoading(
             semanticLabel: l10n.commonLoading,
           ),
@@ -84,7 +84,7 @@ class _CertificatesListPageState extends ConsumerState<CertificatesListPage> {
             ),
           ),
         _ => const SizedBox.shrink(),
-      },
+      }),
     );
   }
 }

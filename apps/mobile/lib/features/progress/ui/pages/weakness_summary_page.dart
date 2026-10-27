@@ -79,7 +79,7 @@ class _WeaknessSummaryPageState extends ConsumerState<WeaknessSummaryPage> {
 
     return Scaffold(
       appBar: AIMTopAppBar(title: AppLocalizations.of(context).commonFocusAreas),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() =>
           const AIMFullScreenLoading(semanticLabel: 'Loading weakness data'),
         AppAsyncFailure(:final message) =>
@@ -95,7 +95,7 @@ class _WeaknessSummaryPageState extends ConsumerState<WeaknessSummaryPage> {
                 weaknessRecords: data.weaknessRecords, onRefresh: _refresh),
         AppAsyncIdle() =>
           const AIMFullScreenLoading(semanticLabel: 'Loading weakness data'),
-      },
+      }),
     );
   }
 }

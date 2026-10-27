@@ -87,7 +87,7 @@ class _PricingPageState extends ConsumerState<PricingPage> {
         children: [
           const _PricingHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading plans',
                 ),
@@ -96,7 +96,7 @@ class _PricingPageState extends ConsumerState<PricingPage> {
                   onRetry: _load,
                 ),
               AppAsyncSuccess(:final data) => PlansList(data: data),
-            },
+            }),
           ),
         ],
       ),
