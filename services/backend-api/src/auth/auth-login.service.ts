@@ -273,6 +273,18 @@ export class AuthLoginService {
     }
 
     const body = (await response.json()) as SupabaseSignUpResponse;
+
+    const identities = body.user?.identities ?? body.identities;
+    if (Array.isArray(identities) && identities.length === 0) {
+      // Obfuscated "success" for an existing account: no confirmation email is
+      // sent, so report the duplicate and never assign a role to the fake user.
+      throw new AppError({
+        code: ApiErrorCode.CONFLICT,
+        message: 'An account with this email already exists. Try signing in instead.',
+        statusCode: HttpStatus.CONFLICT,
+      });
+    }
+
     const newUserId = body.user?.id ?? body.id;
 
     if (newUserId) {
@@ -534,7 +546,7 @@ export class AuthLoginService {
       if (reason.includes('password') && (reason.includes('weak') || reason.includes('short') || reason.includes('characters'))) {
         throw new AppError({
           code: ApiErrorCode.BAD_REQUEST,
-          message: 'Please choose a stronger password (at least 6 characters).',
+          message: 'Please choose a stronger password.',
           statusCode: HttpStatus.BAD_REQUEST,
         });
       }

@@ -81,6 +81,12 @@ export interface SupabaseAuthErrorResponse {
 export interface SupabaseSignUpResponse {
   readonly id?: string;
   readonly email?: string | null;
+  /**
+   * With email confirmation enabled, Supabase answers a signup for an
+   * already-registered email with a 200 and an obfuscated user whose
+   * `identities` list is empty, instead of an error.
+   */
+  readonly identities?: readonly unknown[] | null;
   readonly access_token?: string;
   readonly refresh_token?: string;
   readonly expires_at?: number;
@@ -88,5 +94,6 @@ export interface SupabaseSignUpResponse {
   readonly user?: {
     readonly id: string;
     readonly email?: string | null;
+    readonly identities?: readonly unknown[] | null;
   };
 }

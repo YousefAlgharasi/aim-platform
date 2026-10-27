@@ -12,6 +12,10 @@ import {
   IsBoolean,
   IsArray,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+// Trims user-entered text before validation so whitespace-only values fail @IsNotEmpty.
+const Trim = () => Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value));
 
 export class CreateSupportTicketDto {
   @IsEnum(['bug_report', 'account_issue', 'learning_issue', 'billing_issue', 'general', 'other'])
@@ -20,17 +24,20 @@ export class CreateSupportTicketDto {
   @IsEnum(['low', 'medium', 'high', 'critical'])
   severity!: 'low' | 'medium' | 'high' | 'critical';
 
+  @Trim()
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)
   subject!: string;
 
+  @Trim()
   @IsString()
   @IsNotEmpty()
   description!: string;
 }
 
 export class CreateTicketCommentDto {
+  @Trim()
   @IsString()
   @IsNotEmpty()
   body!: string;
@@ -50,11 +57,13 @@ export class CreateFeedbackDto {
   @IsOptional()
   rating?: number;
 
+  @Trim()
   @IsString()
   @IsNotEmpty()
   @MaxLength(300)
   title!: string;
 
+  @Trim()
   @IsString()
   @IsNotEmpty()
   body!: string;

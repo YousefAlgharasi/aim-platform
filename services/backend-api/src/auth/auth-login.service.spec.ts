@@ -184,13 +184,31 @@ describe('AuthLoginService', () => {
       });
     });
 
+    it('reports a duplicate when Supabase returns an obfuscated user with no identities', async () => {
+      mockFetch(200, { id: 'fake-id', email: 'a@b.com', identities: [] });
+
+      await expect(service.register({ email: 'a@b.com', password: 'password123' })).rejects.toMatchObject({
+        code: ApiErrorCode.CONFLICT,
+        statusCode: HttpStatus.CONFLICT,
+        message: 'An account with this email already exists. Try signing in instead.',
+      });
+    });
+
+    it('still reports email confirmation required for a genuinely new user', async () => {
+      mockFetch(200, { id: 'new-id', email: 'a@b.com', identities: [{ provider: 'email' }] });
+
+      await expect(service.register({ email: 'a@b.com', password: 'password123' })).resolves.toEqual({
+        requiresEmailConfirmation: true,
+      });
+    });
+
     it('maps weak passwords to a bad request error', async () => {
       mockFetch(400, { error_code: 'weak_password', msg: 'Password is too short' });
 
       await expect(service.register({ email: 'a@b.com', password: '123' })).rejects.toMatchObject({
         code: ApiErrorCode.BAD_REQUEST,
         statusCode: HttpStatus.BAD_REQUEST,
-        message: 'Please choose a stronger password (at least 6 characters).',
+        message: 'Please choose a stronger password.',
       });
     });
 
