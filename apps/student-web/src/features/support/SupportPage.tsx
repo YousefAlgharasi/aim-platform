@@ -420,7 +420,7 @@ export function SupportPage() {
                     <h3 className="text-sm font-extrabold text-slate-900 dark:text-white m-0">{note.title}</h3>
                     <span className={pillCls} dir="ltr">v{note.version}</span>
                   </div>
-                  {note.publishedAt && <span className="text-xs text-slate-400">{formatDate(note.publishedAt)}</span>}
+                  {note.publishedAt && <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(note.publishedAt)}</span>}
                   {note.body && <p className={`${subCls} whitespace-pre-wrap`}>{note.body}</p>}
                 </div>
               </Card>

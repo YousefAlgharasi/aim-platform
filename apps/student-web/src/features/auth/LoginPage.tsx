@@ -100,7 +100,7 @@ export function LoginPage() {
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
 
-        <div className="text-right">
+        <div className="text-end">
           <TextLinkButton onClick={() => navigate('/forgot-password')}>{t('Forgot password?')}</TextLinkButton>
         </div>
 

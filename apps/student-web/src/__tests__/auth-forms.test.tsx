@@ -16,7 +16,7 @@ jest.mock('../config', () => ({ config: { apiBaseUrl: '/api', googleClientId: ''
 
 
 const fill = (label: string, value: string) =>
-  fireEvent.change(screen.getByPlaceholderText(label), { target: { value } });
+  fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const submit = (name: RegExp) => fireEvent.click(screen.getByRole('button', { name }));
 
 beforeEach(() => jest.clearAllMocks());
@@ -29,8 +29,8 @@ describe('LoginPage validation', () => {
     submit(/^sign in$/i);
     expect(screen.getByText('Email address is required.')).toBeTruthy();
     expect(screen.getByText('Password is required.')).toBeTruthy();
-    expect(screen.getByPlaceholderText('Email address').getAttribute('aria-invalid')).toBe('true');
-    expect(screen.getByPlaceholderText('Email address').getAttribute('aria-describedby')).toBe('login-email-error');
+    expect(screen.getByLabelText('Email address').getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByLabelText('Email address').getAttribute('aria-describedby')).toBe('login-email-error');
     expect(document.activeElement?.id).toBe('login-email');
     expect(mockLogin).not.toHaveBeenCalled();
   });
@@ -58,7 +58,7 @@ describe('LoginPage validation', () => {
     submit(/^sign in$/i);
     fill('Email address', 'a@b.co');
     expect(screen.queryByText('Email address is required.')).toBeNull();
-    expect((screen.getByPlaceholderText('Email address') as HTMLInputElement).value).toBe('a@b.co');
+    expect((screen.getByLabelText('Email address') as HTMLInputElement).value).toBe('a@b.co');
   });
 
   it('submits valid credentials once even if clicked twice', async () => {

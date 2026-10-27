@@ -34,7 +34,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-bold text-sm m-0 truncate text-slate-900 dark:text-white">{user?.name}</p>
-            <p className="text-[11px] m-0 truncate text-slate-500 dark:text-slate-400">{user?.email}</p>
+            <p className="text-xs m-0 truncate text-slate-500 dark:text-slate-400">{user?.email}</p>
           </div>
         </div>
 
@@ -53,7 +53,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 }`
               }
             >
-              <span className="shrink-0">{icon}</span>
+              <span className="shrink-0" aria-hidden="true">{icon}</span>
               <span>{t(label)}</span>
             </NavLink>
           ))}
@@ -63,9 +63,9 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-xs font-bold text-red-500 bg-transparent border border-red-100 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer transition-colors"
+        className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-bold text-red-700 dark:text-red-400 bg-transparent border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer transition-colors"
       >
-        <LogOutIcon className="size-4" />
+        <LogOutIcon className="size-4" aria-hidden="true" />
         {t('Log out')}
       </button>
     </div>

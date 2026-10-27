@@ -108,7 +108,7 @@ export function CourseDetailPage() {
 
       <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
-        <span className="text-indigo-100 text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full inline-block mb-2">
+        <span className="text-indigo-100 text-[11px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full inline-block mb-2">
           {isCurrent ? t('Current course') : t('Course overview')}
         </span>
         <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight leading-tight m-0 mb-1">{course.title}</h1>

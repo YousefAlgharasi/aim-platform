@@ -157,6 +157,12 @@ export const placement: Record<string, string> = {
   "Audio for this question isn't available yet.": 'المقطع الصوتي لهذا السؤال غير متاح بعد.',
   'Loading audio…': 'جارٍ تحميل الصوت…',
   'Play audio': 'تشغيل الصوت',
+  'Pause audio': 'إيقاف الصوت مؤقتًا',
+  'Replay audio': 'إعادة تشغيل الصوت',
+  'Audio position': 'موضع التشغيل',
+  '{current} of {total}': '{current} من {total}',
+  'Preparing audio…': 'جارٍ تجهيز الصوت…',
+  'Still preparing the audio. This can take a few seconds.': 'لا يزال الصوت قيد التجهيز. قد يستغرق ذلك بضع ثوانٍ.',
   'Your browser recorded an unsupported audio format ({type}).':
     'سجّل متصفحك الصوت بصيغة غير مدعومة ({type}).',
   'No audio was captured. Please try again.': 'لم يتم التقاط أي صوت. يُرجى المحاولة مرة أخرى.',

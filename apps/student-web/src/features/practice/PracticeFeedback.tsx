@@ -56,12 +56,12 @@ export function PracticeFeedback({
 
       <div className="bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl p-4 flex items-center justify-around shadow-sm">
         <div className="text-center">
-          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">{t('Score')}</span>
+          <span className="text-slate-500 dark:text-slate-400 text-[11px] font-extrabold uppercase tracking-wider block mb-1">{t('Score')}</span>
           <span className="text-[#4F46E5] dark:text-indigo-400 font-extrabold text-2xl">{summary.correctCount}/{summary.totalAttempts}</span>
         </div>
         <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
         <div className="text-center">
-          <span className="text-slate-400 dark:text-slate-500 text-[10px] font-extrabold uppercase tracking-wider block mb-1">{t('Accuracy')}</span>
+          <span className="text-slate-500 dark:text-slate-400 text-[11px] font-extrabold uppercase tracking-wider block mb-1">{t('Accuracy')}</span>
           <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-2xl">{summary.accuracyPercent}%</span>
         </div>
       </div>

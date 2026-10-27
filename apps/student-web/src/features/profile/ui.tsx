@@ -9,14 +9,14 @@ export const eyebrowCls = 'text-indigo-600 dark:text-indigo-400 text-xs font-ext
 export const h1Cls = 'text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0';
 export const subCls = 'text-sm text-slate-500 dark:text-slate-400 m-0 leading-relaxed';
 export const h2Cls = 'text-base font-extrabold tracking-tight text-slate-900 dark:text-white m-0';
-export const labelCls = 'text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400';
+export const labelCls = 'text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 export const bodyCls = 'text-sm text-slate-600 dark:text-slate-300 m-0';
 export const selectCls =
   'w-full h-[54px] px-4 rounded-[14px] bg-[#F1F5F9] dark:bg-slate-800 border-[1.5px] border-[#CBD5E1] dark:border-slate-700 text-[15px] text-[#0F172A] dark:text-white outline-none focus:border-[#4F46E5] cursor-pointer font-[inherit]';
 export const textareaCls =
   'w-full px-4 py-3 rounded-[14px] bg-[#F1F5F9] dark:bg-slate-800 border-[1.5px] border-[#CBD5E1] dark:border-slate-700 text-[15px] text-[#0F172A] dark:text-white outline-none focus:border-[#4F46E5] font-[inherit] placeholder-[#94A3B8] dark:placeholder-slate-500';
 export const pillCls =
-  'inline-flex items-center text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300';
+  'inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300';
 export const tableWrapCls = 'rounded-2xl bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm overflow-hidden';
 
 export function ChevronIcon({ className = 'size-4' }: { className?: string }) {
@@ -158,7 +158,7 @@ const TONE: Record<Tone, string> = {
 
 export function StatusPill({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${TONE[tone]}`}>
+    <span className={`inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${TONE[tone]}`}>
       {children}
     </span>
   );

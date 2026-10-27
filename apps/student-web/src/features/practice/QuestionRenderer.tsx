@@ -45,7 +45,7 @@ export function QuestionRenderer({
       <div className={`${questionCard} flex flex-col gap-3`}>
         <div>
           {questionNumber != null && questionTotal != null && (
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[11px] uppercase tracking-wider block mb-2">
+            <span className="text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider block mb-2">
               {t('Question {n} of {total}', { n: questionNumber, total: questionTotal })}
             </span>
           )}

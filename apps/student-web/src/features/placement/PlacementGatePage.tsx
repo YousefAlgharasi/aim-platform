@@ -112,7 +112,7 @@ export function PlacementGatePage() {
           return (
             <div key={choice.value} className={`relative ${recommended ? 'mt-3' : ''}`}>
               {recommended && (
-                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-indigo-600 shadow-[0_2px_8px_rgba(79,70,229,0.45)] text-[10px] font-bold tracking-widest text-white uppercase">
+                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-indigo-600 shadow-[0_2px_8px_rgba(79,70,229,0.45)] text-[11px] font-bold tracking-widest text-white uppercase">
                   {t('Recommended')}
                 </span>
               )}

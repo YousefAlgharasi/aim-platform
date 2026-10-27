@@ -15,7 +15,7 @@ jest.mock('../api/client', () => ({
 
 
 const fill = (label: string, value: string) =>
-  fireEvent.change(screen.getByPlaceholderText(label), { target: { value } });
+  fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const click = (name: RegExp) => fireEvent.click(screen.getByRole('button', { name }));
 
 beforeEach(() => jest.clearAllMocks());
@@ -47,7 +47,7 @@ describe('ForgotPasswordPage validation', () => {
     fill('Email address', 'user@example.com');
     click(/send reset link/i);
     await waitFor(() => expect(screen.getByText('Failed to fetch')).toBeTruthy());
-    expect((screen.getByPlaceholderText('Email address') as HTMLInputElement).value).toBe('user@example.com');
+    expect((screen.getByLabelText('Email address') as HTMLInputElement).value).toBe('user@example.com');
   });
 });
 
