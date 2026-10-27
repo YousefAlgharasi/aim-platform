@@ -455,8 +455,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                       padding: const EdgeInsets.only(
                           top: AimSpacing.space16,
                           bottom: AimSpacing.space12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
                             'Remembered your password? ',

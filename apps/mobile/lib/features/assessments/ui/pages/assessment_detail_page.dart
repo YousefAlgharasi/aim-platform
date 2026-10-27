@@ -97,7 +97,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
           }
         },
       ),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessment',
           ),
@@ -113,7 +113,7 @@ class _AssessmentDetailPageState extends ConsumerState<AssessmentDetailPage> {
         AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading assessment',
           ),
-      },
+      }),
     );
   }
 }

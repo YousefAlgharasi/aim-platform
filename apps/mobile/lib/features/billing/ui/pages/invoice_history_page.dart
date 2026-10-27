@@ -134,7 +134,7 @@ class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
         children: [
           const _InvoiceHistoryHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading invoices',
                 ),
@@ -155,7 +155,7 @@ class _InvoiceHistoryPageState extends ConsumerState<InvoiceHistoryPage> {
                       ),
                     )
                   : _InvoiceList(invoices: data, onRefresh: _refresh),
-            },
+            }),
           ),
         ],
       ),

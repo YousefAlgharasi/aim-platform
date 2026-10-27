@@ -41,12 +41,12 @@ class CertificateDetailPage extends ConsumerWidget {
             onPressed: () => context.pop(),
           ),
         ),
-        body: Center(
+        body: SafeArea(top: false, child: Center(
           child: Text(
             l10n.commonError,
             style: AimTextStyles.bodyMd,
           ),
-        ),
+        )),
       );
     }
 
@@ -63,7 +63,7 @@ class CertificateDetailPage extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: asyncCert.when(
+      body: SafeArea(top: false, child: asyncCert.when(
         data: (cert) => _CertificateDetailBody(certificate: cert),
         loading: () => AIMFullScreenLoading(
           semanticLabel: l10n.commonLoading,
@@ -72,7 +72,7 @@ class CertificateDetailPage extends ConsumerWidget {
           message: err.toString(),
           onRetry: () => ref.refresh(certificateDetailProvider(id)),
         ),
-      ),
+      )),
     );
   }
 }
@@ -98,7 +98,7 @@ class _CertificateScaffold extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: _CertificateDetailBody(certificate: certificate),
+      body: SafeArea(top: false, child: _CertificateDetailBody(certificate: certificate)),
     );
   }
 }

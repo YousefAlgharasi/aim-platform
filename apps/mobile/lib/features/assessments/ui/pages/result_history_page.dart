@@ -98,7 +98,7 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
           }
         },
       ),
-      body: switch (state) {
+      body: SafeArea(top: false, child: switch (state) {
         AppAsyncLoading() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result history',
           ),
@@ -113,7 +113,7 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
         AppAsyncIdle() => const AIMFullScreenLoading(
             semanticLabel: 'Loading result history',
           ),
-      },
+      }),
     );
   }
 }

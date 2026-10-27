@@ -148,7 +148,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
         children: [
           _TicketListHeader(title: AppLocalizations.of(context).supportMyTickets),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() || AppAsyncIdle() => const AIMFullScreenLoading(
                   semanticLabel: 'Loading your tickets',
                 ),
@@ -181,7 +181,7 @@ class _TicketListPageState extends ConsumerState<TicketListPage> {
                         );
                       },
                     ),
-            },
+            }),
           ),
         ],
       ),

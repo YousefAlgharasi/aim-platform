@@ -124,7 +124,7 @@ class _NotificationInboxPageState
         children: [
           const _NotificationsHeader(),
           Expanded(
-            child: switch (state) {
+            child: SafeArea(top: false, child: switch (state) {
               AppAsyncLoading() ||
               AppAsyncIdle() =>
                 const AIMFullScreenLoading(
@@ -142,7 +142,7 @@ class _NotificationInboxPageState
                     onDismiss: _onDismiss,
                   ),
                 ),
-            },
+            }),
           ),
         ],
       ),
