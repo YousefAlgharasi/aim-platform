@@ -68,6 +68,7 @@ const ALL_NAV_GROUPS: NavGroup[] = [
     label: 'Operations',
     items: [
       { label: 'Operations', href: '/admin/operations', icon: 'wrench' },
+      { label: 'App Versions', href: '/admin/operations/app-versions', icon: 'phone' },
       { label: 'Notifications', href: '/admin/notifications', icon: 'bell' },
       { label: 'Audit Logs', href: '/admin/audit-logs', icon: 'log' },
       { label: 'Activity Logs', href: '/admin/activity-logs', icon: 'log' },
@@ -112,9 +113,16 @@ function getNavGroups(roles: readonly BackendAuthorizedRole[]): NavGroup[] {
   })).filter((group) => group.items.length > 0);
 }
 
+const ALL_NAV_HREFS = ALL_NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
+
 function isActive(pathname: string, href: string): boolean {
   if (href === '/admin') return pathname === '/admin';
-  return pathname.startsWith(href);
+  if (!pathname.startsWith(href)) return false;
+  // A more specific item (e.g. /admin/operations/app-versions) wins over its
+  // parent (/admin/operations), so only one link is highlighted.
+  return !ALL_NAV_HREFS.some(
+    (other) => other.length > href.length && other.startsWith(href) && pathname.startsWith(other),
+  );
 }
 
 const STORAGE_KEY = 'aim-nav-collapsed';
