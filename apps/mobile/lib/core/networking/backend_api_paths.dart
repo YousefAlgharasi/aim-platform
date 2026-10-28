@@ -4,6 +4,10 @@ class BackendApiPaths {
   static const String health = '/health';
   static const String version = '/version';
 
+  /// GET /app/version-policy?platform=android|ios — public; minimum
+  /// supported / latest mobile app version used by the update prompt.
+  static const String appVersionPolicy = '/app/version-policy';
+
   // ---------------------------------------------------------------------------
   // Auth
   // ---------------------------------------------------------------------------

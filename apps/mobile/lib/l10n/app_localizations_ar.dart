@@ -3429,4 +3429,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String certificateIdLabel(String id) {
     return 'رقم الشهادة: $id';
   }
+
+  @override
+  String get appUpdateRequiredTitle => 'التحديث مطلوب';
+
+  @override
+  String get appUpdateRequiredMessage =>
+      'لم يعد هذا الإصدار من AIM مدعومًا. يرجى تحديث التطبيق لمتابعة التعلّم. تقدّمك محفوظ في حسابك.';
+
+  @override
+  String get appUpdateNow => 'حدّث الآن';
+
+  @override
+  String get appUpdateAvailableMessage => 'يتوفر إصدار جديد من AIM.';
+
+  @override
+  String get appUpdateLater => 'لاحقًا';
+
+  @override
+  String get appUpdateAction => 'تحديث';
+
+  @override
+  String get appUpdateDownloadedMessage =>
+      'تم تنزيل التحديث. أعد تشغيل التطبيق لتثبيته.';
+
+  @override
+  String get appUpdateRestart => 'إعادة التشغيل';
 }

@@ -4368,5 +4368,37 @@
         "type": "String"
       }
     }
+  },
+  "appUpdateRequiredTitle": "Update required",
+  "@appUpdateRequiredTitle": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateRequiredMessage": "This version of AIM is no longer supported. Please update to keep learning. Your progress is saved to your account.",
+  "@appUpdateRequiredMessage": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateNow": "Update now",
+  "@appUpdateNow": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateAvailableMessage": "A new version of AIM is available.",
+  "@appUpdateAvailableMessage": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateLater": "Later",
+  "@appUpdateLater": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateAction": "Update",
+  "@appUpdateAction": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateDownloadedMessage": "Update downloaded. Restart the app to install it.",
+  "@appUpdateDownloadedMessage": {
+    "description": "App update prompt (features/app_update)."
+  },
+  "appUpdateRestart": "Restart",
+  "@appUpdateRestart": {
+    "description": "App update prompt (features/app_update)."
   }
 }

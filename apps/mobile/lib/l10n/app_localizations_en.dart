@@ -3397,4 +3397,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String certificateIdLabel(String id) {
     return 'Certificate ID: $id';
   }
+
+  @override
+  String get appUpdateRequiredTitle => 'Update required';
+
+  @override
+  String get appUpdateRequiredMessage =>
+      'This version of AIM is no longer supported. Please update to keep learning. Your progress is saved to your account.';
+
+  @override
+  String get appUpdateNow => 'Update now';
+
+  @override
+  String get appUpdateAvailableMessage => 'A new version of AIM is available.';
+
+  @override
+  String get appUpdateLater => 'Later';
+
+  @override
+  String get appUpdateAction => 'Update';
+
+  @override
+  String get appUpdateDownloadedMessage =>
+      'Update downloaded. Restart the app to install it.';
+
+  @override
+  String get appUpdateRestart => 'Restart';
 }

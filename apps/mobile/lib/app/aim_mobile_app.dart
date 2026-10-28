@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/localization/localization.dart';
 import '../core/routing/routing.dart';
 import '../core/theme/theme.dart';
+import '../features/app_update/ui/app_update_gate.dart';
 import '../features/auth/logic/provider/auth_context_provider.dart';
 import '../features/auth/logic/provider/auth_flow_provider.dart';
 import '../features/auth/logic/provider/deep_link_handler.dart';
@@ -72,6 +73,8 @@ class _AimMobileAppState extends ConsumerState<AimMobileApp> {
       localizationsDelegates: AppLocale.delegates,
 
       routerConfig: _router,
+      builder: (context, child) =>
+          AppUpdateGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }
