@@ -5783,6 +5783,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Certificate ID: {id}'**
   String certificateIdLabel(String id);
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get appUpdateRequiredTitle;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'This version of AIM is no longer supported. Please update to keep learning. Your progress is saved to your account.'**
+  String get appUpdateRequiredMessage;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get appUpdateNow;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of AIM is available.'**
+  String get appUpdateAvailableMessage;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get appUpdateLater;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get appUpdateAction;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Update downloaded. Restart the app to install it.'**
+  String get appUpdateDownloadedMessage;
+
+  /// App update prompt (features/app_update).
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get appUpdateRestart;
 }
 
 class _AppLocalizationsDelegate

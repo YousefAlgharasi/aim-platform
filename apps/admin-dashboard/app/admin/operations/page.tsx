@@ -18,6 +18,7 @@ const OPERATIONS_LINKS: readonly OperationsLink[] = [
   { label: 'Maintenance',     href: '/admin/operations/maintenance',     description: 'Schedule and manage maintenance windows' },
   { label: 'Release Notes',   href: '/admin/operations/release-notes',   description: 'Create and publish release notes' },
   { label: 'Feature Flags',   href: '/admin/operations/feature-flags',   description: 'Manage feature flag rollouts' },
+  { label: 'App Versions',    href: '/admin/operations/app-versions',    description: 'Prompt or require mobile users to update the app' },
 ];
 
 export default function OperationsOverviewPage() {

@@ -951,5 +951,13 @@
   "certificateFinalGradeLabel": "الدرجة النهائية",
   "certificateCopyVerification": "نسخ رابط التحقق",
   "certificateCopiedToast": "تم نسخ رابط التحقق بنجاح!",
-  "certificateIdLabel": "رقم الشهادة: {id}"
+  "certificateIdLabel": "رقم الشهادة: {id}",
+  "appUpdateRequiredTitle": "التحديث مطلوب",
+  "appUpdateRequiredMessage": "لم يعد هذا الإصدار من AIM مدعومًا. يرجى تحديث التطبيق لمتابعة التعلّم. تقدّمك محفوظ في حسابك.",
+  "appUpdateNow": "حدّث الآن",
+  "appUpdateAvailableMessage": "يتوفر إصدار جديد من AIM.",
+  "appUpdateLater": "لاحقًا",
+  "appUpdateAction": "تحديث",
+  "appUpdateDownloadedMessage": "تم تنزيل التحديث. أعد تشغيل التطبيق لتثبيته.",
+  "appUpdateRestart": "إعادة التشغيل"
 }

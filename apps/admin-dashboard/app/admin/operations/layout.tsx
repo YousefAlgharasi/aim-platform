@@ -18,6 +18,7 @@ export default function OperationsLayout({
           <li><a href="/admin/operations/maintenance" className="ops-nav-link">Maintenance</a></li>
           <li><a href="/admin/operations/release-notes" className="ops-nav-link">Release Notes</a></li>
           <li><a href="/admin/operations/feature-flags" className="ops-nav-link">Feature Flags</a></li>
+          <li><a href="/admin/operations/app-versions" className="ops-nav-link">App Versions</a></li>
         </ul>
       </nav>
 

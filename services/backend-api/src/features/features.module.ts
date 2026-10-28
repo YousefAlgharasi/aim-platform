@@ -26,6 +26,7 @@ import { UsersModule } from './users/users.module';
 import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
 import { BillingModule } from './billing/billing.module';
 import { OperationsModule } from './operations/operations.module';
+import { AppVersionModule } from './app-version/app-version.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { OperationsModule } from './operations/operations.module';
     StudentChaptersModule,
     StudentLessonsModule,
     EnrollmentModule,
+    AppVersionModule,
   ],
   exports: [
     AuthModule,
