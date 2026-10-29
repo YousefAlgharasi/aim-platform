@@ -73,13 +73,13 @@ describe('Attempt Lifecycle (P10-043)', () => {
     it('rejects when max attempts reached (exact limit)', async () => {
       const repo = makeRepo({ countAttemptsByStudent: jest.fn().mockResolvedValue(3) });
       const svc = new AttemptLifecycleService(makeDb({ max_attempts: 3 }) as any, repo as any, makeDeadline() as any);
-      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toThrow('MAX_ATTEMPTS_REACHED');
+      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toMatchObject({ code: 'MAX_ATTEMPTS_REACHED' });
     });
 
     it('rejects when attempts exceed limit', async () => {
       const repo = makeRepo({ countAttemptsByStudent: jest.fn().mockResolvedValue(5) });
       const svc = new AttemptLifecycleService(makeDb({ max_attempts: 3 }) as any, repo as any, makeDeadline() as any);
-      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toThrow('MAX_ATTEMPTS_REACHED');
+      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toMatchObject({ code: 'MAX_ATTEMPTS_REACHED' });
     });
 
     it('allows start when attempts < max', async () => {

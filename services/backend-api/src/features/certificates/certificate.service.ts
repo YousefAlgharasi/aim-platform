@@ -19,7 +19,9 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CourseCompletionService } from '../lessons/course-completion.service';
 import { Certificate, CertificateScoreSnapshotEntry } from './certificate.types';
-import { computeCourse1000PointBreakdown, computeCourseScorePercent, toScorePercent } from './course-score.util';
+import {
+  bestResultPerAssessment, computeCourse1000PointBreakdown, computeCourseScorePercent, toScorePercent,
+} from './course-score.util';
 
 interface CertificateRow {
   id: string;
@@ -40,6 +42,15 @@ interface AssessmentResultRow {
   max_score: string;
   passed: boolean;
 }
+
+// Snapshots written before version 2 stored a practice accuracy that was
+// always 100% (see toCertificate).
+const SNAPSHOT_SCORING_VERSION = 2;
+
+// Public base URL printed on certificates for verification links.
+const CERTIFICATE_VERIFY_BASE_URL = (
+  process.env.CERTIFICATE_VERIFY_BASE_URL ?? 'https://aim-platform-gswy.onrender.com'
+).replace(/\/+$/, '');
 
 @Injectable()
 export class CertificateService {
@@ -105,15 +116,24 @@ export class CertificateService {
   }
 
   /**
-   * Calculate student's accuracy across practice sessions in this course.
+   * The student's accuracy across lesson practice in this course, as a
+   * 0-100 percent, or null when they have no practice attempts here.
+   *
+   * Practice attempts store the question id as item_id, so they're scoped to
+   * the course through the questions its lessons practice (lesson_skills ->
+   * question_skills — the same link SessionQuestionsService uses to serve
+   * them). Quiz/exam answers bridged into AIM are recorded as
+   * 'practice_question' and are excluded so they aren't counted twice.
    */
-  async getCoursePracticeAccuracy(studentId: string, courseId: string): Promise<number> {
+  async getCoursePracticeAccuracy(studentId: string, courseId: string): Promise<number | null> {
     const result = await this.db.query<{ total: string; correct: string }>(
-      `WITH course_lessons AS (
-         SELECT l.id AS lesson_id
+      `WITH course_questions AS (
+         SELECT DISTINCT qs.question_id
          FROM lessons l
          JOIN chapters c ON c.id = l.chapter_id
          JOIN levels lv ON lv.id = c.level_id
+         JOIN lesson_skills ls ON ls.lesson_id = l.id
+         JOIN question_skills qs ON qs.skill_id = ls.skill_id
          WHERE lv.course_id = $2
        ),
        resolved_student AS (
@@ -127,17 +147,20 @@ export class CertificateService {
          COUNT(*) AS total,
          COUNT(*) FILTER (WHERE la.is_correct = true) AS correct
        FROM lesson_attempts la
-       JOIN course_lessons cl ON cl.lesson_id = la.item_id
-       WHERE la.student_id = $1
-          OR la.student_id IN (SELECT profile_id FROM resolved_student)
-          OR la.student_id IN (SELECT user_id FROM resolved_student)
-          OR la.student_id IN (SELECT supabase_auth_uid FROM resolved_student)`,
+       WHERE la.item_type = 'lesson_question'
+         AND la.item_id IN (SELECT question_id FROM course_questions)
+         AND (
+           la.student_id = $1
+           OR la.student_id IN (SELECT profile_id FROM resolved_student)
+           OR la.student_id IN (SELECT user_id FROM resolved_student)
+           OR la.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         )`,
       [studentId, courseId],
     );
 
     const total = Number(result.rows[0]?.total ?? 0);
     const correct = Number(result.rows[0]?.correct ?? 0);
-    if (total === 0) return 100;
+    if (total === 0) return null;
     return Math.round((correct / total) * 100);
   }
 
@@ -264,11 +287,12 @@ export class CertificateService {
     const complete = await this.courseCompletion.isCourseComplete(studentId, courseId);
     if (!complete) return null;
 
-    const snapshot = await this.getCourseAssessmentResults(studentId, courseId);
+    const snapshot = bestResultPerAssessment(await this.getCourseAssessmentResults(studentId, courseId));
     const practiceAccuracy = await this.getCoursePracticeAccuracy(studentId, courseId);
     const breakdown = computeCourse1000PointBreakdown(snapshot, practiceAccuracy);
 
     const fullSnapshot = {
+      scoringVersion: SNAPSHOT_SCORING_VERSION,
       assessments: snapshot,
       breakdown,
       practiceAccuracy,
@@ -310,23 +334,32 @@ export class CertificateService {
 
   private async toCertificate(row: CertificateRow): Promise<Certificate> {
     let assessments: CertificateScoreSnapshotEntry[] = [];
-    let practiceAccuracy = 100;
+    let practiceAccuracy: number | null = null;
 
     if (row.score_snapshot && typeof row.score_snapshot === 'object') {
       if (Array.isArray(row.score_snapshot)) {
         assessments = row.score_snapshot as CertificateScoreSnapshotEntry[];
+        practiceAccuracy = await this.getCoursePracticeAccuracy(row.student_id, row.course_id);
       } else {
         const obj = row.score_snapshot as {
+          scoringVersion?: number;
           assessments?: CertificateScoreSnapshotEntry[];
-          practiceAccuracy?: number;
+          practiceAccuracy?: number | null;
         };
         assessments = obj.assessments ?? [];
-        if (typeof obj.practiceAccuracy === 'number') {
-          practiceAccuracy = obj.practiceAccuracy;
+        if ((obj.scoringVersion ?? 1) >= SNAPSHOT_SCORING_VERSION) {
+          practiceAccuracy = typeof obj.practiceAccuracy === 'number' ? obj.practiceAccuracy : null;
+        } else {
+          // Version-1 snapshots always stored 100% practice: the old query
+          // never matched any attempt. Use the real accuracy instead.
+          practiceAccuracy = await this.getCoursePracticeAccuracy(row.student_id, row.course_id);
         }
       }
+    } else {
+      practiceAccuracy = await this.getCoursePracticeAccuracy(row.student_id, row.course_id);
     }
 
+    assessments = bestResultPerAssessment(assessments);
     const breakdown = computeCourse1000PointBreakdown(assessments, practiceAccuracy);
 
     return {
@@ -340,7 +373,7 @@ export class CertificateService {
       breakdown,
       totalPoints: breakdown.totalPoints,
       overallScorePercent: breakdown.overallPercent,
-      verificationUrl: `https://aim-platform-gswy.onrender.com/certificates/${row.id}/verify`,
+      verificationUrl: `${CERTIFICATE_VERIFY_BASE_URL}/certificates/${row.id}/verify`,
     };
   }
 }

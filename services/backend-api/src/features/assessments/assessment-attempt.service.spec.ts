@@ -51,7 +51,7 @@ describe('AttemptLifecycleService', () => {
     it('throws MAX_ATTEMPTS_REACHED when at limit', async () => {
       const repo = makeRepo({ countAttemptsByStudent: jest.fn().mockResolvedValue(2) });
       const svc = new AttemptLifecycleService(makeDb() as any, repo as any, makeDeadline() as any);
-      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toThrow('MAX_ATTEMPTS_REACHED');
+      await expect(svc.startAttempt('a-1', 'stu-1')).rejects.toMatchObject({ code: 'MAX_ATTEMPTS_REACHED' });
     });
 
     it('resumes an existing open attempt instead of creating a new one or burning an attempt slot', async () => {

@@ -50,7 +50,10 @@ describe('AssessmentController', () => {
   const mockDetail: AssessmentDetailWithDeadline = {
     id: 'assessment-1', type: 'quiz', title: 'Quiz 1', description: null,
     sections: [{ id: 'sec-1', title: 'Grammar', order: 1, questionCount: 10 }],
+    questionCount: 10,
     maxAttempts: 2, timeLimitSeconds: 900,
+    attemptsUsed: 0, attemptsRemaining: 2, hasActiveAttempt: false,
+    passed: false, bestScorePercent: null, canStart: true, blockedReason: null,
     deadline: {
       deadlineId: 'd-1', opensAt: new Date(), closesAt: new Date(),
       extendedClosesAt: null, status: 'open',

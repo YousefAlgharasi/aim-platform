@@ -31,12 +31,16 @@ export class StudentLessonsService {
     let quiz = null;
     if (quizRow) {
       const allLessonsComplete = lessons.length > 0 && lessons.every((l) => l.completed);
-      const completed = await this.repository.hasPassingResult(studentId, quizRow.assessment_id);
+      const [completed, scorePercent] = await Promise.all([
+        this.repository.hasPassingResult(studentId, quizRow.assessment_id),
+        this.repository.findBestScorePercent(studentId, quizRow.assessment_id),
+      ]);
       quiz = {
         assessmentId: quizRow.assessment_id,
         title: quizRow.title,
         completed,
         locked: !allLessonsComplete,
+        scorePercent,
       };
     }
 

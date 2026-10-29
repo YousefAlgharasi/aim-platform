@@ -24,9 +24,10 @@ import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService } from './assessment-deadline.service';
 import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
 import {
-  chapterNotComplete, courseNotComplete,
+  chapterNotComplete, courseNotComplete, maxAttemptsReached,
   attemptNotFound, attemptNotOwned, attemptInvalid, deadlineBlocksSubmission,
 } from './assessment-errors';
+import { resolveMaxAttempts } from './assessment-policy';
 
 export interface StartAttemptResult {
   readonly attemptId: string;
@@ -123,16 +124,18 @@ export class AttemptLifecycleService {
       `SELECT max_attempts, time_limit_seconds FROM assessment_settings WHERE assessment_id = $1`,
       [assessmentId],
     );
-    const settings = settingsRes.rows[0] ?? { max_attempts: 1, time_limit_seconds: null };
+    const settings = settingsRes.rows[0];
+    const maxAttempts = resolveMaxAttempts(assessment.type, settings?.max_attempts);
+    const timeLimitSeconds = settings?.time_limit_seconds ?? null;
     const currentCount = await this.repo.countAttemptsByStudent(assessmentId, studentId);
 
-    if (currentCount >= settings.max_attempts) {
-      throw new ConflictException('MAX_ATTEMPTS_REACHED');
+    if (currentCount >= maxAttempts) {
+      throw maxAttemptsReached();
     }
 
     // 4. Compute expiresAt backend-side (Flutter gets for display only).
-    const expiresAt = settings.time_limit_seconds
-      ? new Date(Date.now() + settings.time_limit_seconds * 1000)
+    const expiresAt = timeLimitSeconds
+      ? new Date(Date.now() + timeLimitSeconds * 1000)
       : null;
 
     // 5. Create attempt.
