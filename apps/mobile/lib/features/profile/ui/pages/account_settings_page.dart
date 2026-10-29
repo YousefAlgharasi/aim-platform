@@ -1,900 +1,514 @@
+// Settings screen — only settings that are real and saved:
+// - Profile: display name (saved via PATCH profile), email (read-only).
+// - Learning: daily lesson goal (read from the Home engagement summary,
+//   saved via the engagement goal endpoint).
+// - Preferences: theme, language, links to the notification preferences and
+//   study reminder screens (each saves through its own backend endpoint).
+// - Account: change password (emails a reset link), sign out.
+//
+// RTL/Arabic: directional insets and chevrons; no hard-coded text direction.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
-import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/logout_provider.dart';
-import 'package:aim_mobile/features/profile/logic/provider/profile_provider.dart';
+import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_update_payload_models.dart';
+import 'package:aim_mobile/features/profile/logic/provider/profile_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
+
+/// Daily goal choices, in lessons per day.
+const _dailyGoalOptions = [1, 2, 3];
 
 class AccountSettingsPage extends ConsumerStatefulWidget {
   const AccountSettingsPage({super.key});
 
   @override
-  ConsumerState<AccountSettingsPage> createState() => _AccountSettingsPageState();
+  ConsumerState<AccountSettingsPage> createState() =>
+      _AccountSettingsPageState();
 }
 
 class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
   final _nameController = TextEditingController();
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
+  String _savedName = '';
+  bool _savingName = false;
 
-  String _commitment = '15'; // '5' | '15' | '30'
-  bool _dailyReminders = true;
-  bool _weaknessAlerts = true;
+  /// Goal picked on this screen; null until the student changes it, so the
+  /// backend value from the Home summary is shown.
+  int? _pickedGoal;
+  bool _savingGoal = false;
 
-  bool _isSavingProfile = false;
-  bool _isUpdatingPassword = false;
+  String? _version;
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentProfile();
-    _nameController.addListener(_onFormChanged);
-    _currentPasswordController.addListener(_onFormChanged);
-    _newPasswordController.addListener(_onFormChanged);
-  }
-
-  void _onFormChanged() {
-    setState(() {});
-  }
-
-  void _loadCurrentProfile() {
     final authState = ref.read(authContextProvider);
     if (authState is AppAsyncSuccess<AuthContext>) {
-      _nameController.text = authState.data.profile?.displayName ?? '';
+      _savedName = authState.data.profile?.displayName ?? '';
+      _nameController.text = _savedName;
     }
+    _nameController.addListener(() => setState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadGoal());
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _version = info.version);
+    }).catchError((_) {});
   }
 
   @override
   void dispose() {
-    _nameController.removeListener(_onFormChanged);
-    _currentPasswordController.removeListener(_onFormChanged);
-    _newPasswordController.removeListener(_onFormChanged);
     _nameController.dispose();
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveProfile() async {
+  String? get _token {
     final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
+    return (token == null || token.isEmpty) ? null : token;
+  }
 
-    setState(() {
-      _isSavingProfile = true;
-    });
+  void _loadGoal() {
+    if (ref.read(homeProvider) is AppAsyncSuccess) return;
+    final token = _token;
+    final authState = ref.read(authContextProvider);
+    if (token == null || authState is! AppAsyncSuccess<AuthContext>) return;
+    ref.read(homeProvider.notifier).load(
+          bearerToken: token,
+          studentId: authState.data.user.id,
+        );
+  }
 
+  void _showSnack(String message, {bool error = false}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        backgroundColor: error ? AimColors.error500 : AimColors.success500,
+        content: Text(message),
+      ));
+  }
+
+  Future<void> _saveName() async {
+    final token = _token;
+    final name = _nameController.text.trim();
+    if (token == null || name.isEmpty) return;
     final l10n = AppLocalizations.of(context);
-
+    setState(() => _savingName = true);
     try {
-      // 1. Update Profile Display Name
       await ref.read(profileProvider.notifier).updateProfile(
             token,
-            studentPayload: SafeStudentProfileUpdatePayloadModel(
-              displayName: _nameController.text.trim(),
-            ),
+            studentPayload:
+                SafeStudentProfileUpdatePayloadModel(displayName: name),
           );
-
-      // Refresh current auth context to display updated name immediately
       await ref.read(authContextProvider.notifier).loadCurrentUser(token);
+      _savedName = name;
+      if (mounted) _showSnack(l10n.settingsSaveSuccess);
+    } catch (e) {
+      if (mounted) _showSnack(l10n.profileSaveFailed('$e'), error: true);
+    } finally {
+      if (mounted) setState(() => _savingName = false);
+    }
+  }
 
-      // 2. Update Daily Learning Commitment Goal in Backend API via ProfileNotifier
-      final lessonsMap = {'5': 1, '15': 2, '30': 3};
-      final dailyGoalLessons = lessonsMap[_commitment] ?? 2;
-
-      await ref.read(profileProvider.notifier).updateEngagementGoal(
-            token,
-            dailyGoalLessons: dailyGoalLessons,
-          );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Text(l10n.settingsSaveSuccess),
-              ],
-            ),
-          ),
-        );
-      }
+  Future<void> _saveGoal(int lessons) async {
+    final token = _token;
+    if (token == null) return;
+    final l10n = AppLocalizations.of(context);
+    final previous = _pickedGoal;
+    setState(() {
+      _pickedGoal = lessons;
+      _savingGoal = true;
+    });
+    try {
+      await ref
+          .read(profileProvider.notifier)
+          .updateEngagementGoal(token, dailyGoalLessons: lessons);
+      if (mounted) _showSnack(l10n.settingsDailyGoalSaved);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(l10n.profileSaveFailed(e.toString())),
-          ),
-        );
+        setState(() => _pickedGoal = previous);
+        _showSnack(l10n.profileSaveFailed('$e'), error: true);
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSavingProfile = false;
-        });
-      }
+      if (mounted) setState(() => _savingGoal = false);
     }
   }
 
-  Future<void> _updatePassword() async {
+  Future<void> _changePassword(String email) async {
     final l10n = AppLocalizations.of(context);
-    setState(() {
-      _isUpdatingPassword = true;
-    });
-
-    try {
-      final authState = ref.read(authContextProvider);
-      final email = switch (authState) {
-        AppAsyncSuccess(:final data) => data.user.email ?? '',
-        _ => '',
-      };
-
-      if (email.isNotEmpty) {
-        await ref.read(authRepositoryProvider).requestPasswordReset(email: email);
-      }
-
-
-      if (mounted) {
-        setState(() {
-          _isUpdatingPassword = false;
-          _currentPasswordController.clear();
-          _newPasswordController.clear();
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.success500,
-            content: Row(
-              children: [
-                const Icon(Icons.mark_email_read, color: AimColors.neutral0),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(l10n.profilePasswordResetSuccess),
-                ),
-              ],
-            ),
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsChangePassword),
+        content: Text(l10n.settingsChangePasswordBody(email)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
           ),
-        );
-      }
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.settingsSendLink),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await ref.read(authRepositoryProvider).requestPasswordReset(email: email);
+      if (mounted) _showSnack(l10n.profilePasswordResetSuccess);
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isUpdatingPassword = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AimColors.error500,
-            content: Text(l10n.profilePasswordResetFailed(e.toString())),
-          ),
-        );
+        _showSnack(l10n.profilePasswordResetFailed('$e'), error: true);
       }
     }
   }
 
-  void _logout() async {
-    final token = ref.read(authFlowProvider).accessToken;
-    if (token == null || token.isEmpty) return;
-
+  Future<void> _signOut() async {
+    final token = _token;
+    if (token == null) return;
     final l10n = AppLocalizations.of(context);
-
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.settingsLogoutTitle),
         content: Text(l10n.settingsLogoutMessage),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(context).pop(false),
             child: Text(l10n.commonCancel),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AimColors.error500,
-              foregroundColor: AimColors.neutral0,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref.read(logoutProvider.notifier).logout(token);
-            },
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AimColors.error500),
+            onPressed: () => Navigator.of(context).pop(true),
             child: Text(l10n.authSignOutButton),
           ),
         ],
       ),
     );
+    if (confirmed == true) {
+      ref.read(logoutProvider.notifier).logout(token);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authContextProvider);
-    final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
-
+    final surfaces = aimSurfacesOf(context);
+    final authState = ref.watch(authContextProvider);
     final email = switch (authState) {
       AppAsyncSuccess(:final data) => data.user.email ?? '',
       _ => '',
     };
-    final displayName = switch (authState) {
-      AppAsyncSuccess(:final data) => data.profile?.displayName ?? '',
-      _ => '',
+    final backendGoal = switch (ref.watch(homeProvider)) {
+      AppAsyncSuccess<HomeData>(:final data) => data.goal?.targetLessons,
+      _ => null,
     };
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final goal = _pickedGoal ?? backendGoal;
+    final themeMode = ref.watch(themeModeProvider);
+    final localeCode = ref.watch(localeProvider).languageCode;
+    final name = _nameController.text.trim();
+    final nameChanged = name.isNotEmpty && name != _savedName;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: surfaces.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: surfaces.border, height: 1),
-        ),
-        leadingWidth: 72,
-        leading: Center(
-          child: GestureDetector(
-            onTap: () => context.canPop() ? context.pop() : context.go(AppRoutePaths.mainShell),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: surfaces.border.withValues(alpha: 0.2),
-                borderRadius: AimRadius.borderMd,
-              ),
-              child: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.arrow_forward_rounded
-                    : Icons.arrow_back_rounded,
-                color: surfaces.textPrimary,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          l10n.settingsTitle,
-          style: AimTextStyles.title.copyWith(
-            color: surfaces.textPrimary,
-            fontSize: 18,
-            fontWeight: AimFontWeights.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          const AimQuickThemeToggle(size: 36, iconSize: 18),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(end: 16),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AimColors.primary500,
-              child: Text(
-                displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-                style: AimTextStyles.bodyLg.copyWith(
-                  color: AimColors.neutral0,
-                  fontWeight: AimFontWeights.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
+      appBar: AIMTopAppBar(
+        title: l10n.settingsPageTitle,
+        onBack: () => context.canPop()
+            ? context.pop()
+            : context.go(AppRoutePaths.mainShell),
       ),
-      body: SafeArea(top: false, child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        children: [
-          // 1. Profile & Learning Commitment Card
-          _buildCard(
-            surfaces,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        color: AimColors.primary500,
-                        borderRadius: AimRadius.borderLg,
-                      ),
-                      child: Center(
-                        child: Text(
-                          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-                          style: AimTextStyles.h2.copyWith(
-                            color: AimColors.neutral0,
-                            fontSize: 24,
-                            fontWeight: AimFontWeights.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            displayName.isNotEmpty ? displayName : AppLocalizations.of(context).commonLearner,
-                            style: AimTextStyles.bodyLg.copyWith(
-                              color: surfaces.textPrimary,
-                              fontWeight: AimFontWeights.extrabold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            email,
-                            style: AimTextStyles.caption.copyWith(
-                              color: surfaces.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AimColors.primary500.withValues(alpha: 0.1),
-                                  borderRadius: AimRadius.borderSm,
-                                ),
-                                child: Text(
-                                  l10n.profileAimPlusMember,
-                                  style: AimTextStyles.caption.copyWith(
-                                    color: AimColors.primary600,
-                                    fontSize: 9,
-                                    fontWeight: AimFontWeights.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  l10n.settingsFullName.toUpperCase(),
-                  style: AimTextStyles.caption.copyWith(
-                    color: surfaces.textSecondary,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                AIMInput(
-                  controller: _nameController,
-                  placeholder: l10n.settingsEnterFullName,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                      l10n.settingsEmailAddress.toUpperCase(),
-                      style: AimTextStyles.caption.copyWith(
-                        color: surfaces.textSecondary,
-                        fontWeight: AimFontWeights.bold,
-                        fontSize: 11,
-                      ),
-                    ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: surfaces.border.withValues(alpha: 0.4),
-                        borderRadius: AimRadius.borderSm,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.lock_outline, size: 12, color: surfaces.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.settingsVerifiedEmail,
-                            style: AimTextStyles.caption.copyWith(
-                              color: surfaces.textSecondary,
-                              fontWeight: AimFontWeights.bold,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  enabled: false,
-                  decoration: InputDecoration(
-                    hintText: email,
-                    filled: true,
-                    fillColor: surfaces.border.withValues(alpha: 0.15),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: AimRadius.borderMd,
-                      borderSide: BorderSide(color: surfaces.border),
-                    ),
-                    disabledBorder: OutlineInputBorder(
-                      borderRadius: AimRadius.borderMd,
-                      borderSide: BorderSide(color: surfaces.border.withValues(alpha: 0.5)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.settingsDailyCommitment.toUpperCase(),
-                  style: AimTextStyles.caption.copyWith(
-                    color: surfaces.textSecondary,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    borderRadius: AimRadius.borderMd,
-                    border: Border.all(color: surfaces.border),
-                    color: surfaces.surface,
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _commitment,
-                      dropdownColor: surfaces.surface,
-                      icon: Icon(Icons.keyboard_arrow_down, color: surfaces.textPrimary),
-                      isExpanded: true,
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _commitment = val;
-                          });
-                        }
-                      },
-                      items: [
-                        DropdownMenuItem(
-                          value: '5',
-                          child: Text(l10n.settingsCommitmentCasual),
-                        ),
-                        DropdownMenuItem(
-                          value: '15',
-                          child: Text(l10n.settingsCommitmentRecommended),
-                        ),
-                        DropdownMenuItem(
-                          value: '30',
-                          child: Text(l10n.settingsCommitmentIntensive),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                AIMButton(
-                  fullWidth: true,
-                  onPressed: _isSavingProfile ? null : _saveProfile,
-                  child: Text(_isSavingProfile ? l10n.settingsSavingButton : l10n.settingsSaveButton),
-                ),
-              ],
-            ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AimSpacing.screenPaddingMobile,
+            vertical: AimSpacing.space16,
           ),
-          const SizedBox(height: 24),
-
-          // 2. App Theme & Display
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
-            child: Text(
-              l10n.settingsAppThemeDisplay,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: AimFontWeights.extrabold,
-              ),
-            ),
-          ),
-          _buildCard(
-            surfaces,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: surfaces.border.withValues(alpha: 0.15),
-                borderRadius: AimRadius.borderLg,
-              ),
-              child: Row(
+          children: [
+            // ── Profile ──
+            _SectionTitle(l10n.settingsSectionProfile),
+            AIMCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: isDark 
-                          ? AimColors.neutral800 
-                          : AimColors.warning500.withValues(alpha: 0.1),
-                      borderRadius: AimRadius.borderMd,
-                    ),
-                    child: Icon(
-                      isDark ? Icons.nights_stay_rounded : Icons.wb_sunny_rounded,
-                      color: isDark ? AimColors.neutral300 : AimColors.warning500,
-                      size: 20,
-                    ),
+                  _FieldLabel(l10n.settingsFullName),
+                  AIMInput(
+                    controller: _nameController,
+                    placeholder: l10n.settingsEnterFullName,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isDark ? l10n.settingsThemeDark : l10n.settingsThemeLight,
-                          style: AimTextStyles.bodyMd.copyWith(
-                            color: surfaces.textPrimary,
-                            fontWeight: AimFontWeights.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          isDark 
-                              ? l10n.settingsThemeDarkSubtitle 
-                              : l10n.settingsThemeLightSubtitle,
-                          style: AimTextStyles.caption.copyWith(
-                            color: surfaces.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch(
-                    value: isDark,
-                    activeThumbColor: AimColors.primary500,
-                    onChanged: (val) {
-                      ref.read(themeModeProvider.notifier).state =
-                          val ? ThemeMode.dark : ThemeMode.light;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // 3. App Language
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
-            child: Text(
-              l10n.profileLabelLanguage,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: AimFontWeights.extrabold,
-              ),
-            ),
-          ),
-          _buildCard(
-            surfaces,
-            child: Column(
-              children: [
-                _buildLanguageOption(
-                  title: 'English',
-                  subtitle: l10n.profileLanguageEnglish,
-                  localeCode: AppLocale.english,
-                  currentLocaleCode: ref.watch(localeProvider).languageCode,
-                  icon: Icons.language_rounded,
-                  surfaces: surfaces,
-                  onTap: () {
-                    ref.read(localeProvider.notifier).state =
-                        const Locale(AppLocale.english);
-                  },
-                ),
-                const SizedBox(height: 10),
-                _buildLanguageOption(
-                  title: 'العربية',
-                  subtitle: l10n.profileLanguageArabic,
-                  localeCode: AppLocale.arabic,
-                  currentLocaleCode: ref.watch(localeProvider).languageCode,
-                  icon: Icons.translate_rounded,
-                  surfaces: surfaces,
-                  onTap: () {
-                    ref.read(localeProvider.notifier).state =
-                        const Locale(AppLocale.arabic);
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // 4. Notification Preferences
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
-            child: Text(
-              l10n.settingsNotificationPreferences,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: AimFontWeights.extrabold,
-              ),
-            ),
-          ),
-          _buildCard(
-            surfaces,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.settingsReminders,
-                            style: AimTextStyles.bodyMd.copyWith(
-                              color: surfaces.textPrimary,
-                              fontWeight: AimFontWeights.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.profileStudyTimeNotification,
-                            style: AimTextStyles.caption.copyWith(
-                              color: surfaces.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: _dailyReminders,
-                      activeThumbColor: AimColors.primary500,
-                      onChanged: (val) {
-                        setState(() {
-                          _dailyReminders = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const Divider(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.settingsDiagnostics,
-                            style: AimTextStyles.bodyMd.copyWith(
-                              color: surfaces.textPrimary,
-                              fontWeight: AimFontWeights.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            l10n.profileLearningGapsAlerts,
-                            style: AimTextStyles.caption.copyWith(
-                              color: surfaces.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: _weaknessAlerts,
-                      activeThumbColor: AimColors.primary500,
-                      onChanged: (val) {
-                        setState(() {
-                          _weaknessAlerts = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // 4. Security & Password
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8, start: 4),
-            child: Text(
-              l10n.profileSecurityPassword,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: AimFontWeights.extrabold,
-              ),
-            ),
-          ),
-          _buildCard(
-            surfaces,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  l10n.settingsCurrentPassword.toUpperCase(),
-                  style: AimTextStyles.caption.copyWith(
-                    color: surfaces.textSecondary,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                AIMInput(
-                  controller: _currentPasswordController,
-                  type: AIMInputType.password,
-                  placeholder: '••••••••',
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.settingsNewPassword.toUpperCase(),
-                  style: AimTextStyles.caption.copyWith(
-                    color: surfaces.textSecondary,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                AIMInput(
-                  controller: _newPasswordController,
-                  type: AIMInputType.password,
-                  placeholder: '••••••••',
-                ),
-                const SizedBox(height: 24),
-                AIMButton(
-                  fullWidth: true,
-                  disabled: _currentPasswordController.text.isEmpty || _newPasswordController.text.isEmpty,
-                  onPressed: _isUpdatingPassword ? null : _updatePassword,
-                  child: Text(_isUpdatingPassword ? l10n.settingsUpdatingPassword : l10n.settingsUpdatePassword),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // 5. Logout Button
-          GestureDetector(
-            onTap: _logout,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F2), // Red 50
-                borderRadius: AimRadius.borderMd,
-                border: Border.all(color: const Color(0xFFFECDD3), width: 1.5), // Red 100
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.logout_rounded, color: Color(0xFFE11D48), size: 20), // Red 600
-                  const SizedBox(width: 8),
+                  const SizedBox(height: AimSpacing.space16),
+                  _FieldLabel(l10n.settingsEmailAddress),
                   Text(
-                    l10n.settingsLogoutButton,
-                    style: AimTextStyles.bodyMd.copyWith(
-                      color: const Color(0xFFE11D48), // Red 600
-                      fontWeight: AimFontWeights.extrabold,
-                    ),
+                    email,
+                    style: AimTextStyles.bodyMd
+                        .copyWith(color: surfaces.textSecondary),
+                  ),
+                  const SizedBox(height: AimSpacing.space16),
+                  AIMButton(
+                    fullWidth: true,
+                    loading: _savingName,
+                    disabled: !nameChanged,
+                    onPressed: _saveName,
+                    child: Text(l10n.settingsSave),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 48),
-        ],
-      )),
-    );
-  }
 
-  Widget _buildCard(AimSurfaceTheme surfaces, {required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: surfaces.surface,
-        borderRadius: AimRadius.borderLg,
-        border: Border.all(color: surfaces.border),
-        boxShadow: [
-          BoxShadow(
-            color: AimColors.neutral900.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildLanguageOption({
-    required String title,
-    required String subtitle,
-    required String localeCode,
-    required String currentLocaleCode,
-    required IconData icon,
-    required AimSurfaceTheme surfaces,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = localeCode == currentLocaleCode;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AimRadius.borderLg,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AimColors.primary500.withValues(alpha: isDark ? 0.15 : 0.08)
-                : surfaces.border.withValues(alpha: 0.15),
-            borderRadius: AimRadius.borderLg,
-            border: Border.all(
-              color: isSelected ? AimColors.primary500 : surfaces.border.withValues(alpha: 0.3),
-              width: isSelected ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AimColors.primary500.withValues(alpha: 0.2)
-                      : (isDark ? AimColors.neutral800 : AimColors.neutral100),
-                  borderRadius: AimRadius.borderMd,
-                ),
-                child: Icon(
-                  icon,
-                  color: isSelected ? AimColors.primary500 : surfaces.textSecondary,
-                  size: 20,
-                ),
+            // ── Learning ──
+            _SectionTitle(l10n.settingsSectionLearning),
+            AIMCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _FieldLabel(l10n.settingsDailyGoal),
+                  SegmentedButton<int>(
+                    showSelectedIcon: false,
+                    emptySelectionAllowed: true,
+                    segments: [
+                      for (final n in _dailyGoalOptions)
+                        ButtonSegment(
+                          value: n,
+                          label: Text(l10n.settingsDailyGoalLessons(n)),
+                        ),
+                    ],
+                    selected: {if (goal != null) goal},
+                    onSelectionChanged: _savingGoal
+                        ? null
+                        : (selection) {
+                            if (selection.isNotEmpty &&
+                                selection.first != goal) {
+                              _saveGoal(selection.first);
+                            }
+                          },
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AimTextStyles.bodyMd.copyWith(
-                        color: isSelected ? AimColors.primary500 : surfaces.textPrimary,
-                        fontWeight: isSelected ? AimFontWeights.bold : AimFontWeights.semibold,
+            ),
+
+            // ── Preferences ──
+            _SectionTitle(l10n.settingsSectionPreferences),
+            AIMCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _FieldLabel(l10n.settingsTheme),
+                  SegmentedButton<ThemeMode>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: ThemeMode.system,
+                        icon: const Icon(Icons.brightness_auto_rounded),
+                        label: Text(l10n.settingsThemeSystem),
                       ),
+                      ButtonSegment(
+                        value: ThemeMode.light,
+                        icon: const Icon(Icons.light_mode_rounded),
+                        label: Text(l10n.settingsThemeLightShort),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.dark,
+                        icon: const Icon(Icons.dark_mode_rounded),
+                        label: Text(l10n.settingsThemeDarkShort),
+                      ),
+                    ],
+                    selected: {themeMode},
+                    onSelectionChanged: (s) =>
+                        ref.read(themeModeProvider.notifier).state = s.first,
+                  ),
+                  const SizedBox(height: AimSpacing.space16),
+                  _FieldLabel(l10n.profileLabelLanguage),
+                  SegmentedButton<String>(
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(
+                        value: AppLocale.english,
+                        label: Text('English'),
+                      ),
+                      ButtonSegment(
+                        value: AppLocale.arabic,
+                        label: Text('العربية'),
+                      ),
+                    ],
+                    selected: {localeCode},
+                    onSelectionChanged: (s) => ref
+                        .read(localeProvider.notifier)
+                        .state = Locale(s.first),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMCard(
+              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
+              child: Column(
+                children: [
+                  _SettingsRow(
+                    icon: Icons.notifications_outlined,
+                    label: l10n.settingsNotificationPreferences,
+                    onTap: () =>
+                        context.push(AppRoutePaths.notificationPreferences),
+                  ),
+                  Divider(
+                    height: 1,
+                    indent: AimSpacing.space48,
+                    color: surfaces.divider,
+                  ),
+                  _SettingsRow(
+                    icon: Icons.alarm_rounded,
+                    label: l10n.settingsStudyReminders,
+                    onTap: () => context.push(AppRoutePaths.reminderSettings),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Account ──
+            _SectionTitle(l10n.settingsSectionAccount),
+            AIMCard(
+              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
+              child: Column(
+                children: [
+                  if (email.isNotEmpty) ...[
+                    _SettingsRow(
+                      icon: Icons.lock_reset_rounded,
+                      label: l10n.settingsChangePassword,
+                      onTap: () => _changePassword(email),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: AimTextStyles.caption.copyWith(
-                        color: surfaces.textMuted,
-                      ),
+                    Divider(
+                      height: 1,
+                      indent: AimSpacing.space48,
+                      color: surfaces.divider,
                     ),
                   ],
+                  _SettingsRow(
+                    icon: Icons.logout_rounded,
+                    label: l10n.authSignOutButton,
+                    destructive: true,
+                    onTap: _signOut,
+                  ),
+                ],
+              ),
+            ),
+
+            if (_version != null) ...[
+              const SizedBox(height: AimSpacing.sectionGap),
+              Text(
+                l10n.settingsAppVersion(_version!),
+                textAlign: TextAlign.center,
+                style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+              ),
+            ],
+            const SizedBox(height: AimSpacing.sectionGap),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(
+        start: AimSpacing.space4,
+        top: AimSpacing.sectionGap,
+        bottom: AimSpacing.space8,
+      ),
+      child: Text(
+        text,
+        style: AimTextStyles.label.copyWith(
+          color: aimSurfacesOf(context).textSecondary,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AimSpacing.space8),
+      child: Text(
+        text,
+        style: AimTextStyles.bodySm.copyWith(
+          color: aimSurfacesOf(context).textSecondary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final color = destructive ? AimColors.error500 : surfaces.textPrimary;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AimSpacing.space16,
+          vertical: AimSpacing.space12,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: AimSizes.iconMd,
+              color: destructive ? AimColors.error500 : AimColors.primary600,
+            ),
+            const SizedBox(width: AimSpacing.componentGap),
+            Expanded(
+              child: Text(
+                label,
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              if (isSelected)
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: AimColors.primary500,
-                  size: 22,
-                )
-              else
-                Icon(
-                  Icons.radio_button_unchecked_rounded,
-                  color: surfaces.textMuted.withValues(alpha: 0.5),
-                  size: 22,
-                ),
-            ],
-          ),
+            ),
+            if (!destructive)
+              Icon(
+                isRtl ? Icons.chevron_left : Icons.chevron_right,
+                size: AimSizes.iconSm,
+                color: surfaces.textMuted,
+              ),
+          ],
         ),
       ),
     );

@@ -3733,4 +3733,75 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get lessonsStartLearningNow => 'ابدأ التعلّم الآن';
+
+  @override
+  String get profilePageTitle => 'الملف الشخصي';
+
+  @override
+  String get settingsPageTitle => 'الإعدادات';
+
+  @override
+  String get settingsSectionProfile => 'الملف الشخصي';
+
+  @override
+  String get settingsSectionLearning => 'التعلّم';
+
+  @override
+  String get settingsSectionPreferences => 'التفضيلات';
+
+  @override
+  String get settingsSectionAccount => 'الحساب';
+
+  @override
+  String get settingsSave => 'حفظ';
+
+  @override
+  String get settingsDailyGoal => 'الهدف اليومي';
+
+  @override
+  String settingsDailyGoalLessons(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count درس',
+      few: '$count دروس',
+      two: 'درسان',
+      one: 'درس واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsDailyGoalSaved => 'تم تحديث الهدف اليومي';
+
+  @override
+  String get settingsTheme => 'المظهر';
+
+  @override
+  String get settingsThemeSystem => 'النظام';
+
+  @override
+  String get settingsThemeLightShort => 'فاتح';
+
+  @override
+  String get settingsThemeDarkShort => 'داكن';
+
+  @override
+  String get settingsStudyReminders => 'تذكيرات الدراسة';
+
+  @override
+  String get settingsChangePassword => 'تغيير كلمة المرور';
+
+  @override
+  String settingsChangePasswordBody(String email) {
+    return 'سنرسل رابطًا إلى $email لتعيين كلمة مرور جديدة.';
+  }
+
+  @override
+  String get settingsSendLink => 'إرسال الرابط';
+
+  @override
+  String settingsAppVersion(String version) {
+    return 'الإصدار $version';
+  }
 }

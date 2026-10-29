@@ -6293,6 +6293,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start Learning Now'**
   String get lessonsStartLearningNow;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profilePageTitle;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsPageTitle;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get settingsSectionProfile;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get settingsSectionLearning;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsSectionPreferences;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get settingsSave;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get settingsDailyGoal;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 lesson} other{{count} lessons}}'**
+  String settingsDailyGoalLessons(int count);
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal updated'**
+  String get settingsDailyGoalSaved;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLightShort;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDarkShort;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Study reminders'**
+  String get settingsStudyReminders;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsChangePassword;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll email a link to {email} so you can set a new password.'**
+  String settingsChangePasswordBody(String email);
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Send link'**
+  String get settingsSendLink;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String settingsAppVersion(String version);
 }
 
 class _AppLocalizationsDelegate
