@@ -1,3 +1,5 @@
+import { CourseAccessState, CoursePriceQuote } from '../course-billing/course-billing.types';
+
 export type StudentCourseStatus = 'not_started' | 'in_progress' | 'completed';
 
 export interface StudentCourseSummary {
@@ -52,6 +54,12 @@ export interface StudentCourseSummary {
    * not-yet-completed course after it in curriculum order. At most one.
    */
   readonly next: boolean;
+
+  /** Backend price quote (free courses have isFree = true). */
+  readonly price?: CoursePriceQuote;
+
+  /** Whether the student may use the course and why (paid access, pending payment, …). */
+  readonly access?: CourseAccessState;
 }
 
 export interface StudentCoursesResponse {

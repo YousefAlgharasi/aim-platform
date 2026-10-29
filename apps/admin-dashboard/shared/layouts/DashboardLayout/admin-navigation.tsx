@@ -59,6 +59,10 @@ const ALL_NAV_GROUPS: NavGroup[] = [
   {
     label: 'Finance',
     items: [
+      { label: 'Course Payments', href: '/admin/course-payments', icon: 'banknotes' },
+      { label: 'Course Prices', href: '/admin/course-payments/prices', icon: 'tag' },
+      { label: 'Payment Wallets', href: '/admin/course-payments/wallets', icon: 'wallet' },
+      { label: 'Course Access', href: '/admin/course-payments/access', icon: 'clock' },
       { label: 'Billing', href: '/admin/billing', icon: 'creditcard' },
       { label: 'Analytics', href: '/admin/analytics', icon: 'chart' },
       { label: 'Reports', href: '/admin/reports', icon: 'report' },

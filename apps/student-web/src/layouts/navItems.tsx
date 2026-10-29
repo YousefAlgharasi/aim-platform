@@ -51,7 +51,7 @@ export const navItems: NavItem[] = [
   { to: '/certificates', label: 'Certificates', icon: <AcademicIcon className="size-5" /> },
   { to: '/reports', label: 'Reports', icon: <TrendingUpIcon className="size-5" /> },
   { to: '/notifications', label: 'Notifications', icon: <BellIcon className="size-5" /> },
-  { to: '/billing', label: 'Billing', icon: <CreditCardIcon className="size-5" /> },
+  { to: '/billing/payments', label: 'My payments', icon: <CreditCardIcon className="size-5" /> },
   { to: '/support', label: 'Support', icon: <LifeBuoyIcon className="size-5" /> },
   { to: '/settings', label: 'Settings', icon: <UserIcon className="size-5" /> },
 ];

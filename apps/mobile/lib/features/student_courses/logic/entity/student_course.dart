@@ -5,6 +5,8 @@
 // backend-computed from real lesson_progress data (GET /student/courses).
 // Flutter never computes progress percentage or status locally.
 
+import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
+
 enum StudentCourseStatus { notStarted, inProgress, completed }
 
 StudentCourseStatus studentCourseStatusFromString(String value) =>
@@ -29,6 +31,8 @@ class StudentCourse {
     this.levelCode,
     this.isCurrent = false,
     this.isNext = false,
+    this.price,
+    this.access,
   });
 
   final String courseId;
@@ -68,4 +72,13 @@ class StudentCourse {
   /// Backend-computed: once the current course is completed, the course to
   /// start next. False for every course otherwise.
   final bool isNext;
+
+  /// Backend price quote; null from older backends (treated as free).
+  final CoursePriceQuote? price;
+
+  /// Backend access decision; null from older backends (treated as open).
+  final CourseAccess? access;
+
+  /// True when the student has to pay (or wait for approval) first.
+  bool get needsPayment => access?.needsPayment ?? false;
 }

@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import type { CourseAccess, CoursePriceQuote } from '../course-billing/courseBillingApi';
 
 // Student course/enrollment/chapter endpoints, mirroring the Flutter app:
 //   GET  /student/courses                                   — published courses + real progress
@@ -22,6 +23,15 @@ export interface StudentCourse {
   percent: number;
   status: StudentProgressStatus;
   locked: boolean;
+  /** Backend price quote (absent on older backends: treated as free). */
+  price?: CoursePriceQuote;
+  /** Backend access decision (absent on older backends: treated as open). */
+  access?: CourseAccess;
+}
+
+/** The student has to pay (or wait for approval) before opening the course. */
+export function needsPayment(course: StudentCourse): boolean {
+  return course.access ? !course.access.hasAccess : false;
 }
 
 export interface CurrentEnrollment {

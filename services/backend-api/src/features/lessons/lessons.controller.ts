@@ -21,6 +21,7 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { LessonProgressService } from './lesson-progress.service';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import {
   ContinueLearningLesson,
   LessonProgressAckResponse,
@@ -38,7 +39,10 @@ interface RecordProgressBody {
 @RequireRoles(AuthorizedRole.STUDENT)
 @ApiBearerAuth()
 export class LessonsController {
-  constructor(private readonly lessonProgress: LessonProgressService) {}
+  constructor(
+    private readonly lessonProgress: LessonProgressService,
+    private readonly courseAccess: CourseAccessService,
+  ) {}
 
   @Post(':id/progress')
   @HttpCode(HttpStatus.OK)
@@ -50,6 +54,7 @@ export class LessonsController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: RecordProgressBody,
   ): Promise<LessonProgressAckResponse> {
+    await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForLesson(lessonId));
     return this.lessonProgress.recordProgress({
       studentId: user.id,
       lessonId,
@@ -93,6 +98,7 @@ export class LessonsController {
     @Param('id') lessonId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<LessonProgressAckResponse> {
+    await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForLesson(lessonId));
     return this.lessonProgress.markComplete(user.id, lessonId);
   }
 }

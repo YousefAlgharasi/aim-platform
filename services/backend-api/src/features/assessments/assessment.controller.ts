@@ -102,6 +102,7 @@ import { AttemptLifecycleService, StartAttemptResult, ResumeAttemptResult } from
 import { AssessmentSubmissionFlowService, SubmitAttemptApiResult } from './assessment-submission-flow.service';
 import { AssessmentFeedbackService, FeedbackSummary } from './assessment-feedback.service';
 import { AssessmentResultService, ResultHistoryResponse } from './assessment-result.service';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.service';
 import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
 import { SubmitAnswerDto } from './submit-answer.dto';
@@ -121,6 +122,7 @@ export class AssessmentController {
     private readonly answerSubmissionService: AnswerSubmissionService,
     private readonly questionAudioService: AssessmentQuestionAudioService,
     private readonly audioStorage: TtsAudioStorageService,
+    private readonly courseAccess: CourseAccessService,
   ) {}
 
   /**
@@ -263,6 +265,7 @@ export class AssessmentController {
     @Param('id') assessmentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<StartAttemptResult> {
+    await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForAssessment(assessmentId));
     return this.attemptLifecycleService.startAttempt(assessmentId, user.id);
   }
 

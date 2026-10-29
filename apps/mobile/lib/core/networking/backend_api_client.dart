@@ -392,7 +392,7 @@ class BackendApiClient {
     required Map<String, String> Function() buildHeaders,
     required ApiJsonDecoder<T> decodeData,
     bool allowRefreshRetry = true,
-    void Function(String body)? onSuccessBody,
+    Future<void> Function(String body)? onSuccessBody,
   }) async {
     final response = await send(buildHeaders());
 
@@ -420,14 +420,15 @@ class BackendApiClient {
   Future<ApiResponseEnvelope<T>> _parseAndKeep<T>(
     http.Response response,
     ApiJsonDecoder<T> decodeData,
-    void Function(String body)? onSuccessBody,
+    Future<void> Function(String body)? onSuccessBody,
   ) async {
     final envelope = await _parseResponse<T>(response, decodeData: decodeData);
     if (onSuccessBody != null &&
         response.statusCode >= 200 &&
         response.statusCode < 300 &&
         response.body.trim().isNotEmpty) {
-      onSuccessBody(response.body);
+      // Awaited so a read right after this one sees the saved copy.
+      await onSuccessBody(response.body);
     }
     return envelope;
   }

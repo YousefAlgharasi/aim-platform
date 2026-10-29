@@ -55,6 +55,15 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
       return;
     }
 
+    if (course.needsPayment) {
+      await context.push(
+        AppRoutePaths.courseClaim,
+        extra: {'courseId': course.courseId, 'courseTitle': course.title},
+      );
+      if (mounted) _refresh();
+      return;
+    }
+
     final currentEnrollment = ref.read(currentEnrollmentProvider).valueOrNull;
     final isCurrent = course.courseId == currentEnrollment?.courseId;
 

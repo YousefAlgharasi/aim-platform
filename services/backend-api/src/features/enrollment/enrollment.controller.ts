@@ -20,6 +20,7 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { EnrollmentService } from './enrollment.service';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import { CurrentEnrollmentResponse, EnrollResponse } from './enrollment.types';
 
 @ApiTags('enrollment')
@@ -28,7 +29,10 @@ import { CurrentEnrollmentResponse, EnrollResponse } from './enrollment.types';
 @RequireRoles(AuthorizedRole.STUDENT)
 @ApiBearerAuth()
 export class EnrollmentController {
-  constructor(private readonly enrollmentService: EnrollmentService) {}
+  constructor(
+    private readonly enrollmentService: EnrollmentService,
+    private readonly courseAccess: CourseAccessService,
+  ) {}
 
   @Post('courses/:id/enroll')
   @HttpCode(HttpStatus.OK)
@@ -46,6 +50,7 @@ export class EnrollmentController {
     @Param('id') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<EnrollResponse> {
+    await this.courseAccess.assertAccess(user.id, courseId);
     return this.enrollmentService.enroll(user.id, courseId);
   }
 

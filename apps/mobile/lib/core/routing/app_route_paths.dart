@@ -122,6 +122,10 @@ class AppRoutePaths {
 
   // Certificates routes
   static const String certificates = '/certificates';
+
+  // Course billing (wallet payments for paid courses)
+  static const String courseClaim = '/courses/claim';
+  static const String myCoursePayments = '/billing/my-payments';
   static const String certificateDetail = '/certificates/detail';
 }
 

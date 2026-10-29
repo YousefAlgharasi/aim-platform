@@ -10,7 +10,7 @@
 // Phase 6 — P6-041 (redesigned)
 // Profile screen — avatar, name, email, two real stats (day streak and
 // achievements earned), and a short menu: certificates, achievements,
-// learning path, subscription, settings. Account internals (status, user
+// learning path, my course payments, settings. Account internals (status, user
 // type, roles, timezone) and developer tools are intentionally not shown.
 //
 // Security boundary:
@@ -215,10 +215,10 @@ class _ProfileBody extends StatelessWidget {
                 surfaces: surfaces,
                 items: [
                   _ProfileNavItem(
-                    icon: Icons.credit_card_outlined,
-                    label: l10n.profileLinkSubscriptionBilling,
+                    icon: Icons.receipt_long_outlined,
+                    label: l10n.billingMyPayments,
                     surfaces: surfaces,
-                    onTap: () => context.push(AppRoutePaths.subscription),
+                    onTap: () => context.push(AppRoutePaths.myCoursePayments),
                   ),
                   _ProfileNavItem(
                     icon: Icons.settings_outlined,

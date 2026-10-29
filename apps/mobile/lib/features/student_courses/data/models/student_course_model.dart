@@ -4,6 +4,8 @@
 // All fields are backend-supplied verbatim. Flutter never computes
 // percent or status locally.
 
+import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
+
 import '../../logic/entity/student_course.dart';
 
 class StudentCourseModel extends StudentCourse {
@@ -21,6 +23,8 @@ class StudentCourseModel extends StudentCourse {
     super.levelCode,
     super.isCurrent,
     super.isNext,
+    super.price,
+    super.access,
   });
 
   factory StudentCourseModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,12 @@ class StudentCourseModel extends StudentCourse {
       locked: json['locked'] as bool,
       isCurrent: json['current'] as bool? ?? false,
       isNext: json['next'] as bool? ?? false,
+      price: json['price'] is Map<String, dynamic>
+          ? CoursePriceQuote.fromJson(json['price'] as Map<String, dynamic>)
+          : null,
+      access: json['access'] is Map<String, dynamic>
+          ? CourseAccess.fromJson(json['access'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

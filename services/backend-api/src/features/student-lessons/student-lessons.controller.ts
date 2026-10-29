@@ -22,6 +22,7 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { StudentLessonsService } from './student-lessons.service';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import { StudentLessonsResponse } from './student-lessons.types';
 
 @ApiTags('student-lessons')
@@ -30,7 +31,10 @@ import { StudentLessonsResponse } from './student-lessons.types';
 @RequireRoles(AuthorizedRole.STUDENT)
 @ApiBearerAuth()
 export class StudentLessonsController {
-  constructor(private readonly studentLessonsService: StudentLessonsService) {}
+  constructor(
+    private readonly studentLessonsService: StudentLessonsService,
+    private readonly courseAccess: CourseAccessService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -46,6 +50,7 @@ export class StudentLessonsController {
     if (!chapterId) {
       throw new BadRequestException('chapterId query parameter is required');
     }
+    await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForChapter(chapterId));
     return this.studentLessonsService.getLessons(user.id, chapterId);
   }
 }

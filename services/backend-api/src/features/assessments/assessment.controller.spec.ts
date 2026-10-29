@@ -10,6 +10,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssessmentController } from './assessment.controller';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import {
   AssessmentService,
   AssessmentListItem,
@@ -31,6 +32,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AuthenticatedUser } from '../../auth/authenticated-user';
 
 describe('AssessmentController', () => {
+  let courseAccess: { assertAccess: jest.Mock; courseIdForAssessment: jest.Mock };
   let controller: AssessmentController;
   let assessmentService: jest.Mocked<Pick<AssessmentService, 'listForStudent' | 'getDetailWithDeadline' | 'listDeadlinesForStudent'>>;
   let attemptLifecycleService: jest.Mocked<Pick<AttemptLifecycleService, 'startAttempt' | 'resumeAttempt'>>;
@@ -129,6 +131,7 @@ describe('AssessmentController', () => {
     questionAudioService = {
       ensureAudio: jest.fn().mockResolvedValue({ audioRef: 'tts_abc', scriptMissing: false }),
     };
+    courseAccess = { assertAccess: jest.fn().mockResolvedValue(undefined), courseIdForAssessment: jest.fn().mockResolvedValue(null) };
     audioStorage = {
       retrieveAudio: jest.fn().mockResolvedValue({ data: Buffer.from('audio'), contentType: 'audio/mpeg' }),
     };
@@ -145,6 +148,7 @@ describe('AssessmentController', () => {
         { provide: AnswerSubmissionService, useValue: answerSubmissionService },
         { provide: AssessmentQuestionAudioService, useValue: questionAudioService },
         { provide: TtsAudioStorageService, useValue: audioStorage },
+        { provide: CourseAccessService, useValue: courseAccess },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard)

@@ -13,15 +13,28 @@
 // rank-1 courses unlocked in each track. Courses with no track_slug/cefr_rank
 // mapping are never locked (gating doesn't apply to them).
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { CourseAccessService } from '../course-billing/course-access.service';
 import { StudentCoursesRepository } from './student-courses.repository';
 import { StudentCourseStatus, StudentCourseSummary, StudentCoursesResponse } from './student-courses.types';
 
 @Injectable()
 export class StudentCoursesService {
-  constructor(private readonly repository: StudentCoursesRepository) {}
+  constructor(
+    private readonly repository: StudentCoursesRepository,
+    @Optional() private readonly courseAccess?: CourseAccessService,
+  ) {}
 
   async getCourses(studentId: string): Promise<StudentCoursesResponse> {
+    // Billing first: settling an expired paid window resets that course's
+    // progress, which the progress query below must already reflect.
+    const billing = this.courseAccess
+      ? await this.courseAccess.getBillingForCourses(
+          studentId,
+          await this.repository.findPublishedCourseIds(),
+        )
+      : null;
+
     const [rows, enrolledCourseId] = await Promise.all([
       this.repository.findCoursesWithProgress(studentId),
       this.repository.findActiveEnrollmentCourseId(studentId),
@@ -91,6 +104,9 @@ export class StudentCoursesService {
         status,
         locked,
         cefrRank: row.cefr_rank,
+        ...(billing?.has(row.course_id)
+          ? { price: billing.get(row.course_id)!.price, access: billing.get(row.course_id)!.access }
+          : {}),
       };
     });
 

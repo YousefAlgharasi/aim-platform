@@ -11,6 +11,17 @@ function toProxyPath(backendPath: string): string {
   return `/api/admin/proxy${withoutAdmin}`;
 }
 
+/** URL for a backend file (e.g. an image) served through the admin proxy. */
+export function backendAssetUrl(path: string): string {
+  return toProxyPath(path);
+}
+
+/** Sends multipart form data (file uploads) through the admin proxy. */
+export async function backendUpload(path: string, form: FormData, method = 'POST'): Promise<Response> {
+  // No Content-Type header: the browser sets multipart/form-data with its boundary.
+  return fetch(toProxyPath(path), { method, body: form, credentials: 'include' });
+}
+
 export async function backendFetch(path: string, init?: RequestInit): Promise<Response> {
   return fetch(toProxyPath(path), {
     ...init,
