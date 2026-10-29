@@ -1014,5 +1014,17 @@
   "offlineTitle": "أنت غير متصل بالإنترنت",
   "offlineMessage": "تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
   "offlineBanner": "أنت غير متصل. تحقق من اتصالك بالإنترنت.",
-  "offlineBannerSavedData": "أنت غير متصل. يتم عرض المحتوى المحفوظ."
+  "offlineBannerSavedData": "أنت غير متصل. يتم عرض المحتوى المحفوظ.",
+  "assessmentsOutOf100": "من 100",
+  "assessmentsCorrectLabel": "صحيحة",
+  "assessmentsWrongLabel": "خاطئة",
+  "assessmentsSkippedLabel": "متروكة",
+  "assessmentsReviewTitle": "راجع إجاباتك",
+  "assessmentsFilterAll": "الكل",
+  "assessmentsYourAnswer": "إجابتك",
+  "assessmentsCorrectAnswer": "الإجابة الصحيحة",
+  "assessmentsNotAnswered": "لقد تركت هذا السؤال",
+  "assessmentsAnswersHiddenNote": "ستظهر الإجابات الصحيحة بعد نجاحك أو استنفاد كل محاولاتك.",
+  "assessmentsMyCertificate": "شهادتي",
+  "assessmentsReviewEmptyFilter": "لا توجد أسئلة هنا."
 }

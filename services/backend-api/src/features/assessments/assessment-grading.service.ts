@@ -115,19 +115,23 @@ export class AssessmentGradingService {
     };
 
     // -----------------------------------------------------------------------
-    // 3. Load submitted answers for this attempt.
+    // 3. Load every question of the assessment with this attempt's answer.
+    //    Skipped questions come back with a null response_value and score 0
+    //    but still count toward maxScore — otherwise skipping hard questions
+    //    would raise the percentage.
     // -----------------------------------------------------------------------
     const answersResult = await this.db.query<AnswerRow>(
       `SELECT
-         aaa.assessment_question_link_id,
+         aq.id AS assessment_question_link_id,
          aq.question_id,
          aaa.response_value,
          aq.points
-       FROM assessment_attempt_answers aaa
-       JOIN assessment_questions aq
-         ON aq.id = aaa.assessment_question_link_id
-       WHERE aaa.attempt_id = $1`,
-      [attemptId],
+       FROM assessment_questions aq
+       LEFT JOIN assessment_attempt_answers aaa
+         ON aaa.assessment_question_link_id = aq.id
+        AND aaa.attempt_id = $1
+       WHERE aq.assessment_id = $2`,
+      [attemptId, attempt.assessment_id],
     );
 
     const answers = answersResult.rows;
@@ -170,7 +174,7 @@ export class AssessmentGradingService {
     const outcomes: GradingOutcome[] = answers.map((answer) => {
       const correctLabels = correctLabelsByQuestion.get(answer.question_id);
       const isCorrect = correctLabels
-        ? correctLabels.has(answer.response_value)
+        ? answer.response_value != null && correctLabels.has(answer.response_value)
         : false;
       // node-postgres returns NUMERIC columns as strings (to avoid float
       // precision loss), despite AnswerRow.points being typed `number` —

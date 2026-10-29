@@ -6161,6 +6161,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'re offline. Showing saved content.'**
   String get offlineBannerSavedData;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'out of 100'**
+  String get assessmentsOutOf100;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get assessmentsCorrectLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong'**
+  String get assessmentsWrongLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get assessmentsSkippedLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Review your answers'**
+  String get assessmentsReviewTitle;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get assessmentsFilterAll;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get assessmentsYourAnswer;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get assessmentsCorrectAnswer;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'You skipped this question'**
+  String get assessmentsNotAnswered;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answers will appear once you pass or use all your attempts.'**
+  String get assessmentsAnswersHiddenNote;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'My certificate'**
+  String get assessmentsMyCertificate;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'No questions here.'**
+  String get assessmentsReviewEmptyFilter;
 }
 
 class _AppLocalizationsDelegate

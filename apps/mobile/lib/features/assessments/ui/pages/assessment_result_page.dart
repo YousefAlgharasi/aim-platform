@@ -5,8 +5,10 @@
 // Widgets: AIMTopAppBar, AIMCard, AIMBadge, AIMProgressBar,
 //   AIMGradientButton, AIMFullScreenLoading, AIMFullScreenError
 //
-// P10-062: Assessment result page — displays backend-graded score,
-// pass/fail status, breakdown, and optional late-penalty indicator.
+// P10-062: Assessment result page — displays backend-graded score (out of
+// 100), pass/fail, correct/wrong/skipped counts, a per-question review with
+// the student's answer and (once the backend reveals it) the correct answer,
+// and a "My certificate" button after passing a course final exam.
 // Flutter never computes score; all values are backend-supplied.
 //
 // Deviations from the mockup (real-data-only rules):
@@ -117,7 +119,7 @@ class _AssessmentResultPageState extends ConsumerState<AssessmentResultPage> {
   }
 }
 
-class _ResultContent extends StatelessWidget {
+class _ResultContent extends StatefulWidget {
   const _ResultContent({
     required this.result,
     required this.onDone,
@@ -127,22 +129,44 @@ class _ResultContent extends StatelessWidget {
   final VoidCallback onDone;
 
   @override
+  State<_ResultContent> createState() => _ResultContentState();
+}
+
+class _ResultContentState extends State<_ResultContent> {
+  /// null = all questions.
+  ReviewStatus? _filter;
+
+  void _openCertificate(BuildContext context) {
+    final id = widget.result.certificateId;
+    if (id != null) {
+      context.push('${AppRoutePaths.certificateDetail}?id=$id');
+    } else {
+      // Certificates are issued when the list is loaded after the course
+      // is complete, so the list is the safe place to land.
+      context.push(AppRoutePaths.certificates);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final result = widget.result;
+    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
     final statusColor =
         result.passed ? AimColors.success500 : AimColors.error500;
-    final statusLabel = result.passed
-        ? AppLocalizations.of(context).assessmentsResultPassed
-        : AppLocalizations.of(context).assessmentsResultFailed;
+    final statusLabel =
+        result.passed ? l10n.assessmentsResultPassed : l10n.assessmentsResultFailed;
 
-    // Display-only formatting of two backend-supplied values — NOT score
-    // computation (the backend remains the grading authority). See
-    // core/formatting/score_percent.dart. Guarded so a zero maxScore never
-    // divides; in that case the raw score text is shown.
-    final int? percentage = scorePercent(
-      numerator: result.score,
-      denominator: result.maxScore,
-    );
+    // Backend sends percentScore (out of 100). Older backends don't, so fall
+    // back to the guarded display-only derivation in score_percent.dart.
+    final int? outOf100 = result.percentScore ??
+        scorePercent(numerator: result.score, denominator: result.maxScore);
+
+    final hasReview = result.review.isNotEmpty;
+    final visible = _filter == null
+        ? result.review
+        : result.review.where((r) => r.status == _filter).toList();
+    final showCertificate = result.isCourseExam && result.passed;
 
     return ListView(
       padding: const EdgeInsets.symmetric(
@@ -150,18 +174,50 @@ class _ResultContent extends StatelessWidget {
         vertical: AimSpacing.sectionGap,
       ),
       children: [
-        // Score hero card — big percentage + solid pass/fail pill.
+        // Score hero — score out of 100 + pass/fail pill.
         AIMCard(
           variant: AIMCardVariant.elevated,
           child: Column(
             children: [
-              Text(
-                percentage != null
-                    ? '$percentage%'
-                    : '${_fmtPts(result.score)} / ${_fmtPts(result.maxScore)}',
-                style: AimTextStyles.display.copyWith(color: statusColor),
-                textAlign: TextAlign.center,
-              ),
+              if (outOf100 != null) ...[
+                SizedBox(
+                  width: 132,
+                  height: 132,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: (outOf100.clamp(0, 100)) / 100,
+                        strokeWidth: 10,
+                        backgroundColor: surfaces.surfaceSunken,
+                        valueColor: AlwaysStoppedAnimation(statusColor),
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '$outOf100',
+                              style: AimTextStyles.display
+                                  .copyWith(color: statusColor, height: 1),
+                            ),
+                            Text(
+                              l10n.assessmentsOutOf100,
+                              style: AimTextStyles.bodySm
+                                  .copyWith(color: surfaces.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else
+                Text(
+                  '${_fmtPts(result.score)} / ${_fmtPts(result.maxScore)}',
+                  style: AimTextStyles.display.copyWith(color: statusColor),
+                  textAlign: TextAlign.center,
+                ),
               const SizedBox(height: AimSpacing.componentGap),
               AIMBadge(
                 tone: result.passed ? AIMBadgeTone.success : AIMBadgeTone.error,
@@ -173,48 +229,148 @@ class _ResultContent extends StatelessWidget {
                     'points',
                 child: Text(statusLabel),
               ),
+              const SizedBox(height: AimSpacing.space8),
+              Text(
+                l10n.assessmentsGradedOn(_formatDate(result.gradedAt)),
+                style: AimTextStyles.bodySm
+                    .copyWith(color: surfaces.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              if (result.latePenaltyApplied) ...[
+                const SizedBox(height: AimSpacing.space8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      size: AimSizes.iconSm,
+                      color: AimColors.warning500,
+                    ),
+                    const SizedBox(width: AimSpacing.space4),
+                    Flexible(
+                      child: Text(
+                        l10n.assessmentsLateSubmissionNote,
+                        style: AimTextStyles.bodySm
+                            .copyWith(color: AimColors.warning500),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: AimSpacing.componentGap),
 
-        // Late penalty indicator
-        if (result.latePenaltyApplied) ...[
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: AimSizes.iconSm,
-                  color: AimColors.warning500,
-                ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  AppLocalizations.of(context).assessmentsLateSubmissionNote,
-                  style: AimTextStyles.bodySm
-                      .copyWith(color: AimColors.warning500),
-                ),
-              ],
-            ),
-          ),
+        // Correct / wrong / skipped counts (backend-supplied).
+        if (hasReview) ...[
           const SizedBox(height: AimSpacing.componentGap),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.check_circle_rounded,
+                  color: AimColors.success500,
+                  value: result.correctCount,
+                  label: l10n.assessmentsCorrectLabel,
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space8),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.cancel_rounded,
+                  color: AimColors.error500,
+                  value: result.wrongCount,
+                  label: l10n.assessmentsWrongLabel,
+                ),
+              ),
+              const SizedBox(width: AimSpacing.space8),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.remove_circle_outline_rounded,
+                  color: surfaces.textMuted,
+                  value: result.skippedCount,
+                  label: l10n.assessmentsSkippedLabel,
+                ),
+              ),
+            ],
+          ),
         ],
 
-        // Graded timestamp
-        Center(
-          child: Text(
-            AppLocalizations.of(context).assessmentsGradedOn(_formatDate(result.gradedAt)),
-            style:
-                AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+        const SizedBox(height: AimSpacing.sectionGap),
+        if (showCertificate) ...[
+          AIMButton(
+            variant: AIMButtonVariant.primary,
+            size: AIMButtonSize.large,
+            onPressed: () => _openCertificate(context),
+            fullWidth: true,
+            leadingIcon: const Icon(Icons.workspace_premium_rounded),
+            semanticLabel: l10n.assessmentsMyCertificate,
+            child: Text(l10n.assessmentsMyCertificate),
           ),
+          const SizedBox(height: AimSpacing.space8),
+        ],
+        AIMButton(
+          variant: showCertificate
+              ? AIMButtonVariant.outline
+              : AIMButtonVariant.primary,
+          size: AIMButtonSize.large,
+          onPressed: widget.onDone,
+          fullWidth: true,
+          semanticLabel: l10n.assessmentsDone,
+          child: Text(l10n.assessmentsDone),
         ),
 
-        // Breakdown section
-        if (result.breakdown.isNotEmpty) ...[
+        // Per-question review.
+        if (hasReview) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            AppLocalizations.of(context).assessmentsBreakdownTitle,
+            l10n.assessmentsReviewTitle,
+            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+          ),
+          if (!result.answersRevealed) ...[
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              l10n.assessmentsAnswersHiddenNote,
+              style:
+                  AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+            ),
+          ],
+          const SizedBox(height: AimSpacing.componentGap),
+          Wrap(
+            spacing: AimSpacing.space8,
+            runSpacing: AimSpacing.space8,
+            children: [
+              _filterChip(null, '${l10n.assessmentsFilterAll} (${result.totalQuestions})'),
+              _filterChip(ReviewStatus.wrong,
+                  '${l10n.assessmentsWrongLabel} (${result.wrongCount})'),
+              _filterChip(ReviewStatus.skipped,
+                  '${l10n.assessmentsSkippedLabel} (${result.skippedCount})'),
+              _filterChip(ReviewStatus.correct,
+                  '${l10n.assessmentsCorrectLabel} (${result.correctCount})'),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          if (visible.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space16),
+              child: Text(
+                l10n.assessmentsReviewEmptyFilter,
+                textAlign: TextAlign.center,
+                style: AimTextStyles.bodyMd
+                    .copyWith(color: surfaces.textSecondary),
+              ),
+            ),
+          ...visible.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: AimSpacing.listItemGap),
+              child: _ReviewCard(item: item),
+            ),
+          ),
+        ] else if (result.breakdown.isNotEmpty) ...[
+          // Older backend without review data — keep the points breakdown.
+          const SizedBox(height: AimSpacing.sectionGap),
+          Text(
+            l10n.assessmentsBreakdownTitle,
             style: AimTextStyles.label.copyWith(
               color: surfaces.textMuted,
               letterSpacing: 1.2,
@@ -232,17 +388,213 @@ class _ResultContent extends StatelessWidget {
                 ),
               ),
         ],
-
-        const SizedBox(height: AimSpacing.sectionGap),
-        AIMButton(
-          variant: AIMButtonVariant.primary,
-          size: AIMButtonSize.large,
-          onPressed: onDone,
-          fullWidth: true,
-          semanticLabel: AppLocalizations.of(context).assessmentsDone,
-          child: Text(AppLocalizations.of(context).assessmentsDone),
-        ),
       ],
+    );
+  }
+
+  Widget _filterChip(ReviewStatus? value, String label) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: _filter == value,
+      onSelected: (_) => setState(() => _filter = value),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
+    required this.color,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color color;
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return AIMCard(
+      variant: AIMCardVariant.standard,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: AimSizes.iconMd),
+          const SizedBox(height: AimSpacing.space4),
+          Text(
+            '$value',
+            style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.item});
+
+  final ReviewItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
+
+    final (IconData icon, Color color, String statusText) = switch (item.status) {
+      ReviewStatus.correct =>
+        (Icons.check_circle_rounded, AimColors.success500, l10n.assessmentsCorrectLabel),
+      ReviewStatus.wrong =>
+        (Icons.cancel_rounded, AimColors.error500, l10n.assessmentsWrongLabel),
+      ReviewStatus.skipped =>
+        (Icons.remove_circle_outline_rounded, surfaces.textMuted, l10n.assessmentsSkippedLabel),
+    };
+
+    return AIMCard(
+      variant: AIMCardVariant.standard,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.assessmentsQuestionNumber(item.number),
+                  style: AimTextStyles.label
+                      .copyWith(color: surfaces.textSecondary),
+                ),
+              ),
+              Icon(icon, size: AimSizes.iconSm, color: color),
+              const SizedBox(width: AimSpacing.space4),
+              Text(
+                statusText,
+                style: AimTextStyles.label.copyWith(color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            item.prompt,
+            style: AimTextStyles.bodyLg.copyWith(color: surfaces.textPrimary),
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          ...item.options.map((option) {
+            final chosen = option.id == item.selectedOptionId;
+            final correct = item.correctOptionIds.contains(option.id);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: AimSpacing.space8),
+              child: _ReviewOptionRow(
+                option: option,
+                chosen: chosen,
+                correct: correct,
+                status: item.status,
+              ),
+            );
+          }),
+          if (item.status == ReviewStatus.skipped)
+            Text(
+              l10n.assessmentsNotAnswered,
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewOptionRow extends StatelessWidget {
+  const _ReviewOptionRow({
+    required this.option,
+    required this.chosen,
+    required this.correct,
+    required this.status,
+  });
+
+  final ReviewOption option;
+  final bool chosen;
+  final bool correct;
+  final ReviewStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
+
+    // Colours follow the backend verdict: the chosen option is green when
+    // the backend marked the question correct, red when wrong; an option the
+    // backend lists as correct is always green.
+    final Color? tone = correct || (chosen && status == ReviewStatus.correct)
+        ? AimColors.success500
+        : chosen
+            ? AimColors.error500
+            : null;
+
+    final tags = <String>[
+      if (chosen) l10n.assessmentsYourAnswer,
+      if (correct) l10n.assessmentsCorrectAnswer,
+    ];
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: tone?.withValues(alpha: 0.08) ?? surfaces.surfaceSunken,
+        borderRadius: AimRadius.borderMd,
+        border: Border.all(
+          color: tone ?? surfaces.border,
+          width: tone != null ? 1.5 : 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AimSpacing.space12,
+          vertical: AimSpacing.space8,
+        ),
+        child: Row(
+          children: [
+            Text(
+              option.label,
+              style: AimTextStyles.label
+                  .copyWith(color: tone ?? surfaces.textSecondary),
+            ),
+            const SizedBox(width: AimSpacing.space12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    option.text,
+                    style: AimTextStyles.bodyMd
+                        .copyWith(color: surfaces.textPrimary),
+                  ),
+                  if (tags.isNotEmpty)
+                    Text(
+                      tags.join(' · '),
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: tone ?? surfaces.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (tone != null)
+              Icon(
+                tone == AimColors.success500
+                    ? Icons.check_rounded
+                    : Icons.close_rounded,
+                size: AimSizes.iconSm,
+                color: tone,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

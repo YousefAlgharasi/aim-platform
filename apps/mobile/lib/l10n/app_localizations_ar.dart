@@ -3664,4 +3664,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get offlineBannerSavedData => 'أنت غير متصل. يتم عرض المحتوى المحفوظ.';
+
+  @override
+  String get assessmentsOutOf100 => 'من 100';
+
+  @override
+  String get assessmentsCorrectLabel => 'صحيحة';
+
+  @override
+  String get assessmentsWrongLabel => 'خاطئة';
+
+  @override
+  String get assessmentsSkippedLabel => 'متروكة';
+
+  @override
+  String get assessmentsReviewTitle => 'راجع إجاباتك';
+
+  @override
+  String get assessmentsFilterAll => 'الكل';
+
+  @override
+  String get assessmentsYourAnswer => 'إجابتك';
+
+  @override
+  String get assessmentsCorrectAnswer => 'الإجابة الصحيحة';
+
+  @override
+  String get assessmentsNotAnswered => 'لقد تركت هذا السؤال';
+
+  @override
+  String get assessmentsAnswersHiddenNote =>
+      'ستظهر الإجابات الصحيحة بعد نجاحك أو استنفاد كل محاولاتك.';
+
+  @override
+  String get assessmentsMyCertificate => 'شهادتي';
+
+  @override
+  String get assessmentsReviewEmptyFilter => 'لا توجد أسئلة هنا.';
 }

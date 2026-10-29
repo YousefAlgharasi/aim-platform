@@ -3630,4 +3630,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get offlineBannerSavedData =>
       'You\'re offline. Showing saved content.';
+
+  @override
+  String get assessmentsOutOf100 => 'out of 100';
+
+  @override
+  String get assessmentsCorrectLabel => 'Correct';
+
+  @override
+  String get assessmentsWrongLabel => 'Wrong';
+
+  @override
+  String get assessmentsSkippedLabel => 'Skipped';
+
+  @override
+  String get assessmentsReviewTitle => 'Review your answers';
+
+  @override
+  String get assessmentsFilterAll => 'All';
+
+  @override
+  String get assessmentsYourAnswer => 'Your answer';
+
+  @override
+  String get assessmentsCorrectAnswer => 'Correct answer';
+
+  @override
+  String get assessmentsNotAnswered => 'You skipped this question';
+
+  @override
+  String get assessmentsAnswersHiddenNote =>
+      'Correct answers will appear once you pass or use all your attempts.';
+
+  @override
+  String get assessmentsMyCertificate => 'My certificate';
+
+  @override
+  String get assessmentsReviewEmptyFilter => 'No questions here.';
 }

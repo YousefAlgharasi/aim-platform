@@ -9,7 +9,8 @@
 export interface AnswerRow {
   readonly assessment_question_link_id: string;
   readonly question_id: string;
-  readonly response_value: string;
+  // null when the question was skipped.
+  readonly response_value: string | null;
   readonly points: number;
 }
 
