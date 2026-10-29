@@ -1,9 +1,10 @@
 // SessionQuestionAudioService.
 //
-// Scope: Lazily synthesize (and cache in-memory via TtsAudioStorageService)
-// TTS audio for a question_bank `listening_choice` item's listening_script,
-// and stream the resulting bytes back to the student. Mirrors
-// PlacementQuestionAudioService's pattern for the curriculum question bank.
+// Scope: Provide TTS audio for a question_bank `listening_choice` item's
+// listening_script. Audio is generated at most once per distinct script,
+// language and voice and persisted in private Supabase Storage (see
+// PersistentTtsAudioService); each student is issued their own
+// ownership-scoped reference, so the controller's streaming is unchanged.
 //
 // Security rules:
 //   - Backend is the sole authority for question content; no client-supplied
@@ -12,12 +13,14 @@
 //     only text synthesized.
 //   - No secrets, service-role keys, or AI provider keys are stored/logged.
 
-import { HttpStatus, Injectable, Inject, Logger, Optional } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
-import { TTS_GATEWAY, TtsGateway } from '../voice-teacher/tts-gateway/tts-gateway.interface';
-import { TtsSafeFailureService } from '../voice-teacher/tts-gateway/tts-safe-failure.service';
+import {
+  PersistentTtsAudioService,
+  isAudioWarmupEnabled,
+} from '../voice-teacher/tts-gateway/persistent/persistent-tts-audio.service';
 
 export interface SessionQuestionAudioResult {
   readonly audioRef: string | null;
@@ -32,15 +35,46 @@ interface QuestionBankListeningRow {
   readonly status: string;
 }
 
+const WARMUP_STUDENT_ID = 'practice-warmup';
+const WARMUP_LANGUAGE = 'en';
+const WARMUP_MAX_QUESTIONS = 500;
+
 @Injectable()
-export class SessionQuestionAudioService {
+export class SessionQuestionAudioService implements OnApplicationBootstrap {
   private readonly logger = new Logger(SessionQuestionAudioService.name);
 
   constructor(
     private readonly db: DatabaseService,
-    @Optional() @Inject(TTS_GATEWAY) private readonly ttsGateway: TtsGateway | null,
-    private readonly ttsSafeFailure: TtsSafeFailureService,
+    private readonly persistentAudio: PersistentTtsAudioService,
   ) {}
+
+  /** Optional startup warm-up for published listening questions (see PlacementQuestionAudioService). */
+  onApplicationBootstrap(): void {
+    if (!isAudioWarmupEnabled()) return;
+    void this.warmUp().catch((err: unknown) => {
+      this.logger.warn(`SessionQuestionAudioService.warmUp: aborted (${err instanceof Error ? err.name : 'error'})`);
+    });
+  }
+
+  async warmUp(): Promise<void> {
+    const result = await this.db.query<QuestionBankListeningRow>(
+      `SELECT id, type, listening_script, status
+         FROM question_bank
+        WHERE status = 'published'
+          AND listening_script IS NOT NULL
+          AND btrim(listening_script) <> ''
+        LIMIT ${WARMUP_MAX_QUESTIONS}`,
+    );
+    const tally = await this.persistentAudio.warmUp(
+      // question_id in tts_audio_assets is a placement-only foreign key, so other content passes null.
+      result.rows.map((row) => ({ questionId: null, script: row.listening_script as string })),
+      WARMUP_LANGUAGE,
+      WARMUP_STUDENT_ID,
+    );
+    this.logger.log(
+      `SessionQuestionAudioService.warmUp: generated=${tally.generated} alreadyStored=${tally.alreadyStored} failed=${tally.failed}`,
+    );
+  }
 
   async ensureAudio(
     questionId: string,
@@ -79,29 +113,14 @@ export class SessionQuestionAudioService {
       return { audioRef: null, scriptMissing: true };
     }
 
-    if (!this.ttsGateway) {
-      this.logger.warn(
-        `SessionQuestionAudioService.ensureAudio: TTS_GATEWAY not bound, cannot synthesize questionId=${questionId}`,
-      );
-      return { audioRef: null, scriptMissing: false };
-    }
-
-    const response = await this.ttsGateway.synthesize({
-      text: question.listening_script,
+    const audioRef = await this.persistentAudio.getStudentAudioRef({
+      scope: 'practice-question',
+      subjectId: questionId,
+      questionId: null,
+      script: question.listening_script,
       languageCode,
-      sessionId: `curriculum-question:${questionId}`,
       studentId,
     });
-
-    const outcome = this.ttsSafeFailure.toSafeOutcome(response);
-
-    if (outcome.isFallback || !outcome.audioRef) {
-      this.logger.warn(
-        `SessionQuestionAudioService.ensureAudio: synthesis failed for questionId=${questionId}`,
-      );
-      return { audioRef: null, scriptMissing: false };
-    }
-
-    return { audioRef: outcome.audioRef, scriptMissing: false };
+    return { audioRef, scriptMissing: false };
   }
 }

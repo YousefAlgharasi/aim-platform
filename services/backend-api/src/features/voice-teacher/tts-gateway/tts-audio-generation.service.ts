@@ -21,6 +21,8 @@ const TTS_MAX_CHARS_PER_REQUEST = 190;
 // latency/cost if an unexpectedly long reply ever reaches this gateway.
 const TTS_MAX_CHUNKS = 20;
 const TTS_TIMEOUT_MS = 20_000;
+/** Parallel provider calls per clip; kept small to stay clear of provider rate limits. */
+const TTS_CHUNK_CONCURRENCY = 4;
 const ERROR_CATEGORY_TIMEOUT = 'TTS_TIMEOUT';
 const ERROR_CATEGORY_NETWORK = 'TTS_NETWORK_ERROR';
 const ERROR_CATEGORY_PROVIDER = 'TTS_PROVIDER_ERROR';
@@ -86,19 +88,11 @@ export class TtsAudioGenerationService extends TtsGateway {
         throw new BadGatewayException(ERROR_CATEGORY_EMPTY_TEXT);
       }
 
-      const wavBuffers: Buffer[] = [];
-      for (const chunk of chunks) {
-        wavBuffers.push(
-          await this.synthesizeChunk(
-            apiKey,
-            baseUrl,
-            request.model,
-            request.voice,
-            chunk,
-            controller.signal,
-          ),
-        );
-      }
+      // Chunks are independent, so synthesize a few at a time instead of one after another; a long
+      // script otherwise takes (number of chunks) x the provider latency. Order is preserved.
+      const wavBuffers = await this.mapWithConcurrency(chunks, TTS_CHUNK_CONCURRENCY, (chunk) =>
+        this.synthesizeChunk(apiKey, baseUrl, request.model, request.voice, chunk, controller.signal),
+      );
 
       const audioBuffer = concatWavBuffers(wavBuffers);
       const audioRef = this.generateAudioRef();
@@ -126,6 +120,23 @@ export class TtsAudioGenerationService extends TtsGateway {
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  private async mapWithConcurrency<T, R>(
+    items: readonly T[],
+    limit: number,
+    task: (item: T) => Promise<R>,
+  ): Promise<R[]> {
+    const results = new Array<R>(items.length);
+    let next = 0;
+    const worker = async (): Promise<void> => {
+      while (next < items.length) {
+        const index = next++;
+        results[index] = await task(items[index]);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+    return results;
   }
 
   private async synthesizeChunk(

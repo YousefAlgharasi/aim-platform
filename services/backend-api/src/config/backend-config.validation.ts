@@ -112,6 +112,9 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
     'https://api.groq.com/openai/v1/audio/speech',
     issues,
   );
+  // Private Storage bucket for persisted TTS audio. The name is not a secret; access needs the
+  // service-role key, which only the backend holds.
+  const ttsAudioBucket = env.TTS_AUDIO_BUCKET?.trim() || 'tts-audio';
   const corsOriginsValue = readRequiredString(env, 'CORS_ORIGINS', issues);
   // P19-006 — Placement retake cooldown, configurable per environment.
   const placementRetakeCooldownHours = readOptionalPositiveInt(
@@ -176,6 +179,7 @@ export function validateBackendConfig(env: RawEnv = process.env): BackendConfig 
       baseUrl: ttsProviderBaseUrl,
       voice: ttsProviderVoice,
       resultsUrl: ttsProviderResultsUrl,
+      audioBucket: ttsAudioBucket,
     },
     cors: {
       origins: corsOrigins,

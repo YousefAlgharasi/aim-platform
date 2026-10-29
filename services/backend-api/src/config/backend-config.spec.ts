@@ -175,6 +175,11 @@ describe('BackendConfig — AIM Engine Phase 5 settings (P5-044)', () => {
   // Supabase JWT issuer default — must match Supabase's actual `iss` claim
   // -------------------------------------------------------------------------
 
+  it('defaults the TTS audio bucket to "tts-audio" and accepts an override', () => {
+    expect(validateBackendConfig(BASE_ENV).ttsProvider.audioBucket).toBe('tts-audio');
+    expect(validateBackendConfig({ ...BASE_ENV, TTS_AUDIO_BUCKET: ' custom-audio ' }).ttsProvider.audioBucket).toBe('custom-audio');
+  });
+
   it('defaults jwtIssuer to SUPABASE_URL + /auth/v1 when SUPABASE_JWT_ISSUER is absent', () => {
     const config = validateBackendConfig({ ...BASE_ENV });
     expect(config.supabase.jwtIssuer).toBe('https://abc.supabase.co/auth/v1');

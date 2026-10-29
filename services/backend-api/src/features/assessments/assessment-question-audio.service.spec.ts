@@ -1,93 +1,80 @@
 import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
 import { DatabaseService } from '../../database/database.service';
-import { TtsSafeFailureService } from '../voice-teacher/tts-gateway/tts-safe-failure.service';
 import { AppError } from '../../common/errors/app-error';
+import { ApiErrorCode } from '../../common/errors/api-error-code';
 
 describe('AssessmentQuestionAudioService', () => {
   const studentId = 'student-1';
-  const questionId = 'q-1';
+  const id = 'item-1';
+  const baseRow: any = { id: 'item-1', type: 'listening_choice', listening_script: 'Listen carefully: Bat.' };
 
-  interface Row {
-    readonly id: string;
-    readonly type: string;
-    readonly listening_script: string | null;
-  }
-
-  const baseRow: Row = {
-    id: questionId,
-    type: 'listening_choice',
-    listening_script: 'Listen carefully: Bat.',
-  };
-
-  function buildService(overrides: {
-    /** Pass `null` explicitly to simulate no matching row (NOT_FOUND). */
-    row?: Row | null;
-    ttsGateway?: { synthesize: jest.Mock } | null;
-  } = {}) {
+  function buildService(overrides: { row?: unknown; ref?: string | null } = {}) {
     const row = 'row' in overrides ? overrides.row : baseRow;
-    const db = {
-      query: jest.fn().mockResolvedValue({ rows: row ? [row] : [] }),
-    } as unknown as DatabaseService;
-
-    const ttsGateway =
-      overrides.ttsGateway === undefined
-        ? { synthesize: jest.fn().mockResolvedValue({ status: 'success', audioRef: 'tts_abc', durationMs: 1200, contentType: 'audio/mpeg' }) }
-        : overrides.ttsGateway;
-
-    const service = new AssessmentQuestionAudioService(
-      db,
-      ttsGateway as any,
-      new TtsSafeFailureService(),
-    );
-
-    return { service, db, ttsGateway };
+    const db = { query: jest.fn().mockResolvedValue({ rows: row ? [row] : [] }) } as unknown as DatabaseService;
+    const ref = 'ref' in overrides ? overrides.ref : 'assessment-question_item-1_student-1_en';
+    const persistent = {
+      getStudentAudioRef: jest.fn().mockResolvedValue(ref),
+      warmUp: jest.fn().mockResolvedValue({ generated: 0, alreadyStored: 0, failed: 0 }),
+    };
+    return { service: new AssessmentQuestionAudioService(db, persistent as any), db, persistent };
   }
 
-  it('throws NOT_FOUND when the question does not exist', async () => {
+  it('throws NOT_FOUND when the item does not exist', async () => {
     const { service } = buildService({ row: null });
-    await expect(service.ensureAudio(questionId, studentId, 'en')).rejects.toThrow(AppError);
+    await expect(service.ensureAudio(id, studentId, 'en')).rejects.toThrow(AppError);
   });
 
-  it('throws a validation error when the question is not listening_choice', async () => {
+  it('throws a validation error when the item has no listening audio', async () => {
     const { service } = buildService({ row: { ...baseRow, type: 'multiple_choice' } });
-    await expect(service.ensureAudio(questionId, studentId, 'en')).rejects.toThrow(AppError);
+    await expect(service.ensureAudio(id, studentId, 'en')).rejects.toThrow(AppError);
   });
 
-  it('returns scriptMissing: true (no TTS call) when listening_script is null — a real content gap', async () => {
-    const { service, ttsGateway } = buildService({ row: { ...baseRow, listening_script: null } });
-
-    const result = await service.ensureAudio(questionId, studentId, 'en');
-
-    expect(result).toEqual({ audioRef: null, scriptMissing: true });
-    expect((ttsGateway as any).synthesize).not.toHaveBeenCalled();
+  it('returns scriptMissing: true (no audio work) when no script is authored — a real content gap', async () => {
+    const { service, persistent } = buildService({ row: { ...baseRow, listening_script: null } });
+    expect(await service.ensureAudio(id, studentId, 'en')).toEqual({ audioRef: null, scriptMissing: true });
+    expect(persistent.getStudentAudioRef).not.toHaveBeenCalled();
   });
 
-  it('synthesizes audio from listening_script (never stem/correct answer) when present', async () => {
-    const { service, ttsGateway } = buildService();
-
-    const result = await service.ensureAudio(questionId, studentId, 'en');
-
-    expect((ttsGateway as any).synthesize).toHaveBeenCalledWith(
-      expect.objectContaining({ text: baseRow.listening_script, studentId }),
+  it('asks for audio from the authored script only, with no link to placement questions', async () => {
+    const { service, persistent } = buildService();
+    await service.ensureAudio(id, studentId, 'en');
+    expect(persistent.getStudentAudioRef).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: 'assessment-question', subjectId: id, questionId: null, script: 'Listen carefully: Bat.', languageCode: 'en', studentId }),
     );
-    expect(result).toEqual({ audioRef: 'tts_abc', scriptMissing: false });
   });
 
-  it('returns audioRef null gracefully when the TTS gateway is not bound', async () => {
-    const { service } = buildService({ ttsGateway: null });
-
-    const result = await service.ensureAudio(questionId, studentId, 'en');
-
-    expect(result).toEqual({ audioRef: null, scriptMissing: false });
+  it('keeps the existing response contract: exactly { audioRef, scriptMissing }', async () => {
+    const { service } = buildService();
+    const result = await service.ensureAudio(id, studentId, 'en');
+    expect(Object.keys(result).sort()).toEqual(['audioRef', 'scriptMissing']);
+    expect(result).toEqual({ audioRef: 'assessment-question_item-1_student-1_en', scriptMissing: false });
   });
 
-  it('returns audioRef null gracefully when synthesis fails', async () => {
-    const { service } = buildService({
-      ttsGateway: { synthesize: jest.fn().mockResolvedValue({ status: 'error', audioRef: null, durationMs: null, contentType: null }) },
-    });
+  it('returns audioRef null gracefully when audio could not be produced', async () => {
+    const { service } = buildService({ ref: null });
+    expect(await service.ensureAudio(id, studentId, 'en')).toEqual({ audioRef: null, scriptMissing: false });
+  });
 
-    const result = await service.ensureAudio(questionId, studentId, 'en');
+  it('propagates a persistence failure instead of returning a reference to nothing', async () => {
+    const { service, persistent } = buildService();
+    persistent.getStudentAudioRef.mockRejectedValue(new AppError({ code: ApiErrorCode.SERVICE_UNAVAILABLE, message: 'x', statusCode: 503 }));
+    await expect(service.ensureAudio(id, studentId, 'en')).rejects.toMatchObject({ code: ApiErrorCode.SERVICE_UNAVAILABLE });
+  });
 
-    expect(result).toEqual({ audioRef: null, scriptMissing: false });
+  it('warm-up hands scripts to the shared helper with null placement ids', async () => {
+    const { service, db, persistent } = buildService();
+    (db.query as jest.Mock).mockResolvedValue({ rows: [baseRow] });
+    await service.warmUp();
+    expect(persistent.warmUp).toHaveBeenCalledWith([{ questionId: null, script: 'Listen carefully: Bat.' }], 'en', 'assessment-warmup');
+  });
+
+  it('does not start warm-up outside production', () => {
+    const { service } = buildService();
+    const spy = jest.spyOn(service, 'warmUp').mockResolvedValue();
+    const env = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'test';
+    service.onApplicationBootstrap();
+    process.env.NODE_ENV = env;
+    expect(spy).not.toHaveBeenCalled();
   });
 });
