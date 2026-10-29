@@ -8,6 +8,7 @@
 //   PATCH  /admin/course-billing/wallets/:id                edit a wallet
 //   DELETE /admin/course-billing/wallets/:id                delete (or deactivate if used)
 //   PUT    /admin/course-billing/wallets/:id/logo|qr        upload image (multipart "image")
+//   GET    /admin/course-billing/wallets/:id/logo|qr        image preview
 //   DELETE /admin/course-billing/wallets/:id/logo|qr        remove image
 //   GET    /admin/course-billing/payment-requests?status=   payments to review
 //   GET    /admin/course-billing/payment-requests/pending-count
@@ -127,6 +128,16 @@ export class AdminCourseBillingController {
     @UploadedFile() image?: Express.Multer.File,
   ): Promise<WalletView> {
     return this.wallets.setImage(id, imageKind(kind), image, req.internalUserId!);
+  }
+
+  @Get('wallets/:id/:kind')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Wallet logo or account/QR image (admin preview).' })
+  async walletImage(@Param('id') id: string, @Param('kind') kind: string, @Res() res: Response): Promise<void> {
+    const image = await this.wallets.readImage(id, imageKind(kind));
+    res.setHeader('Content-Type', image.contentType);
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(image.data);
   }
 
   @Delete('wallets/:id/:kind')

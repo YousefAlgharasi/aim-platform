@@ -25,18 +25,23 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+  // File uploads (multipart) are forwarded byte-for-byte with their own
+  // content type (it carries the multipart boundary); everything else is JSON.
+  const requestContentType = request.headers.get('content-type') ?? '';
+  const isMultipart = requestContentType.startsWith('multipart/form-data');
+
+  const headers: Record<string, string> = {
+    'Content-Type': isMultipart ? requestContentType : 'application/json',
     Accept: 'application/json',
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  let body: string | undefined;
+  let body: string | ArrayBuffer | undefined;
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     try {
-      body = await request.text();
+      body = isMultipart ? await request.arrayBuffer() : await request.text();
     } catch {
       // no body
     }
@@ -54,6 +59,15 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
       { success: false, error: 'Unable to reach backend service.' },
       { status: 502 },
     );
+  }
+
+  // Images (wallet logos, receipts) pass through as binary.
+  const responseType = backendResponse.headers.get('content-type') ?? '';
+  if (responseType.startsWith('image/')) {
+    return new NextResponse(await backendResponse.arrayBuffer(), {
+      status: backendResponse.status,
+      headers: { 'Content-Type': responseType, 'Cache-Control': 'private, max-age=300' },
+    });
   }
 
   const responseBody = await backendResponse.text();
