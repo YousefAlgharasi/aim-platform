@@ -321,4 +321,27 @@ describe('AssessmentGradingService', () => {
       expect(service.gradeAttempt.length).toBe(1);
     });
   });
+
+  describe('gradeAttempt — skipped questions', () => {
+    it('counts a skipped question as 0 of its points in maxScore', async () => {
+      const db = makeDb({
+        assessment_attempts: { rows: [makeAttemptRow()] },
+        assessment_settings: { rows: [{ pass_threshold: 60, late_penalty_percent: 0 }] },
+        assessment_attempt_answers: {
+          rows: [
+            { assessment_question_link_id: Q_LINK_1, question_id: Q1_ID, response_value: 'A', points: 5 },
+            { assessment_question_link_id: Q_LINK_2, question_id: Q2_ID, response_value: null, points: 5 },
+          ],
+        },
+        question_choices: { rows: [{ question_id: Q1_ID, is_correct: true, id: 'A' }] },
+        assessment_deadlines: { rows: [{ closes_at: CLOSE, extended_closes_at: null, late_window_seconds: 0 }] },
+      });
+      const svc = new AssessmentGradingService(db as any);
+      const result = await svc.gradeAttempt(ATTEMPT_ID);
+      expect(result.score).toBe(5);
+      expect(result.maxScore).toBe(10);
+      expect(result.passed).toBe(false);
+      expect(result.outcomes.find((o) => o.assessmentQuestionLinkId === Q_LINK_2)?.isCorrect).toBe(false);
+    });
+  });
 });

@@ -6107,6 +6107,306 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Assessments'**
   String get assessmentsListTitle;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Course progress'**
+  String get homeCourseProgress;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get homeCourseCompletedLabel;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'You finished {course}!'**
+  String homeNextCourseTitle(String course);
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Start {course} now to keep going.'**
+  String homeNextCourseBody(String course);
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Start {course}'**
+  String homeNextCourseStart(String course);
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get offlineTitle;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get offlineMessage;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Check your internet connection.'**
+  String get offlineBanner;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Showing saved content.'**
+  String get offlineBannerSavedData;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'out of 100'**
+  String get assessmentsOutOf100;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get assessmentsCorrectLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong'**
+  String get assessmentsWrongLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get assessmentsSkippedLabel;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Review your answers'**
+  String get assessmentsReviewTitle;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get assessmentsFilterAll;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get assessmentsYourAnswer;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get assessmentsCorrectAnswer;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'You skipped this question'**
+  String get assessmentsNotAnswered;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answers will appear once you pass or use all your attempts.'**
+  String get assessmentsAnswersHiddenNote;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'My certificate'**
+  String get assessmentsMyCertificate;
+
+  /// Assessment result review (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'No questions here.'**
+  String get assessmentsReviewEmptyFilter;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get placementResultLevelLabel;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'{level} Track'**
+  String placementResultTrackLabel(String level);
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get placementLevelBeginner;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Elementary'**
+  String get placementLevelElementary;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get placementLevelIntermediate;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Upper Intermediate'**
+  String get placementLevelUpperIntermediate;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get placementLevelAdvanced;
+
+  /// Fallback name when the profile has no name or email.
+  ///
+  /// In en, this message translates to:
+  /// **'Learner'**
+  String get commonLearner;
+
+  /// Lesson detail bottom button (features/lessons).
+  ///
+  /// In en, this message translates to:
+  /// **'Re-learn with Live AI Voice'**
+  String get lessonsRelearnWithVoice;
+
+  /// Lesson detail bottom button (features/lessons).
+  ///
+  /// In en, this message translates to:
+  /// **'Start Learning Now'**
+  String get lessonsStartLearningNow;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profilePageTitle;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsPageTitle;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get settingsSectionProfile;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get settingsSectionLearning;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get settingsSectionPreferences;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get settingsSave;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get settingsDailyGoal;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 lesson} other{{count} lessons}}'**
+  String settingsDailyGoalLessons(int count);
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal updated'**
+  String get settingsDailyGoalSaved;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeSystem;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeLightShort;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeDarkShort;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Study reminders'**
+  String get settingsStudyReminders;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get settingsChangePassword;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll email a link to {email} so you can set a new password.'**
+  String settingsChangePasswordBody(String email);
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Send link'**
+  String get settingsSendLink;
+
+  /// Profile and settings screens (features/profile).
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String settingsAppVersion(String version);
 }
 
 class _AppLocalizationsDelegate

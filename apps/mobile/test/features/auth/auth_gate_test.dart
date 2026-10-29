@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -120,6 +121,10 @@ void main() {
     // Bottom tab bar was removed (navigation is via the drawer only) —
     // confirm the shell itself mounted instead.
     expect(find.byType(MainShellPage), findsOneWidget);
+
+    // Let the shell's in-flight API requests (and their timeouts) finish.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 30));
   });
 }
 

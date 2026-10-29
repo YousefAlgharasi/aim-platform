@@ -19,6 +19,8 @@ class StudentCourseModel extends StudentCourse {
     required super.locked,
     super.description,
     super.levelCode,
+    super.isCurrent,
+    super.isNext,
   });
 
   factory StudentCourseModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,8 @@ class StudentCourseModel extends StudentCourse {
       percent: json['percent'] as int,
       status: studentCourseStatusFromString(json['status'] as String),
       locked: json['locked'] as bool,
+      isCurrent: json['current'] as bool? ?? false,
+      isNext: json['next'] as bool? ?? false,
     );
   }
 }

@@ -120,6 +120,16 @@ class AttemptResultDetailModel extends AttemptResultDetail {
     required super.gradedAt,
     required super.feedbackAllowed,
     required super.breakdown,
+    super.assessmentType,
+    super.courseId,
+    super.percentScore,
+    super.totalQuestions,
+    super.correctCount,
+    super.wrongCount,
+    super.skippedCount,
+    super.answersRevealed,
+    super.certificateId,
+    super.review,
   });
 
   factory AttemptResultDetailModel.fromJson(Map<String, dynamic> json) {
@@ -135,6 +145,42 @@ class AttemptResultDetailModel extends AttemptResultDetail {
       breakdown: (json['breakdown'] as List<dynamic>)
           .map((b) => BreakdownItemModel.fromJson(b as Map<String, dynamic>))
           .toList(),
+      assessmentType: json['assessmentType'] as String?,
+      courseId: json['courseId'] as String?,
+      percentScore: (json['percentScore'] as num?)?.round(),
+      totalQuestions: (json['totalQuestions'] as num?)?.toInt() ?? 0,
+      correctCount: (json['correctCount'] as num?)?.toInt() ?? 0,
+      wrongCount: (json['wrongCount'] as num?)?.toInt() ?? 0,
+      skippedCount: (json['skippedCount'] as num?)?.toInt() ?? 0,
+      answersRevealed: json['answersRevealed'] as bool? ?? false,
+      certificateId: json['certificateId'] as String?,
+      review: (json['review'] as List<dynamic>? ?? const [])
+          .map((r) => _reviewItemFromJson(r as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  static ReviewItem _reviewItemFromJson(Map<String, dynamic> json) {
+    return ReviewItem(
+      assessmentQuestionLinkId: json['assessmentQuestionLinkId'] as String,
+      number: (json['number'] as num).toInt(),
+      prompt: json['prompt'] as String? ?? '',
+      options: (json['options'] as List<dynamic>? ?? const [])
+          .map((o) => o as Map<String, dynamic>)
+          .map((o) => ReviewOption(
+                id: o['id'] as String,
+                label: o['label'] as String? ?? '',
+                text: o['text'] as String? ?? '',
+              ))
+          .toList(),
+      selectedOptionId: json['selectedOptionId'] as String?,
+      correctOptionIds: (json['correctOptionIds'] as List<dynamic>? ?? const [])
+          .cast<String>(),
+      status: switch (json['status']) {
+        'correct' => ReviewStatus.correct,
+        'wrong' => ReviewStatus.wrong,
+        _ => ReviewStatus.skipped,
+      },
     );
   }
 

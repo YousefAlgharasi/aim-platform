@@ -13,6 +13,7 @@
 //   Flutter never filters or alters the backend-returned asset list.
 // - No AIM Engine runtime, AI provider URLs, or secrets here.
 
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/networking/backend_api_client.dart';
 import 'package:aim_mobile/core/networking/backend_api_paths.dart';
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
@@ -30,27 +31,20 @@ class LessonDetailRemoteDatasourceImpl implements LessonDetailRemoteDatasource {
     required String bearerToken,
     required String lessonId,
   }) async {
-    final bool isUuid = RegExp(
-            r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
-        .hasMatch(lessonId);
-    if (!isUuid) {
-      return _buildSampleLessonModel(lessonId);
-    }
-    try {
-      final envelope = await _apiClient.get<LessonModel>(
-        BackendApiPaths.curriculumLessonDetail(lessonId),
-        headers: _auth(bearerToken),
-        decodeData: (json) {
-          if (json is! Map<String, dynamic>) {
-            throw const FormatException('Unexpected lesson detail response shape');
-          }
-          return LessonModel.fromJson(json);
-        },
-      );
-      return envelope.data ?? _buildSampleLessonModel(lessonId);
-    } catch (_) {
-      return _buildSampleLessonModel(lessonId);
-    }
+    _requireUuid(lessonId);
+    final envelope = await _apiClient.get<LessonModel>(
+      BackendApiPaths.curriculumLessonDetail(lessonId),
+      headers: _auth(bearerToken),
+      decodeData: (json) {
+        if (json is! Map<String, dynamic>) {
+          throw const FormatException('Unexpected lesson detail response shape');
+        }
+        return LessonModel.fromJson(json);
+      },
+    );
+    final lesson = envelope.data;
+    if (lesson == null) throw _notFound();
+    return lesson;
   }
 
   @override
@@ -58,26 +52,17 @@ class LessonDetailRemoteDatasourceImpl implements LessonDetailRemoteDatasource {
     required String bearerToken,
     required String lessonId,
   }) async {
-    final bool isUuid = RegExp(
-            r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
-        .hasMatch(lessonId);
-    if (!isUuid) {
-      return _buildSampleAssets(lessonId);
-    }
-    try {
-      final envelope = await _apiClient.get<List<LessonAssetModel>>(
-        BackendApiPaths.curriculumLessonAssets,
-        queryParameters: {
-          'lessonId': lessonId,
-          'status': 'published',
-        },
-        headers: _auth(bearerToken),
-        decodeData: (json) => _decodeAssetList(json),
-      );
-      return envelope.data ?? _buildSampleAssets(lessonId);
-    } catch (_) {
-      return _buildSampleAssets(lessonId);
-    }
+    _requireUuid(lessonId);
+    final envelope = await _apiClient.get<List<LessonAssetModel>>(
+      BackendApiPaths.curriculumLessonAssets,
+      queryParameters: {
+        'lessonId': lessonId,
+        'status': 'published',
+      },
+      headers: _auth(bearerToken),
+      decodeData: (json) => _decodeAssetList(json),
+    );
+    return envelope.data ?? const [];
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -95,64 +80,15 @@ class LessonDetailRemoteDatasourceImpl implements LessonDetailRemoteDatasource {
         .toList();
   }
 
-  LessonModel _buildSampleLessonModel(String lessonId) {
-    return LessonModel(
-      id: lessonId,
-      chapterId: 'ch1',
-      title: 'Introduction & Core Concepts',
-      description:
-          'Master fundamental expressions, basic structure, and real-world conversation patterns.',
-      status: 'published',
-      sortOrder: 1,
-      xpValue: 50,
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: DateTime.now().toIso8601String(),
-    );
+  static final _uuid = RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+
+  void _requireUuid(String lessonId) {
+    if (!_uuid.hasMatch(lessonId)) throw _notFound();
   }
 
-  List<LessonAssetModel> _buildSampleAssets(String lessonId) {
-    return [
-      LessonAssetModel(
-        id: '${lessonId}_asset_1',
-        lessonId: lessonId,
-        type: 'text',
-        title: 'Core Vocabulary & Key Terms',
-        description: 'Read and review essential vocabulary and expressions.',
-        order: 1,
-        status: 'published',
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        durationSeconds: 180,
-        metadata: const {
-          'content':
-              '### Essential Terms\n- **Greeting**: Hello, Welcome\n- **Expression**: How can I help you?\n- **Key Phrase**: Ordering food and beverages in standard context.'
-        },
-      ),
-      LessonAssetModel(
-        id: '${lessonId}_asset_2',
-        lessonId: lessonId,
-        type: 'audio',
-        title: 'Pronunciation & Listening Practice',
-        description: 'Listen to native speaker pronunciation samples.',
-        order: 2,
-        status: 'published',
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        durationSeconds: 240,
-        url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      ),
-      LessonAssetModel(
-        id: '${lessonId}_asset_3',
-        lessonId: lessonId,
-        type: 'quiz',
-        title: 'Check Your Understanding',
-        description: 'Interactive questions to reinforce what you learned.',
-        order: 3,
-        status: 'published',
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        durationSeconds: 300,
-      ),
-    ];
-  }
+  ApiClientException _notFound() => const ApiClientException(
+        code: 'LESSON_NOT_FOUND',
+        message: 'This lesson is not available.',
+      );
 }

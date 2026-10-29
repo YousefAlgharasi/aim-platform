@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/l10n/app_localizations.dart';
+
+import '../../networking/network_status.dart';
 import '../../theme/theme.dart';
 
 /// Full-screen error state.
@@ -11,6 +14,10 @@ import '../../theme/theme.dart';
 /// All colours and typography come from the AIM design system. Do not pass
 /// hard-coded [TextStyle] or [Color] values.
 ///
+/// While the device is offline ([NetworkStatus]) it shows a "You're offline"
+/// state instead of [message], and retries by itself once the connection
+/// comes back.
+///
 /// Example:
 /// ```dart
 /// AIMFullScreenError(
@@ -19,13 +26,14 @@ import '../../theme/theme.dart';
 ///   retryLabel: 'Try again',
 /// )
 /// ```
-class AIMFullScreenError extends StatelessWidget {
+class AIMFullScreenError extends StatefulWidget {
   const AIMFullScreenError({
     required this.message,
     super.key,
     this.onRetry,
-    this.retryLabel = 'Try again',
+    this.retryLabel,
     this.semanticLabel,
+    this.networkStatus,
   });
 
   /// Human-readable error message — typically [AppAsyncFailure.message].
@@ -34,19 +42,65 @@ class AIMFullScreenError extends StatelessWidget {
   /// Called when the user taps the retry button. If null, no button is shown.
   final VoidCallback? onRetry;
 
-  /// Label for the retry button. Defaults to 'Try again'.
-  final String retryLabel;
+  /// Label for the retry button. Defaults to the localized "Try again".
+  final String? retryLabel;
 
   /// Accessibility label for the error state container.
   final String? semanticLabel;
+
+  /// Offline signal; defaults to [NetworkStatus.instance]. Injectable for tests.
+  final NetworkStatus? networkStatus;
+
+  @override
+  State<AIMFullScreenError> createState() => _AIMFullScreenErrorState();
+}
+
+class _AIMFullScreenErrorState extends State<AIMFullScreenError> {
+  late NetworkStatus _status;
+  late bool _wasOffline;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.networkStatus ?? NetworkStatus.instance;
+    _wasOffline = _status.isOffline;
+    _status.addListener(_onStatusChanged);
+  }
+
+  @override
+  void dispose() {
+    _status.removeListener(_onStatusChanged);
+    super.dispose();
+  }
+
+  void _onStatusChanged() {
+    final offline = _status.isOffline;
+    final cameBackOnline = _wasOffline && !offline;
+    _wasOffline = offline;
+    if (!mounted) return;
+    setState(() {});
+    if (cameBackOnline) widget.onRetry?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final softFills = aimSoftFillsOf(context);
+    // Nullable lookup: this widget also renders in tests without
+    // localization delegates.
+    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final offline = _status.isOffline;
+    final onRetry = widget.onRetry;
+    final title = offline
+        ? (l10n?.offlineTitle ?? "You're offline")
+        : (l10n?.commonError ?? 'Something went wrong');
+    final message = offline
+        ? (l10n?.offlineMessage ?? 'Check your internet connection and try again.')
+        : widget.message;
+    final retryLabel = widget.retryLabel ?? l10n?.commonRetry ?? 'Try again';
 
     return Semantics(
-      label: semanticLabel ?? 'Error: $message',
+      label: widget.semanticLabel ?? '$title: $message',
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -64,7 +118,7 @@ class AIMFullScreenError extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(AimSpacing.space20),
                   child: Icon(
-                    Icons.error_outline_rounded,
+                    offline ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
                     size: AimSizes.iconLg * 2,
                     color: softFills.onError,
                   ),
@@ -72,7 +126,7 @@ class AIMFullScreenError extends StatelessWidget {
               ),
               const SizedBox(height: AimSpacing.sectionGap),
               Text(
-                'Something went wrong',
+                title,
                 style: AimTextStyles.h3.copyWith(
                   color: surfaces.textPrimary,
                 ),
@@ -90,7 +144,7 @@ class AIMFullScreenError extends StatelessWidget {
                 const SizedBox(height: AimSpacing.sectionGap),
                 _AIMRetryButton(
                   label: retryLabel,
-                  onPressed: onRetry!,
+                  onPressed: onRetry,
                 ),
               ],
             ],

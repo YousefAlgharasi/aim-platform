@@ -2,9 +2,10 @@ import { StudentCoursesRepository } from './student-courses.repository';
 import { StudentCoursesService } from './student-courses.service';
 
 describe('StudentCoursesService', () => {
-  const makeRepository = (rows: unknown[]) =>
+  const makeRepository = (rows: unknown[], enrolledCourseId: string | null = null) =>
     ({
       findCoursesWithProgress: jest.fn().mockResolvedValue(rows),
+      findActiveEnrollmentCourseId: jest.fn().mockResolvedValue(enrolledCourseId),
     }) as unknown as StudentCoursesRepository;
 
   it('returns an empty list when there are no published courses', async () => {
@@ -52,6 +53,8 @@ describe('StudentCoursesService', () => {
         percent: 100,
         status: 'completed',
         locked: false,
+        current: true,
+        next: false,
       },
     ]);
   });
@@ -92,6 +95,8 @@ describe('StudentCoursesService', () => {
       percent: 22, // round(4/18*100) = 22.22 -> 22
       status: 'in_progress',
       locked: false,
+      current: true,
+      next: false,
     });
   });
 
@@ -159,6 +164,8 @@ describe('StudentCoursesService', () => {
       percent: 0,
       status: 'not_started',
       locked: false,
+      current: true,
+      next: false,
     });
   });
 
@@ -285,5 +292,63 @@ describe('StudentCoursesService', () => {
     const result = await service.getCourses('student-1');
 
     expect(result.courses[0].locked).toBe(false);
+  });
+
+  describe('current and next course', () => {
+    const course = (id: string, rank: number | null, done: number, total = 3) => ({
+      course_id: id,
+      title: id,
+      description: null,
+      sort_order: 0,
+      level_code: null,
+      lesson_count: String(total),
+      completed_lesson_count: String(done),
+      track_slug: 'english',
+      cefr_rank: rank,
+      max_unlocked_cefr_rank: null,
+      quiz_count: '0',
+      quizzes_passed: true,
+      exam_count: '0',
+      exam_passed: true,
+    });
+
+    it('points to the next curriculum course once the enrolled course is completed', async () => {
+      const service = new StudentCoursesService(
+        makeRepository(
+          [course('starter', 1, 3), course('a1-1', 2, 0), course('a1-2', 3, 0), course('demo', null, 1)],
+          'starter',
+        ),
+      );
+
+      const { courses } = await service.getCourses('student-1');
+
+      expect(courses.map((c) => [c.courseId, c.current, c.next])).toEqual([
+        ['starter', true, false],
+        ['a1-1', false, true],
+        ['a1-2', false, false],
+        ['demo', false, false],
+      ]);
+    });
+
+    it('has no next course while the current course is still in progress', async () => {
+      const service = new StudentCoursesService(
+        makeRepository([course('starter', 1, 1), course('a1-1', 2, 0)], 'starter'),
+      );
+
+      const { courses } = await service.getCourses('student-1');
+
+      expect(courses.find((c) => c.current)?.courseId).toBe('starter');
+      expect(courses.some((c) => c.next)).toBe(false);
+    });
+
+    it('falls back to the first unlocked unfinished course without an enrollment', async () => {
+      const service = new StudentCoursesService(
+        makeRepository([course('starter', 1, 3), course('a1-1', 2, 0)]),
+      );
+
+      const { courses } = await service.getCourses('student-1');
+
+      expect(courses.find((c) => c.current)?.courseId).toBe('a1-1');
+    });
   });
 });

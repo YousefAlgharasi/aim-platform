@@ -92,6 +92,9 @@ describe('AssessmentController', () => {
     resultId: 'result-1', attemptId: 'att-1', score: 8, maxScore: 10, passed: true,
     latePenaltyApplied: false, gradedAt: new Date(), feedbackAllowed: true,
     breakdown: [{ assessmentQuestionLinkId: 'q-1', sectionId: 'sec-1', pointsAwarded: 1, pointsPossible: 1, isCorrect: true }],
+    assessmentType: 'quiz', courseId: null, percentScore: 80, totalQuestions: 1,
+    correctCount: 1, wrongCount: 0, skippedCount: 0, answersRevealed: true,
+    certificateId: null, review: [],
   };
 
   beforeEach(async () => {

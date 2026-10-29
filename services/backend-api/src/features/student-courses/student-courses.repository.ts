@@ -141,4 +141,30 @@ export class StudentCoursesRepository {
     );
     return result.rows;
   }
+
+  /** Course id of the student's active enrollment, or null. */
+  async findActiveEnrollmentCourseId(studentId: string): Promise<string | null> {
+    const result = await this.db.query<{ course_id: string }>(
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, u.id AS user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT ce.course_id
+       FROM course_enrollments ce
+       WHERE ce.status = 'active'
+         AND (
+           ce.student_id = $1
+           OR ce.student_id IN (SELECT user_id FROM resolved_student)
+           OR ce.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+           OR ce.student_id IN (SELECT profile_id FROM resolved_student)
+         )
+       ORDER BY ce.created_at DESC
+       LIMIT 1`,
+      [studentId],
+    );
+    return result.rows[0]?.course_id ?? null;
+  }
 }

@@ -39,6 +39,19 @@ export interface StudentCourseSummary {
    * Backend-computed; the client must not infer this from anything else.
    */
   readonly locked: boolean;
+
+  /**
+   * The course the student is on: their active enrollment, or — with no
+   * enrollment — the first unlocked course they haven't completed.
+   * Exactly one course is current when any course is available.
+   */
+  readonly current: boolean;
+
+  /**
+   * Set once the current course is completed: the first unlocked,
+   * not-yet-completed course after it in curriculum order. At most one.
+   */
+  readonly next: boolean;
 }
 
 export interface StudentCoursesResponse {

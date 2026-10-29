@@ -3631,4 +3631,177 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get assessmentsListTitle => 'التقييمات';
+
+  @override
+  String get homeCourseProgress => 'تقدّم الدورة';
+
+  @override
+  String get homeCourseCompletedLabel => 'مكتملة';
+
+  @override
+  String homeNextCourseTitle(String course) {
+    return 'لقد أنهيت $course!';
+  }
+
+  @override
+  String homeNextCourseBody(String course) {
+    return 'ابدأ $course الآن لتواصل التقدّم.';
+  }
+
+  @override
+  String homeNextCourseStart(String course) {
+    return 'ابدأ $course';
+  }
+
+  @override
+  String get offlineTitle => 'أنت غير متصل بالإنترنت';
+
+  @override
+  String get offlineMessage => 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get offlineBanner => 'أنت غير متصل. تحقق من اتصالك بالإنترنت.';
+
+  @override
+  String get offlineBannerSavedData => 'أنت غير متصل. يتم عرض المحتوى المحفوظ.';
+
+  @override
+  String get assessmentsOutOf100 => 'من 100';
+
+  @override
+  String get assessmentsCorrectLabel => 'صحيحة';
+
+  @override
+  String get assessmentsWrongLabel => 'خاطئة';
+
+  @override
+  String get assessmentsSkippedLabel => 'متروكة';
+
+  @override
+  String get assessmentsReviewTitle => 'راجع إجاباتك';
+
+  @override
+  String get assessmentsFilterAll => 'الكل';
+
+  @override
+  String get assessmentsYourAnswer => 'إجابتك';
+
+  @override
+  String get assessmentsCorrectAnswer => 'الإجابة الصحيحة';
+
+  @override
+  String get assessmentsNotAnswered => 'لقد تركت هذا السؤال';
+
+  @override
+  String get assessmentsAnswersHiddenNote =>
+      'ستظهر الإجابات الصحيحة بعد نجاحك أو استنفاد كل محاولاتك.';
+
+  @override
+  String get assessmentsMyCertificate => 'شهادتي';
+
+  @override
+  String get assessmentsReviewEmptyFilter => 'لا توجد أسئلة هنا.';
+
+  @override
+  String get placementResultLevelLabel => 'المستوى';
+
+  @override
+  String placementResultTrackLabel(String level) {
+    return 'مسار $level';
+  }
+
+  @override
+  String get placementLevelBeginner => 'مبتدئ';
+
+  @override
+  String get placementLevelElementary => 'أساسي';
+
+  @override
+  String get placementLevelIntermediate => 'متوسط';
+
+  @override
+  String get placementLevelUpperIntermediate => 'فوق المتوسط';
+
+  @override
+  String get placementLevelAdvanced => 'متقدم';
+
+  @override
+  String get commonLearner => 'متعلّم';
+
+  @override
+  String get lessonsRelearnWithVoice => 'أعد التعلّم مع المعلّم الصوتي';
+
+  @override
+  String get lessonsStartLearningNow => 'ابدأ التعلّم الآن';
+
+  @override
+  String get profilePageTitle => 'الملف الشخصي';
+
+  @override
+  String get settingsPageTitle => 'الإعدادات';
+
+  @override
+  String get settingsSectionProfile => 'الملف الشخصي';
+
+  @override
+  String get settingsSectionLearning => 'التعلّم';
+
+  @override
+  String get settingsSectionPreferences => 'التفضيلات';
+
+  @override
+  String get settingsSectionAccount => 'الحساب';
+
+  @override
+  String get settingsSave => 'حفظ';
+
+  @override
+  String get settingsDailyGoal => 'الهدف اليومي';
+
+  @override
+  String settingsDailyGoalLessons(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count درس',
+      few: '$count دروس',
+      two: 'درسان',
+      one: 'درس واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsDailyGoalSaved => 'تم تحديث الهدف اليومي';
+
+  @override
+  String get settingsTheme => 'المظهر';
+
+  @override
+  String get settingsThemeSystem => 'النظام';
+
+  @override
+  String get settingsThemeLightShort => 'فاتح';
+
+  @override
+  String get settingsThemeDarkShort => 'داكن';
+
+  @override
+  String get settingsStudyReminders => 'تذكيرات الدراسة';
+
+  @override
+  String get settingsChangePassword => 'تغيير كلمة المرور';
+
+  @override
+  String settingsChangePasswordBody(String email) {
+    return 'سنرسل رابطًا إلى $email لتعيين كلمة مرور جديدة.';
+  }
+
+  @override
+  String get settingsSendLink => 'إرسال الرابط';
+
+  @override
+  String settingsAppVersion(String version) {
+    return 'الإصدار $version';
+  }
 }

@@ -3,3 +3,4 @@ export 'aim_badge.dart';
 export 'aim_chip.dart';
 export 'aim_skeleton.dart';
 export 'aim_toast.dart';
+export 'offline_banner.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/core/config/app_config_provider.dart';
+import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/networking/networking.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
@@ -48,11 +49,20 @@ Future<String?> _refreshSession(Ref ref) async {
         );
 
     return refreshed.accessToken;
+  } on AppException catch (e) {
+    // Offline is not a rejected session: keep the user signed in so saved
+    // data stays available, and refresh again once back online.
+    if (_isConnectivityFailure(e.code)) return null;
+    await _signOut(ref);
+    return null;
   } catch (_) {
     await _signOut(ref);
     return null;
   }
 }
+
+bool _isConnectivityFailure(String code) =>
+    code == BackendApiClient.networkErrorCode || code == 'REQUEST_TIMEOUT';
 
 Future<void> _signOut(Ref ref) async {
   try {
@@ -69,5 +79,8 @@ final authenticatedBackendApiClientProvider =
   return BackendApiClient(
     config: ref.watch(appConfigProvider),
     authInterceptor: ref.watch(authTokenInterceptorProvider),
+    responseCache: ApiResponseCache.instance,
+    mediaCache: MediaCache.instance,
+    networkStatus: NetworkStatus.instance,
   );
 });

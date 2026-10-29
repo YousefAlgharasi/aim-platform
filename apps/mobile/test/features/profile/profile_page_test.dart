@@ -109,15 +109,21 @@ Widget _wrap(AppAsyncState<AuthContextModel> authState, {Locale? locale}) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
-  testWidgets('ProfilePage renders sections and quick links', (tester) async {
+  testWidgets('ProfilePage shows only the essential menu', (tester) async {
     await tester.pumpWidget(
         _wrap(const AppAsyncState.success(_studentContext)));
     await tester.pump();
 
-    expect(find.text('ACCOUNT'), findsOneWidget);
-    expect(find.text('PROFILE'), findsOneWidget);
-    expect(find.text('QUICK LINKS'), findsOneWidget);
+    expect(find.text('My Certificates'), findsOneWidget);
+    expect(find.text('Achievements'), findsWidgets);
     expect(find.text('Learning Path'), findsOneWidget);
+    expect(find.text('Subscription & Billing'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
+
+    // Account internals and dev tools are gone.
+    expect(find.text('ACCOUNT'), findsNothing);
+    expect(find.text('Asia/Riyadh'), findsNothing);
+    expect(find.text('API Endpoint Tester (Dev)'), findsNothing);
   });
 
   testWidgets('ProfilePage shows display name and email', (tester) async {

@@ -13,7 +13,8 @@
 //
 // Data is composed client-side from three existing endpoints (there is no
 // single combined endpoint yet):
-//   GET /student/courses            → pick the current course
+//   GET /student/courses            → the backend-flagged current course
+//                                     (and next course once it's done)
 //   GET /student/chapters?levelId=  → pick the current chapter (+ final exam)
 //   GET /student/lessons?chapterId= → lessons + quiz for that chapter
 //
@@ -30,14 +31,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
-import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
+import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
-import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 enum _NodeKind { lesson, quiz, finalExam }
@@ -80,6 +81,11 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   String? _subtitle;
   List<_PathNode> _nodes = const [];
 
+  /// Set when the current course is completed and the backend names a next
+  /// course: the roadmap then shows a "start the next course" card.
+  StudentCourseModel? _nextCourse;
+  bool _startingNext = false;
+
   @override
   void initState() {
     super.initState();
@@ -91,13 +97,25 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     if (token == null || token.isEmpty) return;
 
     try {
-      final coursesRepo = ref.read(studentCoursesRepositoryProvider);
       final lessonsRepo = ref.read(lessonsRepositoryProvider);
 
-      final courses = await coursesRepo.getCourses(bearerToken: token);
+      final courses = await ref.read(homeCoursesProvider.future);
       final course = _pickCurrentCourse(courses);
       if (course == null) {
         if (mounted) setState(() => _state = _LoadState.empty);
+        return;
+      }
+
+      final next = courses.where((c) => c.isNext).firstOrNull;
+      if (course.status == StudentCourseStatus.completed && next != null) {
+        if (!mounted) return;
+        setState(() {
+          _courseTitle = course.title;
+          _subtitle = null;
+          _nodes = const [];
+          _nextCourse = next;
+          _state = _LoadState.success;
+        });
         return;
       }
 
@@ -140,6 +158,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         if (!mounted) return;
         final l10n = AppLocalizations.of(context);
         setState(() {
+          _nextCourse = null;
           _courseTitle = course.title;
           _subtitle = course.status == StudentCourseStatus.completed
               ? l10n.homeCoursePathCompletedSubtitle
@@ -190,6 +209,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
 
       if (!mounted) return;
       setState(() {
+        _nextCourse = null;
         _courseTitle = course.title;
         _subtitle = currentChapterIncomplete!.title;
         _nodes = nodes;
@@ -201,6 +221,10 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   }
 
   StudentCourseModel? _pickCurrentCourse(List<StudentCourseModel> courses) {
+    final flagged = courses.where((c) => c.isCurrent).firstOrNull;
+    if (flagged != null) return flagged;
+
+    // Older backends don't flag a current course.
     StudentCourseModel? inProgress;
     StudentCourseModel? notStarted;
     StudentCourseModel? completed;
@@ -216,6 +240,32 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       }
     }
     return inProgress ?? notStarted ?? completed;
+  }
+
+  Future<void> _startNextCourse(StudentCourseModel next) async {
+    final token = ref.read(authFlowProvider).accessToken;
+    if (token == null || token.isEmpty || _startingNext) return;
+    final l10n = AppLocalizations.of(context);
+    setState(() => _startingNext = true);
+    try {
+      await ref
+          .read(currentEnrollmentProvider.notifier)
+          .enroll(bearerToken: token, courseId: next.courseId);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _startingNext = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.lessonsStartCourseFailedMessage)),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _startingNext = false);
+    ref.invalidate(homeCoursesProvider);
+    context.push(
+      AppRoutePaths.courseChapters,
+      extra: {'courseId': next.courseId, 'courseTitle': next.title},
+    );
   }
 
   void _openLesson(_PathNode node) {
@@ -245,6 +295,13 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
 
   @override
   Widget build(BuildContext context) {
+    // Reload whenever the course list is refreshed (pull-to-refresh, or
+    // after starting the next course).
+    ref.listen<AsyncValue<List<StudentCourseModel>>>(homeCoursesProvider,
+        (previous, next) {
+      if (next.hasValue && previous?.valueOrNull != next.valueOrNull) _load();
+    });
+
     if (_state == _LoadState.loading) {
       return const _CoursePathSkeleton();
     }
@@ -284,6 +341,14 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             ],
           ),
           const SizedBox(height: AimSpacing.space24),
+          if (_nextCourse != null)
+            _NextCourseCard(
+              completedCourseTitle: _courseTitle!,
+              nextCourseTitle: _nextCourse!.title,
+              loading: _startingNext,
+              onStart: () => _startNextCourse(_nextCourse!),
+            )
+          else
           _CoursePathTrail(
             nodes: _nodes,
             onTapNode: _onTapNode,
@@ -630,6 +695,72 @@ class _CoursePathSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: surfaces.surfaceSunken,
         borderRadius: AimRadius.borderX2l,
+      ),
+    );
+  }
+}
+
+/// Shown in place of the path once the current course is completed: names
+/// the backend's next course and starts it (enroll + open its chapters).
+class _NextCourseCard extends StatelessWidget {
+  const _NextCourseCard({
+    required this.completedCourseTitle,
+    required this.nextCourseTitle,
+    required this.loading,
+    required this.onStart,
+  });
+
+  final String completedCourseTitle;
+  final String nextCourseTitle;
+  final bool loading;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
+      decoration: BoxDecoration(
+        color: AimColors.primary500.withValues(alpha: 0.06),
+        borderRadius: AimRadius.borderX2l,
+        border: Border.all(color: AimColors.primary500.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.emoji_events_rounded,
+                  color: AimColors.success500, size: 22),
+              const SizedBox(width: AimSpacing.space8),
+              Expanded(
+                child: Text(
+                  l10n.homeNextCourseTitle(completedCourseTitle),
+                  style: AimTextStyles.title.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(
+            l10n.homeNextCourseBody(nextCourseTitle),
+            style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+          ),
+          const SizedBox(height: AimSpacing.space16),
+          AIMButton(
+            variant: AIMButtonVariant.primary,
+            fullWidth: true,
+            loading: loading,
+            onPressed: onStart,
+            child: Text(l10n.homeNextCourseStart(nextCourseTitle)),
+          ),
+        ],
       ),
     );
   }

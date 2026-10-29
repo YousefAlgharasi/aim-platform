@@ -3595,4 +3595,177 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assessmentsListTitle => 'Assessments';
+
+  @override
+  String get homeCourseProgress => 'Course progress';
+
+  @override
+  String get homeCourseCompletedLabel => 'Completed';
+
+  @override
+  String homeNextCourseTitle(String course) {
+    return 'You finished $course!';
+  }
+
+  @override
+  String homeNextCourseBody(String course) {
+    return 'Start $course now to keep going.';
+  }
+
+  @override
+  String homeNextCourseStart(String course) {
+    return 'Start $course';
+  }
+
+  @override
+  String get offlineTitle => 'You\'re offline';
+
+  @override
+  String get offlineMessage => 'Check your internet connection and try again.';
+
+  @override
+  String get offlineBanner =>
+      'You\'re offline. Check your internet connection.';
+
+  @override
+  String get offlineBannerSavedData =>
+      'You\'re offline. Showing saved content.';
+
+  @override
+  String get assessmentsOutOf100 => 'out of 100';
+
+  @override
+  String get assessmentsCorrectLabel => 'Correct';
+
+  @override
+  String get assessmentsWrongLabel => 'Wrong';
+
+  @override
+  String get assessmentsSkippedLabel => 'Skipped';
+
+  @override
+  String get assessmentsReviewTitle => 'Review your answers';
+
+  @override
+  String get assessmentsFilterAll => 'All';
+
+  @override
+  String get assessmentsYourAnswer => 'Your answer';
+
+  @override
+  String get assessmentsCorrectAnswer => 'Correct answer';
+
+  @override
+  String get assessmentsNotAnswered => 'You skipped this question';
+
+  @override
+  String get assessmentsAnswersHiddenNote =>
+      'Correct answers will appear once you pass or use all your attempts.';
+
+  @override
+  String get assessmentsMyCertificate => 'My certificate';
+
+  @override
+  String get assessmentsReviewEmptyFilter => 'No questions here.';
+
+  @override
+  String get placementResultLevelLabel => 'Level';
+
+  @override
+  String placementResultTrackLabel(String level) {
+    return '$level Track';
+  }
+
+  @override
+  String get placementLevelBeginner => 'Beginner';
+
+  @override
+  String get placementLevelElementary => 'Elementary';
+
+  @override
+  String get placementLevelIntermediate => 'Intermediate';
+
+  @override
+  String get placementLevelUpperIntermediate => 'Upper Intermediate';
+
+  @override
+  String get placementLevelAdvanced => 'Advanced';
+
+  @override
+  String get commonLearner => 'Learner';
+
+  @override
+  String get lessonsRelearnWithVoice => 'Re-learn with Live AI Voice';
+
+  @override
+  String get lessonsStartLearningNow => 'Start Learning Now';
+
+  @override
+  String get profilePageTitle => 'Profile';
+
+  @override
+  String get settingsPageTitle => 'Settings';
+
+  @override
+  String get settingsSectionProfile => 'Profile';
+
+  @override
+  String get settingsSectionLearning => 'Learning';
+
+  @override
+  String get settingsSectionPreferences => 'Preferences';
+
+  @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSave => 'Save';
+
+  @override
+  String get settingsDailyGoal => 'Daily goal';
+
+  @override
+  String settingsDailyGoalLessons(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lessons',
+      one: '1 lesson',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsDailyGoalSaved => 'Daily goal updated';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLightShort => 'Light';
+
+  @override
+  String get settingsThemeDarkShort => 'Dark';
+
+  @override
+  String get settingsStudyReminders => 'Study reminders';
+
+  @override
+  String get settingsChangePassword => 'Change password';
+
+  @override
+  String settingsChangePasswordBody(String email) {
+    return 'We\'ll email a link to $email so you can set a new password.';
+  }
+
+  @override
+  String get settingsSendLink => 'Send link';
+
+  @override
+  String settingsAppVersion(String version) {
+    return 'Version $version';
+  }
 }

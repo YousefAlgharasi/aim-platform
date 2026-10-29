@@ -5,6 +5,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/logging/app_logger.dart';
+import 'core/networking/network_status.dart';
 import 'core/logging/app_provider_observer.dart';
 
 void main() {
@@ -21,6 +22,9 @@ void main() {
     AppLogger.e('PlatformDispatcher', 'Unhandled asynchronous exception', error, stack);
     return true;
   };
+
+  // Offline banner / offline error screens follow device connectivity.
+  NetworkStatus.instance.startMonitoring();
 
   // Keeps the native splash on screen until SplashPage removes it
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
