@@ -3652,4 +3652,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String homeNextCourseStart(String course) {
     return 'ابدأ $course';
   }
+
+  @override
+  String get offlineTitle => 'أنت غير متصل بالإنترنت';
+
+  @override
+  String get offlineMessage => 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get offlineBanner => 'أنت غير متصل. تحقق من اتصالك بالإنترنت.';
+
+  @override
+  String get offlineBannerSavedData => 'أنت غير متصل. يتم عرض المحتوى المحفوظ.';
 }

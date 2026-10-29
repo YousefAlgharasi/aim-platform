@@ -6137,6 +6137,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start {course}'**
   String homeNextCourseStart(String course);
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get offlineTitle;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get offlineMessage;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Check your internet connection.'**
+  String get offlineBanner;
+
+  /// Offline state (core/widgets, offline banner).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Showing saved content.'**
+  String get offlineBannerSavedData;
 }
 
 class _AppLocalizationsDelegate

@@ -1010,5 +1010,9 @@
   "homeCourseCompletedLabel": "مكتملة",
   "homeNextCourseTitle": "لقد أنهيت {course}!",
   "homeNextCourseBody": "ابدأ {course} الآن لتواصل التقدّم.",
-  "homeNextCourseStart": "ابدأ {course}"
+  "homeNextCourseStart": "ابدأ {course}",
+  "offlineTitle": "أنت غير متصل بالإنترنت",
+  "offlineMessage": "تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
+  "offlineBanner": "أنت غير متصل. تحقق من اتصالك بالإنترنت.",
+  "offlineBannerSavedData": "أنت غير متصل. يتم عرض المحتوى المحفوظ."
 }

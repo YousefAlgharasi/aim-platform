@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/networking/backend_api_client.dart';
+
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
 import 'session_store_provider.dart';
@@ -94,6 +97,22 @@ class AppBootstrapNotifier extends StateNotifier<AppBootstrapStatus> {
               session.email,
               accessToken: refreshed.accessToken,
             );
+      } on AppException catch (e) {
+        if (!mounted) return;
+        if (e.code == BackendApiClient.networkErrorCode || e.code == 'REQUEST_TIMEOUT') {
+          // Offline, not rejected: keep the session so the student can use
+          // saved data. The token refreshes on the first request once back
+          // online (BackendApiClient's 401 refresh-and-retry).
+          _ref.read(authFlowProvider.notifier).signIn(
+                session.email,
+                accessToken: session.accessToken,
+              );
+          return;
+        }
+        // Refresh rejected — the session is no longer valid.
+        await store.clear();
+        if (!mounted) return;
+        _ref.read(authFlowProvider.notifier).completeBootstrap();
       } catch (_) {
         // Refresh failed — the session is no longer valid.
         await store.clear();

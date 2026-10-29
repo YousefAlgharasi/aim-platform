@@ -4502,5 +4502,13 @@
   "homeNextCourseBody": "Start {course} now to keep going.",
   "@homeNextCourseBody": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}},
   "homeNextCourseStart": "Start {course}",
-  "@homeNextCourseStart": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}}
+  "@homeNextCourseStart": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}},
+  "offlineTitle": "You're offline",
+  "@offlineTitle": {"description": "Offline state (core/widgets, offline banner)."},
+  "offlineMessage": "Check your internet connection and try again.",
+  "@offlineMessage": {"description": "Offline state (core/widgets, offline banner)."},
+  "offlineBanner": "You're offline. Check your internet connection.",
+  "@offlineBanner": {"description": "Offline state (core/widgets, offline banner)."},
+  "offlineBannerSavedData": "You're offline. Showing saved content.",
+  "@offlineBannerSavedData": {"description": "Offline state (core/widgets, offline banner)."}
 }

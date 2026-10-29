@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
@@ -7,8 +9,11 @@ import '../config/config.dart';
 import '../logging/app_logger.dart';
 import 'api_client_exception.dart';
 import 'api_meta.dart';
+import 'api_response_cache.dart';
 import 'api_response_envelope.dart';
 import 'auth_interceptor.dart';
+import 'media_cache.dart';
+import 'network_status.dart';
 
 // P6-022: BackendApiClient — centralised backend API consumer.
 //
@@ -25,14 +30,29 @@ class BackendApiClient {
     http.Client? httpClient,
     AuthInterceptor? authInterceptor,
     Duration requestTimeout = const Duration(seconds: 20),
+    ApiResponseCache? responseCache,
+    MediaCache? mediaCache,
+    NetworkStatus? networkStatus,
   })  : _config = config,
         _httpClient = httpClient ?? http.Client(),
         _authInterceptor = authInterceptor,
-        _requestTimeout = requestTimeout;
+        _requestTimeout = requestTimeout,
+        _responseCache = responseCache,
+        _mediaCache = mediaCache,
+        _networkStatus = networkStatus;
 
   final AppConfig _config;
   final http.Client _httpClient;
   final AuthInterceptor? _authInterceptor;
+
+  /// Saved GET responses: reused while fresh, and shown when offline.
+  final ApiResponseCache? _responseCache;
+
+  /// Saved audio bytes for [getBytes].
+  final MediaCache? _mediaCache;
+
+  /// Offline signal for the UI, fed by real request outcomes.
+  final NetworkStatus? _networkStatus;
 
   /// Bound on every outbound call so a slow or cold-starting backend
   /// surfaces as a catchable [ApiClientException] instead of leaving the
@@ -46,7 +66,7 @@ class BackendApiClient {
   }) async {
     final effectiveTimeout = timeout ?? _requestTimeout;
     try {
-      return await send().timeout(
+      final result = await send().timeout(
         effectiveTimeout,
         onTimeout: () {
           const exc = ApiClientException(
@@ -57,12 +77,37 @@ class BackendApiClient {
           throw exc;
         },
       );
+      _networkStatus?.reportReachable();
+      return result;
+    } on ApiClientException catch (e) {
+      if (isConnectivityError(e)) _networkStatus?.reportUnreachable();
+      rethrow;
+    } on SocketException catch (e) {
+      throw _networkError(e);
+    } on HandshakeException catch (e) {
+      throw _networkError(e);
+    } on http.ClientException catch (e) {
+      throw _networkError(e);
     } catch (e, st) {
-      if (e is! ApiClientException) {
-        AppLogger.e('BackendApiClient', 'Network request failed with exception', e, st);
-      }
+      AppLogger.e('BackendApiClient', 'Network request failed with exception', e, st);
       rethrow;
     }
+  }
+
+  /// No connection / server unreachable, as opposed to an error response.
+  static bool isConnectivityError(Object error) =>
+      error is ApiClientException &&
+      (error.code == networkErrorCode || error.code == 'REQUEST_TIMEOUT');
+
+  static const String networkErrorCode = 'NETWORK_ERROR';
+
+  ApiClientException _networkError(Object cause) {
+    AppLogger.w('BackendApiClient', 'Server unreachable', cause);
+    _networkStatus?.reportUnreachable();
+    return const ApiClientException(
+      code: networkErrorCode,
+      message: "You're offline. Check your internet connection and try again.",
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -105,14 +150,35 @@ class BackendApiClient {
     Map<String, String>? queryParameters,
     Map<String, String>? headers,
   }) async {
-    return _sendWithRefreshRetry<T>(
-      decodeData: decodeData,
-      send: (effectiveHeaders) => _withTimeout(() => _httpClient.get(
-            buildUri(path, queryParameters),
-            headers: effectiveHeaders,
-          )),
-      buildHeaders: () => _jsonHeaders(headers),
-    );
+    final uri = buildUri(path, queryParameters);
+    final cache = ApiResponseCache.isCacheable(path) ? _responseCache : null;
+    final cacheKey = cache == null
+        ? null
+        : ApiResponseCache.keyFor(uri, _jsonHeaders(headers)['authorization']);
+
+    final saved = cacheKey == null ? null : await cache!.read(cacheKey);
+    if (saved != null && cache!.isFresh(saved)) {
+      return _parseResponse<T>(http.Response(saved.body, 200), decodeData: decodeData);
+    }
+
+    try {
+      return await _sendWithRefreshRetry<T>(
+        decodeData: decodeData,
+        send: (effectiveHeaders) => _withTimeout(() => _httpClient.get(
+              uri,
+              headers: effectiveHeaders,
+            )),
+        buildHeaders: () => _jsonHeaders(headers),
+        onSuccessBody: cacheKey == null ? null : (body) => cache!.write(cacheKey, body),
+      );
+    } on ApiClientException catch (e) {
+      // Offline: show the last saved copy instead of an error.
+      if (saved != null && isConnectivityError(e)) {
+        _networkStatus?.reportServedFromCache();
+        return _parseResponse<T>(http.Response(saved.body, 200), decodeData: decodeData);
+      }
+      rethrow;
+    }
   }
 
   Future<ApiResponseEnvelope<T>> post<T>(
@@ -125,7 +191,7 @@ class BackendApiClient {
   }) async {
     final encodedBody = body == null ? null : jsonEncode(body);
 
-    return _sendWithRefreshRetry<T>(
+    return _mutate(() => _sendWithRefreshRetry<T>(
       decodeData: decodeData,
       send: (effectiveHeaders) => _withTimeout(() => _httpClient.post(
             buildUri(path, queryParameters),
@@ -138,7 +204,7 @@ class BackendApiClient {
       // Unauthenticated calls (login/refresh/register) must never trigger
       // a refresh-retry loop.
       allowRefreshRetry: requiresAuth,
-    );
+    ));
   }
 
   Future<ApiResponseEnvelope<T>> put<T>(
@@ -149,7 +215,7 @@ class BackendApiClient {
   }) async {
     final encodedBody = body == null ? null : jsonEncode(body);
 
-    return _sendWithRefreshRetry<T>(
+    return _mutate(() => _sendWithRefreshRetry<T>(
       decodeData: decodeData,
       send: (effectiveHeaders) => _withTimeout(() => _httpClient.put(
             buildUri(path),
@@ -157,7 +223,7 @@ class BackendApiClient {
             body: encodedBody,
           )),
       buildHeaders: () => _jsonHeaders(headers),
-    );
+    ));
   }
 
   Future<ApiResponseEnvelope<T>> patch<T>(
@@ -168,7 +234,7 @@ class BackendApiClient {
   }) async {
     final encodedBody = body == null ? null : jsonEncode(body);
 
-    return _sendWithRefreshRetry<T>(
+    return _mutate(() => _sendWithRefreshRetry<T>(
       decodeData: decodeData,
       send: (effectiveHeaders) => _withTimeout(() => _httpClient.patch(
             buildUri(path),
@@ -176,7 +242,7 @@ class BackendApiClient {
             body: encodedBody,
           )),
       buildHeaders: () => _jsonHeaders(headers),
-    );
+    ));
   }
 
   Future<ApiResponseEnvelope<T>> delete<T>(
@@ -184,14 +250,14 @@ class BackendApiClient {
     required ApiJsonDecoder<T> decodeData,
     Map<String, String>? headers,
   }) async {
-    return _sendWithRefreshRetry<T>(
+    return _mutate(() => _sendWithRefreshRetry<T>(
       decodeData: decodeData,
       send: (effectiveHeaders) => _withTimeout(() => _httpClient.delete(
             buildUri(path),
             headers: effectiveHeaders,
           )),
       buildHeaders: () => _jsonHeaders(headers),
-    );
+    ));
   }
 
   /// Multipart upload (e.g. voice audio submission). Used only for backend
@@ -226,7 +292,9 @@ class BackendApiClient {
     );
     final response = await http.Response.fromStream(streamedResponse);
 
-    return _parseResponse<T>(response, decodeData: decodeData);
+    final result = await _parseResponse<T>(response, decodeData: decodeData);
+    _responseCache?.markStale();
+    return result;
   }
 
   /// Raw byte fetch (e.g. voice audio playback). Returns the response body
@@ -236,6 +304,9 @@ class BackendApiClient {
     Map<String, String>? headers,
   }) async {
     final uri = buildUri(path);
+    final saved = await _mediaCache?.read(uri);
+    if (saved != null) return saved;
+
     final response = await _withTimeout(
       () => _httpClient.get(
         uri,
@@ -258,6 +329,7 @@ class BackendApiClient {
       throw exc;
     }
 
+    await _mediaCache?.write(uri, response.bodyBytes);
     return response.bodyBytes;
   }
 
@@ -320,13 +392,14 @@ class BackendApiClient {
     required Map<String, String> Function() buildHeaders,
     required ApiJsonDecoder<T> decodeData,
     bool allowRefreshRetry = true,
+    void Function(String body)? onSuccessBody,
   }) async {
     final response = await send(buildHeaders());
 
     if (response.statusCode != 401 ||
         !allowRefreshRetry ||
         _authInterceptor?.onUnauthorized == null) {
-      return _parseResponse<T>(response, decodeData: decodeData);
+      return _parseAndKeep<T>(response, decodeData, onSuccessBody);
     }
 
     final newToken = await _authInterceptor!.onUnauthorized!();
@@ -339,7 +412,35 @@ class BackendApiClient {
     final retryHeaders = {...buildHeaders(), 'authorization': 'Bearer $newToken'};
     final retryResponse = await send(retryHeaders);
 
-    return _parseResponse<T>(retryResponse, decodeData: decodeData);
+    return _parseAndKeep<T>(retryResponse, decodeData, onSuccessBody);
+  }
+
+  /// Parses [response]; when it's a successful envelope, hands the raw body
+  /// to [onSuccessBody] (used to save GET responses for offline use).
+  Future<ApiResponseEnvelope<T>> _parseAndKeep<T>(
+    http.Response response,
+    ApiJsonDecoder<T> decodeData,
+    void Function(String body)? onSuccessBody,
+  ) async {
+    final envelope = await _parseResponse<T>(response, decodeData: decodeData);
+    if (onSuccessBody != null &&
+        response.statusCode >= 200 &&
+        response.statusCode < 300 &&
+        response.body.trim().isNotEmpty) {
+      onSuccessBody(response.body);
+    }
+    return envelope;
+  }
+
+  /// Runs a write request; once it succeeds, saved GET responses stop being
+  /// reused as fresh (they still serve offline), so the next read shows the
+  /// change.
+  Future<ApiResponseEnvelope<T>> _mutate<T>(
+    Future<ApiResponseEnvelope<T>> Function() send,
+  ) async {
+    final result = await send();
+    _responseCache?.markStale();
+    return result;
   }
 
   // ---------------------------------------------------------------------------

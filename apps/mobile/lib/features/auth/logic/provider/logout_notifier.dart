@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/core/networking/api_response_cache.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'auth_context_provider.dart';
@@ -31,7 +32,10 @@ class LogoutNotifier extends AppStateNotifier<void> {
       // Storage failure must not block local auth state cleanup.
     }
 
-    // 3. Clear in-memory auth state.
+    // 3. Remove this user's saved responses from the device.
+    await ApiResponseCache.instance.clear();
+
+    // 4. Clear in-memory auth state.
     _ref.read(authContextProvider.notifier).clearCurrentUser();
     _ref.read(authFlowProvider.notifier).signOut();
 

@@ -3616,4 +3616,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeNextCourseStart(String course) {
     return 'Start $course';
   }
+
+  @override
+  String get offlineTitle => 'You\'re offline';
+
+  @override
+  String get offlineMessage => 'Check your internet connection and try again.';
+
+  @override
+  String get offlineBanner =>
+      'You\'re offline. Check your internet connection.';
+
+  @override
+  String get offlineBannerSavedData =>
+      'You\'re offline. Showing saved content.';
 }
