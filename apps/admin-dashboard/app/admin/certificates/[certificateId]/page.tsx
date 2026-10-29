@@ -236,57 +236,47 @@ export default async function CertificateViewPage({ params }: Props) {
       <p className="certificate-scores-title">Course Evaluation (1,000 Points System)</p>
       {certificate.breakdown ? (
         <div className="certificate-breakdown-card">
-          <div className="certificate-breakdown-row">
-            <span className="certificate-breakdown-label">
-              <span>Lesson Practices</span>
-              <span className="certificate-weight-badge">20% Weight</span>
-            </span>
-            <span className="certificate-breakdown-value">
-              {certificate.breakdown.practicePoints} / 200 pts{' '}
-              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
-                ({certificate.breakdown.practiceAccuracyPercent}% accuracy)
-              </span>
-            </span>
-          </div>
-
-          <div className="certificate-breakdown-row">
-            <span className="certificate-breakdown-label">
-              <span>Chapter Quizzes</span>
-              <span className="certificate-weight-badge">20% Weight</span>
-            </span>
-            <span className="certificate-breakdown-value">
-              {certificate.breakdown.quizPoints} / 200 pts{' '}
-              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
-                ({certificate.breakdown.quizAveragePercent}% avg)
-              </span>
-            </span>
-          </div>
-
-          <div className="certificate-breakdown-row">
-            <span className="certificate-breakdown-label">
-              <span>Chapter Exams</span>
-              <span className="certificate-weight-badge">20% Weight</span>
-            </span>
-            <span className="certificate-breakdown-value">
-              {certificate.breakdown.chapterExamPoints} / 200 pts{' '}
-              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
-                ({certificate.breakdown.chapterExamAveragePercent}% avg)
-              </span>
-            </span>
-          </div>
-
-          <div className="certificate-breakdown-row">
-            <span className="certificate-breakdown-label">
-              <span>Course Final Exam</span>
-              <span className="certificate-weight-badge">40% Weight</span>
-            </span>
-            <span className="certificate-breakdown-value">
-              {certificate.breakdown.finalExamPoints} / 400 pts{' '}
-              <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
-                ({certificate.breakdown.finalExamPercent}%)
-              </span>
-            </span>
-          </div>
+          {[
+            {
+              label: 'Lesson Practices',
+              points: certificate.breakdown.practicePoints,
+              max: certificate.breakdown.practiceMaxPoints,
+              detail: `${certificate.breakdown.practiceAccuracyPercent}% accuracy`,
+            },
+            {
+              label: 'Chapter Quizzes',
+              points: certificate.breakdown.quizPoints,
+              max: certificate.breakdown.quizMaxPoints,
+              detail: `${certificate.breakdown.quizAveragePercent}% avg`,
+            },
+            {
+              label: 'Chapter Exams',
+              points: certificate.breakdown.chapterExamPoints,
+              max: certificate.breakdown.chapterExamMaxPoints,
+              detail: `${certificate.breakdown.chapterExamAveragePercent}% avg`,
+            },
+            {
+              label: 'Course Final Exam',
+              points: certificate.breakdown.finalExamPoints,
+              max: certificate.breakdown.finalExamMaxPoints,
+              detail: `${certificate.breakdown.finalExamPercent}%`,
+            },
+          ]
+            .filter((row) => row.max > 0)
+            .map((row) => (
+              <div className="certificate-breakdown-row" key={row.label}>
+                <span className="certificate-breakdown-label">
+                  <span>{row.label}</span>
+                  <span className="certificate-weight-badge">{Math.round(row.max / 10)}% Weight</span>
+                </span>
+                <span className="certificate-breakdown-value">
+                  {row.points} / {row.max} pts{' '}
+                  <span style={{ color: '#666', fontWeight: 'normal', fontSize: '13px' }}>
+                    ({row.detail})
+                  </span>
+                </span>
+              </div>
+            ))}
 
           <div className="certificate-grand-total">
             <div>

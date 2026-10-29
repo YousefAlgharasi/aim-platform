@@ -60,7 +60,7 @@ describe('CertificateService', () => {
       display_name: 'Jane Doe',
       email: 'jane@example.com',
       issued_at: '2026-01-01',
-      score_snapshot: [],
+      score_snapshot: { scoringVersion: 2, assessments: [], practiceAccuracy: null },
     };
     const db = createDb([{ rows: [existingRow] }]);
     const courseCompletion = createCourseCompletion(true);
@@ -103,5 +103,37 @@ describe('CertificateService', () => {
     expect(result?.breakdown).toBeDefined();
     expect(result?.totalPoints).toBeGreaterThan(0);
     expect(db.query.mock.calls[3][0]).toContain('INSERT INTO certificates');
+  });
+});
+
+describe('CertificateService — legacy snapshots', () => {
+  it('replaces the stored 100% practice score of a version-1 snapshot with the real accuracy', async () => {
+    const legacyRow = {
+      id: 'cert-3',
+      student_id: 'student-1',
+      course_id: 'course-1',
+      course_title: 'English A1',
+      display_name: 'Jane Doe',
+      email: 'jane@example.com',
+      issued_at: '2026-01-01',
+      score_snapshot: {
+        assessments: [
+          { assessmentId: 'q1', title: 'Quiz', type: 'quiz', score: 0, maxScore: 10, scorePercent: 0, passed: false },
+          { assessmentId: 'q1', title: 'Quiz', type: 'quiz', score: 10, maxScore: 10, scorePercent: 100, passed: true },
+        ],
+        practiceAccuracy: 100,
+      },
+    };
+    const db = createDb([
+      { rows: [legacyRow] }, // getForStudentAndCourse
+      { rows: [{ total: '4', correct: '3' }] }, // getCoursePracticeAccuracy
+    ]);
+    const service = new CertificateService(db as never, { isCourseComplete: jest.fn() } as never);
+
+    const result = await service.getForStudentAndCourse('student-1', 'course-1');
+
+    expect(result?.breakdown.practiceAccuracyPercent).toBe(75);
+    expect(result?.breakdown.quizAveragePercent).toBe(100);
+    expect(result?.scoreSnapshot).toHaveLength(1);
   });
 });

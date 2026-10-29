@@ -58,7 +58,7 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
     return Scaffold(
       backgroundColor: surfaces.background,
       appBar: AIMTopAppBar(
-        title: 'Assessments',
+        title: AppLocalizations.of(context).assessmentsListTitle,
         onBack: () {
           if (context.canPop()) {
             context.pop();
@@ -71,7 +71,7 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
             padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
             child: Semantics(
               button: true,
-              label: 'Deadlines',
+              label: AppLocalizations.of(context).assessmentsDeadlinesTitle,
               child: TextButton.icon(
                 onPressed: () => context.push(AppRoutePaths.assessmentDeadlines),
                 icon: const Icon(
@@ -80,7 +80,7 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
                   color: AimColors.primary500,
                 ),
                 label: Text(
-                  'Deadlines',
+                  AppLocalizations.of(context).assessmentsDeadlinesTitle,
                   style: AimTextStyles.label.copyWith(
                     color: AimColors.primary500,
                     fontWeight: AimFontWeights.semibold,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/assessments/logic/entity/assessment_entities.dart';
+import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class AssessmentListTile extends StatelessWidget {
   const AssessmentListTile({
@@ -90,11 +91,11 @@ class _DeadlineStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, label) = switch (status) {
-      'open' => (AimColors.success500, 'Open'),
-      'upcoming' => (AimColors.info500, 'Upcoming'),
-      'closed' || 'expired' => (AimColors.neutral500, 'Closed'),
-      'late' => (AimColors.warning500, 'Late'),
-      'missed' => (AimColors.error500, 'Missed'),
+      'open' => (AimColors.success500, AppLocalizations.of(context).assessmentsDeadlineOpen),
+      'upcoming' => (AimColors.info500, AppLocalizations.of(context).assessmentsDeadlineUpcoming),
+      'closed' || 'expired' => (AimColors.neutral500, AppLocalizations.of(context).assessmentsDeadlineClosed),
+      'late' => (AimColors.warning500, AppLocalizations.of(context).assessmentsDeadlineLate),
+      'missed' => (AimColors.error500, AppLocalizations.of(context).assessmentsDeadlineMissed),
       _ => (AimColors.neutral500, status),
     };
 

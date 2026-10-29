@@ -5831,6 +5831,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restart'**
   String get appUpdateRestart;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Exam details'**
+  String get assessmentsDetailsTitleExam;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz details'**
+  String get assessmentsDetailsTitleQuiz;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment details'**
+  String get assessmentsDetailsTitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Loading assessment'**
+  String get assessmentsLoadingLabel;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Past results'**
+  String get assessmentsPastResultsTitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'View your attempt history'**
+  String get assessmentsPastResultsSubtitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get assessmentsSectionsTitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 question} other{{count} questions}}'**
+  String assessmentsSectionQuestionCount(int count);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts left'**
+  String get assessmentsStatAttemptsLeft;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Best score'**
+  String get assessmentsStatBestScore;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {max} attempts used'**
+  String assessmentsAttemptsUsed(int used, int max);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get assessmentsPassedBadge;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Resume attempt'**
+  String get assessmentsResumeAttempt;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get assessmentsRetakeAttempt;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Finish every lesson in this chapter to unlock this quiz.'**
+  String get assessmentsBlockedChapter;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Finish every chapter and pass each chapter quiz to unlock the final exam.'**
+  String get assessmentsBlockedCourse;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'You have used all your attempts for this assessment.'**
+  String get assessmentsBlockedMaxAttempts;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start the attempt. Please try again.'**
+  String get assessmentsStartFailed;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String assessmentsDurationMinutes(int minutes);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Once you start, the {minutes}-minute timer runs continuously, even if you leave the app. Make sure you have time to finish.'**
+  String assessmentsStartSubtitleTimed(int minutes);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.'**
+  String get assessmentsStartSubtitleUntimed;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get assessmentsDeadlineOpen;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get assessmentsDeadlineUpcoming;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get assessmentsDeadlineClosed;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get assessmentsDeadlineLate;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get assessmentsDeadlineMissed;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'FINAL LEVEL EXAM'**
+  String get lessonsFinalExamBadge;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'FINAL EXAM PASSED · {score}%'**
+  String lessonsFinalExamPassedBadge(int score);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'FINAL EXAM PASSED'**
+  String get lessonsFinalExamPassedBadgeNoScore;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Final level exam completed and passed. Tap to see your results.'**
+  String get lessonsFinalExamPassedSubtitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to start your final level exam.'**
+  String get lessonsFinalExamStartSubtitle;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'Complete all chapters and pass each chapter quiz to unlock your final level exam.'**
+  String get lessonsFinalExamLockedDetail;
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'{points} / {max} pts'**
+  String certificatePointsOfMax(int points, int max);
+
+  /// Assessment flow (features/assessments, lessons final exam card, certificates).
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String certificateWeightPercent(int percent);
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get assessmentsResultPassed;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get assessmentsResultFailed;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Late penalty applied'**
+  String get assessmentsLateSubmissionNote;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Graded {date}'**
+  String assessmentsGradedOn(String date);
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKDOWN'**
+  String get assessmentsBreakdownTitle;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Result history'**
+  String get assessmentsResultHistoryTitle;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Time remaining: {time}'**
+  String assessmentsTimeRemaining(String time);
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get assessmentsStatusLabel;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get assessmentsStatusInProgress;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get assessmentsExpiresLabel;
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'QUESTION {number}'**
+  String assessmentsQuestionNumber(int number);
+
+  /// Assessment flow (features/assessments).
+  ///
+  /// In en, this message translates to:
+  /// **'Assessments'**
+  String get assessmentsListTitle;
 }
 
 class _AppLocalizationsDelegate

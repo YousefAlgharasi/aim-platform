@@ -229,7 +229,7 @@ class _CountdownPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Time remaining: $label',
+      label: AppLocalizations.of(context).assessmentsTimeRemaining(label),
       child: Container(
         constraints: const BoxConstraints(minHeight: 32),
         padding: const EdgeInsetsDirectional.symmetric(
@@ -307,7 +307,7 @@ class _AttemptContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _StatusRow(
-                  label: 'Status',
+                  label: AppLocalizations.of(context).assessmentsStatusLabel,
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AimSpacing.space8,
@@ -319,7 +319,7 @@ class _AttemptContent extends ConsumerWidget {
                     ),
                     child: Text(
                       result.status == 'in_progress'
-                          ? 'In Progress'
+                          ? AppLocalizations.of(context).assessmentsStatusInProgress
                           : result.status,
                       style: Theme.of(context)
                           .textTheme
@@ -336,7 +336,7 @@ class _AttemptContent extends ConsumerWidget {
                 if (result.expiresAt != null) ...[
                   const SizedBox(height: AimSpacing.componentGap),
                   _StatusRow(
-                    label: 'Expires',
+                    label: AppLocalizations.of(context).assessmentsExpiresLabel,
                     trailing: Text(
                       result.expiresAt!,
                       style: AimTextStyles.bodySm.copyWith(
@@ -460,7 +460,7 @@ class _QuestionCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'QUESTION ${index + 1}',
+            AppLocalizations.of(context).assessmentsQuestionNumber(index + 1),
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,

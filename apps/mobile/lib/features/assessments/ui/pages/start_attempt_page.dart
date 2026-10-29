@@ -68,11 +68,11 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
         switch (next) {
           case AppAsyncSuccess(:final data):
             _onStartSuccess(data);
-          case AppAsyncFailure(:final message):
+          case AppAsyncFailure(:final message, :final code):
             setState(() => _starting = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(message),
+                content: Text(_startErrorMessage(code, message)),
                 backgroundColor: AimColors.error500,
               ),
             );
@@ -83,10 +83,11 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
     );
 
     final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
     final timeLimitSeconds = widget.timeLimitSeconds;
     final subtitle = timeLimitSeconds != null
-        ? 'Once you start, the ${_formatMinutes(timeLimitSeconds)}-minute timer runs continuously — even if you leave the app. Make sure you have time to finish.'
-        : 'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.';
+        ? l10n.assessmentsStartSubtitleTimed((timeLimitSeconds / 60).ceil())
+        : l10n.assessmentsStartSubtitleUntimed;
 
     return Scaffold(
       backgroundColor: surfaces.background,
@@ -157,5 +158,18 @@ class _StartAttemptPageState extends ConsumerState<StartAttemptPage> {
     );
   }
 
-  String _formatMinutes(int seconds) => (seconds / 60).round().toString();
+  /// Backend start errors arrive as codes (or, from older responses, the code
+  /// as the message); show the student a sentence instead.
+  String _startErrorMessage(String? code, String message) {
+    final l10n = AppLocalizations.of(context);
+    final key = code == 'MAX_ATTEMPTS_REACHED' || message == 'MAX_ATTEMPTS_REACHED'
+        ? 'MAX_ATTEMPTS_REACHED'
+        : code;
+    return switch (key) {
+      'MAX_ATTEMPTS_REACHED' => l10n.assessmentsBlockedMaxAttempts,
+      'CHAPTER_NOT_COMPLETE' => l10n.assessmentsBlockedChapter,
+      'COURSE_NOT_COMPLETE' => l10n.assessmentsBlockedCourse,
+      _ => message.isNotEmpty ? message : l10n.assessmentsStartFailed,
+    };
+  }
 }

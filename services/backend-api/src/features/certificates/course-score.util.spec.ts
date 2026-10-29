@@ -55,6 +55,58 @@ describe('computeCourse1000PointBreakdown', () => {
   });
 });
 
+describe('computeCourse1000PointBreakdown — real marks', () => {
+  it('scales the remaining weights to 1,000 when the course has no chapter exams', () => {
+    const breakdown = computeCourse1000PointBreakdown(
+      [
+        { assessmentId: 'q1', type: 'quiz', score: 10, maxScore: 10 },
+        { assessmentId: 'final', type: 'exam', score: 33, maxScore: 33, isFinalExam: true },
+      ],
+      100,
+    );
+
+    expect(breakdown.practiceMaxPoints).toBe(250);
+    expect(breakdown.quizMaxPoints).toBe(250);
+    expect(breakdown.chapterExamMaxPoints).toBe(0);
+    expect(breakdown.finalExamMaxPoints).toBe(500);
+    expect(breakdown.totalPoints).toBe(1000);
+    expect(breakdown.overallPercent).toBe(100);
+  });
+
+  it('counts each assessment once, at its best attempt', () => {
+    const breakdown = computeCourse1000PointBreakdown(
+      [
+        { assessmentId: 'q1', type: 'quiz', score: 0, maxScore: 10 },
+        { assessmentId: 'q1', type: 'quiz', score: 9, maxScore: 10 },
+        { assessmentId: 'q2', type: 'quiz', score: 7, maxScore: 10 },
+      ],
+      null,
+    );
+
+    expect(breakdown.quizAveragePercent).toBe(80);
+    expect(breakdown.quizMaxPoints).toBe(1000);
+    expect(breakdown.overallPercent).toBe(80);
+  });
+
+  it('leaves practice out instead of awarding it when there were no practice attempts', () => {
+    const breakdown = computeCourse1000PointBreakdown(
+      [{ assessmentId: 'final', type: 'exam', score: 6, maxScore: 10, isFinalExam: true }],
+      null,
+    );
+
+    expect(breakdown.practicePoints).toBe(0);
+    expect(breakdown.practiceMaxPoints).toBe(0);
+    expect(breakdown.finalExamMaxPoints).toBe(1000);
+    expect(breakdown.overallPercent).toBe(60);
+  });
+
+  it('returns an all-zero breakdown with no results', () => {
+    const breakdown = computeCourse1000PointBreakdown([], null);
+    expect(breakdown.totalPoints).toBe(0);
+    expect(breakdown.overallPercent).toBe(0);
+  });
+});
+
 describe('computeCourseScorePercent', () => {
   it('returns null when there are no results yet', () => {
     expect(computeCourseScorePercent([])).toBeNull();

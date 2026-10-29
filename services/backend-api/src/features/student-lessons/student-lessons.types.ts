@@ -25,6 +25,9 @@ export interface ChapterQuizSummary {
 
   /** True until every published lesson in the chapter is completed. */
   readonly locked: boolean;
+
+  /** Best score across the student's graded attempts, 0-100. Null before any result. */
+  readonly scorePercent: number | null;
 }
 
 export interface StudentLessonsResponse {

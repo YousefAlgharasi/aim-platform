@@ -60,10 +60,12 @@ export class StudentChaptersRepository {
          (
            SELECT COUNT(*) FROM assessments a
            WHERE a.chapter_id = ch.id AND a.type = 'quiz' AND a.status = 'published'
+           AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
          ) AS quiz_count,
          NOT EXISTS (
            SELECT 1 FROM assessments a
            WHERE a.chapter_id = ch.id AND a.type = 'quiz' AND a.status = 'published'
+           AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
              AND NOT EXISTS (
                SELECT 1 FROM assessment_results ar
                WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
@@ -93,13 +95,15 @@ export class StudentChaptersRepository {
                 WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
               ) AS passed,
               (
-                SELECT ar.score FROM assessment_results ar
-                WHERE ar.assessment_id = a.id AND ar.student_id = $2 AND ar.passed = true
-                ORDER BY ar.graded_at DESC LIMIT 1
+                SELECT ROUND(MAX(ar.score / NULLIF(ar.max_score, 0) * 100))
+                FROM assessment_results ar
+                WHERE ar.assessment_id = a.id AND ar.student_id = $2
               ) AS score
        FROM levels lv
        JOIN assessments a ON (a.course_id = lv.course_id OR a.chapter_id IN (SELECT id FROM chapters WHERE level_id = lv.id)) AND a.type = 'exam' AND a.status = 'published'
        WHERE lv.id = $1
+         AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
+       ORDER BY (a.course_id = lv.course_id) DESC, a.created_at ASC
        LIMIT 1`,
       [levelId, studentId ?? null],
     );

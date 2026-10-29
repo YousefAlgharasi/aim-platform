@@ -92,10 +92,20 @@ export class ChapterCompletionService {
     );
     const chapterTitle = chapterResult.rows[0]?.title ?? '';
 
+    // lesson_progress keys students by their auth id, but notification_events
+    // references users.id — resolve the internal id or the insert violates
+    // the recipient foreign key.
+    const userResult = await this.db.query<{ id: string }>(
+      `SELECT id FROM users WHERE id = $1 OR supabase_auth_uid = $1 LIMIT 1`,
+      [studentId],
+    );
+    const recipientId = userResult.rows[0]?.id;
+    if (!recipientId) return;
+
     for (const assessment of assessments.rows) {
       const variables = { assessment_title: assessment.title, chapter_title: chapterTitle };
       await this.notificationQueue.enqueue({
-        userId: studentId,
+        userId: recipientId,
         recipientType: 'student',
         templateKey: 'assessment_unlocked',
         channel: 'in_app',
@@ -104,7 +114,7 @@ export class ChapterCompletionService {
         variables,
       });
       await this.notificationQueue.enqueue({
-        userId: studentId,
+        userId: recipientId,
         recipientType: 'student',
         templateKey: 'assessment_unlocked',
         channel: 'push',

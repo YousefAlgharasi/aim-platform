@@ -2,11 +2,17 @@ import { StudentLessonsRepository } from './student-lessons.repository';
 import { StudentLessonsService } from './student-lessons.service';
 
 describe('StudentLessonsService', () => {
-  const makeRepository = (rows: unknown[], quiz: unknown = null, hasPassingResult = false) =>
+  const makeRepository = (
+    rows: unknown[],
+    quiz: unknown = null,
+    hasPassingResult = false,
+    bestScorePercent: number | null = null,
+  ) =>
     ({
       findLessonsWithProgress: jest.fn().mockResolvedValue(rows),
       findQuizForChapter: jest.fn().mockResolvedValue(quiz),
       hasPassingResult: jest.fn().mockResolvedValue(hasPassingResult),
+      findBestScorePercent: jest.fn().mockResolvedValue(bestScorePercent),
     }) as unknown as StudentLessonsRepository;
 
   it('returns an empty list when there are no published lessons', async () => {
@@ -174,6 +180,7 @@ describe('StudentLessonsService', () => {
       title: 'Chapter 1 Quiz',
       completed: false,
       locked: true,
+      scorePercent: null,
     });
   });
 
@@ -192,6 +199,7 @@ describe('StudentLessonsService', () => {
         ],
         { assessment_id: 'quiz-1', title: 'Chapter 1 Quiz' },
         true,
+        82,
       ),
     );
 
@@ -202,6 +210,7 @@ describe('StudentLessonsService', () => {
       title: 'Chapter 1 Quiz',
       completed: true,
       locked: false,
+      scorePercent: 82,
     });
   });
 });

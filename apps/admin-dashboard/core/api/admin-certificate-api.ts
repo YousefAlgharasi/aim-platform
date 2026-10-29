@@ -14,14 +14,20 @@ export type AdminCertificateScoreSnapshotEntry = {
   readonly passed: boolean;
 };
 
+// Component maxima come from the backend: components a course doesn't have
+// are 0 and the rest are scaled so they still total 1,000.
 export type CertificateScoreBreakdown = {
-  readonly practicePoints: number; // max 200
+  readonly practicePoints: number;
+  readonly practiceMaxPoints: number;
   readonly practiceAccuracyPercent: number;
-  readonly quizPoints: number; // max 200
+  readonly quizPoints: number;
+  readonly quizMaxPoints: number;
   readonly quizAveragePercent: number;
-  readonly chapterExamPoints: number; // max 200
+  readonly chapterExamPoints: number;
+  readonly chapterExamMaxPoints: number;
   readonly chapterExamAveragePercent: number;
-  readonly finalExamPoints: number; // max 400
+  readonly finalExamPoints: number;
+  readonly finalExamMaxPoints: number;
   readonly finalExamPercent: number;
   readonly totalPoints: number; // max 1,000
   readonly overallPercent: number; // max 100
@@ -77,12 +83,16 @@ function decodeBreakdown(raw: unknown): CertificateScoreBreakdown | undefined {
   if (!isObject(raw)) return undefined;
   return {
     practicePoints: decodeNumber(raw.practicePoints),
+    practiceMaxPoints: decodeNumber(raw.practiceMaxPoints, 200),
     practiceAccuracyPercent: decodeNumber(raw.practiceAccuracyPercent),
     quizPoints: decodeNumber(raw.quizPoints),
+    quizMaxPoints: decodeNumber(raw.quizMaxPoints, 200),
     quizAveragePercent: decodeNumber(raw.quizAveragePercent),
     chapterExamPoints: decodeNumber(raw.chapterExamPoints),
+    chapterExamMaxPoints: decodeNumber(raw.chapterExamMaxPoints, 200),
     chapterExamAveragePercent: decodeNumber(raw.chapterExamAveragePercent),
     finalExamPoints: decodeNumber(raw.finalExamPoints),
+    finalExamMaxPoints: decodeNumber(raw.finalExamMaxPoints, 400),
     finalExamPercent: decodeNumber(raw.finalExamPercent),
     totalPoints: decodeNumber(raw.totalPoints),
     overallPercent: decodeNumber(raw.overallPercent),

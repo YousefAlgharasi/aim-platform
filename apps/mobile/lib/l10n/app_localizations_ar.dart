@@ -3455,4 +3455,180 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appUpdateRestart => 'إعادة التشغيل';
+
+  @override
+  String get assessmentsDetailsTitleExam => 'تفاصيل الامتحان';
+
+  @override
+  String get assessmentsDetailsTitleQuiz => 'تفاصيل الاختبار القصير';
+
+  @override
+  String get assessmentsDetailsTitle => 'تفاصيل التقييم';
+
+  @override
+  String get assessmentsLoadingLabel => 'جارٍ تحميل التقييم';
+
+  @override
+  String get assessmentsPastResultsTitle => 'النتائج السابقة';
+
+  @override
+  String get assessmentsPastResultsSubtitle => 'اعرض سجل محاولاتك';
+
+  @override
+  String get assessmentsSectionsTitle => 'الأقسام';
+
+  @override
+  String assessmentsSectionQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count سؤال',
+      many: '$count سؤالًا',
+      few: '$count أسئلة',
+      two: 'سؤالان',
+      one: 'سؤال واحد',
+      zero: 'لا توجد أسئلة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get assessmentsStatAttemptsLeft => 'المحاولات المتبقية';
+
+  @override
+  String get assessmentsStatBestScore => 'أفضل نتيجة';
+
+  @override
+  String assessmentsAttemptsUsed(int used, int max) {
+    return 'تم استخدام $used من $max محاولات';
+  }
+
+  @override
+  String get assessmentsPassedBadge => 'ناجح';
+
+  @override
+  String get assessmentsResumeAttempt => 'متابعة المحاولة';
+
+  @override
+  String get assessmentsRetakeAttempt => 'إعادة المحاولة';
+
+  @override
+  String get assessmentsBlockedChapter =>
+      'أكمل جميع دروس هذا الفصل لفتح هذا الاختبار.';
+
+  @override
+  String get assessmentsBlockedCourse =>
+      'أكمل جميع الفصول واجتز اختبار كل فصل لفتح الاختبار النهائي.';
+
+  @override
+  String get assessmentsBlockedMaxAttempts =>
+      'لقد استخدمت جميع محاولاتك لهذا التقييم.';
+
+  @override
+  String get assessmentsStartFailed =>
+      'تعذّر بدء المحاولة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String assessmentsDurationMinutes(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String assessmentsStartSubtitleTimed(int minutes) {
+    return 'بمجرد البدء، يعمل مؤقّت مدته $minutes دقيقة بشكل متواصل حتى لو غادرت التطبيق. تأكّد من أن لديك وقتًا كافيًا للإنهاء.';
+  }
+
+  @override
+  String get assessmentsStartSubtitleUntimed =>
+      'بمجرد البدء سيتم تسجيل المحاولة. تأكّد من أنك مستعد قبل المتابعة.';
+
+  @override
+  String get assessmentsDeadlineOpen => 'مفتوح';
+
+  @override
+  String get assessmentsDeadlineUpcoming => 'قادم';
+
+  @override
+  String get assessmentsDeadlineClosed => 'مغلق';
+
+  @override
+  String get assessmentsDeadlineLate => 'متأخر';
+
+  @override
+  String get assessmentsDeadlineMissed => 'فائت';
+
+  @override
+  String get lessonsFinalExamBadge => 'الاختبار النهائي للمستوى';
+
+  @override
+  String lessonsFinalExamPassedBadge(int score) {
+    return 'تم اجتياز الاختبار النهائي · $score%';
+  }
+
+  @override
+  String get lessonsFinalExamPassedBadgeNoScore => 'تم اجتياز الاختبار النهائي';
+
+  @override
+  String get lessonsFinalExamPassedSubtitle =>
+      'تم إكمال الاختبار النهائي للمستوى واجتيازه. اضغط لعرض نتائجك.';
+
+  @override
+  String get lessonsFinalExamStartSubtitle =>
+      'اضغط لبدء الاختبار النهائي للمستوى.';
+
+  @override
+  String get lessonsFinalExamLockedDetail =>
+      'أكمل جميع الفصول واجتز اختبار كل فصل لفتح الاختبار النهائي للمستوى.';
+
+  @override
+  String certificatePointsOfMax(int points, int max) {
+    return '$points / $max نقطة';
+  }
+
+  @override
+  String certificateWeightPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get assessmentsResultPassed => 'ناجح';
+
+  @override
+  String get assessmentsResultFailed => 'راسب';
+
+  @override
+  String get assessmentsLateSubmissionNote => 'تم تطبيق خصم التأخير';
+
+  @override
+  String assessmentsGradedOn(String date) {
+    return 'تم التصحيح في $date';
+  }
+
+  @override
+  String get assessmentsBreakdownTitle => 'التفاصيل';
+
+  @override
+  String get assessmentsResultHistoryTitle => 'سجل النتائج';
+
+  @override
+  String assessmentsTimeRemaining(String time) {
+    return 'الوقت المتبقي: $time';
+  }
+
+  @override
+  String get assessmentsStatusLabel => 'الحالة';
+
+  @override
+  String get assessmentsStatusInProgress => 'قيد التقدم';
+
+  @override
+  String get assessmentsExpiresLabel => 'ينتهي';
+
+  @override
+  String assessmentsQuestionNumber(int number) {
+    return 'السؤال $number';
+  }
+
+  @override
+  String get assessmentsListTitle => 'التقييمات';
 }

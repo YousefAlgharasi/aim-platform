@@ -22,6 +22,8 @@ function makeRepo(overrides: Partial<Record<string, jest.Mock>> = {}) {
     ]),
     countQuestionsPerSection: jest.fn().mockResolvedValue(new Map([['s-1', 10]])),
     findEffectiveDeadline: jest.fn().mockResolvedValue(null),
+    countAttemptsByStudent: jest.fn().mockResolvedValue(0),
+    findActiveAttempt: jest.fn().mockResolvedValue(null),
     ...overrides,
   };
 }
@@ -199,6 +201,42 @@ describe('AssessmentService', () => {
       const svc = new AssessmentService(makeRepo() as any, mockDb as any);
       const detail = await svc.getDetail('a-1', 'stu-1');
       expect(detail.sections[0].questionCount).toBe(10);
+    });
+    it('applies the per-type attempt default when no settings row exists', async () => {
+      const db = { query: jest.fn().mockResolvedValue({ rows: [] }) };
+      const svc = new AssessmentService(makeRepo() as any, db as any);
+      const detail = await svc.getDetail('a-1', 'stu-1');
+      expect(detail.maxAttempts).toBe(5);
+      expect(detail.attemptsRemaining).toBe(5);
+      expect(detail.canStart).toBe(true);
+      expect(detail.blockedReason).toBeNull();
+    });
+    it('reports MAX_ATTEMPTS_REACHED with best score once attempts are used up', async () => {
+      const db = {
+        query: jest.fn().mockImplementation((sql: string) => {
+          if (sql.includes('FROM assessment_settings')) return Promise.resolve({ rows: [{ max_attempts: 2, time_limit_seconds: null }] });
+          if (sql.includes('FROM assessment_results')) return Promise.resolve({ rows: [{ passed: false, best_percent: '45.5' }] });
+          if (sql.includes('FROM assessment_questions')) return Promise.resolve({ rows: [{ count: '10' }] });
+          return Promise.resolve({ rows: [] });
+        }),
+      };
+      const repo = makeRepo({ countAttemptsByStudent: jest.fn().mockResolvedValue(2) });
+      const svc = new AssessmentService(repo as any, db as any);
+      const detail = await svc.getDetail('a-1', 'stu-1');
+      expect(detail).toMatchObject({
+        attemptsUsed: 2, attemptsRemaining: 0, canStart: false,
+        blockedReason: 'MAX_ATTEMPTS_REACHED', passed: false, bestScorePercent: 46, questionCount: 10,
+      });
+    });
+    it('still allows resuming an unfinished attempt at the limit', async () => {
+      const repo = makeRepo({
+        countAttemptsByStudent: jest.fn().mockResolvedValue(2),
+        findActiveAttempt: jest.fn().mockResolvedValue({ id: 'att-1' }),
+      });
+      const svc = new AssessmentService(repo as any, mockDb as any);
+      const detail = await svc.getDetail('a-1', 'stu-1');
+      expect(detail.hasActiveAttempt).toBe(true);
+      expect(detail.canStart).toBe(true);
     });
     it('detail never contains passThreshold or weight', async () => {
       const svc = new AssessmentService(makeRepo() as any, mockDb as any);

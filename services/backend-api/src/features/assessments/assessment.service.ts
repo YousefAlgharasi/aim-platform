@@ -17,6 +17,8 @@ import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService, DeadlineStatusResult } from './assessment-deadline.service';
 import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
+import { AssessmentErrorCode } from './assessment-errors';
+import { resolveMaxAttempts } from './assessment-policy';
 
 // Inlined until P10-020 merges
 type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
@@ -26,10 +28,28 @@ export interface AssessmentListItem {
   deadlineStatus: DeadlineStatus | null;
 }
 
+/** Why a student can't start a new attempt right now (null when they can). */
+export type AssessmentStartBlock =
+  | AssessmentErrorCode.CHAPTER_NOT_COMPLETE
+  | AssessmentErrorCode.COURSE_NOT_COMPLETE
+  | AssessmentErrorCode.MAX_ATTEMPTS_REACHED;
+
 export interface AssessmentDetail {
   id: string; type: string; title: string; description: string | null;
   sections: Array<{ id: string; title: string; order: number; questionCount: number }>;
+  questionCount: number;
   maxAttempts: number; timeLimitSeconds: number | null;
+  /** Attempts this student has already started (any status). */
+  attemptsUsed: number;
+  attemptsRemaining: number;
+  /** True when an unfinished attempt exists — starting resumes it instead of using a new attempt. */
+  hasActiveAttempt: boolean;
+  /** True when any attempt has passed. */
+  passed: boolean;
+  /** Best score across graded attempts, as a 0-100 percent. Null before any result. */
+  bestScorePercent: number | null;
+  canStart: boolean;
+  blockedReason: AssessmentStartBlock | null;
 }
 
 export interface AssessmentDetailWithDeadline extends AssessmentDetail {
@@ -140,6 +160,29 @@ export class AssessmentService {
       [assessmentId],
     );
     const s = settings.rows[0];
+    const maxAttempts = resolveMaxAttempts(assessment.type, s?.max_attempts);
+
+    const [attemptsUsed, activeAttempt, results, questionCount] = await Promise.all([
+      this.repo.countAttemptsByStudent(assessmentId, studentId),
+      this.repo.findActiveAttempt(assessmentId, studentId),
+      this.db.query<{ passed: boolean; best_percent: string | null }>(
+        `SELECT COALESCE(bool_or(passed), false) AS passed,
+                MAX(score / NULLIF(max_score, 0) * 100) AS best_percent
+         FROM assessment_results
+         WHERE assessment_id = $1 AND student_id = $2`,
+        [assessmentId, studentId],
+      ),
+      this.db.query<{ count: string }>(
+        `SELECT COUNT(*)::text AS count FROM assessment_questions WHERE assessment_id = $1`,
+        [assessmentId],
+      ),
+    ]);
+
+    const blockedReason = await this.resolveStartBlock(
+      assessment, studentId, attemptsUsed, maxAttempts, activeAttempt !== null,
+    );
+    const resultRow = results.rows[0];
+    const bestPercent = resultRow?.best_percent != null ? Math.round(Number(resultRow.best_percent)) : null;
 
     return {
       id: assessment.id, type: assessment.type,
@@ -149,10 +192,38 @@ export class AssessmentService {
         questionCount: countMap.get(sec.id) ?? 0,
         // weight is NOT included here — backend-only
       })),
-      maxAttempts: s?.max_attempts ?? 1,
+      questionCount: parseInt(questionCount.rows[0]?.count ?? '0', 10),
+      maxAttempts,
       timeLimitSeconds: s?.time_limit_seconds ?? null,
+      attemptsUsed,
+      attemptsRemaining: Math.max(0, maxAttempts - attemptsUsed),
+      hasActiveAttempt: activeAttempt !== null,
+      passed: resultRow?.passed ?? false,
+      bestScorePercent: bestPercent,
+      canStart: blockedReason === null,
+      blockedReason,
       // passThreshold, latePolicy: NEVER returned
     };
+  }
+
+  /** Mirrors the checks in AttemptLifecycleService.startAttempt, so the app can explain a locked Start button. */
+  private async resolveStartBlock(
+    assessment: { chapter_id: string | null; course_id: string | null },
+    studentId: string,
+    attemptsUsed: number,
+    maxAttempts: number,
+    hasActiveAttempt: boolean,
+  ): Promise<AssessmentStartBlock | null> {
+    if (assessment.chapter_id && !(await isChapterLessonsComplete(this.db, studentId, assessment.chapter_id))) {
+      return AssessmentErrorCode.CHAPTER_NOT_COMPLETE;
+    }
+    if (assessment.course_id && !(await isCourseChaptersComplete(this.db, studentId, assessment.course_id))) {
+      return AssessmentErrorCode.COURSE_NOT_COMPLETE;
+    }
+    if (!hasActiveAttempt && attemptsUsed >= maxAttempts) {
+      return AssessmentErrorCode.MAX_ATTEMPTS_REACHED;
+    }
+    return null;
   }
 
   /**

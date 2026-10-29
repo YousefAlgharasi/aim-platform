@@ -3423,4 +3423,176 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appUpdateRestart => 'Restart';
+
+  @override
+  String get assessmentsDetailsTitleExam => 'Exam details';
+
+  @override
+  String get assessmentsDetailsTitleQuiz => 'Quiz details';
+
+  @override
+  String get assessmentsDetailsTitle => 'Assessment details';
+
+  @override
+  String get assessmentsLoadingLabel => 'Loading assessment';
+
+  @override
+  String get assessmentsPastResultsTitle => 'Past results';
+
+  @override
+  String get assessmentsPastResultsSubtitle => 'View your attempt history';
+
+  @override
+  String get assessmentsSectionsTitle => 'Sections';
+
+  @override
+  String assessmentsSectionQuestionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count questions',
+      one: '1 question',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get assessmentsStatAttemptsLeft => 'Attempts left';
+
+  @override
+  String get assessmentsStatBestScore => 'Best score';
+
+  @override
+  String assessmentsAttemptsUsed(int used, int max) {
+    return '$used of $max attempts used';
+  }
+
+  @override
+  String get assessmentsPassedBadge => 'Passed';
+
+  @override
+  String get assessmentsResumeAttempt => 'Resume attempt';
+
+  @override
+  String get assessmentsRetakeAttempt => 'Retake';
+
+  @override
+  String get assessmentsBlockedChapter =>
+      'Finish every lesson in this chapter to unlock this quiz.';
+
+  @override
+  String get assessmentsBlockedCourse =>
+      'Finish every chapter and pass each chapter quiz to unlock the final exam.';
+
+  @override
+  String get assessmentsBlockedMaxAttempts =>
+      'You have used all your attempts for this assessment.';
+
+  @override
+  String get assessmentsStartFailed =>
+      'Couldn\'t start the attempt. Please try again.';
+
+  @override
+  String assessmentsDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String assessmentsStartSubtitleTimed(int minutes) {
+    return 'Once you start, the $minutes-minute timer runs continuously, even if you leave the app. Make sure you have time to finish.';
+  }
+
+  @override
+  String get assessmentsStartSubtitleUntimed =>
+      'Once you start, the attempt will be recorded. Make sure you are ready before proceeding.';
+
+  @override
+  String get assessmentsDeadlineOpen => 'Open';
+
+  @override
+  String get assessmentsDeadlineUpcoming => 'Upcoming';
+
+  @override
+  String get assessmentsDeadlineClosed => 'Closed';
+
+  @override
+  String get assessmentsDeadlineLate => 'Late';
+
+  @override
+  String get assessmentsDeadlineMissed => 'Missed';
+
+  @override
+  String get lessonsFinalExamBadge => 'FINAL LEVEL EXAM';
+
+  @override
+  String lessonsFinalExamPassedBadge(int score) {
+    return 'FINAL EXAM PASSED · $score%';
+  }
+
+  @override
+  String get lessonsFinalExamPassedBadgeNoScore => 'FINAL EXAM PASSED';
+
+  @override
+  String get lessonsFinalExamPassedSubtitle =>
+      'Final level exam completed and passed. Tap to see your results.';
+
+  @override
+  String get lessonsFinalExamStartSubtitle =>
+      'Tap to start your final level exam.';
+
+  @override
+  String get lessonsFinalExamLockedDetail =>
+      'Complete all chapters and pass each chapter quiz to unlock your final level exam.';
+
+  @override
+  String certificatePointsOfMax(int points, int max) {
+    return '$points / $max pts';
+  }
+
+  @override
+  String certificateWeightPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get assessmentsResultPassed => 'Passed';
+
+  @override
+  String get assessmentsResultFailed => 'Failed';
+
+  @override
+  String get assessmentsLateSubmissionNote => 'Late penalty applied';
+
+  @override
+  String assessmentsGradedOn(String date) {
+    return 'Graded $date';
+  }
+
+  @override
+  String get assessmentsBreakdownTitle => 'BREAKDOWN';
+
+  @override
+  String get assessmentsResultHistoryTitle => 'Result history';
+
+  @override
+  String assessmentsTimeRemaining(String time) {
+    return 'Time remaining: $time';
+  }
+
+  @override
+  String get assessmentsStatusLabel => 'Status';
+
+  @override
+  String get assessmentsStatusInProgress => 'In Progress';
+
+  @override
+  String get assessmentsExpiresLabel => 'Expires';
+
+  @override
+  String assessmentsQuestionNumber(int number) {
+    return 'QUESTION $number';
+  }
+
+  @override
+  String get assessmentsListTitle => 'Assessments';
 }

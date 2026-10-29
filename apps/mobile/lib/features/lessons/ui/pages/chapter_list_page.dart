@@ -189,7 +189,9 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     }
 
     final overallPercent = (chapters.fold<int>(0, (sum, c) => sum + c.percent) / chapters.length).round();
-    final isExamPassed = (_finalExam?.passed ?? false) || (overallPercent == 100);
+    // Backend-computed only: finishing every chapter unlocks the exam, it
+    // doesn't pass it.
+    final isExamPassed = _finalExam?.passed ?? false;
 
     final visibleChapters = <(int, ChapterProgress)>[
       for (final (index, ch) in chapters.indexed)
@@ -363,7 +365,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
           if (_filter == ChapterListFilter.all ||
               (_filter == ChapterListFilter.inProgress && !isExamPassed) ||
               (_filter == ChapterListFilter.completed && isExamPassed))
-            _buildNextUpCard(isExamPassed: isExamPassed),
+            _buildNextUpCard(),
 
           const SizedBox(height: 80),
         ],
@@ -409,7 +411,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     );
   }
 
-  Widget _buildNextUpCard({bool isExamPassed = false}) {
+  Widget _buildNextUpCard() {
     final surfaces = aimSurfacesOf(context);
     final l10n = AppLocalizations.of(context);
     final exam = _finalExam;
@@ -464,7 +466,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isPassed = exam.passed || isExamPassed;
+    final isPassed = exam.passed;
     final isUnlocked = exam.unlocked || isPassed;
 
     final cardBg = isPassed
@@ -480,26 +482,16 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        // Same entry point as chapter quizzes: the detail page shows attempts,
+        // best score and past results, and starts or retakes the exam.
         onTap: isUnlocked
-            ? () {
-                if (isPassed) {
-                  context.push(
-                    AppRoutePaths.assessmentResultHistory,
-                    extra: {
-                      'assessmentId': exam.assessmentId,
-                      'assessmentTitle': exam.title,
-                    },
-                  );
-                } else {
-                  context.push(
-                    AppRoutePaths.assessmentDetail,
-                    extra: {
-                      'assessmentId': exam.assessmentId,
-                      'assessmentTitle': exam.title,
-                    },
-                  );
-                }
-              }
+            ? () => context.push(
+                  AppRoutePaths.assessmentDetail,
+                  extra: {
+                    'assessmentId': exam.assessmentId,
+                    'assessmentTitle': exam.title,
+                  },
+                )
             : null,
         borderRadius: BorderRadius.circular(20),
         child: Container(
@@ -539,15 +531,19 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                           color: badgeColor,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          isPassed
-                              ? 'FINAL EXAM PASSED · ${exam.score ?? 100}%'
-                              : 'FINAL LEVEL EXAM',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: badgeColor,
-                            letterSpacing: 0.8,
+                        Flexible(
+                          child: Text(
+                            isPassed
+                                ? (exam.score != null
+                                    ? l10n.lessonsFinalExamPassedBadge(exam.score!)
+                                    : l10n.lessonsFinalExamPassedBadgeNoScore)
+                                : l10n.lessonsFinalExamBadge,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: badgeColor,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ),
                       ],
@@ -564,10 +560,10 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     const SizedBox(height: 4),
                     Text(
                       isPassed
-                          ? 'Final level exam completed and passed.'
+                          ? l10n.lessonsFinalExamPassedSubtitle
                           : (isUnlocked
-                              ? 'Tap to start your final level exam.'
-                              : 'Complete all chapters in this level to unlock your final level assessment.'),
+                              ? l10n.lessonsFinalExamStartSubtitle
+                              : l10n.lessonsFinalExamLockedDetail),
                       style: TextStyle(
                         fontSize: 13,
                         color: isPassed

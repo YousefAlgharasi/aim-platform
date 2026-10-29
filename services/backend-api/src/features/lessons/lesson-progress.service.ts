@@ -28,7 +28,7 @@
 //     (see CurrentLessonContextAdapter) and is never a path that starts or
 //     unlocks a lesson — this check is the only gate on that.
 
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CourseCompletionService } from './course-completion.service';
 import { ChapterCompletionService } from './chapter-completion.service';
@@ -91,6 +91,8 @@ interface RecommendedCourseRow {
 
 @Injectable()
 export class LessonProgressService {
+  private readonly logger = new Logger(LessonProgressService.name);
+
   constructor(
     private readonly db: DatabaseService,
     private readonly courseCompletionService: CourseCompletionService,
@@ -151,7 +153,16 @@ export class LessonProgressService {
     await this.courseCompletionService.handleLessonCompleted(studentId, lessonId);
 
     if (!result.rows[0].was_already_completed) {
-      await this.chapterCompletionService.handleLessonNewlyCompleted(studentId, lessonId);
+      // The unlock notification is a side effect: the lesson is already
+      // saved as completed, so a notification failure must not turn this
+      // request into an error.
+      try {
+        await this.chapterCompletionService.handleLessonNewlyCompleted(studentId, lessonId);
+      } catch (error) {
+        this.logger.warn(
+          `Chapter unlock notification failed for lesson ${lessonId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
 
     return this.toAck(result.rows[0]);

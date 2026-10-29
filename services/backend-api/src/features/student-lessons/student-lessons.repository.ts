@@ -54,13 +54,27 @@ export class StudentLessonsRepository {
   /** The published quiz assessment linked to this chapter (assessments.chapter_id), or null. */
   async findQuizForChapter(chapterId: string): Promise<ChapterQuizRow | null> {
     const result = await this.db.query<ChapterQuizRow>(
-      `SELECT id AS assessment_id, title
-       FROM assessments
-       WHERE chapter_id = $1 AND type = 'quiz' AND status = 'published'
+      `SELECT a.id AS assessment_id, a.title
+       FROM assessments a
+       WHERE a.chapter_id = $1 AND a.type = 'quiz' AND a.status = 'published'
+         AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
+       ORDER BY a.created_at ASC
        LIMIT 1`,
       [chapterId],
     );
     return result.rows[0] ?? null;
+  }
+
+  /** Best score across the student's graded attempts as a 0-100 percent, or null before any result. */
+  async findBestScorePercent(studentId: string, assessmentId: string): Promise<number | null> {
+    const result = await this.db.query<{ best: string | null }>(
+      `SELECT ROUND(MAX(score / NULLIF(max_score, 0) * 100)) AS best
+       FROM assessment_results
+       WHERE assessment_id = $1 AND student_id = $2`,
+      [assessmentId, studentId],
+    );
+    const best = result.rows[0]?.best;
+    return best != null ? Number(best) : null;
   }
 
   /** True when the student has a passing assessment_results row for this assessment. */

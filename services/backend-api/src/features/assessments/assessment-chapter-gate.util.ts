@@ -69,6 +69,7 @@ export async function isCourseChaptersComplete(
        NOT EXISTS (
          SELECT 1 FROM assessments a
          WHERE a.chapter_id = ch.id AND a.type = 'quiz' AND a.status = 'published'
+           AND EXISTS (SELECT 1 FROM assessment_questions aq WHERE aq.assessment_id = a.id)
            AND NOT EXISTS (
              SELECT 1 FROM assessment_results ar
              WHERE ar.assessment_id = a.id AND ar.student_id = $1 AND ar.passed = true

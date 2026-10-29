@@ -175,7 +175,7 @@ void main() {
       expect(find.text('AIM Language Platform'), findsOneWidget);
       expect(find.text('أحمد العلوي'), findsOneWidget);
       expect(find.text('اللغة الإنجليزية للمبتدئين A1.1'), findsOneWidget);
-      expect(find.text('980 / 1000 pts'), findsOneWidget);
+      expect(find.text('980 / 1000 نقطة'), findsOneWidget);
       expect(find.text('98%'), findsOneWidget);
       expect(find.text('نسخ رابط التحقق'), findsOneWidget);
     });

@@ -88,7 +88,7 @@ class _ResultHistoryPageState extends ConsumerState<ResultHistoryPage> {
     return Scaffold(
       backgroundColor: surfaces.background,
       appBar: AIMTopAppBar(
-        title: 'Result history',
+        title: AppLocalizations.of(context).assessmentsResultHistoryTitle,
         subtitle: widget.assessmentTitle,
         onBack: () {
           if (context.canPop()) {
@@ -259,9 +259,9 @@ class _ResultHistoryTile extends StatelessWidget {
           // Real backend flag, previously dropped silently — kept subtle
           // (the design shows nothing for it).
           if (item.latePenaltyApplied) ...[
-            const Tooltip(
-              message: 'Late penalty applied',
-              child: Icon(
+            Tooltip(
+              message: AppLocalizations.of(context).assessmentsLateSubmissionNote,
+              child: const Icon(
                 Icons.warning_amber_rounded,
                 size: AimSizes.iconSm,
                 color: AimColors.warning500,
@@ -272,7 +272,9 @@ class _ResultHistoryTile extends StatelessWidget {
           AIMBadge(
             tone: passed ? AIMBadgeTone.success : AIMBadgeTone.error,
             pill: true,
-            child: Text(passed ? 'Passed' : 'Failed'),
+            child: Text(passed
+                ? AppLocalizations.of(context).assessmentsResultPassed
+                : AppLocalizations.of(context).assessmentsResultFailed),
           ),
         ],
       ),
