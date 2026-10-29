@@ -3,7 +3,6 @@
 import 'package:aim_mobile/core/networking/backend_api_client.dart';
 import 'package:aim_mobile/core/networking/backend_api_paths.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
-import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'student_courses_remote_datasource.dart';
 
 class StudentCoursesRemoteDatasourceImpl
@@ -24,36 +23,14 @@ class StudentCoursesRemoteDatasourceImpl
       decodeData: (json) {
         final data = _requireMap(json);
         final items = data['courses'] as List<dynamic>? ?? [];
-        final parsed = items
+        // `locked` is backend-computed from each course's CEFR rank and the
+        // student's progress — use it as-is. Re-deriving it from list
+        // position locked a course whenever the course listed above it
+        // wasn't finished, even when the backend had unlocked it.
+        final result = items
             .whereType<Map<String, dynamic>>()
             .map(StudentCourseModel.fromJson)
             .toList();
-
-        final result = <StudentCourseModel>[];
-
-        for (int i = 0; i < parsed.length; i++) {
-          final c = parsed[i];
-          final prevCourseCompleted = i > 0 &&
-              (parsed[i - 1].status == StudentCourseStatus.completed ||
-                  parsed[i - 1].percent == 100);
-
-          final isUnlocked = i == 0 || prevCourseCompleted;
-
-          final updated = StudentCourseModel(
-            courseId: c.courseId,
-            title: c.title,
-            description: c.description,
-            levelCode: c.levelCode,
-            lessonCount: c.lessonCount,
-            completedLessonCount: c.completedLessonCount,
-            quizCount: c.quizCount,
-            examCount: c.examCount,
-            percent: c.percent,
-            status: c.status,
-            locked: !isUnlocked,
-          );
-          result.add(updated);
-        }
 
         return result;
       },
