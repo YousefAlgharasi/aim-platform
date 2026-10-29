@@ -6407,6 +6407,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String settingsAppVersion(String version);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Get this course'**
+  String get billingGetCourseTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get billingFree;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Offer ends {date}'**
+  String billingOfferEnds(String date);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll have {days} days to finish this course after your payment is approved. If you don\'t finish in time, you\'ll fail and need to pay again to start over.'**
+  String billingTimeRule(int days);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'1. Choose the wallet you paid with'**
+  String get billingStepWallet;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Select a wallet'**
+  String get billingWalletHint;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer {amount} to:'**
+  String billingTransferTo(String amount);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Account name'**
+  String get billingAccountName;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get billingAccountNumber;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get billingCopy;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get billingCopied;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to enlarge'**
+  String get billingTapToEnlarge;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'2. Transaction number'**
+  String get billingStepTransaction;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'The reference number of your transfer'**
+  String get billingTransactionHint;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'3. Receipt screenshot'**
+  String get billingStepReceipt;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Choose screenshot'**
+  String get billingPickReceipt;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Change screenshot'**
+  String get billingChangeReceipt;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'The image must be 5 MB or smaller.'**
+  String get billingReceiptTooLarge;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Send payment for review'**
+  String get billingSubmit;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get billingSubmitting;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Payment sent. We\'ll unlock the course once it\'s confirmed.'**
+  String get billingSubmitted;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'No payment methods are available right now. Please try again later.'**
+  String get billingNoWallets;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation'**
+  String get billingPendingTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'The course unlocks as soon as an admin confirms your payment.'**
+  String get billingPendingBody;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Payment not accepted'**
+  String get billingRejectedTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Fix the details below and send it again.'**
+  String get billingRejectedBody;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Time ran out'**
+  String get billingFailedTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'You didn\'t finish this course in time, so your progress was reset. Pay again to retake it from the start.'**
+  String get billingFailedBody;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'You have access'**
+  String get billingActiveTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Less than a day left} =1{1 day left} other{{count} days left}}'**
+  String billingDaysLeft(int count);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Finish by {date}'**
+  String billingFinishBy(String date);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Course finished'**
+  String get billingCompletedTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Open course'**
+  String get billingOpenCourse;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'My payments'**
+  String get billingMyPayments;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t made any course payments yet.'**
+  String get billingNoPayments;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get billingStatusPending;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get billingStatusApproved;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get billingStatusRejected;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String billingAdminNote(String note);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction {number}'**
+  String billingTransactionShort(String number);
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Get this course to continue'**
+  String get billingPaymentRequiredTitle;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'This course needs to be purchased before you can open its lessons.'**
+  String get billingPaymentRequiredBody;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Payment pending'**
+  String get billingChipPending;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'YER'**
+  String get billingCurrencyYer;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'SAR'**
+  String get billingCurrencySar;
+
+  /// Course billing (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'USD'**
+  String get billingCurrencyUsd;
 }
 
 class _AppLocalizationsDelegate

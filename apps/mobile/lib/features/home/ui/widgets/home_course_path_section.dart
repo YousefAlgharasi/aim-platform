@@ -31,6 +31,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
+import 'package:aim_mobile/features/course_billing/ui/widgets/course_billing_chip.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -86,6 +88,10 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   StudentCourseModel? _nextCourse;
   bool _startingNext = false;
 
+  /// Set when the current course is a paid course the student can't open
+  /// yet: the roadmap then shows a "get this course" card.
+  StudentCourseModel? _paymentCourse;
+
   @override
   void initState() {
     super.initState();
@@ -105,6 +111,20 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         if (mounted) setState(() => _state = _LoadState.empty);
         return;
       }
+
+      if (course.needsPayment) {
+        if (!mounted) return;
+        setState(() {
+          _courseTitle = course.title;
+          _subtitle = null;
+          _nodes = const [];
+          _nextCourse = null;
+          _paymentCourse = course;
+          _state = _LoadState.success;
+        });
+        return;
+      }
+      _paymentCourse = null;
 
       final next = courses.where((c) => c.isNext).firstOrNull;
       if (course.status == StudentCourseStatus.completed && next != null) {
@@ -242,9 +262,21 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     return inProgress ?? notStarted ?? completed;
   }
 
+  Future<void> _openClaim(StudentCourseModel course) async {
+    await context.push(
+      AppRoutePaths.courseClaim,
+      extra: {'courseId': course.courseId, 'courseTitle': course.title},
+    );
+    if (mounted) ref.invalidate(homeCoursesProvider);
+  }
+
   Future<void> _startNextCourse(StudentCourseModel next) async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty || _startingNext) return;
+    if (next.needsPayment) {
+      await _openClaim(next);
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     setState(() => _startingNext = true);
     try {
@@ -341,7 +373,12 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             ],
           ),
           const SizedBox(height: AimSpacing.space24),
-          if (_nextCourse != null)
+          if (_paymentCourse != null)
+            _GetCourseCard(
+              course: _paymentCourse!,
+              onTap: () => _openClaim(_paymentCourse!),
+            )
+          else if (_nextCourse != null)
             _NextCourseCard(
               completedCourseTitle: _courseTitle!,
               nextCourseTitle: _nextCourse!.title,
@@ -695,6 +732,67 @@ class _CoursePathSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: surfaces.surfaceSunken,
         borderRadius: AimRadius.borderX2l,
+      ),
+    );
+  }
+}
+
+/// Shown in place of the path when the current course is paid and not
+/// opened yet (not bought, waiting for approval, or time ran out).
+class _GetCourseCard extends StatelessWidget {
+  const _GetCourseCard({required this.course, required this.onTap});
+
+  final StudentCourseModel course;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final l10n = AppLocalizations.of(context);
+    final status = course.access?.status;
+    final body = switch (status) {
+      CourseAccessStatus.pending => l10n.billingPendingBody,
+      CourseAccessStatus.failed => l10n.billingFailedBody,
+      _ => l10n.billingPaymentRequiredBody,
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
+      decoration: BoxDecoration(
+        color: AimColors.primary500.withValues(alpha: 0.06),
+        borderRadius: AimRadius.borderX2l,
+        border: Border.all(color: AimColors.primary500.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.lock_outline_rounded, color: AimColors.primary500, size: 22),
+              const SizedBox(width: AimSpacing.space8),
+              Expanded(
+                child: Text(
+                  course.title,
+                  style: AimTextStyles.title.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.bold,
+                  ),
+                ),
+              ),
+              CourseBillingChip(course: course),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          Text(body, style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary)),
+          const SizedBox(height: AimSpacing.space16),
+          AIMButton(
+            variant: AIMButtonVariant.primary,
+            fullWidth: true,
+            onPressed: onTap,
+            child: Text(l10n.billingGetCourseTitle),
+          ),
+        ],
       ),
     );
   }

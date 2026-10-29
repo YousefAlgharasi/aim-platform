@@ -117,7 +117,7 @@ void main() {
     expect(find.text('My Certificates'), findsOneWidget);
     expect(find.text('Achievements'), findsWidgets);
     expect(find.text('Learning Path'), findsOneWidget);
-    expect(find.text('Subscription & Billing'), findsOneWidget);
+    expect(find.text('My payments'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
 
     // Account internals and dev tools are gone.

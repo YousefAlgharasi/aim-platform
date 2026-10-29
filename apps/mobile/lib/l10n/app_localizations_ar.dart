@@ -3804,4 +3804,167 @@ class AppLocalizationsAr extends AppLocalizations {
   String settingsAppVersion(String version) {
     return 'الإصدار $version';
   }
+
+  @override
+  String get billingGetCourseTitle => 'احصل على هذه الدورة';
+
+  @override
+  String get billingFree => 'مجانية';
+
+  @override
+  String billingOfferEnds(String date) {
+    return 'ينتهي العرض $date';
+  }
+
+  @override
+  String billingTimeRule(int days) {
+    return 'سيكون لديك $days يومًا لإنهاء هذه الدورة بعد قبول دفعتك. إذا لم تُنهِها في الوقت المحدد ستعتبر راسبًا وستحتاج إلى الدفع مرة أخرى للبدء من جديد.';
+  }
+
+  @override
+  String get billingStepWallet => '١. اختر المحفظة التي دفعت منها';
+
+  @override
+  String get billingWalletHint => 'اختر محفظة';
+
+  @override
+  String billingTransferTo(String amount) {
+    return 'حوّل $amount إلى:';
+  }
+
+  @override
+  String get billingAccountName => 'اسم الحساب';
+
+  @override
+  String get billingAccountNumber => 'الرقم';
+
+  @override
+  String get billingCopy => 'نسخ';
+
+  @override
+  String get billingCopied => 'تم النسخ';
+
+  @override
+  String get billingTapToEnlarge => 'اضغط للتكبير';
+
+  @override
+  String get billingStepTransaction => '٢. رقم العملية';
+
+  @override
+  String get billingTransactionHint => 'الرقم المرجعي لعملية التحويل';
+
+  @override
+  String get billingStepReceipt => '٣. صورة إيصال الدفع';
+
+  @override
+  String get billingPickReceipt => 'اختر صورة';
+
+  @override
+  String get billingChangeReceipt => 'تغيير الصورة';
+
+  @override
+  String get billingReceiptTooLarge => 'يجب ألا يتجاوز حجم الصورة 5 ميغابايت.';
+
+  @override
+  String get billingSubmit => 'أرسل الدفعة للمراجعة';
+
+  @override
+  String get billingSubmitting => 'جارٍ الإرسال…';
+
+  @override
+  String get billingSubmitted => 'تم إرسال الدفعة. سنفتح الدورة بعد تأكيدها.';
+
+  @override
+  String get billingNoWallets => 'لا توجد طرق دفع متاحة حاليًا. حاول لاحقًا.';
+
+  @override
+  String get billingPendingTitle => 'بانتظار التأكيد';
+
+  @override
+  String get billingPendingBody => 'ستُفتح الدورة فور تأكيد المسؤول لدفعتك.';
+
+  @override
+  String get billingRejectedTitle => 'لم يتم قبول الدفعة';
+
+  @override
+  String get billingRejectedBody => 'صحّح البيانات أدناه وأرسلها مرة أخرى.';
+
+  @override
+  String get billingFailedTitle => 'انتهى الوقت';
+
+  @override
+  String get billingFailedBody =>
+      'لم تُنهِ هذه الدورة في الوقت المحدد، لذلك تمت إعادة تعيين تقدمك. ادفع مرة أخرى لإعادة الدورة من البداية.';
+
+  @override
+  String get billingActiveTitle => 'لديك صلاحية الوصول';
+
+  @override
+  String billingDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يومًا متبقيًا',
+      few: '$count أيام متبقية',
+      two: 'يومان متبقيان',
+      one: 'يوم واحد متبقٍ',
+      zero: 'أقل من يوم متبقٍ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingFinishBy(String date) {
+    return 'أنهِ الدورة قبل $date';
+  }
+
+  @override
+  String get billingCompletedTitle => 'أنهيت الدورة';
+
+  @override
+  String get billingOpenCourse => 'افتح الدورة';
+
+  @override
+  String get billingMyPayments => 'مدفوعاتي';
+
+  @override
+  String get billingNoPayments => 'لم تقم بأي دفعة لدورة بعد.';
+
+  @override
+  String get billingStatusPending => 'قيد المراجعة';
+
+  @override
+  String get billingStatusApproved => 'مقبولة';
+
+  @override
+  String get billingStatusRejected => 'مرفوضة';
+
+  @override
+  String billingAdminNote(String note) {
+    return 'ملاحظة: $note';
+  }
+
+  @override
+  String billingTransactionShort(String number) {
+    return 'العملية $number';
+  }
+
+  @override
+  String get billingPaymentRequiredTitle => 'احصل على هذه الدورة للمتابعة';
+
+  @override
+  String get billingPaymentRequiredBody =>
+      'تحتاج إلى شراء هذه الدورة قبل فتح دروسها.';
+
+  @override
+  String get billingChipPending => 'الدفع قيد المراجعة';
+
+  @override
+  String get billingCurrencyYer => 'ر.ي';
+
+  @override
+  String get billingCurrencySar => 'ر.س';
+
+  @override
+  String get billingCurrencyUsd => 'دولار';
 }

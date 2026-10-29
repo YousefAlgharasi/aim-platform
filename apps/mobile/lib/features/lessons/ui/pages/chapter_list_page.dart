@@ -9,6 +9,9 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
+import 'package:aim_mobile/features/course_billing/logic/course_billing_providers.dart';
+import 'package:aim_mobile/features/course_billing/ui/widgets/billing_format.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -156,6 +159,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             Expanded(
               child: switch (state) {
                 AppAsyncLoading() => const AIMFullScreenLoading(),
+                AppAsyncFailure(:final code) when code == 'COURSE_PAYMENT_REQUIRED' =>
+                  _buildPaymentRequired(context),
                 AppAsyncFailure(:final message) => AIMFullScreenError(
                     message: message,
                     onRetry: _load,
@@ -166,6 +171,70 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _openClaim() async {
+    await context.push(
+      AppRoutePaths.courseClaim,
+      extra: {'courseId': widget.courseId, 'courseTitle': widget.courseTitle},
+    );
+    if (!mounted) return;
+    ref.invalidate(courseBillingProvider(widget.courseId));
+    _refresh();
+  }
+
+  /// Paid course without access (not bought yet, waiting for approval, or
+  /// time ran out): send the student to the "Get this course" screen.
+  Widget _buildPaymentRequired(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AimSpacing.space24),
+        child: AIMEmptyState(
+          icon: const Icon(Icons.lock_outline_rounded),
+          title: l10n.billingPaymentRequiredTitle,
+          subtitle: l10n.billingPaymentRequiredBody,
+          action: AIMButton(
+            onPressed: _openClaim,
+            child: Text(l10n.billingGetCourseTitle),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "N days left · Finish by date" for a paid course in its time window.
+  Widget _buildDeadlineBanner(BuildContext context) {
+    final billing = ref.watch(courseBillingProvider(widget.courseId)).valueOrNull;
+    final access = billing?.access;
+    if (access == null || access.status != CourseAccessStatus.active) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final urgent = (access.daysLeft ?? 0) <= 5;
+    final color = urgent ? AimColors.warning600 : AimColors.primary600;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(AimSpacing.space12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: AimRadius.borderMd,
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer_outlined, color: color),
+          const SizedBox(width: AimSpacing.space12),
+          Expanded(
+            child: Text(
+              [
+                l10n.billingDaysLeft(access.daysLeft ?? 0),
+                if (access.expiresAt != null) l10n.billingFinishBy(formatBillingDate(context, access.expiresAt!)),
+              ].join(' · '),
+              style: AimTextStyles.bodySm.copyWith(color: color, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -208,6 +277,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
+          _buildDeadlineBanner(context),
           // Course Overview Hero Banner
           Container(
             padding: const EdgeInsets.all(22),

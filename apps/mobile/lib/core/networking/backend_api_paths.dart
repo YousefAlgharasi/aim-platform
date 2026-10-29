@@ -122,6 +122,16 @@ class BackendApiPaths {
   /// transitions to 'switched').
   static String courseEnroll(String courseId) => '/courses/$courseId/enroll';
 
+  // Course billing — wallet payments for paid courses.
+  static const String studentBillingWallets = '/student/billing/wallets';
+  static const String studentPaymentRequests = '/student/payment-requests';
+  static String studentCourseBilling(String courseId) =>
+      '/student/courses/$courseId/billing';
+  static String studentCoursePaymentRequests(String courseId) =>
+      '/student/courses/$courseId/payment-requests';
+  static String studentPaymentReceipt(String requestId) =>
+      '/student/payment-requests/$requestId/receipt';
+
   /// GET /enrollment/current — the student's current active enrollment, or
   /// found: false if they haven't started any course yet.
   static const String enrollmentCurrent = '/enrollment/current';

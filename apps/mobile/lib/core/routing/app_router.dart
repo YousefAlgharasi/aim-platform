@@ -66,6 +66,8 @@ import '../../features/design_system_preview/ui/pages/ds_preview_page.dart';
 import '../../features/profile/ui/pages/account_settings_page.dart';
 import '../../features/certificates/data/models/certificate_model.dart';
 import '../../features/certificates/ui/pages/certificates_list_page.dart';
+import '../../features/course_billing/ui/pages/course_claim_page.dart';
+import '../../features/course_billing/ui/pages/my_course_payments_page.dart';
 import '../../features/certificates/ui/pages/certificate_detail_page.dart';
 
 import 'app_route_paths.dart';
@@ -268,6 +270,20 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.achievements,
           builder: (context, state) => const AchievementsPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.courseClaim,
+          builder: (context, state) {
+            final extra = state.extra is Map ? state.extra as Map : const {};
+            return CourseClaimPage(
+              courseId: (extra['courseId'] ?? state.uri.queryParameters['courseId'] ?? '') as String,
+              courseTitle: (extra['courseTitle'] ?? state.uri.queryParameters['courseTitle'] ?? '') as String,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutePaths.myCoursePayments,
+          builder: (context, state) => const MyCoursePaymentsPage(),
         ),
         GoRoute(
           path: AppRoutePaths.certificates,

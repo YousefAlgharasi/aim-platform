@@ -26,6 +26,8 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Choose a screenshot of your payment receipt to send with your course payment.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Aim uses your microphone so you can speak with the Voice Teacher and get pronunciation feedback.</string>
 		<key>UIApplicationSceneManifest</key>

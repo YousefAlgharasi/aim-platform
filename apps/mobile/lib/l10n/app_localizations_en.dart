@@ -3768,4 +3768,168 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsAppVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get billingGetCourseTitle => 'Get this course';
+
+  @override
+  String get billingFree => 'Free';
+
+  @override
+  String billingOfferEnds(String date) {
+    return 'Offer ends $date';
+  }
+
+  @override
+  String billingTimeRule(int days) {
+    return 'You\'ll have $days days to finish this course after your payment is approved. If you don\'t finish in time, you\'ll fail and need to pay again to start over.';
+  }
+
+  @override
+  String get billingStepWallet => '1. Choose the wallet you paid with';
+
+  @override
+  String get billingWalletHint => 'Select a wallet';
+
+  @override
+  String billingTransferTo(String amount) {
+    return 'Transfer $amount to:';
+  }
+
+  @override
+  String get billingAccountName => 'Account name';
+
+  @override
+  String get billingAccountNumber => 'Number';
+
+  @override
+  String get billingCopy => 'Copy';
+
+  @override
+  String get billingCopied => 'Copied';
+
+  @override
+  String get billingTapToEnlarge => 'Tap to enlarge';
+
+  @override
+  String get billingStepTransaction => '2. Transaction number';
+
+  @override
+  String get billingTransactionHint => 'The reference number of your transfer';
+
+  @override
+  String get billingStepReceipt => '3. Receipt screenshot';
+
+  @override
+  String get billingPickReceipt => 'Choose screenshot';
+
+  @override
+  String get billingChangeReceipt => 'Change screenshot';
+
+  @override
+  String get billingReceiptTooLarge => 'The image must be 5 MB or smaller.';
+
+  @override
+  String get billingSubmit => 'Send payment for review';
+
+  @override
+  String get billingSubmitting => 'Sending…';
+
+  @override
+  String get billingSubmitted =>
+      'Payment sent. We\'ll unlock the course once it\'s confirmed.';
+
+  @override
+  String get billingNoWallets =>
+      'No payment methods are available right now. Please try again later.';
+
+  @override
+  String get billingPendingTitle => 'Waiting for confirmation';
+
+  @override
+  String get billingPendingBody =>
+      'The course unlocks as soon as an admin confirms your payment.';
+
+  @override
+  String get billingRejectedTitle => 'Payment not accepted';
+
+  @override
+  String get billingRejectedBody => 'Fix the details below and send it again.';
+
+  @override
+  String get billingFailedTitle => 'Time ran out';
+
+  @override
+  String get billingFailedBody =>
+      'You didn\'t finish this course in time, so your progress was reset. Pay again to retake it from the start.';
+
+  @override
+  String get billingActiveTitle => 'You have access';
+
+  @override
+  String billingDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: 'Less than a day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String billingFinishBy(String date) {
+    return 'Finish by $date';
+  }
+
+  @override
+  String get billingCompletedTitle => 'Course finished';
+
+  @override
+  String get billingOpenCourse => 'Open course';
+
+  @override
+  String get billingMyPayments => 'My payments';
+
+  @override
+  String get billingNoPayments => 'You haven\'t made any course payments yet.';
+
+  @override
+  String get billingStatusPending => 'Pending';
+
+  @override
+  String get billingStatusApproved => 'Approved';
+
+  @override
+  String get billingStatusRejected => 'Rejected';
+
+  @override
+  String billingAdminNote(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String billingTransactionShort(String number) {
+    return 'Transaction $number';
+  }
+
+  @override
+  String get billingPaymentRequiredTitle => 'Get this course to continue';
+
+  @override
+  String get billingPaymentRequiredBody =>
+      'This course needs to be purchased before you can open its lessons.';
+
+  @override
+  String get billingChipPending => 'Payment pending';
+
+  @override
+  String get billingCurrencyYer => 'YER';
+
+  @override
+  String get billingCurrencySar => 'SAR';
+
+  @override
+  String get billingCurrencyUsd => 'USD';
 }

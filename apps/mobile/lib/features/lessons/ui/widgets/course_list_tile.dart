@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/course_billing/ui/widgets/course_billing_chip.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
@@ -308,7 +309,13 @@ class CourseListTile extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: CourseBillingChip(course: model),
+                      ),
+                    ),
                     Container(
                       width: 32,
                       height: 32,
