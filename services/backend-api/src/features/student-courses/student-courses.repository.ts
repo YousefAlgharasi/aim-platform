@@ -142,6 +142,11 @@ export class StudentCoursesRepository {
     return result.rows;
   }
 
+  async findPublishedCourseIds(): Promise<string[]> {
+    const result = await this.db.query<{ id: string }>(`SELECT id FROM courses WHERE status = 'published'`);
+    return result.rows.map((r) => r.id);
+  }
+
   /** Course id of the student's active enrollment, or null. */
   async findActiveEnrollmentCourseId(studentId: string): Promise<string | null> {
     const result = await this.db.query<{ course_id: string }>(

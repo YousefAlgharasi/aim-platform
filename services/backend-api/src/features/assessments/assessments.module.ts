@@ -15,6 +15,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
+import { CourseBillingModule } from '../course-billing/course-billing.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { RolesModule } from '../roles';
 import { SessionsModule } from '../sessions/sessions.module';
@@ -43,7 +44,7 @@ import { AssessmentResultOwnershipGuard } from './guards/assessment-result-owner
 import { AssessmentAuditService } from './assessment-audit.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, AnalyticsModule, RolesModule, SessionsModule, TtsGatewayModule, UsersModule],
+  imports: [CourseBillingModule, DatabaseModule, AuthModule, AnalyticsModule, RolesModule, SessionsModule, TtsGatewayModule, UsersModule],
   controllers: [AssessmentController, AdminAssessmentWriteController],
   providers: [
     AdminAssessmentWriteService,

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
+import { CourseBillingModule } from '../course-billing/course-billing.module';
 import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -12,7 +13,7 @@ import { CourseCompletionService } from './course-completion.service';
 import { ChapterCompletionService } from './chapter-completion.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, NotificationsModule],
+  imports: [CourseBillingModule, DatabaseModule, AuthModule, RolesModule, UsersModule, NotificationsModule],
   controllers: [LessonsController],
   providers: [
     LessonsService,
