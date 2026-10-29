@@ -11,11 +11,13 @@ import {
   enrollInCourse,
   fetchCurrentEnrollment,
   fetchStudentCourses,
+  needsPayment,
   type CurrentEnrollment,
   type StudentCourse,
 } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
+import { CourseBillingBadge } from '../course-billing/CourseBillingBadge';
 
 const STATUS_LABEL: Record<StudentCourse['status'], string> = {
   not_started: 'Not started',
@@ -61,6 +63,10 @@ export function CourseCatalog() {
     setNotice('');
     if (course.locked) {
       setNotice(t(COURSE_LOCKED_MESSAGE));
+      return;
+    }
+    if (needsPayment(course)) {
+      navigate(`/curriculum/${course.courseId}/buy`);
       return;
     }
     if (course.courseId === currentCourseId) {
@@ -138,6 +144,7 @@ export function CourseCatalog() {
                     {t('Current course')}
                   </span>
                 )}
+                <CourseBillingBadge price={course.price} access={course.access} />
                 {course.locked && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
                     <LockIcon className="size-3" /> {t('Locked')}

@@ -3932,4 +3932,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get billingCurrencyUsd => 'USD';
+
+  @override
+  String get billingErrorDuplicate =>
+      'This transaction number was already submitted.';
+
+  @override
+  String get billingErrorAlreadyPending =>
+      'Your payment for this course is already waiting for review.';
+
+  @override
+  String get billingErrorWalletUnavailable =>
+      'This wallet is no longer available. Choose another one.';
+
+  @override
+  String get billingErrorBadImage =>
+      'The receipt must be a PNG, JPEG or WebP image up to 5 MB.';
+
+  @override
+  String get billingErrorGeneric =>
+      'Couldn\'t send your payment. Please try again.';
 }

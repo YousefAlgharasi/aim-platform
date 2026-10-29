@@ -4684,5 +4684,15 @@
   "billingCurrencySar": "SAR",
   "@billingCurrencySar": {"description": "Course billing (features/course_billing)."},
   "billingCurrencyUsd": "USD",
-  "@billingCurrencyUsd": {"description": "Course billing (features/course_billing)."}
+  "@billingCurrencyUsd": {"description": "Course billing (features/course_billing)."},
+  "billingErrorDuplicate": "This transaction number was already submitted.",
+  "@billingErrorDuplicate": {"description": "Course billing payment errors (features/course_billing)."},
+  "billingErrorAlreadyPending": "Your payment for this course is already waiting for review.",
+  "@billingErrorAlreadyPending": {"description": "Course billing payment errors (features/course_billing)."},
+  "billingErrorWalletUnavailable": "This wallet is no longer available. Choose another one.",
+  "@billingErrorWalletUnavailable": {"description": "Course billing payment errors (features/course_billing)."},
+  "billingErrorBadImage": "The receipt must be a PNG, JPEG or WebP image up to 5 MB.",
+  "@billingErrorBadImage": {"description": "Course billing payment errors (features/course_billing)."},
+  "billingErrorGeneric": "Couldn't send your payment. Please try again.",
+  "@billingErrorGeneric": {"description": "Course billing payment errors (features/course_billing)."}
 }

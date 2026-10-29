@@ -6683,6 +6683,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'USD'**
   String get billingCurrencyUsd;
+
+  /// Course billing payment errors (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'This transaction number was already submitted.'**
+  String get billingErrorDuplicate;
+
+  /// Course billing payment errors (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment for this course is already waiting for review.'**
+  String get billingErrorAlreadyPending;
+
+  /// Course billing payment errors (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'This wallet is no longer available. Choose another one.'**
+  String get billingErrorWalletUnavailable;
+
+  /// Course billing payment errors (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'The receipt must be a PNG, JPEG or WebP image up to 5 MB.'**
+  String get billingErrorBadImage;
+
+  /// Course billing payment errors (features/course_billing).
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send your payment. Please try again.'**
+  String get billingErrorGeneric;
 }
 
 class _AppLocalizationsDelegate

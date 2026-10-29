@@ -14,6 +14,7 @@ import {
   fetchCurrentEnrollment,
   fetchStudentChapters,
   fetchStudentCourses,
+  needsPayment,
   type CurrentEnrollment,
   type FinalExamSummary,
   type LevelWithChapters,
@@ -21,6 +22,7 @@ import {
 } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { BackArrowIcon } from './CurriculumIcons';
+import { formatDate } from '../../i18n';
 
 /** Route: /curriculum/:subjectId — the param is a course id. */
 export function CourseDetailPage() {
@@ -50,7 +52,7 @@ export function CourseDetailPage() {
           setNotFound(true);
           return;
         }
-        if (found.locked) {
+        if (found.locked || needsPayment(found)) {
           setLevels([]);
           setFinalExam(null);
           return;
@@ -134,8 +136,34 @@ export function CourseDetailPage() {
 
       {course.locked ? (
         <EmptyState title={t('Course locked')} message={t(COURSE_LOCKED_MESSAGE)} />
+      ) : needsPayment(course) ? (
+        <EmptyState
+          title={t('Get this course to continue')}
+          message={course.access?.status === 'pending'
+            ? t('The course unlocks as soon as an admin confirms your payment.')
+            : course.access?.status === 'failed'
+              ? t("You didn't finish this course in time, so your progress was reset. Pay again to retake it from the start.")
+              : t('This course needs to be purchased before you can open its lessons.')}
+          actionLabel={t('Get this course')}
+          onAction={() => navigate(`/curriculum/${course.courseId}/buy`)}
+        />
       ) : (
         <>
+          {course.access?.status === 'active' && (
+            <Banner variant={(course.access.daysLeft ?? 0) <= 5 ? 'warning' : 'info'}>
+              {[
+                (course.access.daysLeft ?? 0) <= 0
+                  ? t('Less than a day left')
+                  : plural(course.access.daysLeft ?? 0, {
+                      one: t('1 day left'),
+                      two: t('2 days left'),
+                      few: t('{n} days left [few]', { n: course.access.daysLeft ?? 0 }),
+                      other: t('{n} days left', { n: course.access.daysLeft ?? 0 }),
+                    }),
+                course.access.expiresAt ? t('Finish by {date}', { date: formatDate(course.access.expiresAt) }) : '',
+              ].filter(Boolean).join(' · ')}
+            </Banner>
+          )}
           {!isCurrent && (
             <Banner variant="info">
               <div className="flex flex-wrap items-center justify-between gap-3">

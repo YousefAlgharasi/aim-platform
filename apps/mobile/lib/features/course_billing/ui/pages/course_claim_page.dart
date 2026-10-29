@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:aim_mobile/core/networking/api_client_exception.dart';
+import 'package:aim_mobile/core/networking/backend_api_client.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -389,7 +390,7 @@ class _PaymentFormState extends ConsumerState<_PaymentForm> {
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = e is ApiClientException ? e.message : '$e');
+      setState(() => _error = _paymentErrorText(l10n, e));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -504,6 +505,19 @@ class _PaymentFormState extends ConsumerState<_PaymentForm> {
       },
     );
   }
+}
+
+/// Backend payment errors are English; show them in the app's language.
+String _paymentErrorText(AppLocalizations l10n, Object error) {
+  final message = error is ApiClientException ? error.message : '';
+  if (message.contains('already submitted')) return l10n.billingErrorDuplicate;
+  if (message.contains('waiting for review')) return l10n.billingErrorAlreadyPending;
+  if (message.contains('wallet is no longer available')) return l10n.billingErrorWalletUnavailable;
+  if (message.contains('PNG, JPEG or WebP') || message.contains('5 MB') || message.contains('image file is required')) {
+    return l10n.billingErrorBadImage;
+  }
+  if (error is ApiClientException && error.code == BackendApiClient.networkErrorCode) return message;
+  return l10n.billingErrorGeneric;
 }
 
 class _StepTitle extends StatelessWidget {

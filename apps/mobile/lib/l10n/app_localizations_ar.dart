@@ -3967,4 +3967,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get billingCurrencyUsd => 'دولار';
+
+  @override
+  String get billingErrorDuplicate => 'تم إرسال رقم العملية هذا من قبل.';
+
+  @override
+  String get billingErrorAlreadyPending =>
+      'دفعتك لهذه الدورة بانتظار المراجعة بالفعل.';
+
+  @override
+  String get billingErrorWalletUnavailable =>
+      'هذه المحفظة لم تعد متاحة. اختر محفظة أخرى.';
+
+  @override
+  String get billingErrorBadImage =>
+      'يجب أن يكون الإيصال صورة PNG أو JPEG أو WebP بحجم لا يتجاوز 5 ميغابايت.';
+
+  @override
+  String get billingErrorGeneric => 'تعذّر إرسال دفعتك. حاول مرة أخرى.';
 }

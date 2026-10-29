@@ -30,6 +30,9 @@ export class PublicWalletImageController {
     const image = await this.wallets.readImage(id, kind);
     res.setHeader('Content-Type', image.contentType);
     res.setHeader('Cache-Control', 'public, max-age=86400');
+    // Shown by the student web app, which may live on another origin than
+    // the API (the default helmet policy would make browsers block it).
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.send(image.data);
   }
 }

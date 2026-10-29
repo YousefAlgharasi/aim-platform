@@ -1101,5 +1101,10 @@
   "billingChipPending": "الدفع قيد المراجعة",
   "billingCurrencyYer": "ر.ي",
   "billingCurrencySar": "ر.س",
-  "billingCurrencyUsd": "دولار"
+  "billingCurrencyUsd": "دولار",
+  "billingErrorDuplicate": "تم إرسال رقم العملية هذا من قبل.",
+  "billingErrorAlreadyPending": "دفعتك لهذه الدورة بانتظار المراجعة بالفعل.",
+  "billingErrorWalletUnavailable": "هذه المحفظة لم تعد متاحة. اختر محفظة أخرى.",
+  "billingErrorBadImage": "يجب أن يكون الإيصال صورة PNG أو JPEG أو WebP بحجم لا يتجاوز 5 ميغابايت.",
+  "billingErrorGeneric": "تعذّر إرسال دفعتك. حاول مرة أخرى."
 }

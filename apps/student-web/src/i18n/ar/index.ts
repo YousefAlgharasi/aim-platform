@@ -8,6 +8,7 @@ import { assessments } from './assessments';
 import { teacher } from './teacher';
 import { dashboard } from './dashboard';
 import { account } from './account';
+import { billing } from './billing';
 
 export const ar: Record<string, string> = {
   ...common,
@@ -18,4 +19,5 @@ export const ar: Record<string, string> = {
   ...teacher,
   ...dashboard,
   ...account,
+  ...billing,
 };
