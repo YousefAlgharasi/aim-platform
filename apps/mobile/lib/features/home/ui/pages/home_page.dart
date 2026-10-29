@@ -49,7 +49,9 @@ import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/notifications/data/models/notification_event_model.dart';
 import 'package:aim_mobile/features/notifications/logic/provider/notification_providers.dart';
 import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
@@ -118,6 +120,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final token = authFlow.accessToken;
     if (token == null || token.isEmpty) return;
 
+    ref.invalidate(homeCoursesProvider);
     await ref.read(homeProvider.notifier).refresh(
           bearerToken: token,
           studentId: contextData.user.id,
@@ -380,7 +383,15 @@ class _HomeContent extends ConsumerWidget {
         data.profile?.displayName ?? data.user.email ?? '',
       _ => '',
     };
-    final activeCourseName = data.recommendedCourse?.courseTitle ?? '';
+    // The backend-flagged current course drives the card; the placement
+    // recommendation and XP level progress are only fallbacks while the
+    // course list loads (or if it fails).
+    final courses = ref.watch(homeCoursesProvider).valueOrNull ?? const [];
+    final currentCourse = courses.where((c) => c.isCurrent).firstOrNull;
+    final courseCompleted =
+        currentCourse?.status == StudentCourseStatus.completed;
+    final activeCourseName =
+        currentCourse?.title ?? data.recommendedCourse?.courseTitle ?? '';
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -397,7 +408,14 @@ class _HomeContent extends ConsumerWidget {
             level: data.engagementStats?.level ?? 1,
             activeCourseName: activeCourseName,
             streakDays: data.goal?.streakDays ?? 0,
-            overallProgressPercent: data.engagementStats?.levelProgressPercent ?? 0,
+            overallProgressPercent: currentCourse?.percent ??
+                data.engagementStats?.levelProgressPercent ??
+                0,
+            progressLabel: currentCourse == null
+                ? l10n.homeOverallProgress
+                : (courseCompleted
+                    ? l10n.homeCourseCompletedLabel
+                    : l10n.homeCourseProgress),
           ),
           if (lastUpdatedAt != null) ...[
             const SizedBox(height: AimSpacing.space8),
@@ -699,6 +717,7 @@ class _WelcomeCard extends StatelessWidget {
     required this.activeCourseName,
     required this.streakDays,
     required this.overallProgressPercent,
+    required this.progressLabel,
   });
 
   final String displayName;
@@ -706,6 +725,7 @@ class _WelcomeCard extends StatelessWidget {
   final String activeCourseName;
   final int streakDays;
   final int overallProgressPercent;
+  final String progressLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -830,7 +850,7 @@ class _WelcomeCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            l10n.homeOverallProgress,
+                            progressLabel,
                             style: AimTextStyles.bodySm.copyWith(
                               color: AimColors.neutral0.withValues(alpha: 0.8),
                               fontSize: 12,

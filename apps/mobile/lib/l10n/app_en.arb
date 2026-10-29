@@ -4492,5 +4492,15 @@
   "assessmentsQuestionNumber": "QUESTION {number}",
   "@assessmentsQuestionNumber": {"description": "Assessment flow (features/assessments).", "placeholders": {"number": {"type": "int"}}},
   "assessmentsListTitle": "Assessments",
-  "@assessmentsListTitle": {"description": "Assessment flow (features/assessments)."}
+  "@assessmentsListTitle": {"description": "Assessment flow (features/assessments)."},
+  "homeCourseProgress": "Course progress",
+  "@homeCourseProgress": {"description": "Home screen course progress and next course card (features/home)."},
+  "homeCourseCompletedLabel": "Completed",
+  "@homeCourseCompletedLabel": {"description": "Home screen course progress and next course card (features/home)."},
+  "homeNextCourseTitle": "You finished {course}!",
+  "@homeNextCourseTitle": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}},
+  "homeNextCourseBody": "Start {course} now to keep going.",
+  "@homeNextCourseBody": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}},
+  "homeNextCourseStart": "Start {course}",
+  "@homeNextCourseStart": {"description": "Home screen course progress and next course card (features/home).", "placeholders": {"course": {"type": "String"}}}
 }

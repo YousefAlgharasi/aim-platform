@@ -3595,4 +3595,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assessmentsListTitle => 'Assessments';
+
+  @override
+  String get homeCourseProgress => 'Course progress';
+
+  @override
+  String get homeCourseCompletedLabel => 'Completed';
+
+  @override
+  String homeNextCourseTitle(String course) {
+    return 'You finished $course!';
+  }
+
+  @override
+  String homeNextCourseBody(String course) {
+    return 'Start $course now to keep going.';
+  }
+
+  @override
+  String homeNextCourseStart(String course) {
+    return 'Start $course';
+  }
 }

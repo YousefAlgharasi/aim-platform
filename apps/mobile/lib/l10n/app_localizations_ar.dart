@@ -3631,4 +3631,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get assessmentsListTitle => 'التقييمات';
+
+  @override
+  String get homeCourseProgress => 'تقدّم الدورة';
+
+  @override
+  String get homeCourseCompletedLabel => 'مكتملة';
+
+  @override
+  String homeNextCourseTitle(String course) {
+    return 'لقد أنهيت $course!';
+  }
+
+  @override
+  String homeNextCourseBody(String course) {
+    return 'ابدأ $course الآن لتواصل التقدّم.';
+  }
+
+  @override
+  String homeNextCourseStart(String course) {
+    return 'ابدأ $course';
+  }
 }

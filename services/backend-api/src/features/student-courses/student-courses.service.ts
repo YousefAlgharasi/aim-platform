@@ -22,7 +22,10 @@ export class StudentCoursesService {
   constructor(private readonly repository: StudentCoursesRepository) {}
 
   async getCourses(studentId: string): Promise<StudentCoursesResponse> {
-    const rows = await this.repository.findCoursesWithProgress(studentId);
+    const [rows, enrolledCourseId] = await Promise.all([
+      this.repository.findCoursesWithProgress(studentId),
+      this.repository.findActiveEnrollmentCourseId(studentId),
+    ]);
 
     const highestCompletedRankByTrack = new Map<string, number>();
     for (const row of rows) {
@@ -40,7 +43,7 @@ export class StudentCoursesService {
       }
     }
 
-    const courses: StudentCourseSummary[] = rows.map((row) => {
+    const summaries = rows.map((row) => {
       const trackSlug = row.track_slug || 'general_english';
       const lessonCount = parseInt(row.lesson_count, 10) || 0;
       const completedLessonCount = parseInt(row.completed_lesson_count, 10) || 0;
@@ -87,8 +90,35 @@ export class StudentCoursesService {
         percent,
         status,
         locked,
+        cefrRank: row.cefr_rank,
       };
     });
+
+    // Current course: the active enrollment, else the first unlocked course
+    // not completed yet (list order is curriculum order).
+    let currentIndex = summaries.findIndex((c) => c.courseId === enrolledCourseId);
+    if (currentIndex < 0) {
+      currentIndex = summaries.findIndex((c) => !c.locked && c.status !== 'completed');
+    }
+    if (currentIndex < 0) {
+      // Everything available is completed: the last completed course is current.
+      currentIndex = summaries.map((c) => c.status).lastIndexOf('completed');
+    }
+
+    // Next course: only once the current one is finished — the first
+    // curriculum course after it that's unlocked and not completed.
+    let nextIndex = -1;
+    if (currentIndex >= 0 && summaries[currentIndex].status === 'completed') {
+      nextIndex = summaries.findIndex(
+        (c, i) => i > currentIndex && c.cefrRank !== null && !c.locked && c.status !== 'completed',
+      );
+    }
+
+    const courses: StudentCourseSummary[] = summaries.map(({ cefrRank: _cefrRank, ...course }, i) => ({
+      ...course,
+      current: i === currentIndex,
+      next: i === nextIndex,
+    }));
 
     return { courses };
   }

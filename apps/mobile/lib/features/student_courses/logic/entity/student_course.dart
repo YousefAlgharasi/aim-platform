@@ -27,6 +27,8 @@ class StudentCourse {
     required this.locked,
     this.description,
     this.levelCode,
+    this.isCurrent = false,
+    this.isNext = false,
   });
 
   final String courseId;
@@ -58,4 +60,12 @@ class StudentCourse {
   /// student's max_unlocked_cefr_rank for its track. Never derived
   /// client-side — always read verbatim from the backend response.
   final bool locked;
+
+  /// Backend-computed: the course the student is on (active enrollment, or
+  /// the first unlocked course not completed yet).
+  final bool isCurrent;
+
+  /// Backend-computed: once the current course is completed, the course to
+  /// start next. False for every course otherwise.
+  final bool isNext;
 }

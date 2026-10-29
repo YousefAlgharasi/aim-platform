@@ -6107,6 +6107,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Assessments'**
   String get assessmentsListTitle;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Course progress'**
+  String get homeCourseProgress;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get homeCourseCompletedLabel;
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'You finished {course}!'**
+  String homeNextCourseTitle(String course);
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Start {course} now to keep going.'**
+  String homeNextCourseBody(String course);
+
+  /// Home screen course progress and next course card (features/home).
+  ///
+  /// In en, this message translates to:
+  /// **'Start {course}'**
+  String homeNextCourseStart(String course);
 }
 
 class _AppLocalizationsDelegate

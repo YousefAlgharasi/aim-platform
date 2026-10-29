@@ -1005,5 +1005,10 @@
   "assessmentsStatusInProgress": "قيد التقدم",
   "assessmentsExpiresLabel": "ينتهي",
   "assessmentsQuestionNumber": "السؤال {number}",
-  "assessmentsListTitle": "التقييمات"
+  "assessmentsListTitle": "التقييمات",
+  "homeCourseProgress": "تقدّم الدورة",
+  "homeCourseCompletedLabel": "مكتملة",
+  "homeNextCourseTitle": "لقد أنهيت {course}!",
+  "homeNextCourseBody": "ابدأ {course} الآن لتواصل التقدّم.",
+  "homeNextCourseStart": "ابدأ {course}"
 }
