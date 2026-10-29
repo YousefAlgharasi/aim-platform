@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { usePlacementGate } from '../features/placement/placementApi';
-import { Sidebar, SidebarContent } from './Sidebar';
+import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { MobileDrawer } from './MobileDrawer';
+import { MobileTabBar } from './MobileTabBar';
+import { navItems } from './navItems';
+import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { useI18n } from '../i18n/I18nContext';
 
 function readFlag(key: string | null): boolean {
@@ -23,9 +27,9 @@ function writeFlag(key: string) {
   }
 }
 
-// Full-screen flows (chat, voice, lessons, practice, test attempts) hide the floating menu
-// button so it never covers their input/action bars — same as the prototype's sub-screens.
-const FAB_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
+// Full-screen flows (chat, voice, lessons, practice, test attempts) hide the bottom tab bar
+// so it never covers their input/action bars — same as the prototype's sub-screens.
+const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
 
 export function AppLayout() {
   const { t } = useI18n();
@@ -33,6 +37,11 @@ export function AppLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const section = navItems.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to)));
+  useRouteAccessibility(mainRef, { fallbackTitle: section ? t(section.label) : undefined });
+  const showTabBar = !TAB_BAR_HIDDEN.test(pathname);
 
   // First-login gate (Flutter parity): students who haven't chosen between the
   // placement test and starting from scratch are sent to the choice screen once.
@@ -62,52 +71,32 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <a
+        href="#main-content"
+        onClick={(e) => {
+          e.preventDefault();
+          mainRef.current?.focus();
+        }}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[60] focus:rounded-xl focus:bg-indigo-600 focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:no-underline focus:shadow-lg"
+      >
+        {t('Skip to main content')}
+      </a>
       <Sidebar />
-
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          <button
-            type="button"
-            aria-label={t('Close menu')}
-            onClick={() => setMenuOpen(false)}
-            className="absolute inset-0 border-none bg-slate-900/40 backdrop-blur-sm cursor-default"
-          />
-          <div className="relative w-4/5 max-w-[300px] h-full shadow-2xl bg-white dark:bg-slate-900">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(false)}
-              aria-label={t('Close menu')}
-              className="absolute top-5 end-5 z-10 size-8 rounded-full flex items-center justify-center border-none cursor-pointer bg-slate-100 text-slate-500 hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-            >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            </button>
-            <SidebarContent onNavigate={() => setMenuOpen(false)} />
-          </div>
-        </div>
-      )}
+      <MobileDrawer open={menuOpen} onClose={closeMenu} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar onOpenMenu={() => setMenuOpen(true)} />
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
+        <main
+          id="main-content"
+          ref={mainRef}
+          tabIndex={-1}
+          className={`flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 ${showTabBar ? 'pb-24' : 'pb-8'}`}
+        >
           <Outlet />
         </main>
       </div>
 
-      {!menuOpen && !FAB_HIDDEN.test(pathname) && (
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-label={t('Open navigation menu')}
-          title={t('Open navigation menu')}
-          className="md:hidden fixed bottom-6 end-6 z-40 size-14 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/35 flex items-center justify-center border-none cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
-        >
-          <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-      )}
+      {showTabBar && <MobileTabBar onOpenMenu={() => setMenuOpen(true)} />}
     </div>
   );
 }

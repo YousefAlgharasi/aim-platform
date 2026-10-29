@@ -29,7 +29,7 @@ function statusPill(status: LessonStatus) {
   switch (status) {
     case 'completed': return `${base} bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400`;
     case 'current': return `${base} bg-indigo-600 text-white shadow-md shadow-indigo-500/20`;
-    case 'locked': return `${base} bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500`;
+    case 'locked': return `${base} bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400`;
     default: return `${base} bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400`;
   }
 }
@@ -49,9 +49,9 @@ function Pill({ tone, children }: { tone: 'done' | 'current' | 'muted'; children
       ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60'
       : tone === 'current'
         ? 'text-white bg-indigo-600'
-        : 'text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700';
+        : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700';
   return (
-    <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${cls}`}>
+    <span className={`text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${cls}`}>
       {children}
     </span>
   );
@@ -87,7 +87,7 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center px-1">
         <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">{t('Course Chapters')}</span>
-        <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">{plural(ordered.length, { one: t('1 Chapter'), two: t('2 Chapters'), few: t('{n} Chapters', { n: ordered.length }), other: t('{n} Chapters', { n: ordered.length }) })}</span>
+        <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{plural(ordered.length, { one: t('1 Chapter'), two: t('2 Chapters'), few: t('{n} Chapters', { n: ordered.length }), other: t('{n} Chapters', { n: ordered.length }) })}</span>
       </div>
       {levels.map(({ level, chapters }) => (
         <section key={level.id} className="flex flex-col gap-3" aria-label={level.title}>
@@ -160,7 +160,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
   const badgeCls = isCompleted
     ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
     : locked
-      ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
+      ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
       : 'bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400';
 
   return (
@@ -189,7 +189,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
             <ChevronDownIcon className={`size-4 text-slate-400 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
           </div>
           {chapter.description && (
-            <p className="text-slate-400 dark:text-slate-500 text-xs m-0 mb-3 leading-relaxed line-clamp-2">{chapter.description}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs m-0 mb-3 leading-relaxed line-clamp-2">{chapter.description}</p>
           )}
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden" aria-hidden="true">
@@ -215,7 +215,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
             </div>
           )}
           {data && lessons.length === 0 && (
-            <p className="text-slate-400 dark:text-slate-500 text-sm m-0">{t('No lessons published in this chapter yet.')}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm m-0">{t('No lessons published in this chapter yet.')}</p>
           )}
           {data && lessons.length > 0 && (
             <div className="flex flex-col gap-2" role="list">
@@ -235,17 +235,17 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                       <StatusGlyph status={status} />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         {t('Lesson {n}', { n: i + 1 })}
                       </span>
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{lesson.title}</span>
                       {lesson.xpValue > 0 && (
-                        <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('{n} XP', { n: lesson.xpValue })}</span>
+                        <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('{n} XP', { n: lesson.xpValue })}</span>
                       )}
                     </div>
                     {status === 'completed' && <Pill tone="done">{t('Done')}</Pill>}
                     {status === 'current' && <Pill tone="current">{t('Current')}</Pill>}
-                    {status !== 'locked' && <ChevronRightIcon className="size-4 text-slate-400 dark:text-slate-500 shrink-0 rtl:rotate-180" />}
+                    {status !== 'locked' && <ChevronRightIcon className="size-4 text-slate-500 dark:text-slate-400 shrink-0 rtl:rotate-180" />}
                   </>
                 );
 
@@ -287,7 +287,7 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                     <span className={statusPill('locked')} aria-hidden="true"><LockIcon className="size-4" /></span>
                     <div className="flex-1 min-w-0">
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('Chapter quiz · finish all lessons to unlock')}</span>
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('Chapter quiz · finish all lessons to unlock')}</span>
                     </div>
                   </div>
                 ) : (
@@ -301,10 +301,10 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
                     </span>
                     <div className="flex-1 min-w-0">
                       <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{t('Chapter quiz')}</span>
+                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('Chapter quiz')}</span>
                     </div>
                     {data.quiz.completed && <Pill tone="done">{t('Passed')}</Pill>}
-                    <ChevronRightIcon className="size-4 text-slate-400 dark:text-slate-500 shrink-0 rtl:rotate-180" />
+                    <ChevronRightIcon className="size-4 text-slate-500 dark:text-slate-400 shrink-0 rtl:rotate-180" />
                   </Link>
                 )
               )}
@@ -327,7 +327,7 @@ function FinalExamCard({ exam }: { exam: FinalExamSummary }) {
             ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
             : unlocked
               ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20'
-              : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
+              : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
         }`}
       >
         {exam.passed ? <CheckIcon className="size-6 text-white" /> : unlocked ? <ClipboardIcon className="size-5" /> : <LockIcon className="size-5" />}

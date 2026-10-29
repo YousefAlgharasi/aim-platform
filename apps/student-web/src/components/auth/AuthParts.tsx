@@ -38,7 +38,7 @@ export function AuthFooterLink({ prompt, action, onClick }: { prompt: string; ac
       <button
         type="button"
         onClick={onClick}
-        className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-bold text-sm cursor-pointer underline underline-offset-2 p-0 inline"
+        className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-bold text-sm cursor-pointer underline underline-offset-2 px-1 py-2.5 -my-2.5 inline"
       >
         {action}
       </button>
@@ -51,7 +51,7 @@ export function TextLinkButton({ onClick, children }: { onClick: () => void; chi
     <button
       type="button"
       onClick={onClick}
-      className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-semibold text-xs cursor-pointer hover:underline p-0"
+      className="bg-transparent border-none text-[#4F46E5] dark:text-indigo-400 font-semibold text-sm cursor-pointer hover:underline px-1 py-2.5 -my-2.5"
     >
       {children}
     </button>
@@ -66,7 +66,7 @@ export function PasswordToggle({ shown, onToggle }: { shown: boolean; onToggle: 
       type="button"
       onClick={onToggle}
       aria-label={shown ? t('Hide password') : t('Show password')}
-      className="bg-transparent border-none cursor-pointer p-0 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center"
+      className="bg-transparent border-none cursor-pointer size-10 -me-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 flex items-center justify-center"
     >
       <EyeIcon off={shown} />
     </button>

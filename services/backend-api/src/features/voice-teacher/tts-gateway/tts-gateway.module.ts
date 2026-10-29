@@ -8,9 +8,13 @@ import { TtsResponseMapperService } from './tts-response.mapper';
 import { TtsSafeFailureService } from './tts-safe-failure.service';
 import { TtsAudioStorageService } from './tts-audio-storage.service';
 import { TtsAudioGenerationService } from './tts-audio-generation.service';
+import { DatabaseModule } from '../../../database/database.module';
+import { TtsAudioAssetRepository } from './persistent/tts-audio-asset.repository';
+import { SupabaseAudioObjectStore } from './persistent/supabase-audio-object-store.service';
+import { PersistentTtsAudioService } from './persistent/persistent-tts-audio.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, DatabaseModule],
   providers: [
     TtsGatewayConfigService,
     TtsRequestMapperService,
@@ -18,8 +22,17 @@ import { TtsAudioGenerationService } from './tts-audio-generation.service';
     TtsSafeFailureService,
     TtsAudioStorageService,
     TtsAudioGenerationService,
+    TtsAudioAssetRepository,
+    SupabaseAudioObjectStore,
+    PersistentTtsAudioService,
     { provide: TTS_GATEWAY, useExisting: TtsAudioGenerationService },
   ],
-  exports: [TTS_GATEWAY, TtsSafeFailureService, TtsAudioStorageService, TtsAudioGenerationService],
+  exports: [
+    TTS_GATEWAY,
+    TtsSafeFailureService,
+    TtsAudioStorageService,
+    TtsAudioGenerationService,
+    PersistentTtsAudioService,
+  ],
 })
 export class TtsGatewayModule {}

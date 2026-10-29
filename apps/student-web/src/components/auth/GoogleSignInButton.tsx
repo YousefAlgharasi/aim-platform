@@ -75,7 +75,7 @@ export function GoogleSignInButton({
 
   return (
     <div className="pt-4">
-      <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase">
+      <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase">
         <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
         {t('or')}
         <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />

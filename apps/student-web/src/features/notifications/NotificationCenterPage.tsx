@@ -186,13 +186,13 @@ export function NotificationCenterPage() {
                   {body && (
                     <span className={`text-sm text-slate-500 dark:text-slate-400 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
                   )}
-                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                     {categoryLabel(notif.category)} · {formatDateTime(notif.created_at)}
                   </span>
                 </div>
                 <button
                   type="button"
-                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xl disabled:opacity-50"
+                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xl disabled:opacity-50"
                   onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
                   disabled={busy}
                   aria-label={t('Dismiss {title}', { title })}

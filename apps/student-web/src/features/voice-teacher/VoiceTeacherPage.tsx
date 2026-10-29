@@ -495,7 +495,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                 >
                   {msg.text}
                 </div>
-                <div className="flex items-center gap-2 mt-1 px-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                <div className="flex items-center gap-2 mt-1 px-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                   <span className="inline-flex items-center gap-1">
                     {msg.channel === 'voice' && <MicIcon className="size-3" />}
                     {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
@@ -514,7 +514,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                 </div>
                 {isTeacher && (
                   <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
                     </span>
                     <ThumbButton

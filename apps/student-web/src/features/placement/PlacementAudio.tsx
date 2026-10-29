@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { Button } from '../../components/common/Button';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { SPEAKING_AUDIO_TYPES, SPEAKING_MAX_BYTES } from './placementApi';
@@ -9,30 +8,89 @@ import { SPEAKING_AUDIO_TYPES, SPEAKING_MAX_BYTES } from './placementApi';
 // Listening audio — fetched through the authenticated backend endpoint.
 // ---------------------------------------------------------------------------
 
+// The backend synthesizes listening audio on the first request, which can take several seconds.
+// Keep what was already fetched (and any request still in flight) so revisiting a question, a
+// StrictMode double-mount or a retry never pays that cost twice.
+const MAX_CACHED_CLIPS = 20;
+const blobCache = new Map<string, Blob>();
+const inFlight = new Map<string, Promise<Blob | null>>();
+
+function loadOnce(key: string | undefined, load: () => Promise<Blob | null>): Promise<Blob | null> {
+  if (!key) return load();
+  const cached = blobCache.get(key);
+  if (cached) return Promise.resolve(cached);
+  const pending = inFlight.get(key);
+  if (pending) return pending;
+  const request = load()
+    .then((blob) => {
+      if (blob) {
+        blobCache.set(key, blob);
+        if (blobCache.size > MAX_CACHED_CLIPS) blobCache.delete(blobCache.keys().next().value as string);
+      }
+      return blob;
+    })
+    .finally(() => inFlight.delete(key));
+  inFlight.set(key, request);
+  return request;
+}
+
+function formatClock(totalSeconds: number): string {
+  const safe = Number.isFinite(totalSeconds) && totalSeconds > 0 ? Math.floor(totalSeconds) : 0;
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+}
+
+/** Seconds of waiting after which "Preparing audio…" gets a reassuring second line. */
+const SLOW_LOAD_HINT_MS = 4000;
+
 interface QuestionAudioProps {
   /** Loads the audio; resolves null when the backend has no audio yet (204). */
   load: () => Promise<Blob | null>;
   /** When false, the backend reported no listening script — skip the request. */
   available?: boolean;
+  /** Identifies the clip so it is fetched once per question, however often the question is shown. */
+  cacheKey?: string;
+  /** Start fetching as soon as the question is shown, so the clip is ready when the student taps play. */
+  prefetch?: boolean;
 }
 
-export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
+export function QuestionAudio({ load, available = true, cacheKey, prefetch = false }: QuestionAudioProps) {
   const { t } = useI18n();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [error, setError] = useState('');
   const [missing, setMissing] = useState(!available);
+  const [playing, setPlaying] = useState(false);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const urlRef = useRef<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const playWhenReady = useRef(false);
+  const unmounted = useRef(false);
 
-  useEffect(() => () => {
-    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+  useEffect(() => {
+    unmounted.current = false;
+    return () => {
+      unmounted.current = true;
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    };
   }, []);
 
-  async function handleLoad() {
+  useEffect(() => {
+    if (!loading) {
+      setSlow(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setSlow(true), SLOW_LOAD_HINT_MS);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
+
+  const fetchClip = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const blob = await load();
+      const blob = await loadOnce(cacheKey, load);
+      if (unmounted.current) return;
       if (!blob) {
         setMissing(true);
         return;
@@ -42,39 +100,134 @@ export function QuestionAudio({ load, available = true }: QuestionAudioProps) {
       urlRef.current = objectUrl;
       setUrl(objectUrl);
     } catch (err) {
-      setError(getErrorMessage(err, t('Could not load the audio.')));
+      if (!unmounted.current) setError(getErrorMessage(err, t('Could not load the audio.')));
     } finally {
-      setLoading(false);
+      if (!unmounted.current) setLoading(false);
     }
+    // `load` is a fresh closure every render; the clip is identified by cacheKey.
+  }, [cacheKey, t]);
+
+  useEffect(() => {
+    if (prefetch && available) void fetchClip();
+    // Only on first show of the question.
+  }, []);
+
+  useEffect(() => {
+    if (url && playWhenReady.current) {
+      playWhenReady.current = false;
+      audioRef.current?.play().catch(() => undefined);
+    }
+  }, [url]);
+
+  function requestPlay() {
+    if (!url) {
+      playWhenReady.current = true;
+      void fetchClip();
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.ended) audio.currentTime = 0;
+    if (audio.paused) audio.play().catch(() => undefined);
+    else audio.pause();
   }
 
   if (missing) {
     return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t("Audio for this question isn't available yet.")}</p>;
   }
 
+  const ended = !playing && duration > 0 && time >= duration - 0.05;
+  const buttonLabel = loading
+    ? t('Loading audio…')
+    : playing
+      ? t('Pause audio')
+      : ended
+        ? t('Replay audio')
+        : t('Play audio');
+
   return (
-    <div className="flex flex-col gap-2 bg-[#EEF2FF] dark:bg-indigo-950/60 rounded-2xl px-4 py-3">
-      {url ? (
-        <audio controls autoPlay src={url} className="w-full" />
-      ) : (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-3" dir="ltr">
         <button
           type="button"
-          onClick={handleLoad}
+          onClick={requestPlay}
           disabled={loading}
-          className="self-start inline-flex items-center gap-3 border-0 bg-transparent p-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={buttonLabel}
+          className="relative size-10 shrink-0 cursor-pointer rounded-full border-0 bg-[#0F172A] text-white transition-transform duration-150 hover:bg-slate-700 active:scale-95 disabled:cursor-progress disabled:bg-slate-400 dark:bg-white dark:text-[#0F172A] dark:hover:bg-slate-200 dark:disabled:bg-slate-500"
         >
-          <span className="size-10 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] flex items-center justify-center shadow-sm">
-            <svg className="size-5 text-white" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-          </span>
-          <span className="text-sm font-semibold text-[#4F46E5] dark:text-indigo-400">
-            {loading ? t('Loading audio…') : t('Play audio')}
-          </span>
+          {loading ? (
+            <svg className="absolute inset-0 m-auto size-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          ) : playing ? (
+            <svg className="absolute inset-0 m-auto size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+          ) : ended ? (
+            <svg className="absolute inset-0 m-auto size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v5h5" />
+            </svg>
+          ) : (
+            <svg className="absolute inset-0 m-auto size-4 translate-x-px" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
         </button>
+
+        {url ? (
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={Math.min(time, duration || 0)}
+            disabled={!duration}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setTime(next);
+              if (audioRef.current) audioRef.current.currentTime = next;
+            }}
+            aria-label={t('Audio position')}
+            aria-valuetext={t('{current} of {total}', { current: formatClock(time), total: formatClock(duration) })}
+            className="h-1 min-w-0 flex-1 cursor-pointer accent-[#0F172A] dark:accent-white"
+          />
+        ) : (
+          <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-300 dark:bg-slate-600" aria-hidden="true">
+            {loading && <div className="h-full w-1/3 animate-pulse rounded-full bg-slate-500 dark:bg-slate-300" />}
+          </div>
+        )}
+
+        <span className="shrink-0 text-xs font-medium tabular-nums text-slate-600 dark:text-slate-300">
+          {formatClock(time)} / {url && duration ? formatClock(duration) : '--:--'}
+        </span>
+      </div>
+
+      {/* Visually hidden: keeps the wait from being silent for screen-reader users. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {loading ? (slow ? t('Still preparing the audio. This can take a few seconds.') : t('Preparing audio…')) : ''}
+      </p>
+
+      {url && (
+        <audio
+          ref={audioRef}
+          src={url}
+          preload="auto"
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+        />
       )}
+
       {error && (
-        <p className="m-0 text-xs text-red-600 dark:text-red-400" role="alert">
+        <p className="m-0 text-xs text-red-700 dark:text-red-400" role="alert">
           {error}{' '}
-          <button type="button" className="border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer" onClick={handleLoad}>{t('Retry')}</button>
+          <button type="button" className="cursor-pointer border-0 bg-transparent p-0 py-2 font-semibold text-[#4F46E5] underline dark:text-indigo-400" onClick={() => void fetchClip()}>{t('Retry')}</button>
         </p>
       )}
     </div>

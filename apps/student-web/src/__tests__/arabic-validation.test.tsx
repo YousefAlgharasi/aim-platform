@@ -71,8 +71,8 @@ describe('Arabic: no English validation or error text', () => {
     alerts.forEach((a) => expect(hasNoLatinWords(a)).toBe(true));
 
     mockLogin.mockRejectedValue({ message: 'Totally unknown server failure', details: ['email must be an email'] });
-    fireEvent.change(screen.getByPlaceholderText('البريد الإلكتروني'), { target: { value: 'user@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('كلمة المرور'), { target: { value: 'secret' } });
+    fireEvent.change(screen.getByLabelText('البريد الإلكتروني'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByLabelText('كلمة المرور'), { target: { value: 'secret' } });
     fireEvent.click(screen.getByRole('button', { name: /تسجيل الدخول/ }));
     await waitFor(() => expect(mockLogin).toHaveBeenCalled());
     await waitFor(() => {
@@ -85,8 +85,8 @@ describe('Arabic: no English validation or error text', () => {
   it('shows the wrong-credentials server message in Arabic on the login form', async () => {
     mockLogin.mockRejectedValue({ code: 'UNAUTHORIZED', statusCode: 401, message: 'Incorrect email or password.' });
     render(<LoginPage />);
-    fireEvent.change(screen.getByPlaceholderText('البريد الإلكتروني'), { target: { value: 'user@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('كلمة المرور'), { target: { value: 'wrongpass' } });
+    fireEvent.change(screen.getByLabelText('البريد الإلكتروني'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByLabelText('كلمة المرور'), { target: { value: 'wrongpass' } });
     fireEvent.click(screen.getByRole('button', { name: /تسجيل الدخول/ }));
     await waitFor(() => expect(screen.getByText('البريد الإلكتروني أو كلمة المرور غير صحيحة.')).toBeTruthy());
     expect(screen.queryByText(/Incorrect email/)).toBeNull();

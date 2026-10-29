@@ -47,7 +47,7 @@ export function ActivityWidget({ days, weeklyDeltaPercent }: ActivityWidgetProps
         <ul className="m-0 flex h-36 list-none items-end gap-2 p-0" aria-label={t('XP earned per day this week')}>
           {days.map((d) => (
             <li key={d.date} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-              <span className="h-4 text-[10px] font-bold text-slate-500 dark:text-slate-400">{d.xp > 0 ? d.xp : ''}</span>
+              <span className="h-4 text-[11px] font-bold text-slate-500 dark:text-slate-400">{d.xp > 0 ? d.xp : ''}</span>
               <div className="flex w-full flex-1 items-end overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
                 <div
                   className="w-full rounded-lg bg-gradient-to-t from-indigo-600 to-violet-500 transition-all duration-300"
@@ -56,7 +56,7 @@ export function ActivityWidget({ days, weeklyDeltaPercent }: ActivityWidgetProps
                   aria-label={t('{day}: {n} XP', { day: dayLabel(d.date), n: d.xp })}
                 />
               </div>
-              <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">{dayLabel(d.date)}</span>
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{dayLabel(d.date)}</span>
             </li>
           ))}
         </ul>

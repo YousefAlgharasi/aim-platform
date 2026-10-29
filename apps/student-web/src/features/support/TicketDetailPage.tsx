@@ -138,7 +138,7 @@ export function TicketDetailPage() {
                   {sentComments.map(c => (
                     <li key={c.id} className="rounded-2xl rounded-ee-md bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 flex flex-col gap-1">
                       <span className={`${bodyCls} whitespace-pre-wrap`}>{c.body}</span>
-                      <span className="text-[11px] font-semibold text-slate-400">{t('You')} · {formatDateTime(c.createdAt)}</span>
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('You')} · {formatDateTime(c.createdAt)}</span>
                     </li>
                   ))}
                 </ul>

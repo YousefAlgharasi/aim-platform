@@ -78,7 +78,7 @@ function SectionView({ section }: { section: ReportSection }) {
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-900/40">
                   {columns.map(c => (
-                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {humanize(c)}
                     </th>
                   ))}
@@ -209,7 +209,7 @@ export function ReportsSummaryPage() {
                   )}
                   {result && (
                     <div className="flex flex-col gap-5 pt-4 border-t border-slate-100 dark:border-slate-700">
-                      <span className="text-xs font-semibold text-slate-400">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                         {t('Generated {time}', { time: fmtDateTime(result.generatedAt) })}
                       </span>
                       {result.sections.length === 0 ? (

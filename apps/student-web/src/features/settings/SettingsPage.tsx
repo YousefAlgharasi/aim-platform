@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
@@ -7,7 +7,6 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { updateProfile, LANGUAGE_OPTIONS } from '../profile/profileApi';
 import { LogOutIcon } from '../../components/common/Icons';
 import { PageHeader, SectionTitle, LinkRow, selectCls, subCls } from '../profile/ui';

@@ -112,12 +112,12 @@ export function PlacementResultPage() {
           <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
           <div className="relative min-w-24 h-24 px-3 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
             <span className="font-extrabold text-4xl tracking-tight leading-none">{level.code ?? level.label}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mt-1">{t('Level')}</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-200 mt-1">{t('Level')}</span>
           </div>
         </div>
         <h2 className={H2}>{t('Your level')}</h2>
         {level.code && (
-          <span className="inline-block px-3 py-0.5 rounded-full bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] tracking-wider uppercase">
+          <span className="inline-block px-3 py-0.5 rounded-full bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs tracking-wider uppercase">
             {level.label}
           </span>
         )}

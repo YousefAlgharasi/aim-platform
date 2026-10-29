@@ -34,7 +34,7 @@ function InfoRow({ icon, title, desc }: { icon: ReactNode; title: ReactNode; des
       <div className="size-11 bg-indigo-50/80 dark:bg-indigo-950/60 rounded-xl flex items-center justify-center shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">
         <p className="m-0 text-[15px] font-bold leading-snug text-slate-900 dark:text-white">{title}</p>
-        <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-400 dark:text-slate-500">{desc}</p>
+        <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{desc}</p>
       </div>
     </div>
   );
@@ -167,7 +167,7 @@ export function PlacementEntryPage() {
               <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
               <div className="relative size-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
                 <span className="font-extrabold text-3xl tracking-tight leading-none">{level.code ?? level.label}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mt-1">{t('Level')}</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-200 mt-1">{t('Level')}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1">
@@ -326,7 +326,7 @@ export function PlacementEntryPage() {
               <li key={s.id} className={`flex items-center gap-3 px-4 py-3 ${CARD}`}>
                 <span className="size-8 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400 text-sm font-extrabold flex items-center justify-center">{i + 1}</span>
                 <span className="flex-1 min-w-0 text-sm font-semibold text-slate-900 dark:text-white">{t(s.title)}</span>
-                <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">{questionsText(s.total_questions)}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">{questionsText(s.total_questions)}</span>
               </li>
             ))}
           </ol>

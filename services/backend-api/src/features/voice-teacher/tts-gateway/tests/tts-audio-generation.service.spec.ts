@@ -4,7 +4,7 @@ import { TtsRequestMapperService } from '../tts-request.mapper';
 import { TtsResponseMapperService } from '../tts-response.mapper';
 import { TtsAudioStorageService } from '../tts-audio-storage.service';
 import { TtsProviderRequest } from '../tts-gateway.types';
-import { buildWav } from '../wav-audio.util';
+import { buildWav, parseWav } from '../wav-audio.util';
 
 describe('TtsAudioGenerationService', () => {
   let service: TtsAudioGenerationService;
@@ -174,6 +174,36 @@ describe('TtsAudioGenerationService', () => {
       expect(body.input.length).toBeLessThanOrEqual(190);
     }
     expect(result.status).toBe('success');
+    fetchSpy.mockRestore();
+  });
+
+  it('keeps chunks in script order even when later chunks finish first', async () => {
+    // Numbered sentences so each chunk's first number identifies its position in the script.
+    const longText = Array.from({ length: 40 }, (_, i) => `Sentence ${String(i).padStart(2, '0')} is here.`).join(' ');
+    requestMapper.mapRequest.mockReturnValue({
+      model: 'canopylabs/orpheus-v1-english',
+      text: longText,
+      languageCode: 'ar',
+      sessionId: 'session-1',
+      studentId: 'student-1',
+      voice: 'hannah',
+    });
+    const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      const input: string = JSON.parse((init as any).body).input;
+      const position = Number(/Sentence (\d+)/.exec(input)![1]);
+      // Earlier chunks take longer, so completion order is the reverse of script order.
+      await new Promise((r) => setTimeout(r, Math.max(1, 40 - position)));
+      const wav = makeWavBuffer(4).fill(position + 1, 44);
+      return { ok: true, arrayBuffer: () => Promise.resolve(wav.buffer.slice(wav.byteOffset, wav.byteOffset + wav.byteLength)) } as any;
+    });
+
+    await service.synthesize(mockRequest);
+
+    expect(fetchSpy.mock.calls.length).toBeGreaterThan(2);
+    const stored = audioStorage.storeAudio.mock.calls[0][0].audioData;
+    const markers = Array.from(parseWav(stored).data);
+    expect(markers).toEqual([...markers].sort((a, b) => a - b));
+    expect(new Set(markers).size).toBe(fetchSpy.mock.calls.length);
     fetchSpy.mockRestore();
   });
 

@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 
 // Auth screens sit in the same 393px rounded "device" shell as design-prototype's MobileShell
@@ -6,9 +8,12 @@ import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 // and the footer link (Create account / Log in / Back to Sign In) sits right under the form, so it is
 // never pushed below the fold on short screens.
 export function PublicLayout() {
+  const mainRef = useRef<HTMLElement>(null);
+  // Auth forms manage their own focus (first invalid field), so only the tab title is kept in sync here.
+  useRouteAccessibility(mainRef, { moveFocus: false });
   return (
     <div className="min-h-[100dvh] bg-[#E8EAF0] dark:bg-slate-950 flex items-start sm:items-center justify-center p-0 sm:p-4">
-      <main className="relative w-full sm:max-w-[420px] min-h-[100dvh] sm:min-h-[640px] flex flex-col sm:rounded-[40px] sm:shadow-2xl bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+      <main ref={mainRef} className="relative w-full sm:max-w-[420px] min-h-[100dvh] sm:min-h-[640px] flex flex-col sm:rounded-[40px] sm:shadow-2xl bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
         <div className="absolute top-4 end-4 z-10">
           <LanguageSwitcher />
         </div>

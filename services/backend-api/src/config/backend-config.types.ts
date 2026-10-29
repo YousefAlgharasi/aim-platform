@@ -55,6 +55,11 @@ export interface BackendConfig {
     readonly voice: string;
     /** Unused by Groq's synchronous TTS endpoint; kept for a future job-based provider. */
     readonly resultsUrl: string;
+    /**
+     * Private Supabase Storage bucket holding generated audio so it survives restarts and is shared
+     * across backend instances (TTS_AUDIO_BUCKET, default "tts-audio").
+     */
+    readonly audioBucket: string;
   };
   readonly cors: {
     readonly origins: readonly string[];

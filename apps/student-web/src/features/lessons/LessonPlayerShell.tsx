@@ -115,11 +115,11 @@ export function LessonPlayerShell() {
       <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-indigo-100 text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
+          <span className="text-indigo-100 text-[11px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
             {t('Lesson')}
           </span>
           {completed && (
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1">
               <CheckIcon className="size-3 text-emerald-300" /> {t('Completed')}
             </span>
           )}
@@ -158,7 +158,7 @@ export function LessonPlayerShell() {
         {completed ? (
           <div className="px-1">
             <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0">{t('Lesson mastered! 🌟')}</h2>
-            <p className="text-slate-400 dark:text-slate-500 text-xs m-0 mt-0.5">
+            <p className="text-slate-500 dark:text-slate-400 text-xs m-0 mt-0.5">
               {t('Reinforce your knowledge or practice with quick exercises.')}
             </p>
           </div>
@@ -169,7 +169,7 @@ export function LessonPlayerShell() {
         )}
 
         {position.locked ? (
-          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm font-semibold">
+          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-semibold">
             {t('🔒 Practice unlocks after the previous lesson')}
           </span>
         ) : completed ? (

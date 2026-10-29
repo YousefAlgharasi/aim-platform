@@ -238,7 +238,7 @@ export function AIChatPage() {
         </div>
         <div className="flex-1 min-w-0">
           <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight m-0">{t('AI Teacher')}</h1>
-          <span className="block text-[11px] text-emerald-500 font-semibold truncate">
+          <span className="block text-xs text-emerald-500 font-semibold truncate">
             {navState.lessonTitle || t('Always here to help')}
           </span>
         </div>
@@ -300,7 +300,7 @@ export function AIChatPage() {
               >
                 {msg.text}
               </div>
-              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1 px-1 flex items-center gap-1">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 px-1 flex items-center gap-1">
                 {msg.channel === 'voice' && (
                   <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> {t('Voice')} ·</span>
                 )}
@@ -308,7 +308,7 @@ export function AIChatPage() {
               </span>
               {canRate && (
                 <div className="flex items-center gap-2 mt-1 px-1">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
                   </span>
                   <ThumbButton

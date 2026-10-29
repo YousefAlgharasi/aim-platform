@@ -129,17 +129,17 @@ export function CourseCatalog() {
             >
               <div className="flex flex-wrap items-center gap-1.5">
                 {course.levelCode && (
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
                     {course.levelCode}
                   </span>
                 )}
                 {isCurrent && (
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-indigo-600 px-2.5 py-1 rounded-full">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-white bg-indigo-600 px-2.5 py-1 rounded-full">
                     {t('Current course')}
                   </span>
                 )}
                 {course.locked && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
                     <LockIcon className="size-3" /> {t('Locked')}
                   </span>
                 )}
@@ -148,7 +148,7 @@ export function CourseCatalog() {
               {course.description && (
                 <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0 line-clamp-2">{course.description}</p>
               )}
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-400 dark:text-slate-500">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400">
                 <span>{plural(course.lessonCount, { one: t('1 lesson'), two: t('2 lessons'), few: t('{n} lessons [few]', { n: course.lessonCount }), other: t('{n} lessons', { n: course.lessonCount }) })}</span>
                 {course.quizCount > 0 && <span>{plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) })}</span>}
                 {course.examCount > 0 && <span>{t('Final exam')}</span>}

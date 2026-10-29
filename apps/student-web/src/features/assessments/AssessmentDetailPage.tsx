@@ -85,7 +85,7 @@ export function AssessmentDetailPage() {
     <div className={`flex items-center gap-3 p-3.5 ${CARD}`}>
       <div className="size-10 shrink-0 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400 flex items-center justify-center">{icon}</div>
       <div className="min-w-0">
-        <p className="m-0 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{label}</p>
+        <p className="m-0 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</p>
         <p className="m-0 text-sm font-bold text-slate-900 dark:text-white">{value}</p>
       </div>
     </div>
@@ -120,7 +120,7 @@ export function AssessmentDetailPage() {
                 <li key={s.id} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
                   <span className="size-7 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400 text-xs font-extrabold flex items-center justify-center">{i + 1}</span>
                   <span className="flex-1 min-w-0 font-semibold">{s.title}</span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">{questionsLabel(s.questionCount)}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">{questionsLabel(s.questionCount)}</span>
                 </li>
               ))}
             </ul>

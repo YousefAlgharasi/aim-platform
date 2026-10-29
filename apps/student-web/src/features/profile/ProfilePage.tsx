@@ -1,5 +1,4 @@
 import { useState, FormEvent, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';

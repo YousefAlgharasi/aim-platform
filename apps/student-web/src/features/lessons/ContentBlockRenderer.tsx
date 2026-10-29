@@ -68,7 +68,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
       <div className="flex items-center gap-3">
         <span className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-lg shrink-0" aria-hidden="true">{TYPE_ICON[asset.type] ?? '📎'}</span>
         <div className="min-w-0">
-          <span className="block text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t('Step {n} · {meta}', { n: stepNumber, meta: meta.join(' · ') })}</span>
+          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t('Step {n} · {meta}', { n: stepNumber, meta: meta.join(' · ') })}</span>
           <h3 className="font-bold text-slate-900 dark:text-white text-base leading-snug m-0">{asset.title}</h3>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
             <img src={asset.url} alt={asset.altText ?? asset.title} className="w-full h-auto block" loading="lazy" />
           </div>
         ) : (
-          <p className="text-xs text-slate-400 dark:text-slate-500 m-0">{t('Image unavailable for “{title}”.', { title: asset.title })}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 m-0">{t('Image unavailable for “{title}”.', { title: asset.title })}</p>
         )
       )}
 

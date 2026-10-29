@@ -45,18 +45,18 @@ export function DeadlineWidget({ deadlines }: DeadlineWidgetProps) {
         </div>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {deadlines.map((d) => (
-            <li key={d.deadlineId} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-900/40">
+            <li key={d.deadlineId} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/40">
               <Link to={`/assessments/${d.assessmentId}`} className="flex min-w-0 flex-col gap-0.5 no-underline">
-                <span className={d.status === 'late' ? 'text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400' : ui.eyebrow}>
+                <span className={d.status === 'late' ? 'text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400' : ui.eyebrow}>
                   {statusLabel[d.status] ? t(statusLabel[d.status]) : d.status}
                 </span>
-                <span className="truncate text-sm font-bold text-slate-900 dark:text-white">{d.assessmentTitle}</span>
+                <span className="text-sm font-bold leading-snug text-slate-900 dark:text-white">{d.assessmentTitle}</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {d.status === 'upcoming'
+                    ? t('Opens {date}', { date: formatDue(d.opensAt) })
+                    : t('Due {date}', { date: formatDue(d.extendedClosesAt ?? d.closesAt) })}
+                </span>
               </Link>
-              <span className="shrink-0 text-end text-xs font-medium text-slate-500 dark:text-slate-400">
-                {d.status === 'upcoming'
-                  ? t('Opens {date}', { date: formatDue(d.opensAt) })
-                  : t('Due {date}', { date: formatDue(d.extendedClosesAt ?? d.closesAt) })}
-              </span>
             </li>
           ))}
         </ul>

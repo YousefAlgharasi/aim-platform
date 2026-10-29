@@ -142,7 +142,7 @@ export function BillingPage() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20">
                       {keyLabel(sub.status)}
                     </span>
                   </div>
@@ -200,14 +200,14 @@ export function BillingPage() {
               {activeEntitlements.map(e => (
                 <li key={e.id} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
                   <span
-                    className={`size-5 rounded-full flex items-center justify-center text-[11px] font-extrabold shrink-0 ${e.granted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300'}`}
+                    className={`size-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${e.granted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300'}`}
                     aria-hidden="true"
                   >
                     {e.granted ? '✓' : '✕'}
                   </span>
                   <span className="flex-1 min-w-0">{keyLabel(e.featureKey)}</span>
                   {e.usageLimit !== null && (
-                    <span className="text-xs font-semibold text-slate-400">{e.usageCount} / {e.usageLimit}</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{e.usageCount} / {e.usageLimit}</span>
                   )}
                 </li>
               ))}
@@ -252,7 +252,7 @@ export function BillingPage() {
                     <ul className="list-none m-0 p-0 flex flex-col gap-2 flex-1">
                       {features.map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
-                          <span className="size-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-[11px] font-extrabold shrink-0" aria-hidden="true">✓</span>
+                          <span className="size-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-xs font-extrabold shrink-0" aria-hidden="true">✓</span>
                           {f}
                         </li>
                       ))}

@@ -335,11 +335,11 @@ export function PlacementQuestionUI() {
             <h2 className={H2}>{t('Ready to submit?')}</h2>
             <div className="grid grid-cols-2 gap-3 w-full max-w-sm text-start">
               <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('Answered')}</span>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Answered')}</span>
                 <span className="block mt-0.5 text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{answered}</span>
               </div>
               <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t('Skipped')}</span>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Skipped')}</span>
                 <span className="block mt-0.5 text-xl font-extrabold text-amber-600 dark:text-amber-400">{skipped}</span>
               </div>
             </div>
@@ -423,7 +423,7 @@ export function PlacementQuestionUI() {
       {submitError && <Banner variant="error">{submitError}</Banner>}
 
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
-        <p className={`m-0 ${EYEBROW} !font-semibold !text-[11px]`}>
+        <p className={`m-0 ${EYEBROW} !font-semibold !text-xs`}>
           {t(sections[sectionIndex].title)} · {t('Question {current} of {total}', { current: questionIndex + 1, total: questions.length })}
         </p>
         <h2
@@ -438,6 +438,8 @@ export function PlacementQuestionUI() {
           <QuestionAudio
             key={question.id}
             available={question.has_listening_audio}
+            cacheKey={`placement:${question.id}`}
+            prefetch
             load={() => fetchPlacementQuestionAudio(question.id)}
           />
         )}
