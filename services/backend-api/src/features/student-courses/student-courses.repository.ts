@@ -136,7 +136,7 @@ export class StudentCoursesRepository {
        WHERE co.status = 'published'
        GROUP BY co.id, co.title, co.description, co.sort_order, cl.level_code,
                 co.track_slug, co.cefr_rank, ls.max_unlocked_cefr_rank
-       ORDER BY co.sort_order ASC, co.created_at ASC`,
+       ORDER BY co.cefr_rank ASC NULLS LAST, co.sort_order ASC, co.created_at ASC`,
       [studentId],
     );
     return result.rows;
