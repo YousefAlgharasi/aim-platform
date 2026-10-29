@@ -6233,6 +6233,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No questions here.'**
   String get assessmentsReviewEmptyFilter;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get placementResultLevelLabel;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'{level} Track'**
+  String placementResultTrackLabel(String level);
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get placementLevelBeginner;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Elementary'**
+  String get placementLevelElementary;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get placementLevelIntermediate;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Upper Intermediate'**
+  String get placementLevelUpperIntermediate;
+
+  /// Placement result level labels (features/placement).
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get placementLevelAdvanced;
+
+  /// Fallback name when the profile has no name or email.
+  ///
+  /// In en, this message translates to:
+  /// **'Learner'**
+  String get commonLearner;
+
+  /// Lesson detail bottom button (features/lessons).
+  ///
+  /// In en, this message translates to:
+  /// **'Re-learn with Live AI Voice'**
+  String get lessonsRelearnWithVoice;
+
+  /// Lesson detail bottom button (features/lessons).
+  ///
+  /// In en, this message translates to:
+  /// **'Start Learning Now'**
+  String get lessonsStartLearningNow;
 }
 
 class _AppLocalizationsDelegate

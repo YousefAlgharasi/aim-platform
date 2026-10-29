@@ -3667,4 +3667,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assessmentsReviewEmptyFilter => 'No questions here.';
+
+  @override
+  String get placementResultLevelLabel => 'Level';
+
+  @override
+  String placementResultTrackLabel(String level) {
+    return '$level Track';
+  }
+
+  @override
+  String get placementLevelBeginner => 'Beginner';
+
+  @override
+  String get placementLevelElementary => 'Elementary';
+
+  @override
+  String get placementLevelIntermediate => 'Intermediate';
+
+  @override
+  String get placementLevelUpperIntermediate => 'Upper Intermediate';
+
+  @override
+  String get placementLevelAdvanced => 'Advanced';
+
+  @override
+  String get commonLearner => 'Learner';
+
+  @override
+  String get lessonsRelearnWithVoice => 'Re-learn with Live AI Voice';
+
+  @override
+  String get lessonsStartLearningNow => 'Start Learning Now';
 }

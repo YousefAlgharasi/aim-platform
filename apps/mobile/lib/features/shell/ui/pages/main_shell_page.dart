@@ -360,8 +360,8 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
       AppAsyncSuccess(:final data) => data.profile?.displayName ??
           ((data.user.email != null && data.user.email!.isNotEmpty)
               ? data.user.email!.split('@').first
-              : 'Alex Johnson'),
-      _ => 'Alex Johnson',
+              : AppLocalizations.of(context).commonLearner),
+      _ => AppLocalizations.of(context).commonLearner,
     };
 
     final avatarLetter =

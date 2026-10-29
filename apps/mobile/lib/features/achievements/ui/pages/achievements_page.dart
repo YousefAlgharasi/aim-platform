@@ -341,7 +341,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
     final displayName = authContext?.profile?.displayName ??
         ((authContext?.user.email != null && authContext!.user.email!.isNotEmpty)
             ? authContext.user.email!.split('@').first
-            : 'Alex Johnson');
+            : (l10n?.commonLearner ?? ''));
     final avatarLetter =
         displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
     final surfaces = aimSurfacesOf(context);

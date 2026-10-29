@@ -11,10 +11,9 @@ import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../student_courses/data/models/student_course_model.dart';
 import '../../../student_courses/logic/provider/student_courses_provider.dart';
 import '../../data/models/placement_result_model.dart';
-import '../../data/placement_mock_data.dart';
+import '../../data/placement_levels.dart';
 import '../../logic/provider/placement_provider.dart';
 import '../../logic/provider/placement_result_notifier.dart';
-import '../widgets/placement_option_card.dart';
 import '../widgets/placement_primary_button.dart';
 
 class PlacementResultPage extends ConsumerStatefulWidget {
@@ -68,13 +67,15 @@ class _PlacementResultPageState extends ConsumerState<PlacementResultPage> {
           child: switch (state) {
             PlacementResultLoading() =>
               AIMFullScreenLoading(semanticLabel: l10n.placementResultLoadingSemantic),
+            PlacementResultIdle() =>
+              AIMFullScreenLoading(semanticLabel: l10n.placementResultLoadingSemantic),
             PlacementResultPending() => const _PendingBody(),
-            PlacementResultIdle() ||
-            PlacementResultError() ||
-            PlacementResultReady() => _ResultBody(
-                result: state is PlacementResultReady
-                    ? state.result
-                    : PlacementMockData.mockResult,
+            PlacementResultError(:final message) => AIMFullScreenError(
+                message: message,
+                onRetry: _loadResult,
+              ),
+            PlacementResultReady(:final result) => _ResultBody(
+                result: result,
                 courses: courses,
               ),
           },
@@ -138,21 +139,13 @@ class _ResultBody extends StatefulWidget {
 }
 
 class _ResultBodyState extends State<_ResultBody> {
-  String _startChoice = 'level';
-  String _planChoice = 'plus';
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
-    final levelCode =
-        PlacementMockData.cefrCodes[widget.result.estimatedLevel] ??
-            widget.result.estimatedLevel.toUpperCase();
-    final levelName =
-        PlacementMockData.cefrDisplayNames[widget.result.estimatedLevel] ??
-            widget.result.estimatedLevel;
-    final displayCode = levelCode.isNotEmpty ? levelCode : 'B1';
-    final displayName = levelName.isNotEmpty ? levelName : 'Intermediate';
+    final level = widget.result.estimatedLevel;
+    final displayCode = placementCefrCode(level);
+    final displayName = placementLevelName(l10n, level);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -224,9 +217,7 @@ class _ResultBodyState extends State<_ResultBody> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      Localizations.localeOf(context).languageCode == 'ar'
-                          ? 'المستوى'
-                          : 'Level',
+                      l10n.placementResultLevelLabel,
                       style: AimTextStyles.caption.copyWith(
                         fontSize: 10,
                         fontWeight: AimFontWeights.bold,
@@ -272,9 +263,7 @@ class _ResultBodyState extends State<_ResultBody> {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              Localizations.localeOf(context).languageCode == 'ar'
-                  ? 'مسار $displayName'
-                  : '$displayName Track',
+              l10n.placementResultTrackLabel(displayName),
               style: AimTextStyles.caption.copyWith(
                 color: AimColors.primary700,
                 fontWeight: AimFontWeights.bold,
@@ -294,109 +283,8 @@ class _ResultBodyState extends State<_ResultBody> {
           ),
           const SizedBox(height: AimSpacing.sectionGap),
 
-          // ── Start Choice Cards (Zero vs Level) ──────────────────────────
-          Column(
-            children: [
-              PlacementOptionCard(
-                title: l10n.placementResultStartFromZeroTitle,
-                subtitle: l10n.placementResultStartFromZeroSubtitle,
-                iconWidget: const Icon(
-                  Icons.eco_rounded,
-                  size: AimSizes.iconLg,
-                  color: AimColors.primary500,
-                ),
-                isSelected: _startChoice == 'zero',
-                onTap: () => setState(() => _startChoice = 'zero'),
-              ),
-              const SizedBox(height: AimSpacing.componentGap),
-              PlacementOptionCard(
-                title: l10n.placementResultStartFromLevelTitle(levelCode),
-                subtitle: l10n.placementResultStartFromLevelSubtitle,
-                iconWidget: const Icon(
-                  Icons.psychology_rounded,
-                  size: AimSizes.iconLg,
-                  color: AimColors.primary500,
-                ),
-                isSelected: _startChoice == 'level',
-                onTap: () => setState(() => _startChoice = 'level'),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.sectionGap),
-
-          Text(
-            l10n.placementResultSelectPlan,
-            style: AimTextStyles.title.copyWith(
-              color: surfaces.textSecondary,
-              fontSize: 12,
-              fontWeight: AimFontWeights.bold,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space12),
-
-          Column(
-            children: [
-              PlacementOptionCard(
-                title: l10n.placementResultFreePlan,
-                subtitle: l10n.placementResultFreePlanSub,
-                trailingValue: '\$0/mo',
-                isSelected: _planChoice == 'free',
-                onTap: () => setState(() => _planChoice = 'free'),
-              ),
-              const SizedBox(height: AimSpacing.space16),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  PlacementOptionCard(
-                    title: l10n.placementResultPlusPlan,
-                    subtitle: l10n.placementResultPlusPlanSub,
-                    trailingValue: '\$12.99/mo',
-                    isSelected: _planChoice == 'plus',
-                    onTap: () => setState(() => _planChoice = 'plus'),
-                  ),
-                  Positioned(
-                    top: -10,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
-                        ),
-                        borderRadius: BorderRadius.circular(100),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        Localizations.localeOf(context).languageCode == 'ar'
-                            ? '7 أيام مجاناً'
-                            : '7 DAYS FREE',
-                        style: AimTextStyles.caption.copyWith(
-                          fontSize: 9,
-                          fontWeight: AimFontWeights.extrabold,
-                          color: AimColors.neutral0,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.space32),
-
           PlacementPrimaryButton(
-            label: l10n.placementResultUnlockCourse,
+            label: l10n.commonContinue,
             onPressed: () => context.go(AppRoutePaths.home),
           ),
         ],

@@ -230,7 +230,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('shows mock result UI on a non-retryable failure',
+    testWidgets('shows an error with retry on a non-retryable failure',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -244,7 +244,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(PlacementResultPage), findsOneWidget);
-      expect(find.text('Unlock My Course'), findsOneWidget);
+      expect(find.byType(AIMFullScreenError), findsOneWidget);
+      expect(find.text('B1'), findsNothing);
     });
 
     testWidgets(
@@ -261,7 +262,7 @@ void main() {
 
       expect(find.text('B1'), findsOneWidget); // CEFR code for intermediate
       expect(find.text('Great Job! 🎉'), findsOneWidget);
-      expect(find.text('Unlock My Course'), findsOneWidget);
+      expect(find.text('Continue'), findsOneWidget);
     });
 
     testWidgets('renders without error under RTL directionality',
@@ -311,7 +312,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      expect(find.text('Unlock My Course'), findsOneWidget);
+      expect(find.text('Continue'), findsOneWidget);
     });
 
     testWidgets('shows the note when present (no course available yet)',
@@ -333,7 +334,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('Great Job! 🎉'), findsOneWidget);
-      expect(find.text('Unlock My Course'), findsOneWidget);
+      expect(find.text('Continue'), findsOneWidget);
     });
 
     testWidgets('shows secondary courses when multiple are unlocked',
@@ -378,7 +379,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('Great Job! 🎉'), findsOneWidget);
-      expect(find.text('Unlock My Course'), findsOneWidget);
+      expect(find.text('Continue'), findsOneWidget);
     });
   });
 }

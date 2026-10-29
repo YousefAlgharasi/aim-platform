@@ -3701,4 +3701,36 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get assessmentsReviewEmptyFilter => 'لا توجد أسئلة هنا.';
+
+  @override
+  String get placementResultLevelLabel => 'المستوى';
+
+  @override
+  String placementResultTrackLabel(String level) {
+    return 'مسار $level';
+  }
+
+  @override
+  String get placementLevelBeginner => 'مبتدئ';
+
+  @override
+  String get placementLevelElementary => 'أساسي';
+
+  @override
+  String get placementLevelIntermediate => 'متوسط';
+
+  @override
+  String get placementLevelUpperIntermediate => 'فوق المتوسط';
+
+  @override
+  String get placementLevelAdvanced => 'متقدم';
+
+  @override
+  String get commonLearner => 'متعلّم';
+
+  @override
+  String get lessonsRelearnWithVoice => 'أعد التعلّم مع المعلّم الصوتي';
+
+  @override
+  String get lessonsStartLearningNow => 'ابدأ التعلّم الآن';
 }

@@ -1026,5 +1026,15 @@
   "assessmentsNotAnswered": "لقد تركت هذا السؤال",
   "assessmentsAnswersHiddenNote": "ستظهر الإجابات الصحيحة بعد نجاحك أو استنفاد كل محاولاتك.",
   "assessmentsMyCertificate": "شهادتي",
-  "assessmentsReviewEmptyFilter": "لا توجد أسئلة هنا."
+  "assessmentsReviewEmptyFilter": "لا توجد أسئلة هنا.",
+  "placementResultLevelLabel": "المستوى",
+  "placementResultTrackLabel": "مسار {level}",
+  "placementLevelBeginner": "مبتدئ",
+  "placementLevelElementary": "أساسي",
+  "placementLevelIntermediate": "متوسط",
+  "placementLevelUpperIntermediate": "فوق المتوسط",
+  "placementLevelAdvanced": "متقدم",
+  "commonLearner": "متعلّم",
+  "lessonsRelearnWithVoice": "أعد التعلّم مع المعلّم الصوتي",
+  "lessonsStartLearningNow": "ابدأ التعلّم الآن"
 }

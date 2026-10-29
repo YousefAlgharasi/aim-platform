@@ -326,7 +326,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            displayName.isNotEmpty ? displayName : 'Alex Johnson',
+                            displayName.isNotEmpty ? displayName : AppLocalizations.of(context).commonLearner,
                             style: AimTextStyles.bodyLg.copyWith(
                               color: surfaces.textPrimary,
                               fontWeight: AimFontWeights.extrabold,
@@ -334,7 +334,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            email.isNotEmpty ? email : 'alex.johnson@example.com',
+                            email,
                             style: AimTextStyles.caption.copyWith(
                               color: surfaces.textSecondary,
                             ),
@@ -422,7 +422,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                 TextField(
                   enabled: false,
                   decoration: InputDecoration(
-                    hintText: email.isNotEmpty ? email : 'alex.johnson@example.com',
+                    hintText: email,
                     filled: true,
                     fillColor: surfaces.border.withValues(alpha: 0.15),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
