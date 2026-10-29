@@ -131,7 +131,9 @@ class _ResultContent extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final statusColor =
         result.passed ? AimColors.success500 : AimColors.error500;
-    final statusLabel = result.passed ? 'Passed' : 'Failed';
+    final statusLabel = result.passed
+        ? AppLocalizations.of(context).assessmentsResultPassed
+        : AppLocalizations.of(context).assessmentsResultFailed;
 
     // Display-only formatting of two backend-supplied values — NOT score
     // computation (the backend remains the grading authority). See
@@ -189,7 +191,7 @@ class _ResultContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AimSpacing.space4),
                 Text(
-                  'Late penalty applied',
+                  AppLocalizations.of(context).assessmentsLateSubmissionNote,
                   style: AimTextStyles.bodySm
                       .copyWith(color: AimColors.warning500),
                 ),
@@ -202,7 +204,7 @@ class _ResultContent extends StatelessWidget {
         // Graded timestamp
         Center(
           child: Text(
-            'Graded ${_formatDate(result.gradedAt)}',
+            AppLocalizations.of(context).assessmentsGradedOn(_formatDate(result.gradedAt)),
             style:
                 AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary),
           ),
@@ -212,7 +214,7 @@ class _ResultContent extends StatelessWidget {
         if (result.breakdown.isNotEmpty) ...[
           const SizedBox(height: AimSpacing.sectionGap),
           Text(
-            'BREAKDOWN',
+            AppLocalizations.of(context).assessmentsBreakdownTitle,
             style: AimTextStyles.label.copyWith(
               color: surfaces.textMuted,
               letterSpacing: 1.2,

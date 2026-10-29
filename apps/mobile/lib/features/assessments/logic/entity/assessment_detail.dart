@@ -42,7 +42,15 @@ class AssessmentDetail {
     required this.maxAttempts,
     required this.timeLimitSeconds,
     required this.deadline,
-  });
+    required this.passed,
+    int? questionCount,
+    this.attemptsUsed = 0,
+    required this.attemptsRemaining,
+    this.hasActiveAttempt = false,
+    this.bestScorePercent,
+    this.canStart = true,
+    this.blockedReason,
+  }) : _questionCount = questionCount;
 
   final String id;
   final String type;
@@ -52,4 +60,32 @@ class AssessmentDetail {
   final int maxAttempts;
   final int? timeLimitSeconds;
   final AssessmentDeadline? deadline;
+
+  final int? _questionCount;
+
+  /// Total questions (backend-supplied; falls back to the section sum).
+  int get questionCount =>
+      _questionCount ?? sections.fold<int>(0, (sum, s) => sum + s.questionCount);
+
+  /// Attempts already started by this student (backend-counted).
+  final int attemptsUsed;
+
+  /// Backend-counted attempts left.
+  final int attemptsRemaining;
+
+  /// An unfinished attempt exists; starting resumes it.
+  final bool hasActiveAttempt;
+
+  /// Backend-computed: true once any attempt has passed.
+  final bool passed;
+
+  /// Backend-computed best score, 0-100. Null before any result.
+  final int? bestScorePercent;
+
+  /// Backend-computed: whether Start is allowed right now.
+  final bool canStart;
+
+  /// Backend reason Start is blocked: CHAPTER_NOT_COMPLETE,
+  /// COURSE_NOT_COMPLETE or MAX_ATTEMPTS_REACHED. Null when [canStart].
+  final String? blockedReason;
 }

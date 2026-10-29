@@ -204,7 +204,7 @@ class _CertificateCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AimSpacing.space2),
                     Text(
-                      '$totalPts / 1000 pts',
+                      l10n.certificatePointsOfMax(totalPts, 1000),
                       style: AimTextStyles.bodyMd.copyWith(
                         fontWeight: FontWeight.bold,
                         color: surfaces.textPrimary,

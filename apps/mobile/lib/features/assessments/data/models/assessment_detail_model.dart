@@ -66,6 +66,14 @@ class AssessmentDetailModel extends AssessmentDetail {
     required super.maxAttempts,
     required super.timeLimitSeconds,
     required super.deadline,
+    required super.passed,
+    required super.attemptsRemaining,
+    super.questionCount,
+    super.attemptsUsed,
+    super.hasActiveAttempt,
+    super.bestScorePercent,
+    super.canStart,
+    super.blockedReason,
   });
 
   factory AssessmentDetailModel.fromJson(Map<String, dynamic> json) {
@@ -85,6 +93,16 @@ class AssessmentDetailModel extends AssessmentDetail {
           ? AssessmentDeadlineModel.fromJson(
               json['deadline'] as Map<String, dynamic>)
           : null,
+      questionCount: (json['questionCount'] as num?)?.toInt(),
+      attemptsUsed: (json['attemptsUsed'] as num?)?.toInt() ?? 0,
+      // Older backends don't send attemptsRemaining; their maxAttempts was the
+      // only attempt figure they reported.
+      attemptsRemaining: (json['attemptsRemaining'] as num?)?.toInt() ?? (json['maxAttempts'] as num).toInt(),
+      hasActiveAttempt: json['hasActiveAttempt'] as bool? ?? false,
+      passed: json['passed'] as bool? ?? false,
+      bestScorePercent: (json['bestScorePercent'] as num?)?.toInt(),
+      canStart: json['canStart'] as bool? ?? true,
+      blockedReason: json['blockedReason'] as String?,
     );
   }
 
@@ -98,6 +116,14 @@ class AssessmentDetailModel extends AssessmentDetail {
             .toList(),
         'maxAttempts': maxAttempts,
         'timeLimitSeconds': timeLimitSeconds,
+        'questionCount': questionCount,
+        'attemptsUsed': attemptsUsed,
+        'attemptsRemaining': attemptsRemaining,
+        'hasActiveAttempt': hasActiveAttempt,
+        'passed': passed,
+        'bestScorePercent': bestScorePercent,
+        'canStart': canStart,
+        'blockedReason': blockedReason,
         'deadline':
             deadline != null ? (deadline as AssessmentDeadlineModel).toJson() : null,
       };

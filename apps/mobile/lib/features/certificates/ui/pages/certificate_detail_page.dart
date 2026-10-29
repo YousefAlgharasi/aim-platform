@@ -284,36 +284,45 @@ class _CertificateDetailBody extends StatelessWidget {
                   const SizedBox(height: AimSpacing.space16),
 
                   if (breakdown != null) ...[
-                    _BreakdownItemRow(
-                      label: l10n.certificatePractices,
-                      weight: '20%',
-                      points: '${breakdown.practicePoints} / 200 pts',
-                      detail:
+                    for (final (index, row) in [
+                      if (breakdown.practiceMaxPoints > 0)
+                        (
+                          l10n.certificatePractices,
+                          breakdown.practicePoints,
+                          breakdown.practiceMaxPoints,
                           '${breakdown.practiceAccuracyPercent}% ${l10n.certificateAccuracy}',
-                    ),
-                    const Divider(height: AimSpacing.space16),
-                    _BreakdownItemRow(
-                      label: l10n.certificateQuizzes,
-                      weight: '20%',
-                      points: '${breakdown.quizPoints} / 200 pts',
-                      detail:
+                        ),
+                      if (breakdown.quizMaxPoints > 0)
+                        (
+                          l10n.certificateQuizzes,
+                          breakdown.quizPoints,
+                          breakdown.quizMaxPoints,
                           '${breakdown.quizAveragePercent}% ${l10n.certificateAverage}',
-                    ),
-                    const Divider(height: AimSpacing.space16),
-                    _BreakdownItemRow(
-                      label: l10n.certificateChapterExams,
-                      weight: '20%',
-                      points: '${breakdown.chapterExamPoints} / 200 pts',
-                      detail:
+                        ),
+                      if (breakdown.chapterExamMaxPoints > 0)
+                        (
+                          l10n.certificateChapterExams,
+                          breakdown.chapterExamPoints,
+                          breakdown.chapterExamMaxPoints,
                           '${breakdown.chapterExamAveragePercent}% ${l10n.certificateAverage}',
-                    ),
-                    const Divider(height: AimSpacing.space16),
-                    _BreakdownItemRow(
-                      label: l10n.certificateFinalExam,
-                      weight: '40%',
-                      points: '${breakdown.finalExamPoints} / 400 pts',
-                      detail: '${breakdown.finalExamPercent}%',
-                    ),
+                        ),
+                      if (breakdown.finalExamMaxPoints > 0)
+                        (
+                          l10n.certificateFinalExam,
+                          breakdown.finalExamPoints,
+                          breakdown.finalExamMaxPoints,
+                          '${breakdown.finalExamPercent}%',
+                        ),
+                    ].indexed) ...[
+                      if (index > 0) const Divider(height: AimSpacing.space16),
+                      _BreakdownItemRow(
+                        label: row.$1,
+                        // Each component's share of the 1,000-point total.
+                        weight: l10n.certificateWeightPercent((row.$3 / 10).round()),
+                        points: l10n.certificatePointsOfMax(row.$2, row.$3),
+                        detail: row.$4,
+                      ),
+                    ],
                     const SizedBox(height: AimSpacing.space16),
                   ],
 
@@ -344,7 +353,7 @@ class _CertificateDetailBody extends StatelessWidget {
                             ),
                             const SizedBox(height: AimSpacing.space4),
                             Text(
-                              '$totalPts / 1000 pts',
+                              l10n.certificatePointsOfMax(totalPts, 1000),
                               style: AimTextStyles.h3.copyWith(
                                 color: const Color(0xFF1E1B4B),
                                 fontWeight: FontWeight.bold,

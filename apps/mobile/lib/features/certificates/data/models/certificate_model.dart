@@ -13,21 +13,33 @@ class CertificateScoreBreakdownModel {
     required this.finalExamPercent,
     required this.totalPoints,
     required this.overallPercent,
+    this.practiceMaxPoints = 200,
+    this.quizMaxPoints = 200,
+    this.chapterExamMaxPoints = 200,
+    this.finalExamMaxPoints = 400,
   });
 
-  /// Lesson practices score (0 - 200 pts, 20% weight).
+  /// Backend-computed maximum for each component. Components the course
+  /// doesn't have (or the student never did) are 0 and the others are scaled
+  /// so they still add up to 1,000.
+  final int practiceMaxPoints;
+  final int quizMaxPoints;
+  final int chapterExamMaxPoints;
+  final int finalExamMaxPoints;
+
+  /// Lesson practices score.
   final int practicePoints;
   final int practiceAccuracyPercent;
 
-  /// Chapter quizzes score (0 - 200 pts, 20% weight).
+  /// Chapter quizzes score.
   final int quizPoints;
   final int quizAveragePercent;
 
-  /// Chapter exams score (0 - 200 pts, 20% weight).
+  /// Chapter exams score.
   final int chapterExamPoints;
   final int chapterExamAveragePercent;
 
-  /// Course final exam score (0 - 400 pts, 40% weight).
+  /// Course final exam score.
   final int finalExamPoints;
   final int finalExamPercent;
 
@@ -55,6 +67,10 @@ class CertificateScoreBreakdownModel {
       finalExamPercent: toInt(json['finalExamPercent']),
       totalPoints: toInt(json['totalPoints']),
       overallPercent: toInt(json['overallPercent']),
+      practiceMaxPoints: json.containsKey('practiceMaxPoints') ? toInt(json['practiceMaxPoints']) : 200,
+      quizMaxPoints: json.containsKey('quizMaxPoints') ? toInt(json['quizMaxPoints']) : 200,
+      chapterExamMaxPoints: json.containsKey('chapterExamMaxPoints') ? toInt(json['chapterExamMaxPoints']) : 200,
+      finalExamMaxPoints: json.containsKey('finalExamMaxPoints') ? toInt(json['finalExamMaxPoints']) : 400,
     );
   }
 }
