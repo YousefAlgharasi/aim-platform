@@ -1,5 +1,8 @@
+# Pinned by digest (node 20.20.2, Alpine 3.23.4) so rebuilds get the same base and the same ffmpeg.
+ARG NODE_IMAGE=node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+
 # ── Stage 1: build ──────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -17,9 +20,14 @@ RUN npm run build
 RUN npm prune --production
 
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
-FROM node:20-alpine
+FROM ${NODE_IMAGE}
 
 WORKDIR /app
+
+# ffmpeg converts the TTS provider's WAV to MP3 before it is stored (AudioTranscoderService).
+# Exact package version: the build fails instead of silently changing the encoder.
+RUN apk add --no-cache ffmpeg=8.0.1-r1 \
+  && ffmpeg -hide_banner -encoders | grep -q libmp3lame
 
 # Non-root user
 RUN addgroup -S aim && adduser -S aim -G aim

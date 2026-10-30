@@ -1,8 +1,9 @@
 import { AppError } from '../../../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../../../common/errors/api-error-code';
 import { isAudioWarmupEnabled } from '../persistent-tts-audio.service';
+import { looksLikeMp3 } from '../mp3-audio.util';
 import { buildAssetKey, buildStoragePath, normalizeScript } from '../tts-audio-key.util';
-import { buildHarness, makeWav } from './fakes';
+import { buildHarness, makeMp3, makeWav } from './fakes';
 
 const SCRIPT = 'Man: Good morning! How are you today?\nWoman: I am fine, thank you.';
 const req = (over: Record<string, unknown> = {}) => ({
@@ -18,7 +19,7 @@ describe('PersistentTtsAudioService', () => {
     const h = buildHarness();
     const audio = await h.newInstance().getAudio(req());
 
-    expect(audio?.contentType).toBe('audio/wav');
+    expect(audio?.contentType).toBe('audio/mpeg');
     expect(h.gateway.synthesize).toHaveBeenCalledTimes(1);
     expect(h.store.objects.size).toBe(1);
     const [row] = [...h.repo.rows.values()];
@@ -220,7 +221,7 @@ describe('PersistentTtsAudioService', () => {
       await h.newInstance().getAudio(req());
       expect(h.gateway.synthesize).toHaveBeenCalledTimes(2);
 
-      h.store.objects.set(path, makeWav(9, 100)); // valid WAV but wrong size
+      h.store.objects.set(path, makeMp3(9, 3)); // valid MP3 but wrong size
       await h.newInstance().getAudio(req());
       expect(h.gateway.synthesize).toHaveBeenCalledTimes(3);
     });
@@ -233,6 +234,146 @@ describe('PersistentTtsAudioService', () => {
 
       await Promise.all([h.newInstance(), h.newInstance(), h.newInstance()].map((s) => s.getAudio(req())));
       expect(h.gateway.synthesize).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('MP3 conversion', () => {
+    it('stores the provider WAV as MP3, converting once, and records the MP3 type', async () => {
+      const h = buildHarness();
+      const audio = await h.newInstance().getAudio(req());
+
+      expect(h.transcoder.wavToMp3Calls).toBe(1);
+      const [row] = [...h.repo.rows.values()];
+      expect(row.mime_type).toBe('audio/mpeg');
+      expect(row.storage_path).toMatch(/\.mp3$/);
+      const stored = h.store.objects.get(row.storage_path as string) as Buffer;
+      expect(looksLikeMp3(stored)).toBe(true);
+      expect(audio?.data.equals(stored)).toBe(true);
+      expect(row.duration_ms).toBe(1000);
+    });
+
+    it('cache hits never synthesize or convert again (same process, other processes, other students)', async () => {
+      const h = buildHarness();
+      const svc = h.newInstance();
+      await svc.getAudio(req());
+      await svc.getAudio(req());
+      await h.newInstance().getAudio(req({ studentId: 'student-2' }));
+      await h.newInstance().getAudio(req({ studentId: 'student-3' }));
+
+      expect(h.gateway.synthesize).toHaveBeenCalledTimes(1);
+      expect(h.transcoder.wavToMp3Calls).toBe(1);
+      expect(h.store.putCalls).toBe(1);
+    });
+
+    it.each([
+      ['unavailable', 'TRANSCODE_UNAVAILABLE'], // ffmpeg missing from the image
+      ['failed', 'TRANSCODE_FAILED'],
+      ['invalid_output', 'TRANSCODE_INVALID_OUTPUT'],
+      ['timeout', 'TRANSCODE_TIMEOUT'],
+    ] as const)('on conversion failure (%s) serves the WAV once, stores nothing, and retries later', async (reason, category) => {
+      const h = buildHarness();
+      h.transcoder.failWith = reason;
+
+      const audio = await h.newInstance().getAudio(req());
+      expect(audio?.contentType).toBe('audio/wav');
+      expect(h.store.putCalls).toBe(0);
+      expect(h.store.objects.size).toBe(0);
+      const [row] = [...h.repo.rows.values()];
+      expect(row.status).toBe('failed');
+      expect(row.storage_path).toBeNull();
+      expect(row.last_error).toBe(category);
+
+      h.transcoder.failWith = null;
+      const retried = await h.newInstance().getAudio(req());
+      expect(retried?.contentType).toBe('audio/mpeg');
+      expect(row.status).toBe('ready');
+      expect(h.store.objects.size).toBe(1);
+    });
+
+    it('a failing converter never replaces or touches valid stored audio', async () => {
+      const h = buildHarness();
+      await h.newInstance().getAudio(req());
+      const [path] = [...h.store.objects.keys()];
+      const before = Buffer.from(h.store.objects.get(path) as Buffer);
+      h.transcoder.failWith = 'failed';
+
+      const audio = await h.newInstance().getAudio(req());
+      expect(audio?.contentType).toBe('audio/mpeg');
+      expect(h.store.objects.get(path)?.equals(before)).toBe(true);
+      expect(h.store.putCalls).toBe(1);
+      expect([...h.repo.rows.values()][0].status).toBe('ready');
+    });
+
+    it('does not upload anything when repairing a damaged file fails to convert', async () => {
+      const h = buildHarness();
+      await h.newInstance().getAudio(req());
+      const [path] = [...h.store.objects.keys()];
+      h.store.objects.set(path, Buffer.from('damaged'));
+      h.transcoder.failWith = 'failed';
+
+      await h.newInstance().getAudio(req());
+      expect(h.store.putCalls).toBe(1);
+      expect([...h.repo.rows.values()][0].last_error).toBe('TRANSCODE_FAILED');
+    });
+
+    it('never converts empty or invalid provider output', async () => {
+      const h = buildHarness();
+      h.gateway.synthesize.mockImplementationOnce(async (r: { studentId: string; sessionId: string }) => {
+        await h.audioStorage.storeAudio({ audioRef: 'bad', audioData: Buffer.from('not a wav'), contentType: 'audio/wav', durationMs: 1, sessionId: r.sessionId, studentId: r.studentId });
+        return { status: 'success', audioRef: 'bad', durationMs: 1, contentType: 'audio/wav' };
+      });
+
+      expect(await h.newInstance().getAudio(req())).toBeNull();
+      expect(h.transcoder.wavToMp3Calls).toBe(0);
+      expect(h.store.putCalls).toBe(0);
+    });
+
+    it('reports an upload failure after conversion without publishing, and keeps other assets intact', async () => {
+      const h = buildHarness();
+      await h.newInstance().getAudio(req({ script: 'Other clip.' }));
+      const existing = new Map(h.store.objects);
+      h.store.failPut = true;
+
+      await expect(h.newInstance().getAudio(req())).rejects.toBeInstanceOf(AppError);
+      const row = [...h.repo.rows.values()].find((r) => r.content_hash === buildAssetKey(SCRIPT, 'en', h.config).contentHash);
+      expect(row?.status).toBe('failed');
+      expect(row?.last_error).toBe('STORAGE_UPLOAD_FAILED');
+      expect(h.store.objects).toEqual(existing);
+    });
+
+    it('keys MP3 and WAV assets separately, so a format change can never serve the other format by mistake', () => {
+      const mp3Key = buildAssetKey(SCRIPT, 'en', { model: 'm', voice: 'v', baseUrl: 'https://p.example/x' });
+      const wavKey = buildAssetKey(SCRIPT, 'en', { model: 'm', voice: 'v', baseUrl: 'https://p.example/x' }, 'wav');
+      expect(mp3Key.contentHash).toBe(wavKey.contentHash);
+      expect(mp3Key.voiceConfigHash).not.toBe(wavKey.voiceConfigHash);
+      expect(buildStoragePath(mp3Key)).toMatch(/\.mp3$/);
+      expect(buildStoragePath(wavKey, 'wav')).toMatch(/\.wav$/);
+    });
+
+    it('still serves an intact WAV asset recorded as audio/wav (legacy rows, rollback safety)', async () => {
+      const h = buildHarness();
+      await h.newInstance().getAudio(req());
+      const row = [...h.repo.rows.values()][0];
+      const wav = makeWav(7);
+      h.store.objects.set(row.storage_path as string, wav);
+      Object.assign(row, { mime_type: 'audio/wav', size_bytes: wav.length });
+
+      const audio = await h.newInstance().getAudio(req());
+      expect(audio?.contentType).toBe('audio/wav');
+      expect(h.gateway.synthesize).toHaveBeenCalledTimes(1);
+    });
+
+    it('treats a file whose bytes do not match its recorded type as damaged and repairs it', async () => {
+      const h = buildHarness();
+      await h.newInstance().getAudio(req());
+      const row = [...h.repo.rows.values()][0];
+      const wav = makeWav(7);
+      h.store.objects.set(row.storage_path as string, wav);
+      Object.assign(row, { size_bytes: wav.length }); // still recorded as audio/mpeg
+
+      await h.newInstance().getAudio(req());
+      expect(h.gateway.synthesize).toHaveBeenCalledTimes(2);
+      expect(looksLikeMp3(h.store.objects.get(row.storage_path as string) as Buffer)).toBe(true);
     });
   });
 
@@ -256,7 +397,7 @@ describe('PersistentTtsAudioService', () => {
       const theirs = await svc.getStudentAudioRef(studentReq({ studentId: 'student-2' }));
 
       expect(mine).not.toBe(theirs);
-      expect((await h.audioStorage.retrieveAudio(mine as string, 'student-1'))?.contentType).toBe('audio/wav');
+      expect((await h.audioStorage.retrieveAudio(mine as string, 'student-1'))?.contentType).toBe('audio/mpeg');
       expect(await h.audioStorage.retrieveAudio(mine as string, 'student-2')).toBeNull();
       expect(h.gateway.synthesize).toHaveBeenCalledTimes(1);
     });

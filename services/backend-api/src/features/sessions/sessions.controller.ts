@@ -80,6 +80,7 @@ import {
 import { SessionQuestionAudioService } from './session-question-audio.service';
 import { LessonAssetAudioService } from './lesson-asset-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { TtsAudioDeliveryService } from '../voice-teacher/tts-gateway/persistent/tts-audio-delivery.service';
 
 // ---------------------------------------------------------------------------
 // Request / response body types
@@ -152,6 +153,7 @@ export class SessionsController {
     private readonly questionAudio: SessionQuestionAudioService,
     private readonly lessonAssetAudio: LessonAssetAudioService,
     private readonly audioStorage: TtsAudioStorageService,
+    private readonly audioDelivery: TtsAudioDeliveryService,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -472,6 +474,7 @@ export class SessionsController {
     @Param('id') questionId: string,
     @CurrentUser() user: AuthenticatedUser,
     @Res() res: Response,
+    @Headers('accept') accept: string | undefined,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
     const result = await this.questionAudio.ensureAudio(
@@ -496,7 +499,7 @@ export class SessionsController {
       return;
     }
 
-    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
+    await this.audioDelivery.send(res, audio, accept);
   }
 
   // -------------------------------------------------------------------------
@@ -524,6 +527,7 @@ export class SessionsController {
     @Param('id') assetId: string,
     @CurrentUser() user: AuthenticatedUser,
     @Res() res: Response,
+    @Headers('accept') accept: string | undefined,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
     const result = await this.lessonAssetAudio.ensureAudio(
@@ -548,6 +552,6 @@ export class SessionsController {
       return;
     }
 
-    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
+    await this.audioDelivery.send(res, audio, accept);
   }
 }

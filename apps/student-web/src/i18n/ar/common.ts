@@ -62,4 +62,8 @@ export const common: Record<string, string> = {
   'Access denied': 'تم رفض الوصول',
   "Can't reach the server. Check your connection and try again.":
     'تعذّر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.',
+
+  // Audio player
+  'Playback speed': 'سرعة التشغيل',
+  'Your recording': 'تسجيلك',
 };

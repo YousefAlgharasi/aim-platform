@@ -310,7 +310,9 @@ class BackendApiClient {
     final response = await _withTimeout(
       () => _httpClient.get(
         uri,
-        headers: _authHeadersOnly(headers),
+        // Stored TTS audio is MP3 (about 8x smaller); endpoints that only
+        // have WAV still answer with WAV. Callers may override `accept`.
+        headers: _authHeadersOnly({'accept': _audioAccept, ...?headers}),
       ),
       timeout: const Duration(seconds: 60),
     );
@@ -524,6 +526,9 @@ class BackendApiClient {
 
   /// Auth-only headers, without the JSON content-type (used for multipart
   /// uploads and raw byte fetches, which set their own content handling).
+  static const String _audioAccept =
+      'audio/mpeg, audio/wav;q=0.9, application/json;q=0.5';
+
   Map<String, String> _authHeadersOnly(Map<String, String>? headers) {
     final base = <String, String>{
       'accept': 'application/json',

@@ -20,7 +20,12 @@ export interface RequestOptions {
   auth?: boolean;
   /** Explicit bearer token, e.g. a password-recovery token from an email link. */
   token?: string;
+  /** Accept header; JSON by default. */
+  accept?: string;
 }
+
+/** Stored TTS audio is MP3 (about 8x smaller than WAV); endpoints that only have WAV still answer with WAV. */
+const AUDIO_ACCEPT = 'audio/mpeg, audio/wav;q=0.9, application/json;q=0.5';
 
 function readStorage(key: string): string | null {
   try {
@@ -126,7 +131,7 @@ class ApiClient {
     options: RequestOptions,
     isRetry = false,
   ): Promise<Response> {
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    const headers: Record<string, string> = { Accept: options.accept ?? 'application/json' };
     let payload: BodyInit | undefined;
     if (body instanceof FormData) {
       payload = body;
@@ -203,7 +208,7 @@ class ApiClient {
 
   /** Authenticated binary download (e.g. TTS audio), returned as a Blob for an object URL. */
   async getBlob(path: string, options: RequestOptions = {}): Promise<Blob> {
-    const response = await this.send('GET', path, undefined, options);
+    const response = await this.send('GET', path, undefined, { accept: AUDIO_ACCEPT, ...options });
     if (!response.ok) {
       const body = await response.json().catch(() => null);
       throw toApiError(body, response.status, 'Failed to load audio');

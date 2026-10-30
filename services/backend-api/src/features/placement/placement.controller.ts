@@ -31,6 +31,7 @@ import {
   Param,
   Post,
   Query,
+  Headers,
   Res,
   UploadedFile,
   UseGuards,
@@ -60,6 +61,7 @@ import { PlacementAttemptService } from './placement-attempt.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementQuestionAudioService } from './placement-question-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { TtsAudioDeliveryService } from '../voice-teacher/tts-gateway/persistent/tts-audio-delivery.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import {
@@ -116,6 +118,7 @@ export class PlacementController {
     private readonly audioStorage: TtsAudioStorageService,
     private readonly speakingAnswerSubmit: PlacementSpeakingAnswerSubmitService,
     private readonly decision: PlacementDecisionService,
+    private readonly audioDelivery: TtsAudioDeliveryService,
   ) {}
 
   /**
@@ -264,6 +267,7 @@ export class PlacementController {
     @Param('id') questionId: string,
     @ResolvedInternalUserId() studentId: string,
     @Res() res: Response,
+    @Headers('accept') accept: string | undefined,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
     const result = await this.questionAudio.ensureAudio(
@@ -288,7 +292,7 @@ export class PlacementController {
       return;
     }
 
-    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
+    await this.audioDelivery.send(res, audio, accept);
   }
 
   /**
