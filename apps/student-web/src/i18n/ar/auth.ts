@@ -43,6 +43,7 @@ export const auth: Record<string, string> = {
   'Invalid Google authentication token.': 'رمز مصادقة Google غير صالح.',
   'Google authentication did not return a valid email address.': 'لم تُرجع مصادقة Google بريداً إلكترونياً صالحاً.',
   'Unable to reach the authentication service.': 'تعذّر الوصول إلى خدمة المصادقة.',
+  'This email is not registered yet.': 'هذا البريد الإلكتروني غير مسجَّل بعد.',
   'Too many attempts. Please wait a moment and try again.': 'محاولات كثيرة جداً. يُرجى الانتظار قليلاً ثم المحاولة مرة أخرى.',
   'Please choose a stronger password.': 'يُرجى اختيار كلمة مرور أقوى.',
   'Please enter a valid email address.': 'يُرجى إدخال بريد إلكتروني صحيح.',

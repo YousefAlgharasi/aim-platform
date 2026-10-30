@@ -11,6 +11,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BackendConfigService } from '../config/backend-config.service';
 import { AppError } from '../common/errors/app-error';
 import { ApiErrorCode } from '../common/errors/api-error-code';
+import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
 import { GoogleUserProfile } from './google.strategy';
@@ -60,6 +61,7 @@ export class AuthLoginService {
     private readonly config: BackendConfigService,
     private readonly jwtService: JwtService,
     private readonly profileBootstrap: AuthProfileBootstrapService,
+    private readonly db: DatabaseService,
   ) {}
 
   async login(input: AuthLoginInput): Promise<AuthLoginResult> {
@@ -315,9 +317,17 @@ export class AuthLoginService {
     };
   }
 
-  // Always reports success regardless of whether the email matches an
-  // account, so the response never reveals account existence to a caller.
+  // Tells the caller when no account matches the email, and sends nothing in
+  // that case. This reveals account existence, as registration already does.
   async forgotPassword(input: AuthForgotPasswordInput): Promise<AuthForgotPasswordResult> {
+    if (!(await this.accountExists(input.email))) {
+      throw new AppError({
+        code: ApiErrorCode.NOT_FOUND,
+        message: 'This email is not registered yet.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
+    }
+
     const redirectTo = this.resolveEmailConfirmationRedirect(input.redirectUrl);
     const url = `${this.buildSupabaseUrl(SUPABASE_RECOVER_PATH)}?redirect_to=${encodeURIComponent(
       redirectTo,
@@ -438,6 +448,23 @@ export class AuthLoginService {
       });
     } catch (error) {
       this.logger.warn(`Failed to assign default role: ${this.toSafeErrorMessage(error)}`);
+    }
+  }
+
+  private async accountExists(email: string): Promise<boolean> {
+    try {
+      const result = await this.db.query(
+        'select 1 from auth.users where lower(email) = lower($1) and deleted_at is null limit 1',
+        [email.trim()],
+      );
+      return result.rows.length > 0;
+    } catch (error) {
+      this.logger.warn(`Account lookup failed: ${this.toSafeErrorMessage(error)}`);
+      throw new AppError({
+        code: ApiErrorCode.SERVICE_UNAVAILABLE,
+        message: 'Unable to reach the authentication service.',
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      });
     }
   }
 

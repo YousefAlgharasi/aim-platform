@@ -140,14 +140,14 @@ export class AuthController {
   /**
    * POST /auth/forgot-password
    *
-   * Sends a password reset email via Supabase. Always reports success so
-   * the response never reveals whether an account exists for the email.
+   * Sends a password reset email via Supabase. Responds 404 and sends nothing
+   * when no account exists for the email.
    */
   @Post('forgot-password')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send a password reset email.' })
-  @ApiOkResponse({ description: 'Reset email sent (if the account exists).' })
+  @ApiOkResponse({ description: 'Reset email sent.' })
   async forgotPassword(@Body() body: AuthForgotPasswordDto): Promise<AuthForgotPasswordResult> {
     return this.authLogin.forgotPassword(body);
   }

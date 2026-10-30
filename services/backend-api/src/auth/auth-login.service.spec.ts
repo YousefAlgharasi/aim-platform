@@ -5,6 +5,7 @@ import { AuthLoginService } from './auth-login.service';
 
 import { JwtService } from '@nestjs/jwt';
 import { AuthProfileBootstrapService } from './auth-profile-bootstrap.service';
+import { DatabaseService } from '../database/database.service';
 
 const originalFetch = global.fetch;
 
@@ -18,11 +19,16 @@ const makeBootstrapMock = () =>
     bootstrap: jest.fn().mockResolvedValue({ internalUserId: 'usr_bootstrap_123' }),
   }) as unknown as jest.Mocked<AuthProfileBootstrapService>;
 
+const makeDbMock = (rows: unknown[] = [{ '?column?': 1 }]) =>
+  ({
+    query: jest.fn().mockResolvedValue({ rows }),
+  }) as unknown as jest.Mocked<DatabaseService>;
+
 describe('AuthLoginService', () => {
   let service: AuthLoginService;
 
   beforeEach(() => {
-    service = new AuthLoginService(createConfig(), makeJwtMock(), makeBootstrapMock());
+    service = new AuthLoginService(createConfig(), makeJwtMock(), makeBootstrapMock(), makeDbMock());
   });
 
   afterEach(() => {
@@ -148,10 +154,35 @@ describe('AuthLoginService', () => {
       await expect(service.forgotPassword({ email: 'a@b.com' })).resolves.toEqual({ sent: true });
     });
 
-    it('reports success even when the email does not match an account', async () => {
-      mockFetch(400, { error_code: 'user_not_found', msg: 'User not found' });
+    it('reports not found and sends nothing when the email does not match an account', async () => {
+      mockFetch(200, {});
+      service = new AuthLoginService(createConfig(), makeJwtMock(), makeBootstrapMock(), makeDbMock([]));
 
-      await expect(service.forgotPassword({ email: 'nobody@b.com' })).resolves.toEqual({ sent: true });
+      await expect(service.forgotPassword({ email: 'nobody@b.com' })).rejects.toMatchObject({
+        code: ApiErrorCode.NOT_FOUND,
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'This email is not registered yet.',
+      });
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('maps a failed account lookup to a service unavailable error', async () => {
+      mockFetch(200, {});
+      const db = makeDbMock();
+      db.query.mockRejectedValue(new Error('db down'));
+      service = new AuthLoginService(createConfig(), makeJwtMock(), makeBootstrapMock(), db);
+
+      await expect(service.forgotPassword({ email: 'a@b.com' })).rejects.toMatchObject({
+        code: ApiErrorCode.SERVICE_UNAVAILABLE,
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      });
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('still reports success when Supabase rejects the recover request for another reason', async () => {
+      mockFetch(500, {});
+
+      await expect(service.forgotPassword({ email: 'a@b.com' })).resolves.toEqual({ sent: true });
     });
 
     it('maps rate limiting to too many requests', async () => {
