@@ -39,8 +39,8 @@ export function RecommendationWidget({ recommendations, limit = 3 }: Recommendat
                 className="flex flex-col gap-0.5 no-underline"
               >
                 <span className={ui.eyebrow}>{humanize(rec.kind)}</span>
-                <span className="text-sm font-bold text-slate-900 dark:text-white">{prettifySkillId(rec.targetSkillId)}</span>
-                <span className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{rec.reason}</span>
+                <span className="text-sm font-bold text-slate-900 dark:text-white [unicode-bidi:plaintext]">{prettifySkillId(rec.targetSkillId)}</span>
+                <span className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{humanize(rec.reason)}</span>
               </Link>
             </li>
           ))}

@@ -171,7 +171,7 @@ export function ProgressSummary() {
                       <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                         {humanize(r.kind)} · {prettifySkillId(r.targetSkillId)}
                       </span>
-                      <span>{r.reason}</span>
+                      <span>{humanize(r.reason)}</span>
                       {r.targetLessonId && (
                         <Link to={`/lessons/${r.targetLessonId}`} className={ui.link}>{t('Open lesson')}</Link>
                       )}

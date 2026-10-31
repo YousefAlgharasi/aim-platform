@@ -40,7 +40,7 @@ export function RecommendationsPage() {
                     <span className={ui.badge(ui.tone.neutral)}>#{r.rank}</span>
                   </div>
                 </div>
-                <p className="m-0 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{r.reason}</p>
+                <p className="m-0 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{humanize(r.reason)}</p>
                 <p className={ui.meta}>
                   {t('Generated {date}', { date: formatDate(r.generatedAt) })}
                   {r.expiresAt ? ` · ${t('Expires {date}', { date: formatDate(r.expiresAt) })}` : ''}

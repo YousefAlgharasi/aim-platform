@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../i18n/I18nContext';
 
 export function ChevronBackIcon({ className = 'size-5' }: { className?: string }) {
   return (
@@ -17,10 +18,11 @@ export function SendIcon({ className = 'size-5' }: { className?: string }) {
 }
 
 export function BackLink({ to, label }: { to: string; label: string }) {
+  const { t } = useI18n();
   return (
     <Link
       to={to}
-      aria-label={label}
+      aria-label={t(label)}
       className="size-10 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors"
     >
       <ChevronBackIcon />

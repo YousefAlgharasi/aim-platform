@@ -51,7 +51,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
         {continueLesson ? (
           <>
             <span className={ui.eyebrow}>{t('Continue learning')}</span>
-            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{continueLesson.lessonTitle}</span>
+            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{continueLesson.lessonTitle}</span>
             <div
               className={ui.barTrack}
               role="progressbar"
@@ -70,10 +70,10 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
         ) : quickStart ? (
           <>
             <span className={ui.eyebrow}>
-              {t('Start here')}{quickStart.skillName ? ` · ${quickStart.skillName}` : ''}
+              {t('Start here')}{quickStart.skillName ? <> · <bdi>{quickStart.skillName}</bdi></> : null}
             </span>
-            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{quickStart.lessonTitle}</span>
-            {quickStart.lessonDescription && <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{quickStart.lessonDescription}</span>}
+            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
+            {quickStart.lessonDescription && <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [unicode-bidi:plaintext]">{quickStart.lessonDescription}</span>}
             <div className="flex flex-wrap items-center gap-3">
               <Link to={`/lessons/${quickStart.lessonId}`} className={ui.primaryLink}>{t('Start lesson')}</Link>
             </div>

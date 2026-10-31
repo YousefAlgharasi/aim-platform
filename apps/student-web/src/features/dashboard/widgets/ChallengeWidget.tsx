@@ -28,8 +28,8 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
             {challenge.completed ? t('Completed') : `${challenge.progressCount}/${challenge.targetCount}`}
           </span>
         </div>
-        <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">{challenge.title}</span>
-        <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">{challenge.description}</span>
+        <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{t(challenge.title)}</span>
+        <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [unicode-bidi:plaintext]">{t(challenge.description)}</span>
         <div
           className={ui.barTrack}
           role="progressbar"
