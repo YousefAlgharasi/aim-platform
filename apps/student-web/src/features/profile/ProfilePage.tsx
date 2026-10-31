@@ -135,20 +135,6 @@ export function ProfilePage() {
                   <dt className={labelCls}>{t('Email')}</dt>
                   <dd className={`${bodyCls} break-all`}>{user.email}</dd>
                 </div>
-                {profile?.userType && (
-                  <div className="flex flex-col gap-1">
-                    <dt className={labelCls}>{t('Account type')}</dt>
-                    <dd className={bodyCls}>{profile.userType}</dd>
-                  </div>
-                )}
-                {user.roles.length > 0 && (
-                  <div className="flex flex-col gap-1.5">
-                    <dt className={labelCls}>{t('Roles')}</dt>
-                    <dd className="m-0 flex flex-wrap gap-2">
-                      {user.roles.map(r => <span key={r} className={pillCls}>{r}</span>)}
-                    </dd>
-                  </div>
-                )}
               </dl>
             </div>
           </Card>

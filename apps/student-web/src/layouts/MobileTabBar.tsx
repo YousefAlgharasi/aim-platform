@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { BookIcon, ChartIcon, ChatIcon, HomeIcon } from '../components/common/Icons';
+import { BookIcon, ChartIcon, ChatIcon, HomeIcon, HamburgerMenuIcon } from '../components/common/Icons';
 import { useI18n } from '../i18n/I18nContext';
 
 interface MobileTabBarProps {
@@ -42,9 +42,7 @@ export function MobileTabBar({ onOpenMenu }: MobileTabBarProps) {
         onClick={onOpenMenu}
         className={`${TAB} text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300`}
       >
-        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
+        <HamburgerMenuIcon className="size-5" />
         <span className="max-w-full truncate">{t('More')}</span>
       </button>
     </nav>

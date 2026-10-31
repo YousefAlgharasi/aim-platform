@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../state/ThemeContext';
 import { useI18n } from '../i18n/I18nContext';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
+import { ArrowLeftIcon, HamburgerMenuIcon } from '../components/common/Icons';
 
 interface TopBarProps {
   /** Opens the navigation drawer (phones); the button sits beside the AIM logo. */
@@ -33,6 +33,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const showBack = !ROOT_PATHS.has(pathname);
+  const unread = useUnreadCount(pathname);
 
   function goBack() {
     // BrowserRouter keeps an index in history.state; 0 means this tab started on this page.
@@ -40,9 +41,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
     else navigate('/', { replace: true });
   }
 
-  const { isDarkMode, toggle } = useTheme();
   const { t, formatNumber } = useI18n();
-  const unread = useUnreadCount(pathname);
 
   return (
     <header className="sticky top-0 z-20 backdrop-blur-md flex items-center justify-between gap-3 px-4 sm:px-6 h-16 shrink-0 border-b bg-white/80 border-slate-100 dark:bg-slate-900/80 dark:border-slate-800">
@@ -55,9 +54,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
             title={t('Go back')}
             className="size-10 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
           >
-            <svg aria-hidden="true" className="size-5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeftIcon className="size-5 rtl:rotate-180" />
           </button>
         )}
         <button
@@ -67,9 +64,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
             title={t('Open navigation menu')}
             className="md:hidden size-10 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
           >
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
+            <HamburgerMenuIcon className="size-5" />
         </button>
         <div className={`size-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 items-center justify-center text-white font-black text-xs shadow-md shadow-indigo-500/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
           AIM
@@ -83,36 +78,16 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
           className="relative size-9 rounded-xl flex items-center justify-center no-underline transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
         >
-          <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
           {unread > 0 && (
-            <span aria-hidden="true" className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-white dark:ring-slate-900">
+            <span aria-hidden="true" className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-white dark:ring-slate-900 animate-pulse">
               {unread > 9 ? '9+' : formatNumber(unread)}
             </span>
           )}
         </Link>
-        <button
-          type="button"
-          onClick={toggle}
-          title={isDarkMode ? t('Switch to light mode') : t('Switch to dark mode')}
-          aria-label={isDarkMode ? t('Switch to light mode') : t('Switch to dark mode')}
-          className={`size-9 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors ${
-            isDarkMode ? 'bg-slate-800 text-indigo-300 hover:bg-slate-700' : 'bg-slate-100 text-amber-500 hover:bg-slate-200'
-          }`}
-        >
-          {isDarkMode ? (
-            <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
-          ) : (
-            <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-            </svg>
-          )}
-        </button>
         <Link
           to="/profile"
           aria-label={t('Profile')}
