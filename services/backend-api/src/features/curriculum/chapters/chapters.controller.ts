@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,6 +25,12 @@ import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { PermissionGuard } from '../../../auth/authorization/permission.guard';
 import { RequirePermissions } from '../../../auth/authorization/required-permissions.decorator';
 import { CurriculumPermission } from '../curriculum.permissions';
+import {
+  LocaleContext,
+  LocaleHeadersInterceptor,
+  LocaleResolverService,
+  RequestLocale,
+} from '../../../common/locale';
 import { ChaptersService } from './chapters.service';
 import { CreateChapterInput, UpdateChapterInput } from './chapters.types';
 
@@ -32,9 +39,13 @@ import { CreateChapterInput, UpdateChapterInput } from './chapters.types';
 @UseGuards(SupabaseJwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
 export class ChaptersController {
-  constructor(private readonly chaptersService: ChaptersService) {}
+  constructor(
+    private readonly chaptersService: ChaptersService,
+    private readonly localeResolver: LocaleResolverService,
+  ) {}
 
   @Get()
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List chapters. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'levelId', required: false, type: String })
@@ -53,6 +64,7 @@ export class ChaptersController {
     @Query('limit') limit = '20',
     @Query('status') status?: string,
     @Query('q') q?: string,
+    @RequestLocale() localeCtx?: LocaleContext,
   ) {
     return this.chaptersService.listChapters(
       parseInt(page, 10) || 1,
@@ -60,16 +72,21 @@ export class ChaptersController {
       levelId,
       status,
       q,
+      this.explicitLocale(localeCtx),
     );
   }
 
   @Get(':id')
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get chapter by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Chapter detail.' })
   @ApiNotFoundResponse({ description: 'Chapter not found.' })
-  async getChapter(@Param('id', ParseUUIDPipe) id: string) {
-    return this.chaptersService.getChapter(id);
+  async getChapter(
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() localeCtx?: LocaleContext,
+  ) {
+    return this.chaptersService.getChapter(id, this.explicitLocale(localeCtx));
   }
 
   @Post()
@@ -91,5 +108,9 @@ export class ChaptersController {
     @Body() body: UpdateChapterInput,
   ) {
     return this.chaptersService.updateChapter(id, body);
+  }
+
+  private explicitLocale(localeCtx?: LocaleContext) {
+    return localeCtx ? this.localeResolver.resolveExplicit(localeCtx) : undefined;
   }
 }

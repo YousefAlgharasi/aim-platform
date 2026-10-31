@@ -69,19 +69,25 @@ export class LessonsController {
   @Get('continue')
   @ApiOperation({ summary: 'Get the most recently active, incomplete lesson for the student (for "Continue Learning").' })
   @ApiOkResponse({ description: 'The continue-learning lesson, or null if none exists.' })
+  @UseInterceptors(LocaleHeadersInterceptor)
   async getContinueLearningLesson(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<ContinueLearningLesson | null> {
-    return this.lessonProgress.findContinueLearningLesson(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
+    return this.lessonProgress.findContinueLearningLesson(user.id, locale);
   }
 
   @Get('quick-start')
   @ApiOperation({ summary: 'Get the next lesson to start, derived from the student\'s placement result.' })
   @ApiOkResponse({ description: 'The recommended next lesson, or null if none available.' })
+  @UseInterceptors(LocaleHeadersInterceptor)
   async getQuickStartLesson(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<QuickStartLesson | null> {
-    return this.lessonProgress.findQuickStartLesson(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
+    return this.lessonProgress.findQuickStartLesson(user.id, locale);
   }
 
   @Get('recommended-course')

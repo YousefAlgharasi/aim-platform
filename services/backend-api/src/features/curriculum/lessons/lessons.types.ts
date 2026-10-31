@@ -19,6 +19,8 @@ export interface LessonRow {
   teaching_outline: string[] | null;
   created_at: string;
   updated_at: string;
+  locale: string;
+  available_locales: string[];
 }
 
 export interface LessonSummary {
@@ -36,6 +38,8 @@ export interface LessonSummary {
   teachingOutline: string[] | null;
   createdAt: string;
   updatedAt: string;
+  locale: string;
+  availableLocales: string[];
 }
 
 export interface LessonListResponse {

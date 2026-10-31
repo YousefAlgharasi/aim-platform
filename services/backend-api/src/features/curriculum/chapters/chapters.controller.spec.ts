@@ -3,6 +3,7 @@
 
 import { ChaptersController } from './chapters.controller';
 import { ChaptersService } from './chapters.service';
+import { LocaleResolverService } from '../../../common/locale/locale-resolver.service';
 
 const makeMockService = (): jest.Mocked<
   Pick<ChaptersService, 'listChapters' | 'getChapter' | 'createChapter' | 'updateChapter'>
@@ -13,33 +14,38 @@ const makeMockService = (): jest.Mocked<
   updateChapter: jest.fn(),
 });
 
+const makeResolver = () => ({
+  resolve: jest.fn().mockResolvedValue('en'),
+  resolveExplicit: jest.fn((ctx: { requested: string | null }) => ctx.requested ?? 'en'),
+}) as unknown as LocaleResolverService;
+
 describe('ChaptersController', () => {
   describe('listChapters', () => {
     it('delegates to ChaptersService with parsed pagination and optional filters', async () => {
       const svc = makeMockService();
       svc.listChapters.mockResolvedValue({ chapters: [], total: 0 } as any);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       await ctrl.listChapters('level-uuid', '3', '15', 'draft', 'chapter1');
 
-      expect(svc.listChapters).toHaveBeenCalledWith(3, 15, 'level-uuid', 'draft', 'chapter1');
+      expect(svc.listChapters).toHaveBeenCalledWith(3, 15, 'level-uuid', 'draft', 'chapter1', undefined);
     });
 
     it('falls back to page 1 and limit 20 for non-numeric params', async () => {
       const svc = makeMockService();
       svc.listChapters.mockResolvedValue({ chapters: [], total: 0 } as any);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       await ctrl.listChapters(undefined, 'x', 'y');
 
-      expect(svc.listChapters).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined);
+      expect(svc.listChapters).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined, undefined);
     });
 
     it('returns service result directly', async () => {
       const svc = makeMockService();
       const expected = { chapters: [{ id: 'ch1' }], total: 1 } as any;
       svc.listChapters.mockResolvedValue(expected);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       expect(await ctrl.listChapters(undefined, '1', '20')).toBe(expected);
     });
@@ -49,18 +55,18 @@ describe('ChaptersController', () => {
     it('delegates to ChaptersService with the given id', async () => {
       const svc = makeMockService();
       svc.getChapter.mockResolvedValue({ id: 'uuid-1' } as any);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       await ctrl.getChapter('uuid-1');
 
-      expect(svc.getChapter).toHaveBeenCalledWith('uuid-1');
+      expect(svc.getChapter).toHaveBeenCalledWith('uuid-1', undefined);
     });
 
     it('returns service result directly', async () => {
       const svc = makeMockService();
       const expected = { id: 'uuid-1', title: 'Chapter A' } as any;
       svc.getChapter.mockResolvedValue(expected);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       expect(await ctrl.getChapter('uuid-1')).toBe(expected);
     });
@@ -70,7 +76,7 @@ describe('ChaptersController', () => {
     it('delegates to ChaptersService with the request body', async () => {
       const svc = makeMockService();
       svc.createChapter.mockResolvedValue({ id: 'new' } as any);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       await ctrl.createChapter({ title: 'Chapter 1', levelId: 'level-uuid' } as any);
 
@@ -84,7 +90,7 @@ describe('ChaptersController', () => {
       const svc = makeMockService();
       const expected = { id: 'new-uuid', status: 'draft' } as any;
       svc.createChapter.mockResolvedValue(expected);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       expect(await ctrl.createChapter({} as any)).toBe(expected);
     });
@@ -94,7 +100,7 @@ describe('ChaptersController', () => {
     it('delegates to ChaptersService with id and body', async () => {
       const svc = makeMockService();
       svc.updateChapter.mockResolvedValue({ id: 'uuid-1' } as any);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       await ctrl.updateChapter('uuid-1', { title: 'Updated' });
 
@@ -105,7 +111,7 @@ describe('ChaptersController', () => {
       const svc = makeMockService();
       const expected = { id: 'uuid-1', title: 'Updated' } as any;
       svc.updateChapter.mockResolvedValue(expected);
-      const ctrl = new ChaptersController(svc as unknown as ChaptersService);
+      const ctrl = new ChaptersController(svc as unknown as ChaptersService, makeResolver());
 
       expect(await ctrl.updateChapter('uuid-1', {})).toBe(expected);
     });

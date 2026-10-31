@@ -6,6 +6,7 @@ import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { PermissionGuard } from '../../../auth/authorization/permission.guard';
 import { CurriculumPermission } from '../curriculum.permissions';
 import { REQUIRED_PERMISSIONS_KEY } from '../../../auth/authorization/authorization.constants';
+import { LocaleResolverService } from '../../../common/locale/locale-resolver.service';
 
 const GUARDS_KEY = '__guards__';
 
@@ -16,6 +17,11 @@ function getClassGuards(target: Function): Function[] {
 function getMethodPermissions(proto: object, method: string): string[] {
   return Reflect.getMetadata(REQUIRED_PERMISSIONS_KEY, (proto as any)[method]) ?? [];
 }
+
+const makeResolver = () => ({
+  resolve: jest.fn().mockResolvedValue('en'),
+  resolveExplicit: jest.fn((ctx: { requested: string | null }) => ctx.requested ?? 'en'),
+}) as unknown as LocaleResolverService;
 
 describe('LessonsController', () => {
   let controller: LessonsController;
@@ -37,6 +43,7 @@ describe('LessonsController', () => {
       providers: [
         { provide: LessonsService, useValue: mockService },
         { provide: LessonPublishValidationService, useValue: mockValidation },
+        { provide: LocaleResolverService, useValue: makeResolver() },
       ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })
@@ -105,11 +112,12 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.listLessons('chap-uuid', '2', '15', 'draft', 'intro');
 
-      expect(lessonsSvc.listLessons).toHaveBeenCalledWith(2, 15, 'chap-uuid', 'draft', 'intro');
+      expect(lessonsSvc.listLessons).toHaveBeenCalledWith(2, 15, 'chap-uuid', 'draft', 'intro', undefined);
     });
 
     it('falls back to page 1 and limit 20 for non-numeric params', async () => {
@@ -119,11 +127,12 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.listLessons(undefined, 'x', 'y');
 
-      expect(lessonsSvc.listLessons).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined);
+      expect(lessonsSvc.listLessons).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined, undefined);
     });
 
     it('returns service result directly', async () => {
@@ -134,6 +143,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       expect(await ctrl.listLessons(undefined, '1', '20')).toBe(expected);
@@ -148,11 +158,12 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.getLesson('uuid-1');
 
-      expect(lessonsSvc.getLesson).toHaveBeenCalledWith('uuid-1');
+      expect(lessonsSvc.getLesson).toHaveBeenCalledWith('uuid-1', undefined);
     });
 
     it('returns service result directly', async () => {
@@ -163,6 +174,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       expect(await ctrl.getLesson('uuid-1')).toBe(expected);
@@ -177,6 +189,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.createLesson({ title: 'New Lesson', chapterId: 'ch-uuid' } as any);
@@ -195,6 +208,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       expect(await ctrl.createLesson({} as any)).toBe(expected);
@@ -212,6 +226,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.checkPublishValidation('lesson-uuid');
@@ -227,6 +242,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       expect(await ctrl.checkPublishValidation('lesson-uuid')).toBe(expected);
@@ -241,6 +257,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       await ctrl.updateLesson('uuid-1', { title: 'Updated' });
@@ -256,6 +273,7 @@ describe('LessonsController (P3-048 additional behavior tests)', () => {
       const ctrl = new LessonsController(
         lessonsSvc as unknown as LessonsService,
         validationSvc as unknown as LessonPublishValidationService,
+        makeResolver(),
       );
 
       expect(await ctrl.updateLesson('uuid-1', {})).toBe(expected);

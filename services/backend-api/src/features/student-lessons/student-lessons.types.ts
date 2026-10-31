@@ -1,7 +1,10 @@
 export interface StudentLessonSummary {
   readonly id: string;
   readonly title: string;
-  readonly description: string;
+  readonly description: string | null;
+
+  /** Language of title/description actually served (requested locale if a translation exists, else 'en'). */
+  readonly locale: string;
 
   /** Gamification points awarded on completion. Display-only — never read by the AIM Engine. */
   readonly xpValue: number;
