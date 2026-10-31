@@ -59,3 +59,33 @@ export function missingContentLocales(
   if (!available || available.length === 0) return [];
   return supported.filter((code) => !available.includes(code));
 }
+
+export const LESSON_FIELD_LABELS: Readonly<Record<string, TranslatableFieldLabels>> = {
+  en: {
+    title: 'Lesson Title',
+    description: 'Lesson Description',
+    titlePlaceholder: 'e.g. Past Simple Basics',
+    descriptionPlaceholder: 'What this lesson covers.',
+  },
+  ar: {
+    title: 'عنوان الدرس',
+    description: 'وصف الدرس',
+    titlePlaceholder: 'مثال: أساسيات الماضي البسيط',
+    descriptionPlaceholder: 'ما يغطيه هذا الدرس.',
+  },
+};
+
+export const CHAPTER_FIELD_LABELS: Readonly<Record<string, TranslatableFieldLabels>> = {
+  en: {
+    title: 'Chapter Title',
+    description: 'Chapter Description',
+    titlePlaceholder: 'e.g. Talking About the Past',
+    descriptionPlaceholder: 'Brief summary of this chapter.',
+  },
+  ar: {
+    title: 'عنوان الفصل',
+    description: 'وصف الفصل',
+    titlePlaceholder: 'مثال: الحديث عن الماضي',
+    descriptionPlaceholder: 'ملخص موجز لهذا الفصل.',
+  },
+};
