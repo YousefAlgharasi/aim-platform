@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../state/ThemeContext';
 import { useI18n } from '../i18n/I18nContext';
-import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
 
 interface TopBarProps {
@@ -79,7 +78,6 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <LanguageSwitcher />
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
