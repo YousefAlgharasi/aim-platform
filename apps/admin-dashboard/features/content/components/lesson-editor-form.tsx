@@ -5,6 +5,10 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AdminLessonSummary } from '../api/admin-lessons-api';
+import type { TranslationInput } from '../api/admin-translations-api';
+import { LESSON_FIELD_LABELS } from '../config/content-locales';
+import { useTranslatedFields, type TranslationsLoadResult } from '../hooks/use-translated-fields';
+import { TranslationFields } from './translation-fields';
 import {
   AdminInput,
   AdminTextarea,
@@ -29,47 +33,45 @@ type LessonEditorFormProps = {
     description: string;
     sortOrder?: number;
     systemPrompt?: string | null;
+    translations: Readonly<Record<string, TranslationInput>>;
   }) => Promise<{ error?: string }>;
+  readonly loadTranslations?: (lessonId: string) => Promise<TranslationsLoadResult>;
+  readonly onRemoveTranslation?: (lessonId: string, locale: string) => Promise<{ error?: string }>;
 };
 
-export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
+export function LessonEditorForm({ lesson, onUpdate, loadTranslations, onRemoveTranslation }: LessonEditorFormProps) {
   const router = useRouter();
-  const [title, setTitle] = useState(lesson.title);
-  const [description, setDescription] = useState(lesson.description);
   const [sortOrder, setSortOrder] = useState(String(lesson.sortOrder));
   const [systemPrompt, setSystemPrompt] = useState(lesson.systemPrompt ?? '');
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
-
-  function validate(): boolean {
-    const errors: Record<string, string> = {};
-    if (!title.trim()) {
-      errors.title = 'Title is required.';
-    }
-    if (!description.trim()) {
-      errors.description = 'Description is required.';
-    }
-    const orderNum = parseInt(sortOrder, 10);
-    if (sortOrder.trim() && isNaN(orderNum)) {
-      errors.sortOrder = 'Sort order must be a number.';
-    }
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
+  const t = useTranslatedFields({
+    mode: 'edit',
+    entityId: lesson.id,
+    initialTitle: lesson.title,
+    initialDescription: lesson.description,
+    load: loadTranslations,
+    remove: onRemoveTranslation,
+  });
+  const { error, setError, fieldErrors, descriptionErrors } = t;
+  const busy = isPending || t.removing;
 
   function handleSubmit() {
-    if (!validate()) return;
+    const extraErrors: Record<string, string> = {};
+    const orderNum = parseInt(sortOrder, 10);
+    if (sortOrder.trim() && isNaN(orderNum)) {
+      extraErrors.sortOrder = 'Sort order must be a number.';
+    }
+    if (!t.validate({ requireDefaultDescription: true, extraErrors })) return;
     setError(null);
     setSuccess(false);
     startTransition(async () => {
-      const orderNum = parseInt(sortOrder, 10);
       const result = await onUpdate({
-        title: title.trim(),
-        description: description.trim(),
+        title: t.english.title.trim(),
+        description: t.english.description.trim(),
         ...(sortOrder.trim() && !isNaN(orderNum) ? { sortOrder: orderNum } : {}),
         systemPrompt: systemPrompt.trim() ? systemPrompt.trim() : null,
+        translations: t.collectTranslations(),
       });
       if (result.error) {
         setError(result.error);
@@ -115,6 +117,8 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         </div>
       )}
 
+      {t.loadState === 'loading' && <div role="status">Loading translations…</div>}
+
       {success && (
         <div className="aim-lesson-editor-success" role="status">
           Lesson updated successfully.
@@ -122,43 +126,25 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
       )}
 
       <div className="aim-lesson-editor-fields">
-        <AdminFormField
-          id="lesson-title"
-          label="Title"
-          required
-          error={fieldErrors.title}
-        >
-          <AdminInput
-            id="lesson-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Past Simple Basics"
-            disabled={isPending}
-            maxLength={255}
-            hasError={!!fieldErrors.title}
-            aria-required="true"
-          />
-        </AdminFormField>
-
-        <AdminFormField
-          id="lesson-description"
-          label="Description"
-          required
-          error={fieldErrors.description}
-        >
-          <AdminTextarea
-            id="lesson-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What this lesson covers."
-            disabled={isPending}
-            rows={4}
-            maxLength={2000}
-            hasError={!!fieldErrors.description}
-            aria-required="true"
-          />
-        </AdminFormField>
+        <TranslationFields
+          idPrefix="lesed"
+          locales={t.editLocales}
+          values={t.values}
+          savedLocales={t.savedForTabs}
+          fieldLabels={LESSON_FIELD_LABELS}
+          activeLocale={t.activeLocale}
+          onActiveLocaleChange={t.setActiveLocale}
+          onChange={t.handleChange}
+          errors={fieldErrors}
+          descriptionErrors={descriptionErrors}
+          requireDefaultDescription
+          disabled={busy}
+          disabledLocales={t.disabledLocales}
+          onRemove={t.canRemove ? t.setPendingRemove : undefined}
+          pendingRemoveLocale={t.pendingRemove}
+          onConfirmRemove={t.confirmRemove}
+          onCancelRemove={() => t.setPendingRemove(null)}
+        />
 
         <AdminFormField
           id="lesson-sort-order"
@@ -172,7 +158,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
             placeholder="0"
-            disabled={isPending}
+            disabled={busy}
             hasError={!!fieldErrors.sortOrder}
           />
         </AdminFormField>
@@ -187,7 +173,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
             placeholder="e.g. Focus on present-tense verbs; keep examples food-related; avoid grammar terms the student hasn't learned yet."
-            disabled={isPending}
+            disabled={busy}
             rows={4}
             maxLength={2000}
           />
@@ -198,7 +184,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         <AdminButton
           variant="primary"
           onClick={handleSubmit}
-          disabled={isPending}
+          disabled={busy}
           loading={isPending}
         >
           Save Changes
@@ -206,7 +192,7 @@ export function LessonEditorForm({ lesson, onUpdate }: LessonEditorFormProps) {
         <AdminButton
           variant="secondary"
           onClick={() => router.back()}
-          disabled={isPending}
+          disabled={busy}
         >
           Back
         </AdminButton>

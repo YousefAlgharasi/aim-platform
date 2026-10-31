@@ -24,6 +24,8 @@ type Props = {
   readonly onActiveLocaleChange: (locale: string) => void;
   readonly onChange: (locale: string, field: keyof TranslationValue, value: string) => void;
   readonly errors?: Readonly<Record<string, string | undefined>>;
+  readonly descriptionErrors?: Readonly<Record<string, string | undefined>>;
+  readonly requireDefaultDescription?: boolean;
   readonly disabledLocales?: ReadonlySet<string>;
   readonly disabled?: boolean;
   readonly defaultLocale?: string;
@@ -45,6 +47,8 @@ export function TranslationFields({
   onActiveLocaleChange,
   onChange,
   errors = {},
+  descriptionErrors = {},
+  requireDefaultDescription = false,
   disabledLocales,
   disabled = false,
   defaultLocale = DEFAULT_CONTENT_LOCALE,
@@ -89,7 +93,7 @@ export function TranslationFields({
           const saved = savedLocales.has(locale);
           const hasContent = Boolean(value && (value.title.trim() || value.description.trim()));
           const status = saved ? null : hasContent ? 'Unsaved' : 'Missing';
-          const hasError = Boolean(errors[locale]);
+          const hasError = Boolean(errors[locale] || descriptionErrors[locale]);
           return (
             <button
               key={locale}
@@ -124,6 +128,7 @@ export function TranslationFields({
         const isDefault = locale === defaultLocale;
         const fieldDisabled = disabled || Boolean(disabledLocales?.has(locale));
         const error = errors[locale];
+        const descriptionError = descriptionErrors[locale];
         const canRemove = !isDefault && savedLocales.has(locale) && onRemove;
         return (
           <div
@@ -163,6 +168,7 @@ export function TranslationFields({
             <div className="tf-field">
               <label htmlFor={`${idPrefix}-description-${locale}`} className="tf-label" dir={meta.dir} lang={locale}>
                 {labels.description}
+                {isDefault && requireDefaultDescription && <span className="tf-req"> *</span>}
               </label>
               <textarea
                 id={`${idPrefix}-description-${locale}`}
@@ -174,8 +180,15 @@ export function TranslationFields({
                 disabled={fieldDisabled}
                 rows={3}
                 maxLength={descriptionMaxLength}
-                className="tf-textarea"
+                aria-invalid={descriptionError ? true : undefined}
+                aria-describedby={descriptionError ? `${idPrefix}-description-error-${locale}` : undefined}
+                className={`tf-textarea ${descriptionError ? 'tf-input--error' : ''}`}
               />
+              {descriptionError && (
+                <span id={`${idPrefix}-description-error-${locale}`} className="tf-error">
+                  {descriptionError}
+                </span>
+              )}
             </div>
 
             {!isDefault && !savedLocales.has(locale) && (
