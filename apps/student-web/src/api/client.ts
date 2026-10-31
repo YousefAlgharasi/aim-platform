@@ -131,7 +131,10 @@ class ApiClient {
     options: RequestOptions,
     isRetry = false,
   ): Promise<Response> {
-    const headers: Record<string, string> = { Accept: options.accept ?? 'application/json' };
+    const headers: Record<string, string> = {
+      Accept: options.accept ?? 'application/json',
+      'Accept-Language': getLocale(),
+    };
     let payload: BodyInit | undefined;
     if (body instanceof FormData) {
       payload = body;

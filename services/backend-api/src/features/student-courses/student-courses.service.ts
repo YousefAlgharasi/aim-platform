@@ -15,6 +15,7 @@
 
 import { Injectable, Optional } from '@nestjs/common';
 import { CourseAccessService } from '../course-billing/course-access.service';
+import { SupportedLocale } from '../../common/locale/locale.constants';
 import { StudentCoursesRepository } from './student-courses.repository';
 import { StudentCourseStatus, StudentCourseSummary, StudentCoursesResponse } from './student-courses.types';
 
@@ -25,7 +26,7 @@ export class StudentCoursesService {
     @Optional() private readonly courseAccess?: CourseAccessService,
   ) {}
 
-  async getCourses(studentId: string): Promise<StudentCoursesResponse> {
+  async getCourses(studentId: string, locale: SupportedLocale = 'en'): Promise<StudentCoursesResponse> {
     // Billing first: settling an expired paid window resets that course's
     // progress, which the progress query below must already reflect.
     const billing = this.courseAccess
@@ -36,7 +37,7 @@ export class StudentCoursesService {
       : null;
 
     const [rows, enrolledCourseId] = await Promise.all([
-      this.repository.findCoursesWithProgress(studentId),
+      this.repository.findCoursesWithProgress(studentId, locale),
       this.repository.findActiveEnrollmentCourseId(studentId),
     ]);
 
@@ -95,6 +96,7 @@ export class StudentCoursesService {
         courseId: row.course_id,
         title: row.title,
         description: row.description,
+        locale: row.locale,
         levelCode: row.level_code,
         lessonCount,
         completedLessonCount,

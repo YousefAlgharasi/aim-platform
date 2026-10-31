@@ -21,6 +21,7 @@ export type AdminCourseSummary = {
   readonly sortOrder: number;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly availableLocales?: readonly string[];
 };
 
 export type AdminCourseListData = {
@@ -61,6 +62,9 @@ function decodeCourseSummary(value: unknown): AdminCourseSummary {
     sortOrder: typeof value.sortOrder === 'number' ? value.sortOrder : 0,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
+    availableLocales: Array.isArray(value.availableLocales)
+      ? value.availableLocales.filter((l): l is string => typeof l === 'string')
+      : [],
   };
 }
 
@@ -140,4 +144,119 @@ export async function updateAdminCourse(
     },
   );
   return envelope.data;
+}
+
+export type CourseTranslationEntry = {
+  readonly locale: string;
+  readonly title: string;
+  readonly description: string | null;
+};
+
+export type CourseTranslationsData = {
+  readonly courseId: string;
+  readonly supportedLocales: readonly string[];
+  readonly missingLocales: readonly string[];
+  readonly translations: readonly CourseTranslationEntry[];
+};
+
+export type CourseTranslationInput = {
+  readonly title: string;
+  readonly description: string | null;
+};
+
+function decodeTranslationEntry(value: unknown): CourseTranslationEntry {
+  if (!isObject(value) || typeof value.locale !== 'string' || typeof value.title !== 'string') {
+    throw new Error('Invalid course translation response shape.');
+  }
+  return {
+    locale: value.locale,
+    title: value.title,
+    description: typeof value.description === 'string' ? value.description : null,
+  };
+}
+
+function decodeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+}
+
+function decodeCourseTranslations(value: unknown): CourseTranslationsData {
+  if (!isObject(value) || typeof value.courseId !== 'string' || !Array.isArray(value.translations)) {
+    throw new Error('Invalid course translations response shape.');
+  }
+  return {
+    courseId: value.courseId,
+    supportedLocales: decodeStringArray(value.supportedLocales),
+    missingLocales: decodeStringArray(value.missingLocales),
+    translations: value.translations.map(decodeTranslationEntry),
+  };
+}
+
+function decodeDeletedTranslation(value: unknown): { readonly locale: string } {
+  if (!isObject(value) || typeof value.locale !== 'string') {
+    throw new Error('Invalid course translation delete response shape.');
+  }
+  return { locale: value.locale };
+}
+
+function translationsPath(courseId: string, locale?: string): string {
+  const base = `/curriculum/courses/${encodeURIComponent(courseId)}/translations`;
+  return locale ? `${base}/${encodeURIComponent(locale)}` : base;
+}
+
+export async function fetchCourseTranslations(
+  token: string,
+  courseId: string,
+): Promise<CourseTranslationsData> {
+  const envelope = await adminApiClient.get<CourseTranslationsData>(
+    translationsPath(courseId),
+    decodeCourseTranslations,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  return envelope.data;
+}
+
+export async function saveCourseTranslation(
+  token: string,
+  courseId: string,
+  locale: string,
+  payload: CourseTranslationInput,
+): Promise<CourseTranslationEntry> {
+  const envelope = await adminApiClient.put<CourseTranslationEntry>(
+    translationsPath(courseId, locale),
+    decodeTranslationEntry,
+    { headers: { authorization: `Bearer ${token}` }, body: payload },
+  );
+  return envelope.data;
+}
+
+export async function deleteCourseTranslation(
+  token: string,
+  courseId: string,
+  locale: string,
+): Promise<void> {
+  await adminApiClient.delete<{ readonly locale: string }>(
+    translationsPath(courseId, locale),
+    decodeDeletedTranslation,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+}
+
+export type SaveTranslationsResult = {
+  readonly failures: readonly { readonly locale: string; readonly message: string }[];
+};
+
+export async function saveCourseTranslations(
+  token: string,
+  courseId: string,
+  translations: Readonly<Record<string, CourseTranslationInput>>,
+): Promise<SaveTranslationsResult> {
+  const failures: { locale: string; message: string }[] = [];
+  for (const [locale, payload] of Object.entries(translations)) {
+    try {
+      await saveCourseTranslation(token, courseId, locale, payload);
+    } catch (err) {
+      failures.push({ locale, message: err instanceof Error ? err.message : 'Unknown error' });
+    }
+  }
+  return { failures };
 }

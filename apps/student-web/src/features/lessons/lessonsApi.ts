@@ -109,6 +109,7 @@ export interface RecommendedCourse {
   courseId: string;
   courseTitle: string;
   courseDescription: string | null;
+  locale?: string;
   estimatedLevel: string | null;
 }
 

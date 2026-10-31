@@ -21,6 +21,8 @@ export * from './components/question-choice-editor';
 export * from './components/question-form';
 export * from './components/question-preview';
 export * from './components/skill-linker';
+export * from './components/translation-fields';
+export * from './config/content-locales';
 export * from './pages/content-blocks-list';
 export * from './pages/courses-list';
 export * from './pages/objectives-list';

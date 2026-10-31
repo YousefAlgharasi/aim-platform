@@ -25,11 +25,14 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
+import { SupportedLocale } from '../../common/locale/locale.constants';
+import { courseTextSql } from '../../common/locale/course-text.sql';
 import { CurrentEnrollmentResponse, EnrollResponse, EnrollmentRow } from './enrollment.types';
 
 interface CourseRow {
   readonly id: string;
   readonly title: string;
+  readonly locale: string;
 }
 
 @Injectable()
@@ -47,10 +50,14 @@ export class EnrollmentService {
    * Idempotent: enrolling in the course that's already active returns the
    * existing enrollment rather than creating a duplicate switch/insert pair.
    */
-  async enroll(studentId: string, courseId: string): Promise<EnrollResponse> {
+  async enroll(studentId: string, courseId: string, locale: SupportedLocale = 'en'): Promise<EnrollResponse> {
+    const text = courseTextSql('co', '$2');
     const courseResult = await this.db.query<CourseRow>(
-      `SELECT id, title FROM courses WHERE id = $1 AND status = 'published' LIMIT 1`,
-      [courseId],
+      `SELECT co.id, ${text.title} AS title, ${text.locale} AS locale
+       FROM courses co
+       ${text.joins}
+       WHERE co.id = $1 AND co.status = 'published' LIMIT 1`,
+      [courseId, locale],
     );
     const course = courseResult.rows[0];
     if (!course) {
@@ -69,17 +76,19 @@ export class EnrollmentService {
 
     if (current?.course_id === courseId) {
       const existing = await this.db.query<EnrollmentRow>(
-        `SELECT ce.id, ce.course_id, co.title AS course_title, ce.enrolled_at
+        `SELECT ce.id, ce.course_id, ${text.title} AS course_title, ${text.locale} AS course_locale, ce.enrolled_at
          FROM course_enrollments ce
          JOIN courses co ON co.id = ce.course_id
+         ${text.joins}
          WHERE ce.student_id = $1 AND ce.status = 'active'
          LIMIT 1`,
-        [studentId],
+        [studentId, locale],
       );
       const row = existing.rows[0];
       return {
         courseId: row.course_id,
         courseTitle: row.course_title,
+        locale: row.course_locale,
         enrolledAt: row.enrolled_at,
       };
     }
@@ -103,30 +112,34 @@ export class EnrollmentService {
     return {
       courseId: course.id,
       courseTitle: course.title,
+      locale: course.locale,
       enrolledAt: insertResult.rows[0].enrolled_at,
     };
   }
 
   /** Return the student's current active enrollment, or found: false. */
-  async getCurrentEnrollment(studentId: string): Promise<CurrentEnrollmentResponse> {
+  async getCurrentEnrollment(studentId: string, locale: SupportedLocale = 'en'): Promise<CurrentEnrollmentResponse> {
+    const text = courseTextSql('co', '$2');
     const result = await this.db.query<EnrollmentRow>(
-      `SELECT ce.id, ce.course_id, co.title AS course_title, ce.enrolled_at
+      `SELECT ce.id, ce.course_id, ${text.title} AS course_title, ${text.locale} AS course_locale, ce.enrolled_at
        FROM course_enrollments ce
        JOIN courses co ON co.id = ce.course_id
+       ${text.joins}
        WHERE ce.student_id = $1 AND ce.status = 'active'
        LIMIT 1`,
-      [studentId],
+      [studentId, locale],
     );
     const row = result.rows[0];
 
     if (!row) {
-      return { found: false, courseId: null, courseTitle: null, enrolledAt: null };
+      return { found: false, courseId: null, courseTitle: null, locale: null, enrolledAt: null };
     }
 
     return {
       found: true,
       courseId: row.course_id,
       courseTitle: row.course_title,
+      locale: row.course_locale,
       enrolledAt: row.enrolled_at,
     };
   }

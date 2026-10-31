@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LocaleModule } from '../../common/locale/locale.module';
 import { DatabaseModule } from '../../database/database.module';
 import { AuthModule } from '../../auth';
 import { RolesModule } from '../roles';
@@ -9,7 +10,7 @@ import { StudentCertificateController } from './student-certificate.controller';
 import { CertificateService } from './certificate.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, LessonsModule],
+  imports: [LocaleModule, DatabaseModule, AuthModule, RolesModule, UsersModule, LessonsModule],
   controllers: [CertificateController, StudentCertificateController],
   providers: [CertificateService],
   exports: [CertificateService],

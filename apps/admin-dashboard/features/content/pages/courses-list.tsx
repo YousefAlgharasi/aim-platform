@@ -3,11 +3,12 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CourseForm } from '../components/course-form';
+import { CourseForm, type CourseFormSubmit } from '../components/course-form';
 import { ContentStatusWorkflow } from '../components/content-status-workflow';
 import { CurriculumTree, type CurriculumTreeActions } from '../components/curriculum-tree';
 import type { ContentStatus } from '../api/admin-content-status-api';
-import type { AdminCourseSummary } from '../api/admin-courses-api';
+import type { AdminCourseSummary, CourseTranslationsData } from '../api/admin-courses-api';
+import { missingContentLocales, getLocaleMeta } from '../config/content-locales';
 
 type Props = {
   readonly courses: AdminCourseSummary[];
@@ -23,15 +24,12 @@ type Props = {
     archived: number;
   } | null;
   readonly filterSlot?: React.ReactNode;
-  readonly onCreateCourse: (data: {
-    title: string;
-    slug: string | null;
-    description: string | null;
-  }) => Promise<{ error?: string }>;
-  readonly onUpdateCourse: (
-    id: string,
-    data: { title: string; slug: string | null; description: string | null },
-  ) => Promise<{ error?: string }>;
+  readonly onCreateCourse: (data: CourseFormSubmit) => Promise<{ error?: string }>;
+  readonly onUpdateCourse: (id: string, data: CourseFormSubmit) => Promise<{ error?: string }>;
+  readonly loadTranslations?: (
+    courseId: string,
+  ) => Promise<{ data?: CourseTranslationsData; error?: string }>;
+  readonly onRemoveTranslation?: (courseId: string, locale: string) => Promise<{ error?: string }>;
   readonly onTransitionCourse: (
     id: string,
     action: 'publish' | 'archive' | 'restore',
@@ -62,6 +60,8 @@ export function CoursesList({
   onUpdateCourse,
   onTransitionCourse,
   curriculumActions,
+  loadTranslations,
+  onRemoveTranslation,
 }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -73,13 +73,13 @@ export function CoursesList({
     startTransition(() => router.refresh());
   }
 
-  async function handleCreate(data: { title: string; slug: string | null; description: string | null }) {
+  async function handleCreate(data: CourseFormSubmit) {
     const result = await onCreateCourse(data);
     if (!result.error) { setShowCreate(false); refresh(); }
     return result;
   }
 
-  async function handleUpdate(data: { title: string; slug: string | null; description: string | null }) {
+  async function handleUpdate(data: CourseFormSubmit) {
     if (!selected) return {};
     const result = await onUpdateCourse(selected.id, data);
     if (!result.error) { setSelected(null); refresh(); }
@@ -141,7 +141,14 @@ export function CoursesList({
           </button>
         </div>
         {activeTab === 'details' && (
-          <CourseForm mode="edit" initial={selected} onSubmit={handleUpdate} onCancel={() => setSelected(null)} />
+          <CourseForm
+            mode="edit"
+            initial={selected}
+            onSubmit={handleUpdate}
+            onCancel={() => setSelected(null)}
+            loadTranslations={loadTranslations}
+            onRemoveTranslation={onRemoveTranslation}
+          />
         )}
         {activeTab === 'curriculum' && (
           <CurriculumTree courseId={selected.id} courseTitle={selected.title} actions={curriculumActions} />
@@ -242,6 +249,15 @@ export function CoursesList({
                           <span className="cl-course-slug">—</span>
                         )}
                         {course.description && <span className="cl-course-desc">{course.description}</span>}
+                        {missingContentLocales(course.availableLocales).length > 0 && (
+                          <span className="cl-missing-locales">
+                            {missingContentLocales(course.availableLocales).map((code) => (
+                              <span key={code} className="cl-missing-chip" title={`No ${getLocaleMeta(code).label} translation`}>
+                                {getLocaleMeta(code).label} missing
+                              </span>
+                            ))}
+                          </span>
+                        )}
                       </div>
                     </button>
                   </td>
@@ -356,6 +372,11 @@ export function CoursesList({
         .cl-th--order { width: 70px; text-align: center; }
         .cl-th--date { width: 110px; }
         .cl-th--actions { width: 70px; }
+        .cl-missing-locales { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+        .cl-missing-chip {
+          font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
+          background: color-mix(in srgb, var(--color-warning-500, #f59e0b) 18%, transparent); color: var(--text-secondary);
+        }
         .cl-row { transition: background 0.1s; }
         .cl-row:hover { background: var(--state-hover, color-mix(in srgb, var(--color-primary-500) 3%, transparent)); }
         .cl-row:not(:last-child) .cl-td { border-bottom: 1px solid var(--border); }
