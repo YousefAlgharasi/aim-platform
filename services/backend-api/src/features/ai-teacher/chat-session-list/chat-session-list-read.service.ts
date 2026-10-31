@@ -24,6 +24,7 @@ export class ChatSessionListReadService {
 
     const rows = await this.chatSessionRepository.findActiveByStudentIdWithContextTitle(
       studentId,
+      input.locale,
     );
 
     return {

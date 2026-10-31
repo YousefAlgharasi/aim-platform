@@ -1,3 +1,5 @@
+import { SupportedLocale } from '../../../common/locale/locale.constants';
+
 /**
  * P8-074: Create Chat Session List API.
  * Input/output contract for listing the authenticated student's active
@@ -19,6 +21,7 @@ export interface ChatSessionListItem {
 
 export interface ListChatSessionsInput {
   readonly studentId: string;
+  readonly locale?: SupportedLocale;
 }
 
 export interface ListChatSessionsResult {

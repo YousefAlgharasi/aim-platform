@@ -8,6 +8,8 @@ import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../database/database.service';
 import { AiChatSessionRow, AiChatSessionWithContextTitleRow } from './ai-chat-repository.types';
+import { lessonTextSql } from '../../../common/locale/course-text.sql';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../../common/locale/locale.constants';
 
 @Injectable()
 export class AiChatSessionRepository {
@@ -148,17 +150,20 @@ export class AiChatSessionRepository {
    */
   async findActiveByStudentIdWithContextTitle(
     studentId: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<AiChatSessionWithContextTitleRow[]> {
+    const text = lessonTextSql('l', '$2');
     const result = await this.db.query<AiChatSessionWithContextTitleRow>(
       `SELECT s.id, s.student_id, s.context_ref, s.status, s.created_at, s.updated_at,
-              l.title AS context_title
+              ${text.title} AS context_title
        FROM ai_chat_sessions s
        LEFT JOIN lessons l
          ON s.context_ref LIKE 'lesson:%'
         AND l.id = substring(s.context_ref FROM 8)::uuid
+       ${text.joins}
        WHERE s.student_id = $1 AND s.status = 'active'
        ORDER BY s.updated_at DESC`,
-      [studentId],
+      [studentId, locale],
     );
 
     return result.rows;

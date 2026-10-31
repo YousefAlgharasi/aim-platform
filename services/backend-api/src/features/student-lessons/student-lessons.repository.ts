@@ -13,11 +13,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { lessonTextSql } from '../../common/locale/course-text.sql';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 
 interface StudentLessonRow {
   readonly lesson_id: string;
   readonly title: string;
-  readonly description: string;
+  readonly description: string | null;
+  readonly locale: string;
   readonly xp_value: number;
   readonly sort_order: number;
   readonly completed: boolean;
@@ -32,21 +35,28 @@ export interface ChapterQuizRow {
 export class StudentLessonsRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findLessonsWithProgress(studentId: string, chapterId: string): Promise<StudentLessonRow[]> {
+  async findLessonsWithProgress(
+    studentId: string,
+    chapterId: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
+  ): Promise<StudentLessonRow[]> {
+    const text = lessonTextSql('l', '$3');
     const result = await this.db.query<StudentLessonRow>(
       `SELECT
          l.id AS lesson_id,
-         l.title AS title,
-         l.description AS description,
+         ${text.title} AS title,
+         ${text.description} AS description,
+         ${text.locale} AS locale,
          l.xp_value AS xp_value,
          l.sort_order AS sort_order,
          COALESCE(lp.completed, false) AS completed
        FROM lessons l
+       ${text.joins}
        LEFT JOIN lesson_progress lp
          ON lp.lesson_id = l.id AND lp.student_id = $2
        WHERE l.chapter_id = $1 AND l.status = 'published'
        ORDER BY l.sort_order ASC, l.created_at ASC`,
-      [chapterId, studentId],
+      [chapterId, studentId, locale],
     );
     return result.rows;
   }

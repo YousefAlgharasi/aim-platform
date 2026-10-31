@@ -14,7 +14,7 @@
 //     difficulty/recommendation/review-schedule value is computed or
 //     returned here (docs/phase-8/no-aim-replacement-rule.md).
 
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
@@ -27,11 +27,17 @@ import { OPENAPI_TAGS } from '../../../openapi/openapi.tags';
 
 import { ChatSessionListReadService } from './chat-session-list-read.service';
 import { ListChatSessionsResult } from './chat-session-list-read.types';
+import { LocaleHeadersInterceptor } from '../../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../../common/locale/request-locale.decorator';
 
 @ApiTags(OPENAPI_TAGS.aiTeacher)
 @Controller('ai-teacher')
 export class ChatSessionListReadController {
-  constructor(private readonly chatSessionListReadService: ChatSessionListReadService) {}
+  constructor(
+    private readonly chatSessionListReadService: ChatSessionListReadService,
+    private readonly localeResolver: LocaleResolverService,
+  ) {}
 
   /**
    * GET /ai-teacher/sessions
@@ -43,6 +49,7 @@ export class ChatSessionListReadController {
   @Get('sessions')
   @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
+  @UseInterceptors(LocaleHeadersInterceptor)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "List the authenticated student's active AI Teacher chat sessions.",
@@ -53,7 +60,9 @@ export class ChatSessionListReadController {
   @ApiOkResponse({ description: "The student's active chat sessions." })
   async listSessions(
     @ResolvedInternalUserId() studentId: string,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<ListChatSessionsResult> {
-    return this.chatSessionListReadService.listSessions({ studentId });
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: studentId });
+    return this.chatSessionListReadService.listSessions({ studentId, locale });
   }
 }

@@ -31,7 +31,7 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { SupportedLocale } from '../../common/locale/locale.constants';
-import { courseTextSql } from '../../common/locale/course-text.sql';
+import { courseTextSql, lessonTextSql } from '../../common/locale/course-text.sql';
 import { CourseCompletionService } from './course-completion.service';
 import { ChapterCompletionService } from './chapter-completion.service';
 import {
@@ -73,6 +73,7 @@ interface LessonCompletedRow {
 interface ContinueLearningRow {
   readonly lesson_id: string;
   readonly lesson_title: string;
+  readonly lesson_locale: string;
   readonly percent: number;
   readonly last_active_at: string;
 }
@@ -80,7 +81,8 @@ interface ContinueLearningRow {
 interface QuickStartLessonRow {
   readonly lesson_id: string;
   readonly lesson_title: string;
-  readonly lesson_description: string;
+  readonly lesson_description: string | null;
+  readonly lesson_locale: string;
   readonly skill_name: string | null;
 }
 
@@ -171,15 +173,20 @@ export class LessonProgressService {
     return this.toAck(result.rows[0]);
   }
 
-  async findContinueLearningLesson(studentId: string): Promise<ContinueLearningLesson | null> {
+  async findContinueLearningLesson(
+    studentId: string,
+    locale: SupportedLocale = 'en',
+  ): Promise<ContinueLearningLesson | null> {
+    const text = lessonTextSql('l', '$2');
     const result = await this.db.query<ContinueLearningRow>(
-      `SELECT lp.lesson_id, l.title AS lesson_title, lp.percent, lp.last_active_at
+      `SELECT lp.lesson_id, ${text.title} AS lesson_title, ${text.locale} AS lesson_locale, lp.percent, lp.last_active_at
        FROM lesson_progress lp
        JOIN lessons l ON l.id = lp.lesson_id
+       ${text.joins}
        WHERE lp.student_id = $1 AND lp.completed = false
        ORDER BY lp.last_active_at DESC
        LIMIT 1`,
-      [studentId],
+      [studentId, locale],
     );
 
     const row = result.rows[0];
@@ -190,6 +197,7 @@ export class LessonProgressService {
     return {
       lessonId: row.lesson_id,
       lessonTitle: row.lesson_title,
+      locale: row.lesson_locale,
       percent: row.percent,
       lastActiveAt: row.last_active_at,
     };
@@ -201,7 +209,11 @@ export class LessonProgressService {
    * first published lesson (by course/level/chapter/lesson sort_order) if no
    * placement data exists or all path-linked lessons are already completed.
    */
-  async findQuickStartLesson(studentId: string): Promise<QuickStartLesson | null> {
+  async findQuickStartLesson(
+    studentId: string,
+    locale: SupportedLocale = 'en',
+  ): Promise<QuickStartLesson | null> {
+    const text = lessonTextSql('l', '$2');
     // Placement-path derived: top-priority skill from student's latest placement
     // -> lesson_skills -> first published incomplete lesson for that skill.
     const pathResult = await this.db.query<QuickStartLessonRow>(
@@ -231,12 +243,14 @@ export class LessonProgressService {
        )
        SELECT
          l.id   AS lesson_id,
-         l.title AS lesson_title,
-         l.description AS lesson_description,
+         ${text.title} AS lesson_title,
+         ${text.description} AS lesson_description,
+         ${text.locale} AS lesson_locale,
          ps.skill_name AS skill_name
        FROM path_skills ps
        JOIN lesson_skills ls ON ls.skill_id = ps.skill_id
        JOIN lessons l ON l.id = ls.lesson_id AND l.status = 'published'
+       ${text.joins}
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
        LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND (
@@ -248,7 +262,7 @@ export class LessonProgressService {
        WHERE (lp.completed IS NULL OR lp.completed = false)
        ORDER BY ps.priority ASC, lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
        LIMIT 1`,
-      [studentId],
+      [studentId, locale],
     );
 
     if (pathResult.rows.length > 0) {
@@ -257,6 +271,7 @@ export class LessonProgressService {
         lessonId: row.lesson_id,
         lessonTitle: row.lesson_title,
         lessonDescription: row.lesson_description,
+        locale: row.lesson_locale,
         skillName: row.skill_name,
       };
     }
@@ -272,10 +287,12 @@ export class LessonProgressService {
        )
        SELECT
          l.id AS lesson_id,
-         l.title AS lesson_title,
-         l.description AS lesson_description,
+         ${text.title} AS lesson_title,
+         ${text.description} AS lesson_description,
+         ${text.locale} AS lesson_locale,
          NULL::text AS skill_name
        FROM lessons l
+       ${text.joins}
        JOIN chapters c ON c.id = l.chapter_id
        JOIN levels lv ON lv.id = c.level_id
        JOIN courses co ON co.id = lv.course_id
@@ -289,7 +306,7 @@ export class LessonProgressService {
          AND (lp.completed IS NULL OR lp.completed = false)
        ORDER BY co.sort_order ASC, lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
        LIMIT 1`,
-      [studentId],
+      [studentId, locale],
     );
 
     const fallback = fallbackResult.rows[0];
@@ -299,6 +316,7 @@ export class LessonProgressService {
       lessonId: fallback.lesson_id,
       lessonTitle: fallback.lesson_title,
       lessonDescription: fallback.lesson_description,
+      locale: fallback.lesson_locale,
       skillName: null,
     };
   }

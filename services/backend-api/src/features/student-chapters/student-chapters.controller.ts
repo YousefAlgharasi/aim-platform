@@ -13,7 +13,7 @@
 //     AuthorizedRole.STUDENT.
 //   - studentId always resolved from the JWT — never from client input.
 
-import { BadRequestException, Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -24,16 +24,21 @@ import { RoleGuard } from '../../auth/authorization/role.guard';
 import { StudentChaptersService } from './student-chapters.service';
 import { CourseAccessService } from '../course-billing/course-access.service';
 import { StudentChaptersResponse } from './student-chapters.types';
+import { LocaleHeadersInterceptor } from '../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../common/locale/request-locale.decorator';
 
 @ApiTags('student-chapters')
 @Controller('student/chapters')
 @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
 @RequireRoles(AuthorizedRole.STUDENT)
 @ApiBearerAuth()
+@UseInterceptors(LocaleHeadersInterceptor)
 export class StudentChaptersController {
   constructor(
     private readonly studentChaptersService: StudentChaptersService,
     private readonly courseAccess: CourseAccessService,
+    private readonly localeResolver: LocaleResolverService,
   ) {}
 
   @Get()
@@ -46,11 +51,13 @@ export class StudentChaptersController {
   async getChapters(
     @CurrentUser() user: AuthenticatedUser,
     @Query('levelId') levelId?: string,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<StudentChaptersResponse> {
     if (!levelId) {
       throw new BadRequestException('levelId query parameter is required');
     }
     await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForLevel(levelId));
-    return this.studentChaptersService.getChapters(user.id, levelId);
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
+    return this.studentChaptersService.getChapters(user.id, levelId, locale);
   }
 }
