@@ -30,6 +30,8 @@
 
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { SupportedLocale } from '../../common/locale/locale.constants';
+import { courseTextSql } from '../../common/locale/course-text.sql';
 import { CourseCompletionService } from './course-completion.service';
 import { ChapterCompletionService } from './chapter-completion.service';
 import {
@@ -86,6 +88,7 @@ interface RecommendedCourseRow {
   readonly course_id: string;
   readonly course_title: string;
   readonly course_description: string | null;
+  readonly course_locale: string;
   readonly estimated_level: string | null;
 }
 
@@ -305,7 +308,8 @@ export class LessonProgressService {
    * their latest placement result's initial_learning_path. Falls back to the
    * first published course by sort_order when no placement data exists.
    */
-  async findRecommendedCourse(studentId: string): Promise<RecommendedCourse | null> {
+  async findRecommendedCourse(studentId: string, locale: SupportedLocale = 'en'): Promise<RecommendedCourse | null> {
+    const text = courseTextSql('co', '$2');
     const pathResult = await this.db.query<RecommendedCourseRow>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
@@ -327,8 +331,9 @@ export class LessonProgressService {
        path_courses AS (
          SELECT
            co.id   AS course_id,
-           co.title AS course_title,
-           co.description AS course_description,
+           ${text.title} AS course_title,
+           ${text.description} AS course_description,
+           ${text.locale} AS course_locale,
            MIN(ilp.priority) AS min_priority,
            MIN(ilp.estimated_level) AS estimated_level
          FROM initial_learning_path ilp
@@ -338,14 +343,15 @@ export class LessonProgressService {
          JOIN chapters c ON c.id = l.chapter_id
          JOIN levels lv ON lv.id = c.level_id
          JOIN courses co ON co.id = lv.course_id AND co.status = 'published'
+         ${text.joins}
          WHERE ilp.skill_id IS NOT NULL
-         GROUP BY co.id, co.title, co.description
+         GROUP BY co.id, co_ct_req.id, co_ct_en.id, co.title, co.description
        )
-       SELECT course_id, course_title, course_description, estimated_level
+       SELECT course_id, course_title, course_description, course_locale, estimated_level
        FROM path_courses
        ORDER BY min_priority ASC
        LIMIT 1`,
-      [studentId],
+      [studentId, locale],
     );
 
     if (pathResult.rows.length > 0) {
@@ -354,22 +360,27 @@ export class LessonProgressService {
         courseId: row.course_id,
         courseTitle: row.course_title,
         courseDescription: row.course_description,
+        locale: row.course_locale,
         estimatedLevel: row.estimated_level,
       };
     }
 
     // Fallback: lowest sort_order published course. Not filtered by
     // student — takes no query parameters.
+    const fallbackText = courseTextSql('co', '$1');
     const fallbackResult = await this.db.query<RecommendedCourseRow>(
       `SELECT
-         id   AS course_id,
-         title AS course_title,
-         description AS course_description,
+         co.id   AS course_id,
+         ${fallbackText.title} AS course_title,
+         ${fallbackText.description} AS course_description,
+         ${fallbackText.locale} AS course_locale,
          NULL::text AS estimated_level
-       FROM courses
-       WHERE status = 'published'
-       ORDER BY sort_order ASC, created_at ASC
+       FROM courses co
+       ${fallbackText.joins}
+       WHERE co.status = 'published'
+       ORDER BY co.sort_order ASC, co.created_at ASC
        LIMIT 1`,
+      [locale],
     );
 
     const fallback = fallbackResult.rows[0];
@@ -379,6 +390,7 @@ export class LessonProgressService {
       courseId: fallback.course_id,
       courseTitle: fallback.course_title,
       courseDescription: fallback.course_description,
+      locale: fallback.course_locale,
       estimatedLevel: null,
     };
   }

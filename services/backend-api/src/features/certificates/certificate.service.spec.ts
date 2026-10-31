@@ -137,3 +137,35 @@ describe('CertificateService — legacy snapshots', () => {
     expect(result?.scoreSnapshot).toHaveLength(1);
   });
 });
+
+describe('CertificateService locale handling', () => {
+  const row = {
+    id: 'c1', student_id: 's1', course_id: 'co1', course_title: 'دورة', display_name: 'A', email: 'a@x.com',
+    issued_at: new Date(), score_snapshot: { scoringVersion: 2, assessments: [], breakdown: null, practiceAccuracy: null },
+  };
+
+  it('getById passes the locale and joins translations with English fallback', async () => {
+    const db = createDb([{ rows: [row] }]);
+    const service = new CertificateService(db as never, createCourseCompletion(true) as never);
+    await service.getById('c1', 'ar');
+    const [sql, params] = db.query.mock.calls[0];
+    expect(params).toEqual(['c1', 'ar']);
+    expect(sql).toContain('course_translations co_ct_req');
+    expect(sql).toContain("co_ct_en.locale = 'en'");
+  });
+
+  it('getById defaults to English', async () => {
+    const db = createDb([{ rows: [row] }]);
+    const service = new CertificateService(db as never, createCourseCompletion(true) as never);
+    await service.getById('c1');
+    expect(db.query.mock.calls[0][1]).toEqual(['c1', 'en']);
+  });
+
+  it('listForStudent passes the locale only to the certificate query', async () => {
+    const db = createDb([{ rows: [] }, { rows: [row] }]);
+    const service = new CertificateService(db as never, createCourseCompletion(true) as never);
+    await service.listForStudent('s1', 'ar');
+    expect(db.query.mock.calls[0][1]).toEqual(['s1']);
+    expect(db.query.mock.calls[1][1]).toEqual(['s1', 'ar']);
+  });
+});

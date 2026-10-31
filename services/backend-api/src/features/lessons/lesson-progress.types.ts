@@ -51,5 +51,6 @@ export interface RecommendedCourse {
   readonly courseId: string;
   readonly courseTitle: string;
   readonly courseDescription: string | null;
+  readonly locale: string;
   readonly estimatedLevel: string | null;
 }

@@ -23,6 +23,7 @@ describe('StudentCoursesService', () => {
           course_id: 'course-1',
           title: 'English for Beginners (A1)',
           description: 'Start your journey.',
+          locale: 'en',
           sort_order: 1,
           level_code: 'A1',
           lesson_count: '24',
@@ -45,6 +46,7 @@ describe('StudentCoursesService', () => {
         courseId: 'course-1',
         title: 'English for Beginners (A1)',
         description: 'Start your journey.',
+        locale: 'en',
         levelCode: 'A1',
         lessonCount: 24,
         completedLessonCount: 24,
@@ -350,5 +352,33 @@ describe('StudentCoursesService', () => {
 
       expect(courses.find((c) => c.current)?.courseId).toBe('a1-1');
     });
+  });
+
+  it('passes the locale to the repository and exposes the served locale per course', async () => {
+    const repository = makeRepository([
+      {
+        course_id: 'course-1',
+        title: 'أساسيات الإنجليزية',
+        description: null,
+        locale: 'ar',
+        sort_order: 1,
+        level_code: 'A1',
+        lesson_count: '2',
+        completed_lesson_count: '0',
+        track_slug: null,
+        cefr_rank: null,
+        max_unlocked_cefr_rank: null,
+        quiz_count: '0',
+        quizzes_passed: true,
+        exam_count: '0',
+        exam_passed: true,
+      },
+    ]);
+    const service = new StudentCoursesService(repository);
+
+    const result = await service.getCourses('student-1', 'ar');
+
+    expect(repository.findCoursesWithProgress).toHaveBeenCalledWith('student-1', 'ar');
+    expect(result.courses[0]).toMatchObject({ title: 'أساسيات الإنجليزية', locale: 'ar' });
   });
 });

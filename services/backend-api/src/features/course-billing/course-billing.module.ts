@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../../auth/auth.module';
+import { LocaleModule } from '../../common/locale/locale.module';
 import { DatabaseModule } from '../../database/database.module';
 import { OperationsAdminGuard } from '../operations/operations.guards';
 import { RolesModule } from '../roles/roles.module';
@@ -14,7 +15,7 @@ import { PublicWalletImageController } from './public-wallet-image.controller';
 import { StudentCourseBillingController } from './student-course-billing.controller';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UsersModule, RolesModule],
+  imports: [LocaleModule, DatabaseModule, AuthModule, UsersModule, RolesModule],
   controllers: [StudentCourseBillingController, PublicWalletImageController, AdminCourseBillingController],
   providers: [
     CourseAccessService,

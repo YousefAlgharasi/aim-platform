@@ -31,6 +31,9 @@ import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
+import { LocaleHeadersInterceptor } from '../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../common/locale/request-locale.decorator';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CourseAccessService } from './course-access.service';
 import { PaymentRequestView, StudentCourseBilling, WalletView } from './course-billing.types';
@@ -42,12 +45,14 @@ import { PaymentWalletService } from './payment-wallet.service';
 @Controller('student')
 @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
 @RequireRoles(AuthorizedRole.STUDENT)
+@UseInterceptors(LocaleHeadersInterceptor)
 @ApiBearerAuth()
 export class StudentCourseBillingController {
   constructor(
     private readonly access: CourseAccessService,
     private readonly payments: CoursePaymentService,
     private readonly wallets: PaymentWalletService,
+    private readonly localeResolver: LocaleResolverService,
   ) {}
 
   @Get('billing/wallets')
@@ -75,15 +80,21 @@ export class StudentCourseBillingController {
     @Param('courseId') courseId: string,
     @Body('walletId') walletId: string,
     @Body('transactionNumber') transactionNumber: string,
+    @RequestLocale() localeCtx: LocaleContext,
     @UploadedFile() receipt?: Express.Multer.File,
   ): Promise<PaymentRequestView> {
-    return this.payments.submit(user.id, courseId, { walletId, transactionNumber }, receipt);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.payments.submit(user.id, courseId, { walletId, transactionNumber }, receipt, locale);
   }
 
   @Get('payment-requests')
   @ApiOperation({ summary: "The student's course payments, newest first." })
-  async listPayments(@CurrentUser() user: AuthenticatedUser): Promise<PaymentRequestView[]> {
-    return this.payments.listForStudent(user.id);
+  async listPayments(
+    @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
+  ): Promise<PaymentRequestView[]> {
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.payments.listForStudent(user.id, locale);
   }
 
   @Get('payment-requests/:id/receipt')

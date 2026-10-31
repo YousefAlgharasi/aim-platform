@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoursesController } from './courses.controller';
 import { CoursesService } from './courses.service';
+import { LocaleResolverService } from '../../../common/locale';
 import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { PermissionGuard } from '../../../auth/authorization/permission.guard';
 import { CurriculumPermission } from '../curriculum.permissions';
 import { REQUIRED_PERMISSIONS_KEY } from '../../../auth/authorization/authorization.constants';
+
+const makeResolver = () => ({
+  resolveExplicit: jest.fn((ctx: { requested: string | null }) => ctx.requested ?? 'en'),
+  resolve: jest.fn(),
+});
 
 const GUARDS_KEY = '__guards__';
 
@@ -30,7 +36,10 @@ describe('CoursesController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CoursesController],
-      providers: [{ provide: CoursesService, useValue: mockService }],
+      providers: [
+        { provide: CoursesService, useValue: mockService },
+        { provide: LocaleResolverService, useValue: makeResolver() },
+      ],
     })
       .overrideGuard(SupabaseJwtAuthGuard).useValue({ canActivate: () => true })
       .overrideGuard(PermissionGuard).useValue({ canActivate: () => true })
@@ -50,7 +59,7 @@ describe('CoursesController', () => {
   describe('listCourses', () => {
     it('delegates to CoursesService.listCourses', async () => {
       await controller.listCourses('2', '10');
-      expect(service.listCourses).toHaveBeenCalledWith(2, 10, undefined, undefined);
+      expect(service.listCourses).toHaveBeenCalledWith(2, 10, undefined, undefined, undefined);
     });
 
     it('requires CONTENT_READ_PUBLISHED permission', () => {
@@ -59,10 +68,25 @@ describe('CoursesController', () => {
     });
   });
 
+  describe('locale handling', () => {
+    it('passes the explicitly requested locale to the service', async () => {
+      await controller.listCourses('1', '20', undefined, undefined, { requested: 'ar', userId: null });
+      expect(service.listCourses).toHaveBeenCalledWith(1, 20, undefined, undefined, 'ar');
+
+      await controller.getCourse('test-id', { requested: 'ar', userId: null });
+      expect(service.getCourse).toHaveBeenCalledWith('test-id', 'ar');
+    });
+
+    it('falls back to English when no locale was requested', async () => {
+      await controller.getCourse('test-id', { requested: null, userId: 'u1' });
+      expect(service.getCourse).toHaveBeenCalledWith('test-id', 'en');
+    });
+  });
+
   describe('getCourse', () => {
     it('delegates to CoursesService.getCourse', async () => {
       await controller.getCourse('test-id');
-      expect(service.getCourse).toHaveBeenCalledWith('test-id');
+      expect(service.getCourse).toHaveBeenCalledWith('test-id', undefined);
     });
   });
 
@@ -102,38 +126,38 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
     it('delegates to CoursesService with parsed page and limit', async () => {
       const svc = makeMockService();
       svc.listCourses.mockResolvedValue({ courses: [], total: 0 } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.listCourses('2', '50', 'draft', 'math');
 
-      expect(svc.listCourses).toHaveBeenCalledWith(2, 50, 'draft', 'math');
+      expect(svc.listCourses).toHaveBeenCalledWith(2, 50, 'draft', 'math', undefined);
     });
 
     it('falls back to page 1 and limit 20 for non-numeric params', async () => {
       const svc = makeMockService();
       svc.listCourses.mockResolvedValue({ courses: [], total: 0 } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.listCourses('abc', 'xyz');
 
-      expect(svc.listCourses).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(svc.listCourses).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined);
     });
 
     it('passes undefined for optional params when not provided', async () => {
       const svc = makeMockService();
       svc.listCourses.mockResolvedValue({ courses: [], total: 0 } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.listCourses('1', '20');
 
-      expect(svc.listCourses).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(svc.listCourses).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined);
     });
 
     it('returns service result directly', async () => {
       const svc = makeMockService();
       const expected = { courses: [{ id: 'c1' }], total: 1 } as any;
       svc.listCourses.mockResolvedValue(expected);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       const result = await ctrl.listCourses('1', '20');
 
@@ -145,18 +169,18 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
     it('delegates to CoursesService with the given id', async () => {
       const svc = makeMockService();
       svc.getCourse.mockResolvedValue({ id: 'uuid-1' } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.getCourse('uuid-1');
 
-      expect(svc.getCourse).toHaveBeenCalledWith('uuid-1');
+      expect(svc.getCourse).toHaveBeenCalledWith('uuid-1', undefined);
     });
 
     it('returns service result directly', async () => {
       const svc = makeMockService();
       const expected = { id: 'uuid-1', title: 'Course A' } as any;
       svc.getCourse.mockResolvedValue(expected);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       const result = await ctrl.getCourse('uuid-1');
 
@@ -168,7 +192,7 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
     it('delegates to CoursesService with the request body', async () => {
       const svc = makeMockService();
       svc.createCourse.mockResolvedValue({ id: 'new-uuid' } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.createCourse({ title: 'New Course' });
 
@@ -179,7 +203,7 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
       const svc = makeMockService();
       const expected = { id: 'new-uuid', status: 'draft' } as any;
       svc.createCourse.mockResolvedValue(expected);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       const result = await ctrl.createCourse({ title: 'X' });
 
@@ -191,7 +215,7 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
     it('delegates to CoursesService with id and body', async () => {
       const svc = makeMockService();
       svc.updateCourse.mockResolvedValue({ id: 'uuid-1', title: 'Updated' } as any);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       await ctrl.updateCourse('uuid-1', { title: 'Updated' });
 
@@ -202,7 +226,7 @@ describe('CoursesController (P3-048 additional behavior tests)', () => {
       const svc = makeMockService();
       const expected = { id: 'uuid-1', title: 'Updated' } as any;
       svc.updateCourse.mockResolvedValue(expected);
-      const ctrl = new CoursesController(svc as unknown as CoursesService);
+      const ctrl = new CoursesController(svc as unknown as CoursesService, makeResolver() as unknown as LocaleResolverService);
 
       const result = await ctrl.updateCourse('uuid-1', { title: 'Updated' });
 

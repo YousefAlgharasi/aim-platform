@@ -88,3 +88,37 @@ describe('CoursePaymentService review', () => {
     await expect(svc.reject('r1', 'admin1', 'x')).rejects.toThrow('already approved');
   });
 });
+
+describe('CoursePaymentService locale handling', () => {
+  it('threads the locale into the student list query with English fallback joins', async () => {
+    const { svc, db } = setup();
+    await svc.listForStudent('u1', 'ar');
+    const [sql, params] = db.query.mock.calls.find(([q]) => q.includes('FROM course_payment_requests r'))!;
+    expect(params).toEqual(['u1', 'ar']);
+    expect(sql).toContain("co_ct_req.locale = $2::text");
+    expect(sql).toContain("co_ct_en.locale = 'en'");
+    expect(sql).toContain('COALESCE(co_ct_req.title, co_ct_en.title, co.title) AS course_title');
+  });
+
+  it('defaults the student detail query to English', async () => {
+    const { svc, db } = setup();
+    await svc.getForStudent('u1', 'r1');
+    const [, params] = db.query.mock.calls.find(([q]) => q.includes('FROM course_payment_requests r'))!;
+    expect(params).toEqual(['r1', 'u1', 'en']);
+  });
+
+  it('submit returns the payment in the requested locale', async () => {
+    const { svc, db } = setup();
+    await svc.submit('u1', 'c1', { walletId: 'w1', transactionNumber: 'TX9' }, receipt, 'ar');
+    const select = db.query.mock.calls.filter(([q]) => q.includes('FROM course_payment_requests r')).pop()!;
+    expect(select[1]).toEqual(['r1', 'u1', 'ar']);
+  });
+
+  it('keeps the admin listing on the legacy course title with no locale join', async () => {
+    const { svc, db } = setup();
+    await svc.listForAdmin();
+    const [sql] = db.query.mock.calls.find(([q]) => q.includes('FROM course_payment_requests r'))!;
+    expect(sql).toContain('co.title AS course_title');
+    expect(sql).not.toContain('course_translations');
+  });
+});

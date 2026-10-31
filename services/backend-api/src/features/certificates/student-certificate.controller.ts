@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
@@ -17,13 +18,20 @@ import { RequireRoles } from '../../auth/authorization/required-roles.decorator'
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/authenticated-user';
+import { LocaleHeadersInterceptor } from '../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../common/locale/request-locale.decorator';
 import { CertificateService } from './certificate.service';
 import { Certificate } from './certificate.types';
 
 @ApiTags('Certificates')
 @Controller('certificates')
+@UseInterceptors(LocaleHeadersInterceptor)
 export class StudentCertificateController {
-  constructor(private readonly certificates: CertificateService) {}
+  constructor(
+    private readonly certificates: CertificateService,
+    private readonly localeResolver: LocaleResolverService,
+  ) {}
 
   /**
    * GET /certificates/my
@@ -43,8 +51,10 @@ export class StudentCertificateController {
   })
   async getMyCertificates(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<Certificate[]> {
-    return this.certificates.listForStudent(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.certificates.listForStudent(user.id, locale);
   }
 
   /**
@@ -67,8 +77,10 @@ export class StudentCertificateController {
   async getById(
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<Certificate> {
-    const cert = await this.certificates.getById(id);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    const cert = await this.certificates.getById(id, locale);
     if (!cert) {
       throw new NotFoundException('Certificate not found');
     }
@@ -104,8 +116,10 @@ export class StudentCertificateController {
   })
   async verifyPublic(
     @Param('id', new ParseUUIDPipe()) id: string,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<Certificate> {
-    const cert = await this.certificates.getById(id);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    const cert = await this.certificates.getById(id, locale);
     if (!cert) {
       throw new NotFoundException('Certificate not found or invalid');
     }

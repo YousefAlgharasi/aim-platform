@@ -7,7 +7,7 @@ function makeDb(responses: Array<{ rowCount?: number; rows: unknown[] }>) {
   return { query };
 }
 
-const COURSE_ROW = { id: 'course-1', title: 'English Foundations' };
+const COURSE_ROW = { id: 'course-1', title: 'English Foundations', locale: 'en' };
 
 describe('EnrollmentService', () => {
   describe('enroll', () => {
@@ -34,6 +34,7 @@ describe('EnrollmentService', () => {
       expect(result).toEqual({
         courseId: 'course-1',
         courseTitle: 'English Foundations',
+        locale: 'en',
         enrolledAt: '2026-07-05T00:00:00Z',
       });
       const insertCall = db.query.mock.calls.find((call) =>
@@ -48,7 +49,7 @@ describe('EnrollmentService', () => {
         { rows: [{ course_id: 'course-1' }] }, // already active in course-1
         {
           rows: [
-            { id: 'enr-1', course_id: 'course-1', course_title: 'English Foundations', enrolled_at: '2026-07-01T00:00:00Z' },
+            { id: 'enr-1', course_id: 'course-1', course_title: 'English Foundations', course_locale: 'en', enrolled_at: '2026-07-01T00:00:00Z' },
           ],
         }, // existing row re-fetch
       ]);
@@ -89,6 +90,7 @@ describe('EnrollmentService', () => {
         found: false,
         courseId: null,
         courseTitle: null,
+        locale: null,
         enrolledAt: null,
       });
     });
@@ -97,7 +99,7 @@ describe('EnrollmentService', () => {
       const db = makeDb([
         {
           rows: [
-            { id: 'enr-1', course_id: 'course-1', course_title: 'English Foundations', enrolled_at: '2026-07-01T00:00:00Z' },
+            { id: 'enr-1', course_id: 'course-1', course_title: 'English Foundations', course_locale: 'en', enrolled_at: '2026-07-01T00:00:00Z' },
           ],
         },
       ]);
@@ -109,8 +111,49 @@ describe('EnrollmentService', () => {
         found: true,
         courseId: 'course-1',
         courseTitle: 'English Foundations',
+        locale: 'en',
         enrolledAt: '2026-07-01T00:00:00Z',
       });
+    });
+  });
+
+  describe('locale resolution', () => {
+    it('passes the locale as a bind parameter and joins the translation table with an English fallback', async () => {
+      const db = makeDb([
+        { rows: [{ id: 'enr-1', course_id: 'course-1', course_title: 'أساسيات الإنجليزية', course_locale: 'ar', enrolled_at: '2026-07-01T00:00:00Z' }] },
+      ]);
+      const service = new EnrollmentService(db as never);
+
+      const result = await service.getCurrentEnrollment('student-1', 'ar');
+
+      const [sql, params] = db.query.mock.calls[0];
+      expect(params).toEqual(['student-1', 'ar']);
+      expect(sql).toContain('course_translations co_ct_req');
+      expect(sql).toContain("co_ct_en.locale = 'en'");
+      expect(result).toMatchObject({ found: true, courseTitle: 'أساسيات الإنجليزية', locale: 'ar' });
+    });
+
+    it('defaults to English when no locale is given', async () => {
+      const db = makeDb([{ rows: [] }]);
+      const service = new EnrollmentService(db as never);
+
+      await service.getCurrentEnrollment('student-1');
+
+      expect(db.query.mock.calls[0][1]).toEqual(['student-1', 'en']);
+    });
+
+    it('uses the requested locale for the enroll course lookup and returns the served locale', async () => {
+      const db = makeDb([
+        { rows: [{ id: 'course-1', title: 'English Foundations', locale: 'en' }] },
+        { rows: [] },
+        { rows: [{ enrolled_at: '2026-07-05T00:00:00Z' }] },
+      ]);
+      const service = new EnrollmentService(db as never);
+
+      const result = await service.enroll('student-1', 'course-1', 'ar');
+
+      expect(db.query.mock.calls[0][1]).toEqual(['course-1', 'ar']);
+      expect(result.locale).toBe('en');
     });
   });
 });

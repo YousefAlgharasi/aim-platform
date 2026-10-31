@@ -7,6 +7,9 @@ export interface StudentCourseSummary {
   readonly title: string;
   readonly description: string | null;
 
+  /** Language of the title and description actually served (English when the requested translation is missing). */
+  readonly locale: string;
+
   /** Representative level code for the course (e.g. 'A1', 'B1'), or null if the course has no published level. */
   readonly levelCode: string | null;
 

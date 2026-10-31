@@ -5,6 +5,8 @@
 // submission time and stored on the request. Admins approve (which grants a
 // time-limited access window) or reject (with a note the student sees).
 
+import { courseTextSql } from '../../common/locale/course-text.sql';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AdminPaymentRequestView, PaymentRequestStatus, PaymentRequestView, UploadedImage } from './course-billing.types';
@@ -35,16 +37,22 @@ interface RequestRow {
   readonly reviewed_by_email?: string | null;
 }
 
-const SELECT_REQUESTS = `
-  SELECT r.*, co.title AS course_title, w.name AS wallet_name,
+const SELECT_REQUESTS = buildSelectRequests();
+
+function buildSelectRequests(localeParam?: string): string {
+  const text = localeParam ? courseTextSql('co', localeParam) : null;
+  return `
+  SELECT r.*, ${text ? text.title : 'co.title'} AS course_title, w.name AS wallet_name,
          u.email AS student_email, sp.display_name AS student_name,
          rv.email AS reviewed_by_email
   FROM course_payment_requests r
   JOIN courses co ON co.id = r.course_id
+  ${text ? text.joins : ''}
   JOIN payment_wallets w ON w.id = r.wallet_id
   JOIN users u ON u.id = r.student_id
   LEFT JOIN student_profiles sp ON sp.user_id = r.student_id
   LEFT JOIN users rv ON rv.id = r.reviewed_by`;
+}
 
 const MAX_TRANSACTION_LENGTH = 100;
 const MAX_NOTE_LENGTH = 500;
@@ -95,6 +103,7 @@ export class CoursePaymentService {
     courseId: string,
     input: { walletId?: string; transactionNumber?: string },
     receipt: UploadedImage | undefined,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<PaymentRequestView> {
     const transactionNumber = (input.transactionNumber ?? '').trim();
     if (!transactionNumber) throw new BadRequestException('Transaction number is required');
@@ -142,23 +151,27 @@ export class CoursePaymentService {
         price.originalAmount, price.discountAmount, price.amount, price.currency,
       ],
     );
-    return this.getForStudent(studentId, inserted.rows[0].id);
+    return this.getForStudent(studentId, inserted.rows[0].id, locale);
   }
 
-  async listForStudent(studentId: string): Promise<PaymentRequestView[]> {
+  async listForStudent(studentId: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<PaymentRequestView[]> {
     const student = await this.access.resolveStudent(studentId);
     const result = await this.db.query<RequestRow>(
-      `${SELECT_REQUESTS} WHERE r.student_id = $1 ORDER BY r.created_at DESC`,
-      [student.userId],
+      `${buildSelectRequests('$2')} WHERE r.student_id = $1 ORDER BY r.created_at DESC`,
+      [student.userId, locale],
     );
     return result.rows.map((r) => toView(r, '/student/payment-requests'));
   }
 
-  async getForStudent(studentId: string, requestId: string): Promise<PaymentRequestView> {
+  async getForStudent(
+    studentId: string,
+    requestId: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
+  ): Promise<PaymentRequestView> {
     const student = await this.access.resolveStudent(studentId);
     const result = await this.db.query<RequestRow>(
-      `${SELECT_REQUESTS} WHERE r.id::text = $1 AND r.student_id = $2`,
-      [requestId, student.userId],
+      `${buildSelectRequests('$3')} WHERE r.id::text = $1 AND r.student_id = $2`,
+      [requestId, student.userId, locale],
     );
     if (!result.rows[0]) throw new NotFoundException('Payment not found');
     return toView(result.rows[0], '/student/payment-requests');
