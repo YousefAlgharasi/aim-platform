@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { SidebarContent } from './Sidebar';
-import { CloseSmallIcon } from '../components/common/Icons';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -74,7 +73,9 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
           aria-label={t('Close menu')}
           className="absolute top-4 end-4 z-10 size-10 rounded-full flex items-center justify-center border-none cursor-pointer bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
         >
-          <CloseSmallIcon className="size-4" />
+          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
         </button>
         <SidebarContent onNavigate={onClose} />
       </div>

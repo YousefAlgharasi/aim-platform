@@ -358,81 +358,10 @@ export function TrendingUpIcon({ className = 'size-5' }: IconProps) {
   )
 }
 
-export function ArrowLeftIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
-  )
-}
-
-export function BellEmptyIcon({ className = 'size-12' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-    </svg>
-  )
-}
-
-export function CloseSmallIcon({ className = 'size-4' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6L6 18M6 6l12 12" />
-    </svg>
-  )
-}
-
-export function HamburgerMenuIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  )
-}
-
-export function ShieldIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  )
-}
-
-export function PaletteIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="13" cy="13" r="8" />
-      <path d="M5 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0" />
-      <path d="M15 8a2 2 0 1 0 4 0 2 2 0 0 0-4 0" />
-      <path d="M9 20a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-      <path d="M20 20a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-    </svg>
-  )
-}
-
-export function HelpIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 16v-4M12 8h.01" />
-    </svg>
-  )
-}
-
-export function ChevronRightIcon({ className = 'size-5' }: IconProps) {
+export function ChevronDownIcon({ className = 'size-5' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-
-export function BellIcon({ className = 'size-5' }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }
