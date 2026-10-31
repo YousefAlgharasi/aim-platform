@@ -2,43 +2,65 @@
 
 import { useState, useTransition } from 'react';
 import type { AdminChapterSummary } from '../api/admin-chapters-api';
+import type { TranslationInput } from '../api/admin-translations-api';
+import { CHAPTER_FIELD_LABELS, CONTENT_LOCALE_CODES } from '../config/content-locales';
+import { useTranslatedFields, type TranslationsLoadResult } from '../hooks/use-translated-fields';
+import { TranslationFields } from './translation-fields';
+
+export type ChapterFormSubmit = {
+  readonly title: string;
+  readonly slug: string | null;
+  readonly description: string | null;
+  readonly translations: Readonly<Record<string, TranslationInput>>;
+};
 
 type Props = {
   readonly mode: 'create' | 'edit';
   readonly initial?: AdminChapterSummary;
-  readonly onSubmit: (data: {
-    title: string; slug: string | null; description: string | null;
-  }) => Promise<{ error?: string }>;
+  readonly onSubmit: (data: ChapterFormSubmit) => Promise<{ error?: string }>;
   readonly onCancel: () => void;
+  readonly locales?: readonly string[];
+  readonly loadTranslations?: (chapterId: string) => Promise<TranslationsLoadResult>;
+  readonly onRemoveTranslation?: (chapterId: string, locale: string) => Promise<{ error?: string }>;
 };
 
-export function ChapterForm({ mode, initial, onSubmit, onCancel }: Props) {
-  const [title, setTitle] = useState(initial?.title ?? '');
+export function ChapterForm({
+  mode,
+  initial,
+  onSubmit,
+  onCancel,
+  locales = CONTENT_LOCALE_CODES,
+  loadTranslations,
+  onRemoveTranslation,
+}: Props) {
   const [slug, setSlug] = useState(initial?.slug ?? '');
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
-
-  function validate(): boolean {
-    const errors: Record<string, string> = {};
-    if (!title.trim()) errors.title = 'Title is required.';
-    if (slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.trim())) {
-      errors.slug = 'Lowercase letters, numbers, and hyphens only.';
-    }
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
+  const t = useTranslatedFields({
+    mode,
+    entityId: initial?.id,
+    initialTitle: initial?.title ?? '',
+    initialDescription: initial?.description ?? '',
+    locales,
+    load: loadTranslations,
+    remove: onRemoveTranslation,
+  });
+  const { error, setError, fieldErrors } = t;
+  const busy = isPending || t.removing;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    const extraErrors: Record<string, string> = {};
+    if (slug.trim() && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.trim())) {
+      extraErrors.slug = 'Lowercase letters, numbers, and hyphens only.';
+    }
+    if (!t.validate({ extraErrors })) return;
     setError(null);
     startTransition(async () => {
       const result = await onSubmit({
-        title: title.trim(),
+        title: t.english.title.trim(),
         slug: slug.trim() || null,
-        description: description.trim() || null,
+        description: t.english.description.trim() || null,
+        translations: t.collectTranslations(),
       });
       if (result.error) setError(result.error);
     });
@@ -54,37 +76,41 @@ export function ChapterForm({ mode, initial, onSubmit, onCancel }: Props) {
       </div>
 
       {error && <div className="admin-error-banner" role="alert">{error}</div>}
+      {t.loadState === 'loading' && <div className="cf-hint" role="status">Loading translations…</div>}
 
       <form onSubmit={handleSubmit} className="cf-form">
         <div className="cf-field">
-          <label htmlFor="chf-title" className="cf-label">Title <span className="cf-req">*</span></label>
-          <input id="chf-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Introduction to Past Tense" disabled={isPending} maxLength={255}
-            className={`cf-input ${fieldErrors.title ? 'cf-input--error' : ''}`} />
-          {fieldErrors.title && <span className="cf-error">{fieldErrors.title}</span>}
-        </div>
-
-        <div className="cf-field">
           <label htmlFor="chf-slug" className="cf-label">Slug</label>
           <input id="chf-slug" type="text" value={slug} onChange={(e) => setSlug(e.target.value)}
-            placeholder="e.g. intro-past-tense" disabled={isPending} maxLength={255}
+            placeholder="e.g. past-simple" disabled={busy} maxLength={255}
             className={`cf-input ${fieldErrors.slug ? 'cf-input--error' : ''}`} />
-          <span className="cf-hint">Optional. Lowercase, hyphens only. Must be unique within a level.</span>
+          <span className="cf-hint">Optional. Lowercase, hyphens only. Must be unique within a level. Shared by every language.</span>
           {fieldErrors.slug && <span className="cf-error">{fieldErrors.slug}</span>}
         </div>
 
-        <div className="cf-field">
-          <label htmlFor="chf-desc" className="cf-label">Description</label>
-          <textarea id="chf-desc" value={description} onChange={(e) => setDescription(e.target.value)}
-            placeholder="Brief summary of this chapter." disabled={isPending} rows={3} maxLength={2000}
-            className="cf-textarea" />
-        </div>
+        <TranslationFields
+          idPrefix="chf"
+          locales={t.editLocales}
+          values={t.values}
+          savedLocales={t.savedForTabs}
+          fieldLabels={CHAPTER_FIELD_LABELS}
+          activeLocale={t.activeLocale}
+          onActiveLocaleChange={t.setActiveLocale}
+          onChange={t.handleChange}
+          errors={fieldErrors}
+          disabled={busy}
+          disabledLocales={t.disabledLocales}
+          onRemove={t.canRemove ? t.setPendingRemove : undefined}
+          pendingRemoveLocale={t.pendingRemove}
+          onConfirmRemove={t.confirmRemove}
+          onCancelRemove={() => t.setPendingRemove(null)}
+        />
 
         <div className="cf-actions">
-          <button type="submit" disabled={isPending} className="cf-submit">
+          <button type="submit" disabled={busy} className="cf-submit">
             {isPending ? 'Saving…' : mode === 'create' ? 'Create Chapter' : 'Save Changes'}
           </button>
-          <button type="button" onClick={onCancel} disabled={isPending} className="cf-cancel">Cancel</button>
+          <button type="button" onClick={onCancel} disabled={busy} className="cf-cancel">Cancel</button>
         </div>
       </form>
 

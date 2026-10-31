@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
+import { plural } from '../../i18n';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';

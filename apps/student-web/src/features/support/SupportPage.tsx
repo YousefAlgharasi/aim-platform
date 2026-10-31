@@ -13,8 +13,6 @@ import {
   fetchTickets,
   createTicket,
   submitFeedback,
-  fetchReleaseNotes,
-  fetchOperationalStatus,
   TICKET_CATEGORY_LABELS,
   TICKET_SEVERITY_LABELS,
   FEEDBACK_CATEGORY_LABELS,
@@ -22,15 +20,12 @@ import {
   ticketSeverityLabel,
   ticketStatusLabel,
   feedbackCategoryLabel,
-  serviceStatusLabel,
   SUBJECT_MAX,
   FEEDBACK_TITLE_MAX,
   type SupportTicket,
   type TicketCategory,
   type TicketSeverity,
   type FeedbackCategory,
-  type ReleaseNote,
-  type OperationalStatus,
 } from './supportApi';
 import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateMaxLength, validateRequired, type FieldErrors } from '../../utils/validation';
 import { ClipboardIcon, ChatIcon } from '../../components/common/Icons';
@@ -79,11 +74,6 @@ export function SupportPage() {
   const [fbError, setFbError] = useState('');
   const [fbErrors, setFbErrors] = useState<FieldErrors<'title' | 'body'>>({});
 
-  // Status + release notes
-  const [statuses, setStatuses] = useState<OperationalStatus[] | null>(null);
-  const [statusError, setStatusError] = useState('');
-  const [notes, setNotes] = useState<ReleaseNote[] | null>(null);
-  const [notesError, setNotesError] = useState('');
 
   const loadTickets = useCallback(() => {
     setLoading(true);
@@ -94,28 +84,9 @@ export function SupportPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const loadStatus = useCallback(() => {
-    setStatusError('');
-    setStatuses(null);
-    fetchOperationalStatus()
-      .then(setStatuses)
-      .catch(err => setStatusError(getErrorMessage(err, t('Failed to load system status'))));
-  }, []);
-
-  const loadNotes = useCallback(() => {
-    setNotesError('');
-    setNotes(null);
-    fetchReleaseNotes()
-      // The endpoint ignores `audience`; only show notes meant for students.
-      .then(all => setNotes(all.filter(n => n.audience === 'all' || n.audience === 'students')))
-      .catch(err => setNotesError(getErrorMessage(err, t('Failed to load release notes'))));
-  }, []);
-
   useEffect(() => {
     loadTickets();
-    loadStatus();
-    loadNotes();
-  }, [loadTickets, loadStatus, loadNotes]);
+  }, [loadTickets]);
 
   function openPanel(next: Panel) {
     setPanel(prev => (prev === next ? 'none' : next));
@@ -376,58 +347,6 @@ export function SupportPage() {
         )}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>{t('System Status')}</h2>
-        <Card>
-          {statusError ? (
-            <ErrorState message={statusError} onRetry={loadStatus} />
-          ) : statuses === null ? (
-            <LoadingSpinner />
-          ) : statuses.length === 0 ? (
-            <p className={subCls}>{t('No status information is available right now.')}</p>
-          ) : (
-            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
-              {statuses.map(s => (
-                <div key={s.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{s.component}</span>
-                    {s.description && <span className={subCls}>{s.description}</span>}
-                  </div>
-                  <StatusPill tone={serviceTone(s.status)}>
-                    {serviceStatusLabel(s.status)}
-                  </StatusPill>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>{t("What's New")}</h2>
-        {notesError ? (
-          <ErrorState message={notesError} onRetry={loadNotes} />
-        ) : notes === null ? (
-          <LoadingSpinner />
-        ) : notes.length === 0 ? (
-          <Card><p className={subCls}>{t('No release notes yet.')}</p></Card>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {notes.map(note => (
-              <Card key={note.id}>
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white m-0">{note.title}</h3>
-                    <span className={pillCls} dir="ltr">v{note.version}</span>
-                  </div>
-                  {note.publishedAt && <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(note.publishedAt)}</span>}
-                  {note.body && <p className={`${subCls} whitespace-pre-wrap`}>{note.body}</p>}
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }

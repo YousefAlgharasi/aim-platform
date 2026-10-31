@@ -9,7 +9,12 @@ import { AdminApiClientError } from '../../../../../core/api';
 import {
   fetchAdminLesson,
   updateAdminLesson,
+  fetchTranslations,
+  saveTranslations,
+  deleteTranslation,
   type AdminLessonSummary,
+  type TranslationInput,
+  type TranslationsLoadResult,
 } from '../../../../../features/content';
 import { LessonEditorForm } from '../../../../../features/content';
 import { AdminPageHeader } from '../../../../../shared/layouts/DashboardLayout';
@@ -53,12 +58,21 @@ export default async function AdminLessonEditorPage({ params }: Props) {
     description: string;
     sortOrder?: number;
     systemPrompt?: string | null;
+    translations: Readonly<Record<string, TranslationInput>>;
   }): Promise<{ error?: string }> {
     'use server';
     const cookieStore = await cookies();
     const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await updateAdminLesson(token, lessonId, formData);
+      const { translations, ...lessonData } = formData;
+      await updateAdminLesson(token, lessonId, lessonData);
+      if (Object.keys(translations).length > 0) {
+        const { failures } = await saveTranslations('lessons', token, lessonId, translations);
+        if (failures.length > 0) {
+          const detail = failures.map((f) => `${f.locale}: ${f.message}`).join('; ');
+          return { error: `The lesson was saved, but some translations were not (${detail}). Fix them and save again.` };
+        }
+      }
       return {};
     } catch (err) {
       const msg =
@@ -66,6 +80,37 @@ export default async function AdminLessonEditorPage({ params }: Props) {
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update lesson.';
       return { error: msg };
+    }
+  }
+
+  async function loadTranslationsAction(id: string): Promise<TranslationsLoadResult> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      return { data: await fetchTranslations('lessons', token, id) };
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to load translations.',
+      };
+    }
+  }
+
+  async function removeTranslationAction(id: string, locale: string): Promise<{ error?: string }> {
+    'use server';
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await deleteTranslation('lessons', token, id, locale);
+      return {};
+    } catch (err) {
+      return {
+        error: err instanceof AdminApiClientError
+          ? `Backend error ${err.status}: ${err.message}`
+          : 'Failed to remove translation.',
+      };
     }
   }
 
@@ -91,6 +136,8 @@ export default async function AdminLessonEditorPage({ params }: Props) {
         <LessonEditorForm
           lesson={lesson}
           onUpdate={handleUpdate}
+          loadTranslations={loadTranslationsAction}
+          onRemoveTranslation={removeTranslationAction}
         />
       )}
 

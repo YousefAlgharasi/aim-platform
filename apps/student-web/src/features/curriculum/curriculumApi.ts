@@ -15,6 +15,7 @@ export interface StudentCourse {
   courseId: string;
   title: string;
   description: string | null;
+  locale?: string;
   levelCode: string | null;
   lessonCount: number;
   completedLessonCount: number;
@@ -38,12 +39,14 @@ export interface CurrentEnrollment {
   found: boolean;
   courseId: string | null;
   courseTitle: string | null;
+  locale?: string | null;
   enrolledAt: string | null;
 }
 
 export interface EnrollResponse {
   courseId: string;
   courseTitle: string;
+  locale?: string;
   enrolledAt: string;
 }
 

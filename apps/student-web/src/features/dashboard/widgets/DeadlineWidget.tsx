@@ -50,7 +50,7 @@ export function DeadlineWidget({ deadlines }: DeadlineWidgetProps) {
                 <span className={d.status === 'late' ? 'text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400' : ui.eyebrow}>
                   {statusLabel[d.status] ? t(statusLabel[d.status]) : d.status}
                 </span>
-                <span className="text-sm font-bold leading-snug text-slate-900 dark:text-white">{d.assessmentTitle}</span>
+                <span className="text-sm font-bold leading-snug text-slate-900 dark:text-white [unicode-bidi:plaintext]">{d.assessmentTitle}</span>
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   {d.status === 'upcoming'
                     ? t('Opens {date}', { date: formatDue(d.opensAt) })

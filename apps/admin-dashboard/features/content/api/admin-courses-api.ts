@@ -21,6 +21,7 @@ export type AdminCourseSummary = {
   readonly sortOrder: number;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly availableLocales?: readonly string[];
 };
 
 export type AdminCourseListData = {
@@ -61,6 +62,9 @@ function decodeCourseSummary(value: unknown): AdminCourseSummary {
     sortOrder: typeof value.sortOrder === 'number' ? value.sortOrder : 0,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
+    availableLocales: Array.isArray(value.availableLocales)
+      ? value.availableLocales.filter((l): l is string => typeof l === 'string')
+      : [],
   };
 }
 
@@ -140,4 +144,54 @@ export async function updateAdminCourse(
     },
   );
   return envelope.data;
+}
+
+import {
+  deleteTranslation,
+  fetchTranslations,
+  saveTranslation,
+  saveTranslations,
+  type SaveTranslationsResult,
+  type TranslationEntry,
+  type TranslationInput,
+} from './admin-translations-api';
+
+export type CourseTranslationEntry = TranslationEntry;
+
+export type CourseTranslationsData = {
+  readonly courseId: string;
+  readonly supportedLocales: readonly string[];
+  readonly missingLocales: readonly string[];
+  readonly translations: readonly CourseTranslationEntry[];
+};
+
+export type CourseTranslationInput = TranslationInput;
+
+export async function fetchCourseTranslations(
+  token: string,
+  courseId: string,
+): Promise<CourseTranslationsData> {
+  const { entityId, ...rest } = await fetchTranslations('courses', token, courseId);
+  return { courseId: entityId, ...rest };
+}
+
+export function saveCourseTranslation(
+  token: string,
+  courseId: string,
+  locale: string,
+  payload: CourseTranslationInput,
+): Promise<CourseTranslationEntry> {
+  return saveTranslation('courses', token, courseId, locale, payload);
+}
+
+export function deleteCourseTranslation(token: string, courseId: string, locale: string): Promise<void> {
+  return deleteTranslation('courses', token, courseId, locale);
+}
+
+export function saveCourseTranslations(
+  token: string,
+  courseId: string,
+  translations: Readonly<Record<string, CourseTranslationInput>>,
+): Promise<SaveTranslationsResult> {
+  return saveTranslations('courses', token, courseId, translations);
 }

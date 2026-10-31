@@ -12,6 +12,8 @@ import { DatabaseModule } from '../../../database/database.module';
 import { TtsAudioAssetRepository } from './persistent/tts-audio-asset.repository';
 import { SupabaseAudioObjectStore } from './persistent/supabase-audio-object-store.service';
 import { PersistentTtsAudioService } from './persistent/persistent-tts-audio.service';
+import { AudioTranscoderService } from './persistent/audio-transcoder.service';
+import { TtsAudioDeliveryService } from './persistent/tts-audio-delivery.service';
 
 @Module({
   imports: [ConfigModule, DatabaseModule],
@@ -25,6 +27,8 @@ import { PersistentTtsAudioService } from './persistent/persistent-tts-audio.ser
     TtsAudioAssetRepository,
     SupabaseAudioObjectStore,
     PersistentTtsAudioService,
+    AudioTranscoderService,
+    TtsAudioDeliveryService,
     { provide: TTS_GATEWAY, useExisting: TtsAudioGenerationService },
   ],
   exports: [
@@ -33,6 +37,7 @@ import { PersistentTtsAudioService } from './persistent/persistent-tts-audio.ser
     TtsAudioStorageService,
     TtsAudioGenerationService,
     PersistentTtsAudioService,
+    TtsAudioDeliveryService,
   ],
 })
 export class TtsGatewayModule {}

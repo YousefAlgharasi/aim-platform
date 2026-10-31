@@ -4,10 +4,15 @@ import { TtsAudioAssetKey } from './tts-audio-asset.types';
 
 /**
  * Bump when anything about HOW audio is produced changes without changing the inputs below
- * (chunk size, chunk stitching, output format). Old assets then stop matching and are regenerated.
+ * (chunk size, chunk stitching). Old assets then stop matching and are regenerated.
  */
 export const TTS_PIPELINE_VERSION = 1;
-export const TTS_OUTPUT_FORMAT = 'wav';
+/**
+ * Stored file format; part of the key, so changing it addresses a new set of assets. The previous
+ * format's assets stay valid under their own keys (scripts/migrate-tts-audio-to-mp3 converts them).
+ */
+export type TtsOutputFormat = 'wav' | 'mp3';
+export const TTS_OUTPUT_FORMAT: TtsOutputFormat = 'mp3';
 
 const sha256 = (value: string): string => createHash('sha256').update(value, 'utf8').digest('hex');
 
@@ -37,7 +42,7 @@ export interface VoiceConfigInput {
 }
 
 /** Everything other than script and language that changes the sound. Never includes secrets. */
-export function hashVoiceConfig(config: VoiceConfigInput): string {
+export function hashVoiceConfig(config: VoiceConfigInput, format: TtsOutputFormat = TTS_OUTPUT_FORMAT): string {
   let provider = config.baseUrl;
   try {
     provider = new URL(config.baseUrl).host;
@@ -50,16 +55,21 @@ export function hashVoiceConfig(config: VoiceConfigInput): string {
       provider,
       model: config.model,
       voice: config.voice,
-      format: TTS_OUTPUT_FORMAT,
+      format,
     }),
   );
 }
 
-export function buildAssetKey(script: string, languageCode: string, voice: VoiceConfigInput): TtsAudioAssetKey {
+export function buildAssetKey(
+  script: string,
+  languageCode: string,
+  voice: VoiceConfigInput,
+  format: TtsOutputFormat = TTS_OUTPUT_FORMAT,
+): TtsAudioAssetKey {
   return {
     contentHash: sha256(normalizeScript(script)),
     language: normalizeLanguage(languageCode),
-    voiceConfigHash: hashVoiceConfig(voice),
+    voiceConfigHash: hashVoiceConfig(voice, format),
   };
 }
 
@@ -68,6 +78,6 @@ export function assetKeyId(key: TtsAudioAssetKey): string {
 }
 
 /** Deterministic and free of student data; identical inputs always map to the same object. */
-export function buildStoragePath(key: TtsAudioAssetKey): string {
-  return `tts/${key.language}/${key.contentHash}/${key.voiceConfigHash.slice(0, 16)}.${TTS_OUTPUT_FORMAT}`;
+export function buildStoragePath(key: TtsAudioAssetKey, format: TtsOutputFormat = TTS_OUTPUT_FORMAT): string {
+  return `tts/${key.language}/${key.contentHash}/${key.voiceConfigHash.slice(0, 16)}.${format}`;
 }

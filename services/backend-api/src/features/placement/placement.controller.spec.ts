@@ -12,6 +12,8 @@ import { PlacementInitialLearningPathService } from './placement-initial-learnin
 import { PlacementLevelStateService } from './placement-level-state.service';
 import { PlacementQuestionAudioService } from './placement-question-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { TtsAudioDeliveryService } from '../voice-teacher/tts-gateway/persistent/tts-audio-delivery.service';
+import { FakeTranscoder } from '../voice-teacher/tts-gateway/persistent/tests/fakes';
 import { PlacementSpeakingAnswerSubmitService } from './placement-speaking-answer-submit.service';
 import { PlacementDecisionService } from './placement-decision.service';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
@@ -78,6 +80,7 @@ describe('PlacementController', () => {
         { provide: PlacementLevelStateService, useValue: mocks.levelState },
         { provide: PlacementQuestionAudioService, useValue: mocks.questionAudio },
         { provide: TtsAudioStorageService, useValue: mocks.audioStorage },
+        { provide: TtsAudioDeliveryService, useFactory: () => new TtsAudioDeliveryService(new FakeTranscoder() as never) },
         { provide: PlacementSpeakingAnswerSubmitService, useValue: mocks.speakingAnswerSubmit },
         { provide: PlacementDecisionService, useValue: mocks.decision },
         { provide: UsersService, useValue: mocks.users },

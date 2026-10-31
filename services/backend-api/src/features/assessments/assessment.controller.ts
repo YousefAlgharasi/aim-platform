@@ -80,7 +80,7 @@
 //   - No AIM Engine, AI Teacher, payments, parent dashboard, or voice AI.
 //   - No secrets, service-role keys, DB credentials, or AI provider keys.
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Headers, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -108,6 +108,7 @@ import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission
 import { SubmitAnswerDto } from './submit-answer.dto';
 import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { TtsAudioDeliveryService } from '../voice-teacher/tts-gateway/persistent/tts-audio-delivery.service';
 
 @ApiTags('assessments')
 @Controller('student/assessments')
@@ -123,6 +124,7 @@ export class AssessmentController {
     private readonly questionAudioService: AssessmentQuestionAudioService,
     private readonly audioStorage: TtsAudioStorageService,
     private readonly courseAccess: CourseAccessService,
+    private readonly audioDelivery: TtsAudioDeliveryService,
   ) {}
 
   /**
@@ -315,6 +317,7 @@ export class AssessmentController {
     @Param('questionId') questionId: string,
     @CurrentUser() user: AuthenticatedUser,
     @Res() res: Response,
+    @Headers('accept') accept: string | undefined,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
     const result = await this.questionAudioService.ensureAudio(
@@ -339,7 +342,7 @@ export class AssessmentController {
       return;
     }
 
-    res.status(HttpStatus.OK).set('Content-Type', audio.contentType).send(audio.data);
+    await this.audioDelivery.send(res, audio, accept);
   }
 
   /**

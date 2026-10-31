@@ -8,6 +8,8 @@ import { TTS_GATEWAY, TtsGateway } from '../tts-gateway.interface';
 import { TtsSafeFailureService } from '../tts-safe-failure.service';
 import { TtsAudioStorageService } from '../tts-audio-storage.service';
 import { estimateWavDurationMs, parseWav } from '../wav-audio.util';
+import { AudioTranscodeError, AudioTranscoderService, MP3_MIME } from './audio-transcoder.service';
+import { estimateMp3DurationMs, looksLikeMp3 } from './mp3-audio.util';
 import { AudioObjectStoreError, SupabaseAudioObjectStore } from './supabase-audio-object-store.service';
 import { TtsAudioAssetRepository } from './tts-audio-asset.repository';
 import {
@@ -25,6 +27,7 @@ const WAIT_FOR_OTHER_MS = 30_000;
 const POLL_INTERVAL_MS = 500;
 /** Optional per-process copy of recent clips (a few tens of MB). Correctness never depends on it. */
 const MEMORY_CACHE_MAX = 100;
+/** What the provider returns, and what assets stored before the MP3 change still hold. */
 const WAV_MIME = 'audio/wav';
 /**
  * Process-wide cap on simultaneous provider syntheses. Several services warm their audio at startup and
@@ -51,8 +54,8 @@ export function isAudioWarmupEnabled(env: NodeJS.ProcessEnv = process.env): bool
 }
 
 /**
- * Persistent, shared TTS audio: Supabase Storage holds the file, PostgreSQL holds its metadata and the
- * generation lease. A request is served from (in order) this process's memory, Storage, or a fresh
+ * Persistent, shared TTS audio: Supabase Storage holds the file (MP3, converted from the provider's WAV),
+ * PostgreSQL holds its metadata and the generation lease. A request is served from (in order) this process's memory, Storage, or a fresh
  * synthesis through the existing TTS gateway, so the provider is called at most once per distinct
  * (script, language, voice configuration), across students, restarts and backend instances.
  */
@@ -72,6 +75,7 @@ export class PersistentTtsAudioService {
     private readonly gatewayConfig: TtsGatewayConfigService,
     private readonly audioStorage: TtsAudioStorageService,
     private readonly safeFailure: TtsSafeFailureService,
+    private readonly transcoder: AudioTranscoderService,
     @Optional() @Inject(TTS_GATEWAY) private readonly gateway: TtsGateway | null,
   ) {}
 
@@ -204,7 +208,7 @@ export class PersistentTtsAudioService {
     const data = await this.objectStore.get(row.storage_path);
     if (!data || data.length === 0) return null;
     if (row.size_bytes !== null && Number(row.size_bytes) !== data.length) return null;
-    if (!this.looksLikeWav(data)) return null;
+    if (!this.matchesMimeType(data, row.mime_type)) return null;
     return { data, contentType: row.mime_type, durationMs: row.duration_ms };
   }
 
@@ -222,22 +226,39 @@ export class PersistentTtsAudioService {
       let data = neverPublished ? await this.objectStore.get(storagePath) : null;
       let durationMs: number | null = null;
 
-      if (data && this.looksLikeWav(data)) {
-        durationMs = estimateWavDurationMs(data) || null;
+      if (data && looksLikeMp3(data)) {
+        durationMs = estimateMp3DurationMs(data) || null;
       } else {
         const synthesized = await this.synthesize(key, request);
         if (!synthesized) {
           await this.repository.markFailed(row.id, this.instanceId, 'TTS_FAILED');
           return null;
         }
-        data = synthesized.data;
+
+        let mp3: Buffer;
+        const startedAt = Date.now();
+        try {
+          mp3 = await this.transcoder.wavToMp3(synthesized.data);
+        } catch (error) {
+          // Nothing is uploaded or published, so no stored audio is replaced and a later request retries the
+          // conversion. This student still hears the synthesis they waited for.
+          const reason = error instanceof AudioTranscodeError ? error.reason : 'failed';
+          await this.repository.markFailed(row.id, this.instanceId, `TRANSCODE_${reason.toUpperCase()}`);
+          this.logger.error(`PersistentTtsAudioService: MP3 conversion failed (${reason}) for asset=${row.id}; served WAV, nothing stored`);
+          return { data: synthesized.data, contentType: WAV_MIME, durationMs: synthesized.durationMs };
+        }
+        this.logger.log(
+          `PersistentTtsAudioService: asset=${row.id} converted ${synthesized.data.length} B WAV -> ${mp3.length} B MP3 in ${Date.now() - startedAt} ms`,
+        );
+
+        data = mp3;
         durationMs = synthesized.durationMs;
-        await this.objectStore.put(storagePath, data, WAV_MIME);
+        await this.objectStore.put(storagePath, data, MP3_MIME);
       }
 
       const published = await this.repository.markReady(row.id, {
         storagePath,
-        mimeType: WAV_MIME,
+        mimeType: MP3_MIME,
         sizeBytes: data.length,
         durationMs,
       });
@@ -245,7 +266,7 @@ export class PersistentTtsAudioService {
         // Lost the lease and another instance already finished the same deterministic asset. Fine.
         this.logger.log(`PersistentTtsAudioService: asset=${row.id} was already published by another instance`);
       }
-      return { data, contentType: WAV_MIME, durationMs };
+      return { data, contentType: MP3_MIME, durationMs };
     } catch (error) {
       const category = error instanceof AudioObjectStoreError ? `STORAGE_${error.operation.toUpperCase()}_FAILED` : 'PERSISTENCE_FAILED';
       await this.repository.markFailed(row.id, this.instanceId, category).catch(() => undefined);
@@ -319,6 +340,13 @@ export class PersistentTtsAudioService {
       if (next) next();
       else this.activeSyntheses -= 1;
     }
+  }
+
+  /** The stored bytes are intact audio of the type recorded in the metadata. */
+  private matchesMimeType(data: Buffer, mimeType: string): boolean {
+    if (mimeType === MP3_MIME) return looksLikeMp3(data);
+    if (mimeType === WAV_MIME) return this.looksLikeWav(data);
+    return false;
   }
 
   /** Parses as WAV and the RIFF header's declared size matches the bytes we hold (catches truncation). */

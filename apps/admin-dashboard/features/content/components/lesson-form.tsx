@@ -1,36 +1,60 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import type { AdminLessonSummary } from '../api/admin-lessons-api';
+import type { TranslationInput } from '../api/admin-translations-api';
+import { CONTENT_LOCALE_CODES, LESSON_FIELD_LABELS } from '../config/content-locales';
+import { useTranslatedFields, type TranslationsLoadResult } from '../hooks/use-translated-fields';
+import { TranslationFields } from './translation-fields';
+
+export type LessonFormSubmit = {
+  readonly title: string;
+  readonly description: string;
+  readonly translations: Readonly<Record<string, TranslationInput>>;
+};
 
 type Props = {
   readonly mode: 'create' | 'edit';
   readonly initial?: AdminLessonSummary;
-  readonly onSubmit: (data: { title: string; description: string }) => Promise<{ error?: string }>;
+  readonly onSubmit: (data: LessonFormSubmit) => Promise<{ error?: string }>;
   readonly onCancel: () => void;
+  readonly locales?: readonly string[];
+  readonly loadTranslations?: (lessonId: string) => Promise<TranslationsLoadResult>;
+  readonly onRemoveTranslation?: (lessonId: string, locale: string) => Promise<{ error?: string }>;
 };
 
-export function LessonForm({ mode, initial, onSubmit, onCancel }: Props) {
-  const [title, setTitle] = useState(initial?.title ?? '');
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+export function LessonForm({
+  mode,
+  initial,
+  onSubmit,
+  onCancel,
+  locales = CONTENT_LOCALE_CODES,
+  loadTranslations,
+  onRemoveTranslation,
+}: Props) {
   const [isPending, startTransition] = useTransition();
-
-  function validate(): boolean {
-    const errors: Record<string, string> = {};
-    if (!title.trim()) errors.title = 'Title is required.';
-    if (!description.trim()) errors.description = 'Description is required.';
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
+  const t = useTranslatedFields({
+    mode,
+    entityId: initial?.id,
+    initialTitle: initial?.title ?? '',
+    initialDescription: initial?.description ?? '',
+    locales,
+    load: loadTranslations,
+    remove: onRemoveTranslation,
+  });
+  const { error, setError, fieldErrors, descriptionErrors } = t;
+  const busy = isPending || t.removing;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    if (!t.validate({ requireDefaultDescription: true })) return;
     setError(null);
     startTransition(async () => {
-      const result = await onSubmit({ title: title.trim(), description: description.trim() });
+      const result = await onSubmit({
+        title: t.english.title.trim(),
+        description: t.english.description.trim(),
+        translations: t.collectTranslations(),
+      });
       if (result.error) setError(result.error);
     });
   }
@@ -45,29 +69,34 @@ export function LessonForm({ mode, initial, onSubmit, onCancel }: Props) {
       </div>
 
       {error && <div className="admin-error-banner" role="alert">{error}</div>}
+      {t.loadState === 'loading' && <div className="cf-hint" role="status">Loading translations…</div>}
 
       <form onSubmit={handleSubmit} className="cf-form">
-        <div className="cf-field">
-          <label htmlFor="lesf-title" className="cf-label">Title <span className="cf-req">*</span></label>
-          <input id="lesf-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Past Simple Basics" disabled={isPending} maxLength={255}
-            className={`cf-input ${fieldErrors.title ? 'cf-input--error' : ''}`} />
-          {fieldErrors.title && <span className="cf-error">{fieldErrors.title}</span>}
-        </div>
-
-        <div className="cf-field">
-          <label htmlFor="lesf-desc" className="cf-label">Description <span className="cf-req">*</span></label>
-          <textarea id="lesf-desc" value={description} onChange={(e) => setDescription(e.target.value)}
-            placeholder="What this lesson covers." disabled={isPending} rows={3} maxLength={2000}
-            className={`cf-textarea ${fieldErrors.description ? 'cf-input--error' : ''}`} />
-          {fieldErrors.description && <span className="cf-error">{fieldErrors.description}</span>}
-        </div>
+        <TranslationFields
+          idPrefix="lesf"
+          locales={t.editLocales}
+          values={t.values}
+          savedLocales={t.savedForTabs}
+          fieldLabels={LESSON_FIELD_LABELS}
+          activeLocale={t.activeLocale}
+          onActiveLocaleChange={t.setActiveLocale}
+          onChange={t.handleChange}
+          errors={fieldErrors}
+          descriptionErrors={descriptionErrors}
+          requireDefaultDescription
+          disabled={busy}
+          disabledLocales={t.disabledLocales}
+          onRemove={t.canRemove ? t.setPendingRemove : undefined}
+          pendingRemoveLocale={t.pendingRemove}
+          onConfirmRemove={t.confirmRemove}
+          onCancelRemove={() => t.setPendingRemove(null)}
+        />
 
         <div className="cf-actions">
-          <button type="submit" disabled={isPending} className="cf-submit">
+          <button type="submit" disabled={busy} className="cf-submit">
             {isPending ? 'Saving…' : mode === 'create' ? 'Create Lesson' : 'Save Changes'}
           </button>
-          <button type="button" onClick={onCancel} disabled={isPending} className="cf-cancel">Cancel</button>
+          <button type="button" onClick={onCancel} disabled={busy} className="cf-cancel">Cancel</button>
         </div>
       </form>
 
@@ -93,6 +122,7 @@ export function LessonForm({ mode, initial, onSubmit, onCancel }: Props) {
         }
         .cf-input--error { border-color: var(--color-error-500); }
         .cf-error { font-size: 12px; color: var(--color-error-500); font-weight: 500; }
+        .cf-hint { font-size: 12px; color: var(--text-muted); }
         .cf-actions { display: flex; gap: 8px; margin-top: 4px; }
         .cf-submit {
           height: 38px; padding: 0 18px; border: none; border-radius: var(--radius-md);

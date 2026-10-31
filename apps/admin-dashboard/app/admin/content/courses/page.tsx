@@ -6,6 +6,15 @@ import {
   fetchAdminCourses,
   createAdminCourse,
   updateAdminCourse,
+  fetchCourseTranslations,
+  saveTranslations,
+  fetchTranslations,
+  deleteTranslation,
+  type TranslatableEntity,
+  type ChapterFormSubmit,
+  type LessonFormSubmit,
+  type TranslationsLoadResult,
+  deleteCourseTranslation,
   publishContent,
   archiveContent,
   restoreContent,
@@ -23,6 +32,8 @@ import {
   type AdminCourseSummary,
   type AdminCourseListData,
   type CourseStatus,
+  type CourseFormSubmit,
+  type CourseTranslationsData,
   type CurriculumTreeActions,
   CoursesList,
 } from '../../../../features/content';
@@ -49,6 +60,23 @@ async function runTransition(
         : 'Status transition failed.',
     };
   }
+}
+
+function describeError(err: unknown, fallback: string): string {
+  return err instanceof AdminApiClientError ? `Backend error ${err.status}: ${err.message}` : fallback;
+}
+
+async function saveTranslationsOrReport(
+  token: string,
+  entity: TranslatableEntity,
+  id: string,
+  translations: CourseFormSubmit['translations'],
+): Promise<{ error?: string }> {
+  if (Object.keys(translations).length === 0) return {};
+  const { failures } = await saveTranslations(entity, token, id, translations);
+  if (failures.length === 0) return {};
+  const detail = failures.map((f) => `${f.locale}: ${f.message}`).join('; ');
+  return { error: `The course was saved, but some translations were not (${detail}). Fix them and save again.` };
 }
 
 const DEFAULT_PAGE = 1;
@@ -90,17 +118,14 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
-  async function handleCreate(formData: {
-    title: string;
-    slug: string | null;
-    description: string | null;
-  }): Promise<{ error?: string }> {
+  async function handleCreate(formData: CourseFormSubmit): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await createAdminCourse(t, formData);
-      return {};
+      const { translations, ...course } = formData;
+      const created = await createAdminCourse(t, course);
+      return await saveTranslationsOrReport(t, 'courses', created.id, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
@@ -110,22 +135,45 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     }
   }
 
-  async function handleUpdate(
-    id: string,
-    formData: { title: string; slug: string | null; description: string | null },
-  ): Promise<{ error?: string }> {
+  async function handleUpdate(id: string, formData: CourseFormSubmit): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await updateAdminCourse(t, id, formData);
-      return {};
+      const { translations, ...course } = formData;
+      await updateAdminCourse(t, id, course);
+      return await saveTranslationsOrReport(t, 'courses', id, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
           ? `Backend error ${err.status}: ${err.message}`
           : 'Failed to update course.',
       };
+    }
+  }
+
+  async function loadTranslationsAction(
+    courseId: string,
+  ): Promise<{ data?: CourseTranslationsData; error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      return { data: await fetchCourseTranslations(t, courseId) };
+    } catch (err) {
+      return { error: describeError(err, 'Failed to load translations.') };
+    }
+  }
+
+  async function removeTranslationAction(courseId: string, locale: string): Promise<{ error?: string }> {
+    'use server';
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await deleteCourseTranslation(t, courseId, locale);
+      return {};
+    } catch (err) {
+      return { error: describeError(err, 'Failed to remove translation.') };
     }
   }
 
@@ -226,16 +274,14 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     }
   }
 
-  async function createChapterAction(
-    levelId: string,
-    formData: { title: string; slug: string | null; description: string | null },
-  ): Promise<{ error?: string }> {
+  async function createChapterAction(levelId: string, formData: ChapterFormSubmit): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await createAdminChapter(t, { levelId, ...formData });
-      return {};
+      const { translations, ...chapter } = formData;
+      const created = await createAdminChapter(t, { levelId, ...chapter });
+      return await saveTranslationsOrReport(t, 'chapters', created.id, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
@@ -247,14 +293,15 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
 
   async function updateChapterAction(
     chapterId: string,
-    formData: { title: string; slug: string | null; description: string | null },
+    formData: ChapterFormSubmit,
   ): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await updateAdminChapter(t, chapterId, formData);
-      return {};
+      const { translations, ...chapter } = formData;
+      await updateAdminChapter(t, chapterId, chapter);
+      return await saveTranslationsOrReport(t, 'chapters', chapterId, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
@@ -287,14 +334,15 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
 
   async function createLessonAction(
     chapterId: string,
-    formData: { title: string; description: string },
+    formData: LessonFormSubmit,
   ): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await createAdminLesson(t, chapterId, formData);
-      return {};
+      const { translations, ...lesson } = formData;
+      const created = await createAdminLesson(t, chapterId, lesson);
+      return await saveTranslationsOrReport(t, 'lessons', created.id, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
@@ -306,14 +354,15 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
 
   async function updateLessonAction(
     lessonId: string,
-    formData: { title: string; description: string },
+    formData: LessonFormSubmit,
   ): Promise<{ error?: string }> {
     'use server';
     const cs = await cookies();
     const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
     try {
-      await updateAdminLesson(t, lessonId, formData);
-      return {};
+      const { translations, ...lesson } = formData;
+      await updateAdminLesson(t, lessonId, lesson);
+      return await saveTranslationsOrReport(t, 'lessons', lessonId, translations);
     } catch (err) {
       return {
         error: err instanceof AdminApiClientError
@@ -357,6 +406,51 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     }
   }
 
+  async function loadTranslationsFor(entity: TranslatableEntity, id: string): Promise<TranslationsLoadResult> {
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      return { data: await fetchTranslations(entity, t, id) };
+    } catch (err) {
+      return { error: describeError(err, 'Failed to load translations.') };
+    }
+  }
+
+  async function removeTranslationFor(
+    entity: TranslatableEntity,
+    id: string,
+    locale: string,
+  ): Promise<{ error?: string }> {
+    const cs = await cookies();
+    const t = cs.get(ADMIN_AUTH_TOKEN_COOKIE)?.value.trim() ?? '';
+    try {
+      await deleteTranslation(entity, t, id, locale);
+      return {};
+    } catch (err) {
+      return { error: describeError(err, 'Failed to remove translation.') };
+    }
+  }
+
+  async function loadChapterTranslationsAction(chapterId: string): Promise<TranslationsLoadResult> {
+    'use server';
+    return loadTranslationsFor('chapters', chapterId);
+  }
+
+  async function removeChapterTranslationAction(chapterId: string, locale: string): Promise<{ error?: string }> {
+    'use server';
+    return removeTranslationFor('chapters', chapterId, locale);
+  }
+
+  async function loadLessonTranslationsAction(lessonId: string): Promise<TranslationsLoadResult> {
+    'use server';
+    return loadTranslationsFor('lessons', lessonId);
+  }
+
+  async function removeLessonTranslationAction(lessonId: string, locale: string): Promise<{ error?: string }> {
+    'use server';
+    return removeTranslationFor('lessons', lessonId, locale);
+  }
+
   const curriculumActions: CurriculumTreeActions = {
     fetchLevels: fetchLevelsAction,
     createLevel: createLevelAction,
@@ -365,10 +459,14 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
     fetchChapters: fetchChaptersAction,
     createChapter: createChapterAction,
     updateChapter: updateChapterAction,
+    loadChapterTranslations: loadChapterTranslationsAction,
+    removeChapterTranslation: removeChapterTranslationAction,
     transitionChapter: transitionChapterAction,
     fetchLessons: fetchLessonsAction,
     createLesson: createLessonAction,
     updateLesson: updateLessonAction,
+    loadLessonTranslations: loadLessonTranslationsAction,
+    removeLessonTranslation: removeLessonTranslationAction,
     transitionLesson: transitionLessonAction,
     fetchLessonSkills: fetchLessonSkillsAction,
   };
@@ -419,6 +517,8 @@ export default async function AdminCoursesPage({ searchParams }: Props) {
         }
         onCreateCourse={handleCreate}
         onUpdateCourse={handleUpdate}
+        loadTranslations={loadTranslationsAction}
+        onRemoveTranslation={removeTranslationAction}
         onTransitionCourse={handleTransition}
         curriculumActions={curriculumActions}
       />

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../state/ThemeContext';
 import { useI18n } from '../i18n/I18nContext';
-import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
 
 interface TopBarProps {
@@ -41,7 +39,6 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
     else navigate('/', { replace: true });
   }
 
-  const { isDarkMode, toggle } = useTheme();
   const { t, formatNumber } = useI18n();
   const unread = useUnreadCount(pathname);
 
@@ -79,7 +76,6 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <LanguageSwitcher />
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
@@ -95,26 +91,6 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
             </span>
           )}
         </Link>
-        <button
-          type="button"
-          onClick={toggle}
-          title={isDarkMode ? t('Switch to light mode') : t('Switch to dark mode')}
-          aria-label={isDarkMode ? t('Switch to light mode') : t('Switch to dark mode')}
-          className={`size-9 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors ${
-            isDarkMode ? 'bg-slate-800 text-indigo-300 hover:bg-slate-700' : 'bg-slate-100 text-amber-500 hover:bg-slate-200'
-          }`}
-        >
-          {isDarkMode ? (
-            <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
-          ) : (
-            <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-            </svg>
-          )}
-        </button>
         <Link
           to="/profile"
           aria-label={t('Profile')}

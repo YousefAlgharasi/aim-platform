@@ -133,6 +133,7 @@ function makeCtrl(overrides: {
     questionAudio as never,
     lessonAssetAudio as never,
     audioStorage as never,
+    { send: jest.fn() } as never,
   );
   return { ctrl, svc, las, orc, sqs, aec };
 }

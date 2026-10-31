@@ -5,7 +5,6 @@ import { usePlacementGate } from '../features/placement/placementApi';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MobileDrawer } from './MobileDrawer';
-import { MobileTabBar } from './MobileTabBar';
 import { navItems } from './navItems';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { useI18n } from '../i18n/I18nContext';
@@ -90,13 +89,27 @@ export function AppLayout() {
           id="main-content"
           ref={mainRef}
           tabIndex={-1}
-          className={`flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 ${showTabBar ? 'pb-24' : 'pb-8'}`}
+          className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 pb-8"
         >
           <Outlet />
         </main>
-      </div>
 
-      {showTabBar && <MobileTabBar onOpenMenu={() => setMenuOpen(true)} />}
+        {/* Floating Action Button (FAB) for Drawer Menu — Bottom Right */}
+        {showTabBar && (
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label={t('Open navigation menu')}
+            className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/35 flex items-center justify-center border-none cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 md:hidden"
+          >
+            <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="16" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

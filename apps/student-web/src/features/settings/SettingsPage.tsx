@@ -7,9 +7,10 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { updateProfile, LANGUAGE_OPTIONS } from '../profile/profileApi';
+import { updateProfile } from '../profile/profileApi';
 import { LogOutIcon } from '../../components/common/Icons';
-import { PageHeader, SectionTitle, LinkRow, selectCls, subCls } from '../profile/ui';
+import { PageHeader, SectionTitle, LinkRow, subCls } from '../profile/ui';
+import { LanguageDropdown } from './LanguageDropdown';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -96,25 +97,13 @@ export function SettingsPage() {
               <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>
             </div>
             {languageStatus && <Banner variant={languageStatus.variant}>{languageStatus.message}</Banner>}
-            <label htmlFor="settings-language" className="sr-only">{t('Preferred language')}</label>
-            <select
-              id="settings-language"
-              className={selectCls}
+            <LanguageDropdown
               value={language}
-              onChange={e => { setLanguage(e.target.value as 'en' | 'ar'); setLanguageStatus(null); }}
-            >
-              {LANGUAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={saveLanguage}
-                disabled={savingLanguage || language === locale}
-              >
-                {savingLanguage ? t('Saving…') : t('Save language')}
-              </Button>
-            </div>
+              onChange={lang => { setLanguage(lang); setLanguageStatus(null); }}
+              onSave={saveLanguage}
+              disabled={savingLanguage || language === locale}
+              loading={savingLanguage}
+            />
           </div>
         </Card>
 
@@ -170,7 +159,7 @@ export function SettingsPage() {
 
       <Modal open={confirmLogout} onClose={() => !loggingOut && setConfirmLogout(false)} title={t('Sign out?')}>
         <div className="flex flex-col gap-4">
-          <p className={subCls}>{t("You'll need to sign in again to continue learning.")}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">{t("You'll need to sign in again to continue learning.")}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setConfirmLogout(false)} disabled={loggingOut}>{t('Cancel')}</Button>
             <Button variant="primary" onClick={handleLogout} disabled={loggingOut}>

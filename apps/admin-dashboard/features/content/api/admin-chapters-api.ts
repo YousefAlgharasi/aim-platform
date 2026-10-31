@@ -22,6 +22,8 @@ export type AdminChapterSummary = {
   readonly sortOrder: number;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly locale?: string;
+  readonly availableLocales?: readonly string[];
 };
 
 export type AdminChapterListData = {
@@ -49,6 +51,10 @@ function decodeChapterSummary(value: unknown): AdminChapterSummary {
     sortOrder: typeof value.sortOrder === 'number' ? value.sortOrder : 0,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
+    locale: typeof value.locale === 'string' ? value.locale : 'en',
+    availableLocales: Array.isArray(value.availableLocales)
+      ? value.availableLocales.filter((l): l is string => typeof l === 'string')
+      : [],
   };
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
-import { Button } from '../../components/common/Button';
+import { AudioPlayer } from '../../components/common/AudioPlayer';
 
 interface AuthAudioPlayerProps {
   /** Fetches the audio through the authenticated backend client. An empty blob means "no audio yet" (204). */
@@ -11,26 +11,21 @@ interface AuthAudioPlayerProps {
 
 /**
  * Loads backend-synthesized audio on demand (the backend synthesizes lazily,
- * so we only request it when the student asks) and plays it from an object URL.
+ * so we only request it when the student presses play) and plays it from an object URL.
  */
 export function AuthAudioPlayer({ load, label }: AuthAudioPlayerProps) {
   const { t } = useI18n();
-  const shownLabel = label ?? t('Play audio');
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const urlRef = useRef<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => () => {
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
   }, []);
 
-  useEffect(() => {
-    if (src) audioRef.current?.play().catch(() => undefined);
-  }, [src]);
-
   function handleLoad() {
+    if (loading) return;
     setLoading(true);
     setMessage('');
     load()
@@ -49,15 +44,12 @@ export function AuthAudioPlayer({ load, label }: AuthAudioPlayerProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {src ? (
-        <audio ref={audioRef} controls src={src} className="w-full" />
-      ) : (
-        <Button type="button" variant="secondary" size="sm" onClick={handleLoad} disabled={loading}>
-          {loading ? t('Loading audio…') : `🔊 ${shownLabel}`}
-        </Button>
-      )}
-      {message && <span className="text-xs text-slate-500 dark:text-slate-400">{message}</span>}
-    </div>
+    <AudioPlayer
+      src={src}
+      onRequestSource={handleLoad}
+      loading={loading}
+      label={label ?? t('Play audio')}
+      footer={message ? <span className="text-xs text-slate-500 dark:text-slate-400" role="status">{message}</span> : null}
+    />
   );
 }

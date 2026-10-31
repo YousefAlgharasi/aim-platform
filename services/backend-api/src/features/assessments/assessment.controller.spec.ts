@@ -25,6 +25,8 @@ import { QuestionDeliveryService, DeliveredQuestion } from './question-delivery.
 import { AnswerSubmissionService, SubmittedAnswerDto } from './answer-submission.service';
 import { AssessmentQuestionAudioService } from './assessment-question-audio.service';
 import { TtsAudioStorageService } from '../voice-teacher/tts-gateway/tts-audio-storage.service';
+import { TtsAudioDeliveryService } from '../voice-teacher/tts-gateway/persistent/tts-audio-delivery.service';
+import { FakeTranscoder } from '../voice-teacher/tts-gateway/persistent/tests/fakes';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { AssessmentPermissionGuard } from './guards/assessment-permission.guard';
 import { AssessmentAttemptOwnershipGuard } from './guards/assessment-attempt-ownership.guard';
@@ -148,6 +150,7 @@ describe('AssessmentController', () => {
         { provide: AnswerSubmissionService, useValue: answerSubmissionService },
         { provide: AssessmentQuestionAudioService, useValue: questionAudioService },
         { provide: TtsAudioStorageService, useValue: audioStorage },
+        { provide: TtsAudioDeliveryService, useFactory: () => new TtsAudioDeliveryService(new FakeTranscoder() as never) },
         { provide: CourseAccessService, useValue: courseAccess },
       ],
     })
@@ -315,19 +318,29 @@ describe('AssessmentController', () => {
       const user = makeUser('student-1');
       const res = makeRes();
 
-      await controller.getQuestionAudio('question-1', user, res);
+      await controller.getQuestionAudio('question-1', user, res, 'audio/mpeg, audio/wav;q=0.5');
 
       expect(questionAudioService.ensureAudio).toHaveBeenCalledWith('question-1', 'student-1', 'en');
       expect(audioStorage.retrieveAudio).toHaveBeenCalledWith('tts_abc', 'student-1');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
+      expect(res.set).toHaveBeenCalledWith('Vary', 'Accept');
+    });
+
+    it('keeps sending WAV to clients that did not ask for MP3 (installed app versions)', async () => {
+      const res = makeRes();
+
+      await controller.getQuestionAudio('question-1', makeUser('student-1'), res, undefined);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.set).toHaveBeenCalledWith('Content-Type', 'audio/wav');
     });
 
     it('returns 204 when the question has no listening_script authored yet', async () => {
       questionAudioService.ensureAudio.mockResolvedValueOnce({ audioRef: null, scriptMissing: true });
       const res = makeRes();
 
-      await controller.getQuestionAudio('question-1', makeUser('student-1'), res);
+      await controller.getQuestionAudio('question-1', makeUser('student-1'), res, undefined);
 
       expect(res.status).toHaveBeenCalledWith(204);
       expect(audioStorage.retrieveAudio).not.toHaveBeenCalled();

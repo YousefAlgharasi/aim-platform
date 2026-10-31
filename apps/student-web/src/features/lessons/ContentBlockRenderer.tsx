@@ -1,6 +1,7 @@
 import { useI18n } from '../../i18n/I18nContext';
 import { t as tr, plural } from '../../i18n';
 import { AuthAudioPlayer } from './AuthAudioPlayer';
+import { AudioPlayer } from '../../components/common/AudioPlayer';
 import { fetchLessonAssetAudio, type LessonAsset } from './lessonsApi';
 
 interface ContentBlockRendererProps {
@@ -89,7 +90,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
         <AuthAudioPlayer load={() => fetchLessonAssetAudio(asset.id)} label={t('Listen')} />
       )}
       {asset.type === 'audio' && !hasScript && asset.url && (
-        <audio controls src={asset.url} className="w-full" preload="none" />
+        <AudioPlayer src={asset.url} preload="none" label={t('Listen')} />
       )}
 
       {asset.type === 'video' && asset.url && asset.mimeType?.startsWith('video/') && (
