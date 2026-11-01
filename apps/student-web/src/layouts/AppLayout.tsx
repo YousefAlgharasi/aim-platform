@@ -53,6 +53,10 @@ export function AppLayout() {
   const onPlacementPath = pathname.startsWith('/placement');
 
   useEffect(() => {
+    setGateDone(readFlag(gateDoneKey));
+  }, [gateDoneKey]);
+
+  useEffect(() => {
     if (!gateDoneKey || gateDone || gate.loading || gate.error || gate.shouldShowGate) return;
     writeFlag(gateDoneKey);
     setGateDone(true);
