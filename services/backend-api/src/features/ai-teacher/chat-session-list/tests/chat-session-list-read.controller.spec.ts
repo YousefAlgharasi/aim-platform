@@ -41,7 +41,7 @@ describe('ChatSessionListReadController', () => {
 
     await controller.listSessions(makeUser({ id: 'student-1' }).id);
 
-    expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'student-1' });
+    expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'student-1', locale: 'en' });
   });
 
   it('returns the service result unchanged', async () => {

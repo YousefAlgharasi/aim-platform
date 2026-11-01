@@ -27,6 +27,7 @@ abstract class AuthRepository {
   Future<AuthRegisterResult> register({
     required String email,
     required String password,
+    String? displayName,
   });
 
   /// POST /auth/test-login — non-production only. Signs in as a fixed

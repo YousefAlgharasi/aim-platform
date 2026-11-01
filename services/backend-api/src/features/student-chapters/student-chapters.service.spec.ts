@@ -23,7 +23,7 @@ describe('StudentChaptersService', () => {
 
     await service.getChapters('student-1', 'level-1');
 
-    expect(repository.findChaptersWithProgress).toHaveBeenCalledWith('student-1', 'level-1');
+    expect(repository.findChaptersWithProgress).toHaveBeenCalledWith('student-1', 'level-1', 'en');
   });
 
   it('marks a chapter completed when completedLessonCount equals lessonCount and it has no quiz', async () => {
@@ -247,5 +247,28 @@ describe('StudentChaptersService', () => {
     const result = await service.getChapters('student-1', 'level-1');
 
     expect(result.finalExam?.unlocked).toBe(false);
+  });
+
+  it('passes the locale through and returns the language served for each chapter', async () => {
+    const repository = makeRepository([
+      {
+        chapter_id: 'chapter-1',
+        title: 'التحيات',
+        description: 'قل مرحبًا ووداعًا.',
+        locale: 'ar',
+        sort_order: 1,
+        level_code: 'A1',
+        lesson_count: '2',
+        completed_lesson_count: '0',
+        quiz_count: '0',
+        quizzes_passed: true,
+      },
+    ]);
+    const service = new StudentChaptersService(repository);
+
+    const result = await service.getChapters('student-1', 'level-1', 'ar');
+
+    expect(repository.findChaptersWithProgress).toHaveBeenCalledWith('student-1', 'level-1', 'ar');
+    expect(result.chapters[0]).toMatchObject({ title: 'التحيات', locale: 'ar' });
   });
 });

@@ -32,16 +32,21 @@ import {
   BootstrapProfileResult,
 } from './auth-profile-bootstrap.types';
 
-// Raw row returned by the student_profiles upsert.
+// Raw row returned by the student_profiles upsert / metadata sync.
 interface StudentProfileUpsertRow {
   readonly id: string;
   readonly user_id: string;
+  readonly display_name?: string | null;
+  readonly avatar_url?: string | null;
+  readonly preferred_language?: string | null;
+  readonly timezone?: string | null;
 }
 
 // Raw row returned by the admin_profiles upsert.
 interface AdminProfileUpsertRow {
   readonly id: string;
   readonly user_id: string;
+  readonly display_name?: string | null;
 }
 
 @Injectable()
@@ -64,10 +69,36 @@ export class AuthProfileBootstrapService {
    * @param input  Fields extracted from the verified Supabase JWT.
    */
   async bootstrap(input: BootstrapProfileInput): Promise<BootstrapProfileResult> {
+    let resolvedSupabaseUid = input.supabaseAuthUid;
+    let existingUser = await this.users.findBySupabaseUid(resolvedSupabaseUid);
+
+    // Do not allow an internal user ID (public.users.id) to be treated as a new
+    // supabase_auth_uid if presented by mistake.
+    if (!existingUser && typeof this.users.findById === 'function') {
+      const userByInternalId = await this.users.findById(resolvedSupabaseUid);
+      if (userByInternalId && userByInternalId.supabaseAuthUid !== resolvedSupabaseUid) {
+        this.logger.warn(
+          `Bootstrap received internalUserId (${resolvedSupabaseUid}) instead of supabaseAuthUid; resolving to canonical supabaseAuthUid (${userByInternalId.supabaseAuthUid})`,
+        );
+        resolvedSupabaseUid = userByInternalId.supabaseAuthUid;
+        existingUser = userByInternalId;
+      }
+    }
+
+    // If no record matched by supabase_auth_uid, check whether an active
+    // auth.users + public.users account already owns this verified email so we
+    // never create a duplicate internal user or student profile.
+    if (!existingUser && input.email && typeof this.users.findByEmailWithAuthUser === 'function') {
+      const canonicalByEmail = await this.users.findByEmailWithAuthUser(input.email);
+      if (canonicalByEmail) {
+        resolvedSupabaseUid = canonicalByEmail.supabaseAuthUid;
+        existingUser = canonicalByEmail;
+      }
+    }
+
     // 1. Upsert the internal user row.  email/phone are synced from the JWT on every call.
-    const existingUser = await this.users.findBySupabaseUid(input.supabaseAuthUid);
     const user = await this.users.upsertBySupabaseUid({
-      supabaseAuthUid: input.supabaseAuthUid,
+      supabaseAuthUid: resolvedSupabaseUid,
       email: input.email ?? null,
       phone: input.phone ?? null,
     });
@@ -104,10 +135,18 @@ export class AuthProfileBootstrapService {
     // 3. Ensure the correct profile row exists, keyed on user_type from the database.
     let profileCreated = false;
     let profileType: string | null = null;
+    let profileDetails: {
+      profileId?: string | null;
+      displayName?: string | null;
+      avatarUrl?: string | null;
+      preferredLanguage?: string | null;
+      timezone?: string | null;
+    } = {};
 
     if (user.userType === 'student') {
       profileCreated = await this.ensureStudentProfile(user.id);
       profileType = 'student_profile';
+      profileDetails = await this.syncStudentProfileMetadata(user.id, input);
       await this.ensureRoleAssigned(user.id, 'student');
       await this.ensureFreeSubscription(user.id);
     } else if (user.userType === 'admin') {
@@ -127,6 +166,13 @@ export class AuthProfileBootstrapService {
       userCreated,
       profileCreated,
       profileType,
+      ...(profileDetails.profileId !== undefined ? { profileId: profileDetails.profileId } : {}),
+      ...(profileDetails.displayName !== undefined ? { displayName: profileDetails.displayName } : {}),
+      ...(profileDetails.avatarUrl !== undefined ? { avatarUrl: profileDetails.avatarUrl } : {}),
+      ...(profileDetails.preferredLanguage !== undefined
+        ? { preferredLanguage: profileDetails.preferredLanguage }
+        : {}),
+      ...(profileDetails.timezone !== undefined ? { timezone: profileDetails.timezone } : {}),
     };
   }
 
@@ -149,6 +195,73 @@ export class AuthProfileBootstrapService {
     );
 
     return result.rows.length > 0;
+  }
+
+  /**
+   * Synchronize display_name, avatar_url, preferred_language, and timezone onto
+   * student_profiles from the caller input or auth.users.raw_user_meta_data without
+   * overwriting custom profile values already chosen by the student.
+   */
+  private async syncStudentProfileMetadata(
+    internalUserId: string,
+    input: BootstrapProfileInput,
+  ): Promise<{
+    profileId?: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    preferredLanguage?: string | null;
+    timezone?: string | null;
+  }> {
+    const cleanDisplayName = input.displayName?.trim() || null;
+    const cleanAvatarUrl = input.avatarUrl?.trim() || null;
+    const cleanPreferredLanguage = input.preferredLanguage?.trim() || null;
+    const cleanTimezone = input.timezone?.trim() || null;
+
+    const result = await this.db.query<StudentProfileUpsertRow>(
+      `UPDATE student_profiles sp
+       SET
+         display_name = CASE
+           WHEN sp.display_name IS NULL OR TRIM(sp.display_name) = '' THEN
+             COALESCE(
+               $2,
+               NULLIF(TRIM(COALESCE(au.raw_user_meta_data->>'full_name', au.raw_user_meta_data->>'name')), ''),
+               NULLIF(SPLIT_PART(u.email, '@', 1), '')
+             )
+           WHEN sp.display_name = SPLIT_PART(u.email, '@', 1)
+             AND COALESCE($2, NULLIF(TRIM(COALESCE(au.raw_user_meta_data->>'full_name', au.raw_user_meta_data->>'name')), '')) IS NOT NULL THEN
+             COALESCE(
+               $2,
+               NULLIF(TRIM(COALESCE(au.raw_user_meta_data->>'full_name', au.raw_user_meta_data->>'name')), '')
+             )
+           ELSE sp.display_name
+         END,
+         avatar_url = COALESCE(
+           NULLIF(TRIM(sp.avatar_url), ''),
+           $3,
+           NULLIF(TRIM(COALESCE(au.raw_user_meta_data->>'avatar_url', au.raw_user_meta_data->>'picture')), '')
+         ),
+         preferred_language = COALESCE(NULLIF(TRIM(sp.preferred_language), ''), $4, 'en'),
+         timezone = COALESCE(NULLIF(TRIM(sp.timezone), ''), $5),
+         updated_at = now()
+       FROM users u
+       LEFT JOIN auth.users au ON au.id::text = u.supabase_auth_uid::text AND au.deleted_at IS NULL
+       WHERE sp.user_id = $1 AND u.id = $1
+       RETURNING sp.id, sp.user_id, sp.display_name, sp.avatar_url, sp.preferred_language, sp.timezone`,
+      [internalUserId, cleanDisplayName, cleanAvatarUrl, cleanPreferredLanguage, cleanTimezone],
+    );
+
+    const row = result.rows[0];
+    if (!row || row.display_name === undefined) {
+      return {};
+    }
+
+    return {
+      profileId: row.id,
+      displayName: row.display_name ?? null,
+      avatarUrl: row.avatar_url ?? null,
+      preferredLanguage: row.preferred_language ?? null,
+      timezone: row.timezone ?? null,
+    };
   }
 
   /**

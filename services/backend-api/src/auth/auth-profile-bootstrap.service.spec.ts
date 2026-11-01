@@ -156,6 +156,73 @@ describe('AuthProfileBootstrapService', () => {
         expect.objectContaining({ supabaseAuthUid: uid }),
       );
     });
+
+    it('persists display_name, avatar_url, preferred_language, and timezone into student_profiles and returns them', async () => {
+      const userRecord = makeUserRecord({
+        id: '1a2b02a1-cb8a-4fe8-b23a-13019cd61938',
+        supabaseAuthUid: 'fea999be-db75-4690-844c-4bc054f7fe3c',
+        email: 'ahmedalalawi2022@gmail.com',
+        userType: 'student',
+      });
+      const usersMock = makeUsersMock(null, userRecord);
+      const dbMock = {
+        query: jest
+          .fn()
+          // 1. ensureStudentProfile INSERT
+          .mockResolvedValueOnce({
+            rows: [{ id: '533d9ecd-b7eb-4113-9b53-3da9125381d2', user_id: userRecord.id }],
+            rowCount: 1,
+          })
+          // 2. syncStudentProfileMetadata UPDATE
+          .mockResolvedValueOnce({
+            rows: [
+              {
+                id: '533d9ecd-b7eb-4113-9b53-3da9125381d2',
+                user_id: userRecord.id,
+                display_name: 'احمد علاو',
+                avatar_url: 'https://example.com/pic.jpg',
+                preferred_language: 'ar',
+                timezone: 'Asia/Riyadh',
+              },
+            ],
+            rowCount: 1,
+          })
+          // 3. ensureRoleAssigned INSERT
+          .mockResolvedValue({ rows: [], rowCount: 0 }),
+      };
+
+      const service = new AuthProfileBootstrapService(
+        dbMock as never,
+        usersMock as never,
+        makeLoggingMock() as never,
+        makeAnalyticsMock() as never,
+        makeBillingRepoMock() as never,
+        makeSubscriptionServiceMock() as never,
+      );
+
+      const result = await service.bootstrap({
+        supabaseAuthUid: userRecord.supabaseAuthUid,
+        email: userRecord.email,
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/pic.jpg',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+      });
+
+      expect(result).toEqual({
+        internalUserId: userRecord.id,
+        userType: 'student',
+        status: 'active',
+        userCreated: true,
+        profileCreated: true,
+        profileType: 'student_profile',
+        profileId: '533d9ecd-b7eb-4113-9b53-3da9125381d2',
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/pic.jpg',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+      });
+    });
   });
 
   describe('bootstrap — student user (repeated login)', () => {
@@ -208,6 +275,90 @@ describe('AuthProfileBootstrapService', () => {
       await service.bootstrap({ supabaseAuthUid: 'supa-uid-abc', email: null });
 
       expect(loggingMock.log).not.toHaveBeenCalled();
+    });
+
+    it('never uses internalUserId as supabase_auth_uid and does not create duplicate users or profiles', async () => {
+      const existingRecord = makeUserRecord({
+        id: 'dcc1fb98-357a-4480-85c8-481bb14e0aa4',
+        supabaseAuthUid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+      const usersMock = {
+        findBySupabaseUid: jest.fn().mockResolvedValue(null),
+        findById: jest.fn().mockResolvedValue(existingRecord),
+        upsertBySupabaseUid: jest.fn().mockResolvedValue(existingRecord),
+      };
+      const dbMock = makeDbMock([]); // existing student_profiles row -> ON CONFLICT DO NOTHING
+      const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
+      const billingRepoMock = makeBillingRepoMock();
+      const subscriptionServiceMock = makeSubscriptionServiceMock();
+
+      const service = new AuthProfileBootstrapService(
+        dbMock as never,
+        usersMock as never,
+        loggingMock as never,
+        analyticsMock as never,
+        billingRepoMock as never,
+        subscriptionServiceMock as never,
+      );
+
+      const result = await service.bootstrap({
+        supabaseAuthUid: existingRecord.id, // internalUserId mistakenly passed
+        email: existingRecord.email,
+      });
+
+      expect(usersMock.upsertBySupabaseUid).toHaveBeenCalledWith({
+        supabaseAuthUid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+        email: 'ahmedalalawi2022@gmail.com',
+        phone: null,
+      });
+      expect(result.internalUserId).toBe('dcc1fb98-357a-4480-85c8-481bb14e0aa4');
+      expect(result.userCreated).toBe(false);
+      expect(result.profileCreated).toBe(false);
+    });
+
+    it('resolves existing canonical user by verified email via findByEmailWithAuthUser and preserves existing profile', async () => {
+      const existingRecord = makeUserRecord({
+        id: 'dcc1fb98-357a-4480-85c8-481bb14e0aa4',
+        supabaseAuthUid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+      const usersMock = {
+        findBySupabaseUid: jest.fn().mockResolvedValue(null),
+        findById: jest.fn().mockResolvedValue(null),
+        findByEmailWithAuthUser: jest.fn().mockResolvedValue(existingRecord),
+        upsertBySupabaseUid: jest.fn().mockResolvedValue(existingRecord),
+      };
+      const dbMock = makeDbMock([]);
+      const loggingMock = makeLoggingMock();
+      const analyticsMock = makeAnalyticsMock();
+      const billingRepoMock = makeBillingRepoMock();
+      const subscriptionServiceMock = makeSubscriptionServiceMock();
+
+      const service = new AuthProfileBootstrapService(
+        dbMock as never,
+        usersMock as never,
+        loggingMock as never,
+        analyticsMock as never,
+        billingRepoMock as never,
+        subscriptionServiceMock as never,
+      );
+
+      const result = await service.bootstrap({
+        supabaseAuthUid: 'unrecognized-uid-123',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+
+      expect(usersMock.findByEmailWithAuthUser).toHaveBeenCalledWith('ahmedalalawi2022@gmail.com');
+      expect(usersMock.upsertBySupabaseUid).toHaveBeenCalledWith({
+        supabaseAuthUid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+        email: 'ahmedalalawi2022@gmail.com',
+        phone: null,
+      });
+      expect(result.internalUserId).toBe('dcc1fb98-357a-4480-85c8-481bb14e0aa4');
+      expect(result.userCreated).toBe(false);
+      expect(result.profileCreated).toBe(false);
     });
   });
 

@@ -66,6 +66,30 @@ export class UsersService {
   }
 
   /**
+   * Find an existing internal user record by verified email whose
+   * supabase_auth_uid corresponds to an active auth.users record.
+   * Returns null when no matching canonical record exists.
+   */
+  async findByEmailWithAuthUser(email: string): Promise<UserRecord | null> {
+    const normalizedEmail = email?.trim();
+    if (!normalizedEmail) {
+      return null;
+    }
+
+    const result = await this.db.query<UserRow>(
+      `SELECT u.id, u.supabase_auth_uid, u.email, u.phone, u.user_type, u.status, u.created_at, u.updated_at
+       FROM users u
+       INNER JOIN auth.users au ON au.id::text = u.supabase_auth_uid::text AND au.deleted_at IS NULL
+       WHERE LOWER(u.email) = LOWER($1)
+       ORDER BY au.created_at DESC, u.created_at DESC
+       LIMIT 1`,
+      [normalizedEmail],
+    );
+
+    return result.rows.length > 0 ? this.toUserRecord(result.rows[0]) : null;
+  }
+
+  /**
    * Get an internal user record by internal UUID — throws NOT_FOUND when absent.
    */
   async getById(internalUserId: string): Promise<UserRecord> {

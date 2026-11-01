@@ -29,7 +29,7 @@ describe('StudentLessonsService', () => {
 
     await service.getLessons('student-1', 'chapter-1');
 
-    expect(repository.findLessonsWithProgress).toHaveBeenCalledWith('student-1', 'chapter-1');
+    expect(repository.findLessonsWithProgress).toHaveBeenCalledWith('student-1', 'chapter-1', 'en');
   });
 
   it('marks the first incomplete lesson (in sort_order) as current, and no others', async () => {

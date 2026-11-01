@@ -36,6 +36,7 @@ abstract class AuthRemoteDatasource {
   Future<RegisterResult> register({
     required String email,
     required String password,
+    String? displayName,
   });
 
   /// POST /auth/test-login — unauthenticated, non-production only.

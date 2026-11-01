@@ -35,7 +35,7 @@ describe('ChatSessionListReadService', () => {
 
     const result = await service.listSessions({ studentId: 'student-1' });
 
-    expect(repository.findActiveByStudentIdWithContextTitle).toHaveBeenCalledWith('student-1');
+    expect(repository.findActiveByStudentIdWithContextTitle).toHaveBeenCalledWith('student-1', undefined);
     expect(result).toEqual({
       sessions: [
         {

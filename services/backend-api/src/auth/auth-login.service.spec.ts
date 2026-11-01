@@ -292,12 +292,16 @@ describe('AuthLoginService', () => {
   });
 
   describe('googleLogin', () => {
-    it('exchanges ID token with Supabase and returns tokens', async () => {
+    it('exchanges ID token with Supabase and returns tokens with actual Auth UUID', async () => {
       const mockTokens = {
         access_token: 'acc_g123',
         refresh_token: 'ref_g123',
         expires_at: 1900000000,
-        user: { id: 'usr_g123', email: 'google@example.com', app_metadata: { role: 'student' } },
+        user: {
+          id: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+          email: 'ahmedalalawi2022@gmail.com',
+          app_metadata: { role: 'student' },
+        },
       };
       mockFetch(200, mockTokens);
 
@@ -306,7 +310,10 @@ describe('AuthLoginService', () => {
         accessToken: 'acc_g123',
         refreshToken: 'ref_g123',
         expiresAt: 1900000000,
-        user: { id: 'usr_g123', email: 'google@example.com' },
+        user: {
+          id: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+          email: 'ahmedalalawi2022@gmail.com',
+        },
       });
     });
 
@@ -319,10 +326,179 @@ describe('AuthLoginService', () => {
         message: 'Invalid Google authentication token.',
       });
     });
+
+    it('rejects unverified Google email during fallback verification', async () => {
+      const fetchMock = jest
+        .fn()
+        // 1. Supabase id_token fails
+        .mockResolvedValueOnce(
+          jsonResponse(400, { error_code: 'provider_disabled', msg: 'Provider is not enabled' }),
+        )
+        // 2. Google tokeninfo returns email_verified: false
+        .mockResolvedValueOnce(
+          jsonResponse(200, {
+            sub: 'google-sub-123',
+            email: 'unverified@example.com',
+            email_verified: 'false',
+            iss: 'https://accounts.google.com',
+          }),
+        );
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      await expect(service.googleLogin({ idToken: 'unverified_id_token' })).rejects.toMatchObject({
+        code: ApiErrorCode.UNAUTHORIZED,
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid Google authentication token.',
+      });
+    });
+
+    it('resolves existing email user to their existing Supabase Auth UUID on fallback and preserves JWT subject', async () => {
+      const existingSupabaseUid = 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790';
+      const existingInternalId = 'dcc1fb98-357a-4480-85c8-481bb14e0aa4';
+      const jwtMock = makeJwtMock();
+      const bootstrapMock = {
+        bootstrap: jest.fn().mockResolvedValue({
+          internalUserId: existingInternalId,
+          userType: 'student',
+          status: 'active',
+          userCreated: false,
+          profileCreated: false,
+          profileType: 'student_profile',
+        }),
+      } as unknown as jest.Mocked<AuthProfileBootstrapService>;
+      const dbMock = {
+        query: jest
+          .fn()
+          .mockResolvedValueOnce({ rows: [{ id: existingSupabaseUid }], rowCount: 1 })
+          .mockResolvedValue({ rows: [], rowCount: 0 }),
+      };
+
+      const svc = new AuthLoginService(createConfig(), jwtMock, bootstrapMock, dbMock as never);
+
+      const fetchMock = jest
+        .fn()
+        // 1. Supabase id_token fails (e.g. fallback path)
+        .mockResolvedValueOnce(
+          jsonResponse(400, { error_code: 'provider_disabled', msg: 'Provider is not enabled' }),
+        )
+        // 2. Google tokeninfo succeeds with verified email
+        .mockResolvedValueOnce(
+          jsonResponse(200, {
+            sub: '109876543210',
+            email: 'ahmedalalawi2022@gmail.com',
+            email_verified: 'true',
+            iss: 'https://accounts.google.com',
+            given_name: 'Ahmed',
+            family_name: 'Alalawi',
+          }),
+        );
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await svc.googleLogin({ idToken: 'valid_google_token' });
+
+      expect(bootstrapMock.bootstrap).toHaveBeenCalledWith({
+        supabaseAuthUid: existingSupabaseUid,
+        email: 'ahmedalalawi2022@gmail.com',
+        displayName: 'Ahmed Alalawi',
+      });
+      // JWT subject must be the actual Supabase Auth UUID, never internalUserId
+      expect(jwtMock.sign).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          sub: existingSupabaseUid,
+          email: 'ahmedalalawi2022@gmail.com',
+        }),
+        expect.anything(),
+      );
+      expect(result.user).toEqual({
+        id: existingSupabaseUid,
+        email: 'ahmedalalawi2022@gmail.com',
+        internalUserId: existingInternalId,
+        displayName: 'Ahmed Alalawi',
+        userType: 'student',
+        status: 'active',
+      });
+      expect(result.user.id).not.toBe(existingInternalId);
+    });
+
+    it('handles 422 email_exists from Supabase Admin API by resolving existing user and never ignoring it', async () => {
+      const existingSupabaseUid = 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790';
+      const jwtMock = makeJwtMock();
+      const bootstrapMock = makeBootstrapMock();
+      const svc = new AuthLoginService(createConfig(), jwtMock, bootstrapMock);
+
+      const fetchMock = jest
+        .fn()
+        // 1. POST /auth/v1/admin/users returns 422 email_exists
+        .mockResolvedValueOnce(
+          jsonResponse(422, {
+            error_code: 'email_exists',
+            msg: 'A user with this email address has already been registered',
+          }),
+        )
+        // 2. GET /auth/v1/admin/users returns the existing user
+        .mockResolvedValueOnce(
+          jsonResponse(200, {
+            users: [{ id: existingSupabaseUid, email: 'ahmedalalawi2022@gmail.com' }],
+          }),
+        );
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const result = await svc.processGoogleUser({
+        googleId: 'g_existing_123',
+        email: 'ahmedalalawi2022@gmail.com',
+        firstName: 'Ahmed',
+      });
+
+      expect(bootstrapMock.bootstrap).toHaveBeenCalledWith({
+        supabaseAuthUid: existingSupabaseUid,
+        email: 'ahmedalalawi2022@gmail.com',
+        displayName: 'Ahmed',
+      });
+      expect(jwtMock.sign).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ sub: existingSupabaseUid }),
+        expect.anything(),
+      );
+      expect(result.user.id).toBe(existingSupabaseUid);
+    });
+
+    it('returns the exact same account across repeated Google logins', async () => {
+      const existingSupabaseUid = 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790';
+      const jwtMock = makeJwtMock();
+      const bootstrapMock = makeBootstrapMock();
+      const dbMock = {
+        query: jest.fn().mockResolvedValue({ rows: [{ id: existingSupabaseUid }], rowCount: 1 }),
+      };
+      const svc = new AuthLoginService(createConfig(), jwtMock, bootstrapMock, dbMock as never);
+
+      const first = await svc.processGoogleUser({
+        googleId: 'g_repeat_1',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+      const second = await svc.processGoogleUser({
+        googleId: 'g_repeat_1',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+
+      expect(first.user.id).toBe(existingSupabaseUid);
+      expect(second.user.id).toBe(existingSupabaseUid);
+      expect(bootstrapMock.bootstrap).toHaveBeenNthCalledWith(1, {
+        supabaseAuthUid: existingSupabaseUid,
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+      expect(bootstrapMock.bootstrap).toHaveBeenNthCalledWith(2, {
+        supabaseAuthUid: existingSupabaseUid,
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+    });
   });
 
   describe('processGoogleUser', () => {
-    it('bootstraps user and issues signed JWT tokens for valid Google profile', async () => {
+    it('provisions a new Google user and issues signed JWT tokens with the Supabase Auth UUID as sub', async () => {
+      const jwtMock = makeJwtMock();
+      const bootstrapMock = makeBootstrapMock();
+      const svc = new AuthLoginService(createConfig(), jwtMock, bootstrapMock);
       mockFetch(200, { id: 'supa_g_123' });
       const googleProfile = {
         googleId: 'g_uid_999',
@@ -331,13 +507,108 @@ describe('AuthLoginService', () => {
         lastName: 'Doe',
       };
 
-      const result = await service.processGoogleUser(googleProfile);
+      const result = await svc.processGoogleUser(googleProfile);
 
       expect(result.accessToken).toBe('mock_jwt_token');
       expect(result.refreshToken).toBe('mock_jwt_token');
-      expect(result.user).toEqual({
-        id: 'usr_bootstrap_123',
+      expect(bootstrapMock.bootstrap).toHaveBeenCalledWith({
+        supabaseAuthUid: 'supa_g_123',
         email: 'googleuser@example.com',
+        displayName: 'John Doe',
+      });
+      expect(jwtMock.sign).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ sub: 'supa_g_123', email: 'googleuser@example.com' }),
+        expect.anything(),
+      );
+      expect(result.user).toEqual({
+        id: 'supa_g_123',
+        email: 'googleuser@example.com',
+        internalUserId: 'usr_bootstrap_123',
+        displayName: 'John Doe',
+      });
+    });
+
+    it('persists and returns displayName, avatarUrl, preferredLanguage, and profile on sign up and sign in', async () => {
+      const jwtMock = makeJwtMock();
+      const bootstrapMock = {
+        bootstrap: jest.fn().mockResolvedValue({
+          internalUserId: '1a2b02a1-cb8a-4fe8-b23a-13019cd61938',
+          userType: 'student',
+          status: 'active',
+          userCreated: true,
+          profileCreated: true,
+          profileType: 'student_profile',
+          profileId: '533d9ecd-b7eb-4113-9b53-3da9125381d2',
+          displayName: 'احمد علاو',
+          avatarUrl: 'https://example.com/avatar.png',
+          preferredLanguage: 'ar',
+          timezone: 'Asia/Riyadh',
+        }),
+      } as unknown as jest.Mocked<AuthProfileBootstrapService>;
+      const svc = new AuthLoginService(createConfig(), jwtMock, bootstrapMock);
+
+      const signUpBody = {
+        access_token: 'signup-token',
+        refresh_token: 'signup-refresh',
+        expires_in: 3600,
+        user: { id: 'fea999be-db75-4690-844c-4bc054f7fe3c', email: 'ahmedalalawi2022@gmail.com' },
+      };
+      const freshToken = {
+        access_token: 'fresh-token',
+        refresh_token: 'fresh-refresh',
+        expires_in: 3600,
+        user: {
+          id: 'fea999be-db75-4690-844c-4bc054f7fe3c',
+          email: 'ahmedalalawi2022@gmail.com',
+          app_metadata: { role: 'student' },
+          user_metadata: { full_name: 'احمد علاو', avatar_url: 'https://example.com/avatar.png' },
+        },
+      };
+
+      const fetchMock = jest
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(200, signUpBody))
+        .mockResolvedValueOnce(jsonResponse(200, {}))
+        .mockResolvedValueOnce(jsonResponse(200, freshToken));
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const regResult = await svc.register({
+        email: 'ahmedalalawi2022@gmail.com',
+        password: 'Password123!',
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/avatar.png',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+      });
+
+      expect(bootstrapMock.bootstrap).toHaveBeenCalledWith({
+        supabaseAuthUid: 'fea999be-db75-4690-844c-4bc054f7fe3c',
+        email: 'ahmedalalawi2022@gmail.com',
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/avatar.png',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+      });
+      expect(regResult.user).toEqual({
+        id: 'fea999be-db75-4690-844c-4bc054f7fe3c',
+        email: 'ahmedalalawi2022@gmail.com',
+        internalUserId: '1a2b02a1-cb8a-4fe8-b23a-13019cd61938',
+        profileId: '533d9ecd-b7eb-4113-9b53-3da9125381d2',
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/avatar.png',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
+        userType: 'student',
+        status: 'active',
+      });
+      expect(regResult.profile).toEqual({
+        id: '533d9ecd-b7eb-4113-9b53-3da9125381d2',
+        profileType: 'student_profile',
+        displayName: 'احمد علاو',
+        avatarUrl: 'https://example.com/avatar.png',
+        preferredLanguage: 'ar',
+        timezone: 'Asia/Riyadh',
       });
     });
 

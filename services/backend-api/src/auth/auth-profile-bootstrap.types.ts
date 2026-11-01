@@ -19,6 +19,11 @@ export interface BootstrapProfileInput {
   readonly email?: string | null;
   // Phone from the verified JWT payload — may be null if not present.
   readonly phone?: string | null;
+  // Optional profile metadata to persist onto student_profiles / admin_profiles.
+  readonly displayName?: string | null;
+  readonly avatarUrl?: string | null;
+  readonly preferredLanguage?: string | null;
+  readonly timezone?: string | null;
 }
 
 // Result returned after a successful bootstrap.
@@ -33,4 +38,10 @@ export interface BootstrapProfileResult {
   readonly profileCreated: boolean;
   // The profile type that was ensured: 'student_profile' | 'admin_profile' | null.
   readonly profileType: string | null;
+  // Persisted profile details when available.
+  readonly profileId?: string | null;
+  readonly displayName?: string | null;
+  readonly avatarUrl?: string | null;
+  readonly preferredLanguage?: string | null;
+  readonly timezone?: string | null;
 }
