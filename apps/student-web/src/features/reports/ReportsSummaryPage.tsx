@@ -170,7 +170,7 @@ export function ReportsSummaryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Insights')} title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
+      <PageHeader title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
 
       {reports.length === 0 ? (
         <EmptyState

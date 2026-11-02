@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -114,15 +115,14 @@ export function AITeacherEntryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Your tutor')}</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{t('AI Teacher')}</h1>
-        </div>
-        <Link to="/ai-teacher/history" className={pillLinkClass}>
-          {t('History')}
-        </Link>
-      </div>
+      <PageTitleBar
+        title={t('AI Teacher')}
+        action={
+          <Link to="/ai-teacher/history" className={pillLinkClass}>
+            {t('History')}
+          </Link>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 p-6 sm:p-8 text-white shadow-lg shadow-indigo-500/20 flex flex-col items-center text-center gap-4">

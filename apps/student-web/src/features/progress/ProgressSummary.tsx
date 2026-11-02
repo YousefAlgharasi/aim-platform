@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
@@ -69,7 +70,7 @@ export function ProgressSummary() {
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>{t('Progress')}</h1>
+      <PageTitleBar title={t('Progress')} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tile(skillStates.length, t('Skills tracked'))}

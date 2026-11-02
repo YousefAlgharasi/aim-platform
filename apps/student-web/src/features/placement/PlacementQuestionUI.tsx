@@ -254,7 +254,7 @@ export function PlacementQuestionUI() {
   if (expired) {
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Placement Test')} title={t("Time's up")} />
+        <PageHeader title={t("Time's up")} />
         {submitError && <Banner variant="error">{submitError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">

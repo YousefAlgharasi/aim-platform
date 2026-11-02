@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useCallback, useEffect, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -37,7 +38,7 @@ export function MyPaymentsPage() {
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('My payments')}</h1>
+      <PageTitleBar title={t('My payments')} />
       {items.length === 0 ? (
         <EmptyState title={t('My payments')} message={t("You haven't made any course payments yet.")} />
       ) : (

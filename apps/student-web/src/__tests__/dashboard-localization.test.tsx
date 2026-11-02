@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { translate, setCurrentLocale, type Locale } from '../i18n';
 import { ChallengeWidget } from '../features/dashboard/widgets/ChallengeWidget';
 import { RecommendationWidget } from '../features/dashboard/widgets/RecommendationWidget';
@@ -80,6 +80,15 @@ describe('Daily challenge templates', () => {
     expect(screen.getByText('Finish 3 lessons.')).toBeTruthy();
   });
 
+  it('"Go to lessons" opens the course itself, or the list when no course is known', () => {
+    useLocale('en');
+    const { unmount } = render(<ChallengeWidget challenge={challenge('Finish a lesson', 'Complete 1 lesson today.') as never} courseId="c9" />);
+    expect(screen.getByText('Go to lessons').closest('a')?.getAttribute('href')).toBe('/curriculum/c9');
+    unmount();
+    render(<ChallengeWidget challenge={challenge('Finish a lesson', 'Complete 1 lesson today.') as never} />);
+    expect(screen.getByText('Go to lessons').closest('a')?.getAttribute('href')).toBe('/curriculum');
+  });
+
   it('isolates the text direction of database-provided text', () => {
     useLocale('ar');
     render(<ChallengeWidget challenge={challenge('Finish a lesson', 'Complete 1 lesson today.') as never} />);
@@ -156,7 +165,11 @@ describe('Database-provided lesson text in Arabic layout', () => {
     render(<ContinueWidget continueLesson={null} quickStart={quickStart as never} recommendedCourse={null} enrollment={null} />);
     const title = screen.getByText('Upper & Lowercase Letters');
     expect(title.className).toContain('[unicode-bidi:plaintext]');
-    expect(screen.getByText('Learn to recognize and write all 26 English letters.').className).toContain('[unicode-bidi:plaintext]');
+    // The description is no longer shown inline: an Info button opens it in a popover.
+    expect(screen.queryByText('Learn to recognize and write all 26 English letters.')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /وصف الدرس/ }));
+    const description = screen.getByText('Learn to recognize and write all 26 English letters.');
+    expect(description.getAttribute('dir')).toBe('auto');
     expect(screen.getByText('ابدأ الدرس')).toBeTruthy();
     expect(screen.getByText(/ابدأ من هنا/)).toBeTruthy();
     expect(document.querySelector('bdi')?.textContent).toBe('Alphabet');

@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -42,12 +43,7 @@ export function AIHistoryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('AI Teacher')}</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Conversation History')}</h1>
-        </div>
-      </div>
+      <PageTitleBar title={t('Conversation History')} fallback="/ai-teacher" />
 
       {sessions.length === 0 ? (
         <EmptyState

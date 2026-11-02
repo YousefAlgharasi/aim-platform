@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
@@ -37,7 +38,7 @@ export function CertificatesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Certificates')}</h1>
+      <PageTitleBar title={t('Certificates')} />
 
       {items.length === 0 ? (
         <EmptyState

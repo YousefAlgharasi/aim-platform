@@ -159,7 +159,7 @@ export function PlacementEntryPage() {
     const level = formatPlacementLevel(status.result.estimated_level);
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col items-center text-center gap-4 py-2">
@@ -202,7 +202,7 @@ export function PlacementEntryPage() {
     const attemptId = status.attemptId;
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">
@@ -226,7 +226,7 @@ export function PlacementEntryPage() {
   if (noActiveTest) {
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         <EmptyState
           title={t('No placement test available')}
           message={t('There is no placement test published right now. Please check back later.')}
@@ -243,7 +243,7 @@ export function PlacementEntryPage() {
     const progress = loadPlacementProgress(attemptId);
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">
@@ -289,7 +289,6 @@ export function PlacementEntryPage() {
           <ClipboardIcon className="size-8" />
         </HeroBadge>
         <PageHeader
-          eyebrow={t('Placement Test')}
           title={test?.title ? t(test.title) : t('Placement Test')}
           subtitle={t('Calibrate your AI tutor to find your optimal starting point.')}
         />

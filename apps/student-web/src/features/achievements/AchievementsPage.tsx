@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
@@ -73,7 +74,7 @@ export function AchievementsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Achievements')}</h1>
+      <PageTitleBar title={t('Achievements')} />
 
       {items.length === 0 ? (
         <EmptyState title={t('No achievements yet')} message={t('Achievements will appear here as they become available.')} />

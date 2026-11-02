@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Link } from 'react-router-dom';
 import * as ui from './ui';
 import { Card } from '../../components/common/Card';
@@ -28,7 +29,7 @@ export function SkillStatePage() {
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>{t('Skills')}</h1>
+      <PageTitleBar title={t('Skills')} />
 
       {skills.length === 0 ? (
         <EmptyState

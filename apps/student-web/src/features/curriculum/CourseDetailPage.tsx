@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { plural } from '../../i18n';
 import { Button } from '../../components/common/Button';
@@ -23,6 +23,8 @@ import {
 } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { formatDate } from '../../i18n';
+import { CourseCardBody } from './CourseCardBody';
+import { BookIcon } from '../../components/common/Icons';
 
 /** Route: /curriculum/:subjectId — the param is a course id. */
 export function CourseDetailPage() {
@@ -97,34 +99,19 @@ export function CourseDetailPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-3">
-        <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">{t('All courses')}</span>
-      </div>
-
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
-        <div className="absolute top-0 end-0 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
-        <span className="text-indigo-100 text-[11px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full inline-block mb-2">
-          {isCurrent ? t('Current course') : t('Course overview')}
-        </span>
-        <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight leading-tight m-0 mb-1">{course.title}</h1>
-        {course.description && <p className="text-indigo-100/90 text-sm m-0 mb-2">{course.description}</p>}
-        <p className="text-indigo-100/90 text-xs m-0 mb-4">
-          {course.levelCode ? t('Level {code} · ', { code: course.levelCode }) : ''}{t('{done}/{total} lessons', { done: course.completedLessonCount, total: course.lessonCount })}
-        </p>
-        <div className="flex justify-between text-xs mb-1.5 font-semibold">
-          <span className="text-indigo-100">{t('Course progress')}</span>
-          <span className="font-extrabold">{t('{n}% complete', { n: course.percent })}</span>
+      <div className="sticky top-3 z-10 -mt-3 flex items-stretch gap-3 bg-[#4F46E5] text-white rounded-2xl ps-4 pe-2 py-3.5 shadow-lg shadow-indigo-500/30 dark:shadow-black/40">
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+          <CourseCardBody course={course} isCurrent={isCurrent} titleAs="h1" variant="primary" />
         </div>
-        <div
-          className="h-2 bg-black/20 rounded-full overflow-hidden p-0.5 backdrop-blur-sm"
-          role="progressbar"
-          aria-valuenow={course.percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={t('Course progress')}
+        <div className="w-px self-stretch bg-white/30" aria-hidden="true" />
+        <Link
+          to="/curriculum"
+          aria-label={t('Courses')}
+          title={t('Courses')}
+          className="shrink-0 self-center size-10 rounded-xl flex items-center justify-center text-white no-underline hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors"
         >
-          <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${course.percent}%` }} />
-        </div>
+          <BookIcon className="size-5" />
+        </Link>
       </div>
 
       {course.locked ? (

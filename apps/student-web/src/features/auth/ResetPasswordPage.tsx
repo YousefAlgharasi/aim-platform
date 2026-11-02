@@ -87,7 +87,6 @@ export function ResetPasswordPage() {
     <>
       <div>
       <AuthHeader
-        eyebrow={t('Reset Password')}
         title={t('Create a new password')}
         subtitle={t("Choose a strong password you haven't used before.")}
       />

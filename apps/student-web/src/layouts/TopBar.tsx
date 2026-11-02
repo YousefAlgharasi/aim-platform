@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nContext';
+import { BackButton } from '../components/common/BackButton';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
-
-interface TopBarProps {
-  /** Opens the navigation drawer (phones); the button sits beside the AIM logo. */
-  onOpenMenu: () => void;
-}
+import { fetchEngagementSummary } from '../features/dashboard/dashboardApi';
+import { FlameIcon } from '../components/common/Icons';
 
 const ROOT_PATHS = new Set(['/', '/dashboard']);
 
@@ -27,55 +24,55 @@ function useUnreadCount(pathname: string): number {
   return count;
 }
 
-export function TopBar({ onOpenMenu }: TopBarProps) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+/** Current day streak, refreshed on every navigation so it moves after a lesson is finished. */
+function useStreakDays(pathname: string): number | null {
+  const [days, setDays] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchEngagementSummary()
+      .then((s) => !cancelled && setDays(s?.goal?.streakDays ?? null))
+      // The streak is a convenience; never surface an error for it.
+      .catch(() => !cancelled && setDays(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+  return days;
+}
+
+export function TopBar() {
   const { pathname } = useLocation();
   const showBack = !ROOT_PATHS.has(pathname);
 
-  function goBack() {
-    // BrowserRouter keeps an index in history.state; 0 means this tab started on this page.
-    if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
-    else navigate('/', { replace: true });
-  }
-
   const { t, formatNumber } = useI18n();
   const unread = useUnreadCount(pathname);
+  const streakDays = useStreakDays(pathname);
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md flex items-center justify-between gap-3 px-4 sm:px-6 h-16 shrink-0 border-b bg-white/80 border-slate-100 dark:bg-slate-900/80 dark:border-slate-800">
-      <div className="flex items-center gap-2.5">
-        {showBack && (
-          <button
-            type="button"
-            onClick={goBack}
-            aria-label={t('Go back')}
-            title={t('Go back')}
-            className="size-10 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
-          >
-            <svg aria-hidden="true" className="size-5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-        )}
-        <button
-            type="button"
-            onClick={onOpenMenu}
-            aria-label={t('Open navigation menu')}
-            title={t('Open navigation menu')}
-            className="md:hidden size-10 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
-          >
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-        </button>
+    <header className="sticky top-0 z-20 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 h-16 shrink-0 border-b rounded-b-3xl shadow-sm bg-white/80 border-slate-100 dark:bg-slate-900/80 dark:border-slate-800">
+      <div className="flex items-center gap-2.5 justify-self-start min-w-0">
+        {showBack && <BackButton />}
         <div className={`size-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 items-center justify-center text-white font-black text-xs shadow-md shadow-indigo-500/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
           AIM
         </div>
         <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-slate-900 dark:text-white md:hidden">{t('AIM English')}</span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="justify-self-center">
+        {streakDays != null && (
+          <span
+            role="img"
+            aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
+            title={t('Day streak')}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+          >
+            <FlameIcon className="size-[18px] text-amber-500 fill-amber-400" />
+            <span aria-hidden="true">{formatNumber(streakDays)}</span>
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 justify-self-end">
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
@@ -90,13 +87,6 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
               {unread > 9 ? '9+' : formatNumber(unread)}
             </span>
           )}
-        </Link>
-        <Link
-          to="/profile"
-          aria-label={t('Profile')}
-          className="size-9 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#818CF8] flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-black text-xs no-underline hover:opacity-90 transition-opacity"
-        >
-          {user?.name?.charAt(0).toUpperCase() || '?'}
         </Link>
       </div>
     </header>

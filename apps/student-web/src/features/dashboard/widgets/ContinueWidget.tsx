@@ -8,6 +8,7 @@ import type {
   QuickStartLesson,
   RecommendedCourse,
 } from '../dashboardApi';
+import { InfoPopoverButton } from '../../../components/common/InfoPopoverButton';
 import * as ui from './ui';
 
 interface ContinueWidgetProps {
@@ -72,8 +73,16 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
             <span className={ui.eyebrow}>
               {t('Start here')}{quickStart.skillName ? <> · <bdi>{quickStart.skillName}</bdi></> : null}
             </span>
-            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
-            {quickStart.lessonDescription && <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [unicode-bidi:plaintext]">{quickStart.lessonDescription}</span>}
+            <div className="flex items-start gap-1.5">
+              <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
+              {quickStart.lessonDescription && (
+                <InfoPopoverButton
+                  title={t('About this lesson')}
+                  label={t('{title}: lesson description', { title: quickStart.lessonTitle })}
+                  text={quickStart.lessonDescription}
+                />
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <Link to={`/lessons/${quickStart.lessonId}`} className={ui.primaryLink}>{t('Start lesson')}</Link>
             </div>

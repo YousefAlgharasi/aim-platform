@@ -191,7 +191,7 @@ export function CheckoutPage() {
     const state = status?.status ?? 'pending';
     return (
       <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
-        <PageHeader eyebrow={t('Billing')} title={t('Checkout')} />
+        <PageHeader title={t('Checkout')} />
         <Card>
           <div className="flex flex-col gap-4 items-stretch">
             {statusError ? (
@@ -258,7 +258,7 @@ export function CheckoutPage() {
   // ----- Start view -----
   return (
     <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
-      <PageHeader eyebrow={t('Billing')} title={t('Checkout')} />
+      <PageHeader title={t('Checkout')} />
 
       {result === 'cancel' && <Banner variant="info">{t('Payment was cancelled. You have not been charged.')}</Banner>}
 

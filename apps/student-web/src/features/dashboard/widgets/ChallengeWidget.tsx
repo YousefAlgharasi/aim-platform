@@ -6,10 +6,12 @@ import * as ui from './ui';
 
 interface ChallengeWidgetProps {
   challenge: DailyChallengeSummary;
+  /** Course the lessons belong to; "Go to lessons" opens it. Falls back to the course list when unknown. */
+  courseId?: string | null;
 }
 
 /** Today's backend-assigned challenge (GET /student/engagement/summary → challenge). */
-export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
+export function ChallengeWidget({ challenge, courseId }: ChallengeWidgetProps) {
   const { t } = useI18n();
   const target = Math.max(challenge.targetCount, 1);
   const pct = Math.min(100, Math.round((challenge.progressCount / target) * 100));
@@ -42,7 +44,7 @@ export function ChallengeWidget({ challenge }: ChallengeWidgetProps) {
         </div>
         {!challenge.completed && (
           <div className="flex flex-wrap items-center gap-3">
-            <Link to="/curriculum" className={ui.primaryLink}>{t('Go to lessons')}</Link>
+            <Link to={courseId ? `/curriculum/${courseId}` : '/curriculum'} className={ui.primaryLink}>{t('Go to lessons')}</Link>
           </div>
         )}
       </div>

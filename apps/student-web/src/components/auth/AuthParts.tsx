@@ -18,13 +18,10 @@ export function AuthLogo() {
   );
 }
 
-export function AuthHeader({ eyebrow, title, subtitle }: { eyebrow: string; title: ReactNode; subtitle?: ReactNode }) {
+export function AuthHeader({ title, subtitle }: { title: ReactNode; subtitle?: ReactNode }) {
   return (
     <div>
       <AuthLogo />
-      <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider block mb-1">
-        {eyebrow}
-      </span>
       <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight leading-tight m-0">{title}</h1>
       {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">{subtitle}</p>}
     </div>

@@ -9,6 +9,7 @@ const mockAddComment = jest.fn();
 jest.mock('react-router-dom', () => ({
   Link: ({ children }: { children: unknown }) => <span>{children as never}</span>,
   useParams: () => ({ ticketId: 't1' }),
+  useNavigate: () => jest.fn(),
 }));
 // `t` must be referentially stable: TicketDetailPage lists it as an effect dependency.
 const mockI18n = {

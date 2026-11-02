@@ -176,7 +176,7 @@ export function SupportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Support')} title={t('Help & Support')} subtitle={t('Get help, share feedback and check our status.')} />
+      <PageHeader title={t('Help & Support')} subtitle={t('Get help, share feedback and check our status.')} />
 
       {success && <Banner variant="success">{success}</Banner>}
 

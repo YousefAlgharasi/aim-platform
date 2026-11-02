@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Link } from 'react-router-dom';
 import * as ui from './ui';
 import { Card } from '../../components/common/Card';
@@ -22,8 +23,7 @@ export function RecommendationsPage() {
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>{t('Recommendations')}</h1>
-      <p className={ui.intro}>{t('Personalized next steps from the AIM engine, most important first.')}</p>
+      <PageTitleBar title={t('Recommendations')} subtitle={t('Personalized next steps from the AIM engine, most important first.')} />
 
       {recs.length === 0 ? (
         <EmptyState title={t('No recommendations')} message={t('Complete more lessons to get personalized recommendations.')} />

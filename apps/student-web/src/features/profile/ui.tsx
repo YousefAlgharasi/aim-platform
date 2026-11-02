@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 
 // Presentation helpers shared by the account-area feature pages (profile, settings,
 // notifications, billing, support, reports). Visual language from design-prototype.
 
-export const eyebrowCls = 'text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider m-0';
 export const h1Cls = 'text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0';
 export const subCls = 'text-sm text-slate-500 dark:text-slate-400 m-0 leading-relaxed';
 export const h2Cls = 'text-base font-extrabold tracking-tight text-slate-900 dark:text-white m-0';
@@ -49,25 +49,14 @@ export function BackLink({ to, label = 'Back' }: { to: string; label?: string })
 }
 
 interface PageHeaderProps {
-  eyebrow?: string;
   title: string;
   subtitle?: ReactNode;
-  back?: ReactNode;
   action?: ReactNode;
 }
 
-export function PageHeader({ eyebrow, title, subtitle, back, action }: PageHeaderProps) {
-  return (
-    <header className="flex items-start gap-3">
-      {back}
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        {eyebrow && <p className={eyebrowCls}>{eyebrow}</p>}
-        <h1 className={h1Cls}>{title}</h1>
-        {subtitle && <p className={subCls}>{subtitle}</p>}
-      </div>
-      {action && <div className="shrink-0">{action}</div>}
-    </header>
-  );
+/** Page heading: back arrow + centered title on one line. */
+export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
+  return <PageTitleBar title={title} subtitle={subtitle} action={action} />;
 }
 
 export function SectionTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {

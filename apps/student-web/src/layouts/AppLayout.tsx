@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { usePlacementGate } from '../features/placement/placementApi';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { BackButton } from '../components/common/BackButton';
+import { PageChromeProvider, usePageChrome } from '../components/common/PageTitleBar';
 import { MobileDrawer } from './MobileDrawer';
 import { navItems } from './navItems';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
@@ -28,6 +30,14 @@ function writeFlag(key: string) {
 
 // Full-screen flows (chat, voice, lessons, practice, test attempts) hide the bottom tab bar
 // so it never covers their input/action bars — same as the prototype's sub-screens.
+/**
+ * Pages that get no automatic back arrow: Home, the course page (/curriculum/:id, which has its
+ * floating course card instead), and pages that render their own BackButton (Courses list, lessons).
+ */
+const NO_AUTO_BACK = /^(\/|\/dashboard|\/curriculum|\/curriculum\/[^/]+|\/lessons\/[^/]+)\/?$/;
+
+/** The app bar is only shown on Home. Other pages have no app bar. */
+const TOP_BAR_PATHS = new Set(['/', '/dashboard']);
 const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
 
 export function AppLayout() {
@@ -41,6 +51,7 @@ export function AppLayout() {
   const section = navItems.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to)));
   useRouteAccessibility(mainRef, { fallbackTitle: section ? t(section.label) : undefined });
   const showTabBar = !TAB_BAR_HIDDEN.test(pathname);
+  const { hasTitleBar, chrome } = usePageChrome();
 
   // First-login gate (Flutter parity): students who haven't chosen between the
   // placement test and starting from scratch are sent to the choice screen once.
@@ -88,14 +99,17 @@ export function AppLayout() {
       <MobileDrawer open={menuOpen} onClose={closeMenu} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar onOpenMenu={() => setMenuOpen(true)} />
+        {TOP_BAR_PATHS.has(pathname) && <TopBar />}
         <main
           id="main-content"
           ref={mainRef}
           tabIndex={-1}
           className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 pb-8"
         >
-          <Outlet />
+          <PageChromeProvider value={chrome}>
+            {!hasTitleBar && !NO_AUTO_BACK.test(pathname) && <BackButton className="mb-4" />}
+            <Outlet />
+          </PageChromeProvider>
         </main>
 
         {/* Floating Action Button (FAB) for Drawer Menu — Bottom Right */}

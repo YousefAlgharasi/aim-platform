@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -108,10 +109,7 @@ export function CourseClaimPage() {
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
-      <div>
-        <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Get this course')}</span>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{courseTitle}</h1>
-      </div>
+      <PageTitleBar title={courseTitle} fallback={`/curriculum/${courseId}`} />
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 ring-1 ring-[#E2E8F0] dark:ring-slate-700 flex flex-col gap-2">
         {price.isFree ? (

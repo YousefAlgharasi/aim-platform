@@ -88,7 +88,6 @@ export function RegisterPage() {
     <>
       <div>
       <AuthHeader
-        eyebrow={t('Start your journey')}
         title={t('Create an account')}
         subtitle={t('Takes less than a minute. Enter your details below.')}
       />

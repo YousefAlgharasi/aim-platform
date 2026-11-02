@@ -120,7 +120,7 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader eyebrow={t('Account')} title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
+      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 

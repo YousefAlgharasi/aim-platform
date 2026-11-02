@@ -75,7 +75,6 @@ export function ForgotPasswordPage() {
     <>
       <div>
       <AuthHeader
-        eyebrow={t('Forgot Password?')}
         title={t('Reset your password')}
         subtitle={t("Enter the email linked to your account and we'll send you a link to reset your password.")}
       />

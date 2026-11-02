@@ -34,7 +34,7 @@ export function AssessmentResultPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl flex flex-col gap-5">
-      <PageHeader eyebrow={t('Assessment')} title={t('Result')} />
+      <PageHeader title={t('Result')} />
 
       <div className="bg-gradient-to-b from-indigo-50/60 via-white to-slate-50/30 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-2xl ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm p-6 flex flex-col items-center text-center gap-3">
         <div className="relative mb-1">

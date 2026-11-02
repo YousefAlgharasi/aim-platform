@@ -98,7 +98,6 @@ export function PlacementGatePage() {
   return (
     <div className="mx-auto w-full max-w-xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Get started')}
         title={t('How would you like to start?')}
         subtitle={t('Choose how you want to begin learning. This choice is only asked once.')}
       />

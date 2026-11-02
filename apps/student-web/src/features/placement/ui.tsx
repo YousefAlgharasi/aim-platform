@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckIcon } from '../../components/common/Icons';
@@ -29,37 +30,14 @@ export function PageHeader({
   title,
   subtitle,
   action,
-  backTo,
-  backLabel,
 }: {
+  /** Extra content under the title (e.g. status badges). */
   eyebrow?: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
-  backTo?: string;
-  backLabel?: string;
 }) {
-  return (
-    <header className="flex items-start gap-3">
-      {backTo && (
-        <Link
-          to={backTo}
-          aria-label={backLabel ?? t('Back')}
-          className="size-10 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-        >
-          <svg className="size-5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </Link>
-      )}
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        {eyebrow && <span className={EYEBROW}>{eyebrow}</span>}
-        <h1 className={H1}>{title}</h1>
-        {subtitle && <p className={BODY}>{subtitle}</p>}
-      </div>
-      {action}
-    </header>
-  );
+  return <PageTitleBar title={title} subtitle={subtitle} meta={eyebrow} action={action} />;
 }
 
 export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; tone?: 'indigo' | 'emerald' }) {

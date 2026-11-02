@@ -32,7 +32,6 @@ export function AssessmentListPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Assessments')}
         title={t('Assessments')}
         subtitle={t('Quizzes and exams assigned to you.')}
         action={

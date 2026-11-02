@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -65,8 +66,7 @@ export function ReviewSchedulePage() {
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>{t('Review schedule')}</h1>
-      <p className={ui.intro}>{t('Spaced-repetition reviews scheduled for you to keep skills fresh.')}</p>
+      <PageTitleBar title={t('Review schedule')} subtitle={t('Spaced-repetition reviews scheduled for you to keep skills fresh.')} />
 
       {data.reviewSchedules.length === 0 ? (
         <EmptyState title={t('No reviews scheduled')} message={t('Reviews are scheduled automatically as you practice skills.')} />

@@ -77,7 +77,6 @@ export function AssessmentDeadlinesPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Assessments')}
         title={t('Deadlines')}
         subtitle={t('Everything that is open, upcoming or past due.')}
       />

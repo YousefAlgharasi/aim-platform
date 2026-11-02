@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { Modal } from '../../components/common/Modal';
+import { Popover } from '../../components/common/Popover';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -17,27 +17,29 @@ import {
 } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
-import { CourseBillingBadge } from '../course-billing/CourseBillingBadge';
-
-const STATUS_LABEL: Record<StudentCourse['status'], string> = {
-  not_started: 'Not started',
-  in_progress: 'In progress',
-  completed: 'Completed',
-};
+import { PageTitleBar } from '../../components/common/PageTitleBar';
+import { CourseCardBody } from './CourseCardBody';
 
 export const COURSE_LOCKED_MESSAGE = 'Finish your current level to unlock this course.';
 
 export function CourseCatalog() {
   const navigate = useNavigate();
-  const { t, plural } = useI18n();
+  const { t } = useI18n();
   const [courses, setCourses] = useState<StudentCourse[]>([]);
   const [enrollment, setEnrollment] = useState<CurrentEnrollment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  // Locked course whose "finish your current level" message is shown in a popover over its card.
+  const [lockedCourse, setLockedCourse] = useState<StudentCourse | null>(null);
+  const lockedAnchor = useRef<HTMLElement | null>(null);
   const [pending, setPending] = useState<StudentCourse | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [enrollError, setEnrollError] = useState('');
+  // Card the start-course popover is anchored to; last course kept so content stays during the exit fade.
+  const pendingAnchor = useRef<HTMLElement | null>(null);
+  const lastPending = useRef<StudentCourse | null>(null);
+  if (pending) lastPending.current = pending;
+  const shownCourse = pending ?? lastPending.current;
 
   const load = useCallback(() => {
     setLoading(true);
@@ -59,10 +61,12 @@ export function CourseCatalog() {
 
   const currentCourseId = enrollment?.found ? enrollment.courseId : null;
 
-  function handleOpen(course: StudentCourse) {
-    setNotice('');
+  function handleOpen(course: StudentCourse, card: HTMLElement) {
+    setPending(null);
+    setLockedCourse(null);
     if (course.locked) {
-      setNotice(t(COURSE_LOCKED_MESSAGE));
+      lockedAnchor.current = card;
+      setLockedCourse(course);
       return;
     }
     if (needsPayment(course)) {
@@ -74,6 +78,7 @@ export function CourseCatalog() {
       return;
     }
     setEnrollError('');
+    pendingAnchor.current = card;
     setPending(course);
   }
 
@@ -101,16 +106,11 @@ export function CourseCatalog() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Learn')}</span>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{t('Courses')}</h1>
-      </div>
-      {notice && <Banner variant="info">{notice}</Banner>}
+      <PageTitleBar title={t('Courses')} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map(course => {
           const isCurrent = course.courseId === currentCourseId;
-          const completed = course.status === 'completed';
           return (
             <div
               key={course.courseId}
@@ -123,75 +123,50 @@ export function CourseCatalog() {
                     ? 'ring-2 ring-[#4F46E5] dark:ring-indigo-400 hover:shadow-md cursor-pointer'
                     : 'ring-[#E2E8F0] dark:ring-slate-700 hover:ring-indigo-300 dark:hover:ring-indigo-700 hover:shadow-md cursor-pointer'
               }`}
-              onClick={() => handleOpen(course)}
+              onClick={(e) => handleOpen(course, e.currentTarget)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  handleOpen(course);
+                  handleOpen(course, e.currentTarget);
                 }
               }}
               aria-disabled={course.locked || undefined}
               aria-label={course.locked ? t('{title} (locked)', { title: course.title }) : course.title}
             >
-              <div className="flex flex-wrap items-center gap-1.5">
-                {course.levelCode && (
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full">
-                    {course.levelCode}
-                  </span>
-                )}
-                {isCurrent && (
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-white bg-indigo-600 px-2.5 py-1 rounded-full">
-                    {t('Current course')}
-                  </span>
-                )}
-                <CourseBillingBadge price={course.price} access={course.access} />
-                {course.locked && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">
-                    <LockIcon className="size-3" /> {t('Locked')}
-                  </span>
-                )}
-              </div>
-              <h2 className="font-extrabold text-lg tracking-tight leading-tight text-slate-900 dark:text-white m-0">{course.title}</h2>
-              {course.description && (
-                <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0 line-clamp-2">{course.description}</p>
-              )}
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span>{plural(course.lessonCount, { one: t('1 lesson'), two: t('2 lessons'), few: t('{n} lessons [few]', { n: course.lessonCount }), other: t('{n} lessons', { n: course.lessonCount }) })}</span>
-                {course.quizCount > 0 && <span>{plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) })}</span>}
-                {course.examCount > 0 && <span>{t('Final exam')}</span>}
-              </div>
-              <div className="mt-auto pt-1">
-                <div
-                  className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={course.percent}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={t('{title} progress', { title: course.title })}
-                >
-                  <div
-                    className={`h-full rounded-full ${completed ? 'bg-emerald-500' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500'}`}
-                    style={{ width: `${course.percent}%` }}
-                  />
-                </div>
-                <span className="block mt-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {STATUS_LABEL[course.status] ? t(STATUS_LABEL[course.status]) : course.status} · {course.percent}%
-                </span>
-              </div>
+              <CourseCardBody course={course} isCurrent={isCurrent} />
             </div>
           );
         })}
       </div>
 
-      <Modal open={!!pending} onClose={() => !enrolling && setPending(null)} title={t('Start this course?')}>
-        <div className="flex flex-col gap-4">
+      <Popover
+        open={!!lockedCourse}
+        onClose={() => setLockedCourse(null)}
+        anchorRef={lockedAnchor}
+        placement="cover"
+        title={t('Locked')}
+      >
+        <p className="flex items-start gap-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
+          <LockIcon className="size-4 mt-0.5 shrink-0" />
+          <span>{t(COURSE_LOCKED_MESSAGE)}</span>
+        </p>
+      </Popover>
+
+      <Popover
+        open={!!pending}
+        onClose={() => !enrolling && setPending(null)}
+        anchorRef={pendingAnchor}
+        placement="cover"
+        title={t('Start this course?')}
+      >
+        <div className="flex flex-col gap-3">
           <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
             {enrollment?.found && enrollment.courseTitle
-              ? t("You're currently in {current}. Switching to {next} will make it your active course instead.", { current: enrollment.courseTitle, next: pending?.title ?? '' })
-              : t('{title} will become your active course.', { title: pending?.title ?? '' })}
+              ? t("You're currently in {current}. Switching to {next} will make it your active course instead.", { current: enrollment.courseTitle, next: shownCourse?.title ?? '' })
+              : t('{title} will become your active course.', { title: shownCourse?.title ?? '' })}
           </p>
           {enrollError && <Banner variant="error">{enrollError}</Banner>}
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setPending(null)} disabled={enrolling}>
               {t('Cancel')}
             </Button>
@@ -200,7 +175,7 @@ export function CourseCatalog() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Popover>
     </div>
   );
 }

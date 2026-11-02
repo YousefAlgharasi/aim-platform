@@ -34,7 +34,6 @@ import {
   ProgressWidget,
   RecommendationWidget,
   StatsWidget,
-  StreakWidget,
 } from './widgets';
 import { FlameIcon } from '../../components/common/Icons';
 
@@ -196,6 +195,12 @@ export function DashboardHome() {
     (data?.enrollment?.found ? data.enrollment.courseTitle : null) ?? data?.recommendedCourse?.courseTitle ?? null;
 
   const streakDays = data?.summary?.goal.streakDays;
+  // Greet by first name only.
+  const firstName = user?.name?.trim().split(/\s+/)[0] ?? '';
+  const goal = data?.summary?.goal ?? null;
+  const goalTarget = goal ? Math.max(goal.targetLessons, 0) : 0;
+  const goalPct = goal && goalTarget > 0 ? Math.min(100, Math.round((goal.completedToday / goalTarget) * 100)) : 0;
+  const goalMet = !!goal && goalTarget > 0 && goal.completedToday >= goalTarget;
 
   return (
     <div className="flex flex-col gap-6">
@@ -205,7 +210,7 @@ export function DashboardHome() {
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="m-0 text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
-              {user?.name ? t('Welcome back, {name}', { name: user.name }) : t('Welcome back')}
+              {firstName ? t('Welcome back, {name}', { name: firstName }) : t('Welcome back')}
             </h1>
             {data && (stats || courseTitle) && (
               <p className="m-0 mt-1 text-xs sm:text-sm font-medium text-indigo-100/90">
@@ -229,6 +234,35 @@ export function DashboardHome() {
             </div>
           )}
         </div>
+        {goal && (
+          <div className="relative z-10 mt-4 flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3 text-xs font-bold text-indigo-100">
+              <span>
+                {t('Daily goal: {lessons}', {
+                  lessons: plural(goalTarget, {
+                    one: t('{n} lesson', { n: goalTarget }),
+                    two: t('{n} lessons [two]', { n: goalTarget }),
+                    few: t('{n} lessons [few]', { n: goalTarget }),
+                    other: t('{n} lessons', { n: goalTarget }),
+                  }),
+                })}
+              </span>
+              <span className="font-extrabold text-white">
+                {goalMet ? t('Goal met today') : t('{done}/{total} today', { done: goal.completedToday, total: goalTarget })}
+              </span>
+            </div>
+            <div
+              className="h-2 overflow-hidden rounded-full bg-white/25"
+              role="progressbar"
+              aria-label={t('Daily goal progress')}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={goalPct}
+            >
+              <div className={`h-full rounded-full ${goalMet ? 'bg-emerald-300' : 'bg-white'}`} style={{ width: `${goalPct}%` }} />
+            </div>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -248,8 +282,7 @@ export function DashboardHome() {
             </Banner>
           )}
 
-          <section aria-label={t('Your stats')} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            <StreakWidget goal={data.summary?.goal ?? null} />
+          <section aria-label={t('Your stats')} className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ProgressWidget
               completionPercent={stats?.levelProgressPercent ?? 0}
               label={stats ? t('Level {level}', { level: stats.level }) : t('Level unavailable')}
@@ -272,7 +305,10 @@ export function DashboardHome() {
               enrollment={data.enrollment}
             />
             {data.summary?.challenge ? (
-              <ChallengeWidget challenge={data.summary.challenge} />
+              <ChallengeWidget
+                challenge={data.summary.challenge}
+                courseId={(data.enrollment?.found ? data.enrollment.courseId : null) ?? data.recommendedCourse?.courseId ?? null}
+              />
             ) : (
               <ActivityWidget
                 days={stats?.weeklyActivity ?? []}

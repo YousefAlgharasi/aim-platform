@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -45,8 +46,7 @@ export function WeaknessesPage() {
 
   return (
     <div className={ui.pageStack}>
-      <h1 className={ui.h1}>{t('Areas to improve')}</h1>
-      <p className={ui.intro}>{t('Skills the AIM engine detected you are struggling with, based on your attempts.')}</p>
+      <PageTitleBar title={t('Areas to improve')} subtitle={t('Skills the AIM engine detected you are struggling with, based on your attempts.')} />
 
       {records.length === 0 ? (
         <EmptyState title={t('No weaknesses detected')} message={t('Great work — no areas to improve have been detected yet.')} />

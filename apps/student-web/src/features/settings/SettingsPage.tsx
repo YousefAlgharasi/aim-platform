@@ -11,6 +11,7 @@ import { updateProfile } from '../profile/profileApi';
 import { LogOutIcon } from '../../components/common/Icons';
 import { PageHeader, SectionTitle, LinkRow, subCls } from '../profile/ui';
 import { LanguageDropdown } from './LanguageDropdown';
+import { ThemeSwitch } from './ThemeSwitch';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -87,7 +88,7 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Account')} title={t('Settings')} subtitle={user?.email} />
+      <PageHeader title={t('Settings')} />
 
       <div className="grid gap-5 md:grid-cols-2 items-start">
         <Card>
@@ -104,6 +105,16 @@ export function SettingsPage() {
               disabled={savingLanguage || language === locale}
               loading={savingLanguage}
             />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex flex-col gap-3.5">
+            <div className="flex items-center gap-3">
+              <span className="size-9 rounded-xl bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+              <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
+            </div>
+            <ThemeSwitch />
           </div>
         </Card>
 

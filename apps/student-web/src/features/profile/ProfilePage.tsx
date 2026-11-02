@@ -17,7 +17,7 @@ import {
   type ProfileMeResponse,
 } from './profileApi';
 import { validateMaxLength, mapApiFieldErrors } from '../../utils/validation';
-import { PageHeader, SectionTitle, Field, LinkRow, selectCls, labelCls, bodyCls, pillCls } from './ui';
+import { PageHeader, SectionTitle, Field, LinkRow, selectCls, pillCls } from './ui';
 
 const QUICK_LINKS = [
   { to: '/settings', label: 'Account settings' },
@@ -112,7 +112,7 @@ export function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Account')} title={t('Profile')} />
+      <PageHeader title={t('Profile')} />
 
       <div className="grid gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1 flex flex-col gap-5">
@@ -130,12 +130,6 @@ export function ProfilePage() {
                   <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400 break-all">{user.email}</p>
                 </div>
               </div>
-              <dl className="m-0 flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>{t('Email')}</dt>
-                  <dd className={`${bodyCls} break-all`}>{user.email}</dd>
-                </div>
-              </dl>
             </div>
           </Card>
 

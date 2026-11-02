@@ -68,7 +68,6 @@ export function LoginPage() {
     <>
       <div>
       <AuthHeader
-        eyebrow={t('Welcome back')}
         title={t('Sign in to your account')}
         subtitle={t('Happy to see you again. Enter your email and password to continue.')}
       />

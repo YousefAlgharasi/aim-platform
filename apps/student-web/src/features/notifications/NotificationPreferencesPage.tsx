@@ -212,7 +212,6 @@ export function NotificationPreferencesPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow={t('Notifications')}
         title={t('Notification Preferences')}
         action={<Link to="/notifications" className={textLinkCls}>{t('Inbox')}</Link>}
       />

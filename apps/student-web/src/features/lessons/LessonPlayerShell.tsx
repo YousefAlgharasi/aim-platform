@@ -18,6 +18,8 @@ import {
 import { useI18n } from '../../i18n/I18nContext';
 import { plural } from '../../i18n';
 import { CheckIcon, SparkleIcon, ZapIcon } from '../../components/common/Icons';
+import { InfoPopoverButton } from '../../components/common/InfoPopoverButton';
+import { BackButton } from '../../components/common/BackButton';
 
 /** Navigation state accepted by /lessons/:lessonId and /practice/lesson/:lessonId. */
 export interface LessonRouteState {
@@ -97,6 +99,8 @@ export function LessonPlayerShell() {
 
   return (
     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
+      <BackButton fallback={courseId ? `/curriculum/${courseId}` : '/curriculum'} className="self-start" />
+
       <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -109,8 +113,19 @@ export function LessonPlayerShell() {
             </span>
           )}
         </div>
-        <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight m-0 leading-tight mb-2 text-white">{lesson.title}</h1>
-        {lesson.description && <p className="text-indigo-100/90 text-sm m-0 leading-relaxed mb-3">{lesson.description}</p>}
+        <div className="flex items-start gap-2 mb-3">
+          <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight m-0 leading-tight text-white">{lesson.title}</h1>
+          {lesson.description && (
+            <span className="mt-1.5 sm:mt-2">
+              <InfoPopoverButton
+                tone="onPrimary"
+                title={t('About this lesson')}
+                label={t('{title}: lesson description', { title: lesson.title })}
+                text={lesson.description}
+              />
+            </span>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-indigo-100">
           <span className="bg-white/15 px-2.5 py-1 rounded-full">{plural(assets.length, { one: t('1 step'), two: t('2 steps'), few: t('{n} steps', { n: assets.length }), other: t('{n} steps', { n: assets.length }) })}</span>
           {totalSeconds > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{t('~{n} min', { n: Math.max(1, Math.round(totalSeconds / 60)) })}</span>}
