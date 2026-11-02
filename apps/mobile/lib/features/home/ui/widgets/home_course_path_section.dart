@@ -337,6 +337,25 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     if (_state == _LoadState.loading) {
       return const _CoursePathSkeleton();
     }
+    if (_state == _LoadState.empty) {
+      return const SizedBox.shrink();
+    }
+    if (_state == _LoadState.failure) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AimSpacing.space16),
+        child: Center(
+          child: TextButton(
+            onPressed: _load,
+            child: Text(
+              AppLocalizations.of(context).commonError,
+              style: AimTextStyles.bodySm.copyWith(
+                color: AimColors.error500,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (_state != _LoadState.success || _courseTitle == null) {
       return const SizedBox.shrink();
     }
@@ -355,19 +374,30 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                titleText,
-                style: AimTextStyles.h3.copyWith(
-                  color: surfaces.textPrimary,
-                  fontWeight: AimFontWeights.bold,
+              Expanded(
+                child: Text(
+                  titleText,
+                  style: AimTextStyles.h3.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                _subtitle ?? '',
-                style: AimTextStyles.bodySm.copyWith(
-                  color: surfaces.textMuted,
-                  fontWeight: AimFontWeights.bold,
-                  fontSize: 12,
+              const SizedBox(width: AimSpacing.space12),
+              Expanded(
+                flex: 0,
+                child: Text(
+                  _subtitle ?? '',
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: surfaces.textMuted,
+                    fontWeight: AimFontWeights.bold,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.end,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -778,8 +808,11 @@ class _GetCourseCard extends StatelessWidget {
                     color: surfaces.textPrimary,
                     fontWeight: AimFontWeights.bold,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: AimSpacing.space8),
               CourseBillingChip(course: course),
             ],
           ),
@@ -841,6 +874,8 @@ class _NextCourseCard extends StatelessWidget {
                     color: surfaces.textPrimary,
                     fontWeight: AimFontWeights.bold,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

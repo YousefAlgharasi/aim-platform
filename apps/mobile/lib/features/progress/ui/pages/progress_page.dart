@@ -295,7 +295,7 @@ class _ProgressContentState extends State<_ProgressContent> {
         borderRadius: BorderRadius.circular(10),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
             color: isSelected ? surfaces.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
@@ -312,6 +312,8 @@ class _ProgressContentState extends State<_ProgressContent> {
           child: Center(
             child: Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,

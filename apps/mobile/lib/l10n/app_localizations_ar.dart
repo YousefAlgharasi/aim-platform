@@ -106,7 +106,89 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authForgotPassword => 'نسيت كلمة المرور؟';
 
   @override
+  String get authForgotPasswordBadge => 'نسيت كلمة المرور؟';
+
+  @override
+  String get authResetPasswordTitle => 'إعادة تعيين\nكلمة المرور';
+
+  @override
+  String get authResetPasswordSubtitle =>
+      'أدخل البريد الإلكتروني المرتبط بحسابك وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.';
+
+  @override
+  String get authEmailAddressHint => 'عنوان البريد الإلكتروني';
+
+  @override
+  String get authSendResetLinkButton => 'إرسال رابط إعادة التعيين';
+
+  @override
+  String get authRememberedPasswordPrompt => 'تذكرت كلمة المرور؟ ';
+
+  @override
+  String get authBackToSignIn => 'العودة إلى تسجيل الدخول';
+
+  @override
+  String get authPasswordResetLinkSentTo =>
+      'أرسلنا رابط إعادة تعيين كلمة المرور إلى';
+
+  @override
+  String get authYourEmailFallback => 'بريدك الإلكتروني';
+
+  @override
+  String get authResendEmailButton => 'لم تستلمه؟ أعد إرسال البريد الإلكتروني';
+
+  @override
+  String get authResetPasswordPreviewShortcut =>
+      'الاستمرار إلى إعادة تعيين كلمة المرور (معاينة)';
+
+  @override
+  String get authResetPasswordBadge => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get authCreateNewPasswordTitle => 'إنشاء كلمة مرور\nجديدة';
+
+  @override
+  String get authCreateNewPasswordSubtitle =>
+      'اختر كلمة مرور قوية لم تستخدمها من قبل.';
+
+  @override
+  String get authPasswordMinEight =>
+      'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.';
+
+  @override
+  String get authNewPasswordHint => 'كلمة المرور الجديدة';
+
+  @override
+  String get authConfirmNewPasswordHint => 'تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get authResetPasswordButton => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get authPasswordResetSuccessTitle => 'تمت إعادة تعيين كلمة المرور!';
+
+  @override
+  String get authPasswordResetSuccessBody =>
+      'تم تحديث كلمة مرورك. سجّل الدخول بكلمة المرور الجديدة.';
+
+  @override
   String get authSignInButton => 'تسجيل الدخول';
+
+  @override
+  String get authWelcomeBackTitle => 'مرحبًا بعودتك';
+
+  @override
+  String get authWelcomeBackSubtitle => 'سجّل الدخول للحفاظ على سلسلة إنجازاتك';
+
+  @override
+  String get authStartYourJourneyBadge => 'ابدأ رحلتك';
+
+  @override
+  String get authCreateAccountTitle => 'إنشاء حساب';
+
+  @override
+  String get authCreateAccountSubtitle =>
+      'يستغرق أقل من دقيقة واحدة. أدخل بيانات المعلومات الخاصة بك أدناه.';
 
   @override
   String get authSignInSemantic => 'تسجيل الدخول';
@@ -122,12 +204,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authOpenEndpointTester => 'فتح أداة اختبار واجهة برمجة التطبيقات';
-
-  @override
-  String get authWelcomeBackTitle => 'مرحبًا بعودتك';
-
-  @override
-  String get authWelcomeBackSubtitle => 'سجّل الدخول للحفاظ على سلسلة إنجازاتك';
 
   @override
   String get authOrContinueWith => 'أو تابع باستخدام';

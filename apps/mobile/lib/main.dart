@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/localization/locale_provider.dart';
 import 'core/logging/app_logger.dart';
 import 'core/networking/network_status.dart';
 import 'core/logging/app_provider_observer.dart';
 
-void main() {
+void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
   // Attach global uncaught Flutter framework error handler
@@ -29,10 +30,20 @@ void main() {
   // Keeps the native splash on screen until SplashPage removes it
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  // Restore the user's previously-saved language choice (if any) before the
+  // first frame, so the app never flashes the wrong language on launch.
+  final savedLocaleCode = await loadSavedLocaleCode();
+
   runApp(
-    const ProviderScope(
-      observers: [AppProviderObserver()],
-      child: AimMobileApp(),
+    ProviderScope(
+      observers: const [AppProviderObserver()],
+      overrides: [
+        if (savedLocaleCode != null)
+          localeProvider.overrideWith(
+            (ref) => LocaleNotifier(Locale(savedLocaleCode)),
+          ),
+      ],
+      child: const AimMobileApp(),
     ),
   );
 }

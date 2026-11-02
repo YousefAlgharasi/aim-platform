@@ -76,7 +76,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter a valid email address';
+        _errorMessage = AppLocalizations.of(context).authEmailInvalid;
       });
       return;
     }
@@ -119,14 +119,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
     if (newPassword.length < 8) {
       setState(() {
-        _errorMessage = 'Password must be at least 8 characters.';
+        _errorMessage = AppLocalizations.of(context).authPasswordMinEight;
       });
       return;
     }
 
     if (newPassword != confirmPassword) {
       setState(() {
-        _errorMessage = 'Passwords do not match.';
+        _errorMessage = AppLocalizations.of(context).authPasswordsDoNotMatch;
       });
       return;
     }
@@ -336,7 +336,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 children: [
                   // Category Badge
                   Text(
-                    'FORGOT PASSWORD?',
+                    l10n.authForgotPasswordBadge,
                     style: AimTextStyles.caption.copyWith(
                       color: primaryColor,
                       fontWeight: AimFontWeights.extrabold,
@@ -348,7 +348,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
                   // Title
                   Text(
-                    'Reset your\npassword',
+                    l10n.authResetPasswordTitle,
                     style: AimTextStyles.h1.copyWith(
                       color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.extrabold,
@@ -360,7 +360,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
                   // Subtitle
                   Text(
-                    "Enter the email linked to your account and we'll send you a link to reset your password.",
+                    l10n.authResetPasswordSubtitle,
                     style: AimTextStyles.bodyMd.copyWith(
                       color: surfaces.textMuted,
                       fontSize: 14,
@@ -410,7 +410,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     style: AimTextStyles.bodyMd
                         .copyWith(color: surfaces.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Email address',
+                      hintText: l10n.authEmailAddressHint,
                       hintStyle: AimTextStyles.bodyMd
                           .copyWith(color: surfaces.textMuted),
                       filled: true,
@@ -444,7 +444,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     loading: _isLoading,
                     disabled: _isLoading,
                     onPressed: _submitEmail,
-                    child: const Text('Send Reset Link'),
+                    child: Text(l10n.authSendResetLinkButton),
                   ),
 
                   const Spacer(),
@@ -460,7 +460,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
-                            'Remembered your password? ',
+                            l10n.authRememberedPasswordPrompt,
                             style: AimTextStyles.bodySm.copyWith(
                               color: surfaces.textSecondary,
                             ),
@@ -468,7 +468,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           GestureDetector(
                             onTap: _backToLogin,
                             child: Text(
-                              'Back to Sign In',
+                              l10n.authBackToSignIn,
                               style: AimTextStyles.bodySm.copyWith(
                                 color: primaryColor,
                                 fontWeight: AimFontWeights.bold,
@@ -528,7 +528,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: AimSpacing.space20),
                   Text(
-                    'Check Your Email',
+                    l10n.authCheckYourEmailTitle,
                     style: AimTextStyles.h2.copyWith(
                       color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.extrabold,
@@ -537,7 +537,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   ),
                   const SizedBox(height: AimSpacing.space8),
                   Text(
-                    'We sent a password reset link to',
+                    l10n.authPasswordResetLinkSentTo,
                     textAlign: TextAlign.center,
                     style: AimTextStyles.bodyMd.copyWith(
                       color: surfaces.textMuted,
@@ -547,7 +547,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(height: 2),
                   Text(
                     _emailController.text.trim().isEmpty
-                        ? 'your email'
+                        ? l10n.authYourEmailFallback
                         : _emailController.text.trim(),
                     textAlign: TextAlign.center,
                     style: AimTextStyles.bodyLg.copyWith(
@@ -562,7 +562,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     fullWidth: true,
                     size: AIMButtonSize.large,
                     onPressed: _isLoading ? null : _submitEmail,
-                    child: const Text("Didn't get it? Resend email"),
+                    child: Text(l10n.authResendEmailButton),
                   ),
                   const SizedBox(height: AimSpacing.space12),
 
@@ -571,7 +571,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     fullWidth: true,
                     size: AIMButtonSize.large,
                     onPressed: _backToLogin,
-                    child: const Text('Back to Sign In'),
+                    child: Text(l10n.authBackToSignIn),
                   ),
                   const SizedBox(height: AimSpacing.space12),
 
@@ -595,7 +595,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Continue to Reset Password (Preview)',
+                        l10n.authResetPasswordPreviewShortcut,
                         style: AimTextStyles.caption.copyWith(
                           color: primaryColor,
                           fontWeight: AimFontWeights.semibold,
@@ -632,7 +632,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'RESET PASSWORD',
+                    l10n.authResetPasswordBadge,
                     style: AimTextStyles.caption.copyWith(
                       color: primaryColor,
                       fontWeight: AimFontWeights.extrabold,
@@ -643,7 +643,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(height: 4),
 
                   Text(
-                    'Create a new\npassword',
+                    l10n.authCreateNewPasswordTitle,
                     style: AimTextStyles.h1.copyWith(
                       color: surfaces.textPrimary,
                       fontWeight: AimFontWeights.extrabold,
@@ -654,7 +654,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(height: AimSpacing.space8),
 
                   Text(
-                    "Choose a strong password you haven't used before.",
+                    l10n.authCreateNewPasswordSubtitle,
                     style: AimTextStyles.bodyMd.copyWith(
                       color: surfaces.textMuted,
                       fontSize: 14,
@@ -702,7 +702,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     style: AimTextStyles.bodyMd
                         .copyWith(color: surfaces.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'New password',
+                      hintText: l10n.authNewPasswordHint,
                       hintStyle: AimTextStyles.bodyMd
                           .copyWith(color: surfaces.textMuted),
                       filled: true,
@@ -750,7 +750,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     style: AimTextStyles.bodyMd
                         .copyWith(color: surfaces.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Confirm new password',
+                      hintText: l10n.authConfirmNewPasswordHint,
                       hintStyle: AimTextStyles.bodyMd
                           .copyWith(color: surfaces.textMuted),
                       filled: true,
@@ -783,7 +783,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     loading: _isLoading,
                     disabled: _isLoading,
                     onPressed: _submitNewPassword,
-                    child: const Text('Reset Password'),
+                    child: Text(l10n.authResetPasswordButton),
                   ),
                   const Spacer(),
                 ],
@@ -844,7 +844,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(height: AimSpacing.space24),
 
                   Text(
-                    'Password Reset!',
+                    l10n.authPasswordResetSuccessTitle,
                     textAlign: TextAlign.center,
                     style: AimTextStyles.h1.copyWith(
                       color: surfaces.textPrimary,
@@ -855,7 +855,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   const SizedBox(height: AimSpacing.space8),
 
                   Text(
-                    'Your password has been updated. Sign in with your new password.',
+                    l10n.authPasswordResetSuccessBody,
                     textAlign: TextAlign.center,
                     style: AimTextStyles.bodyMd.copyWith(
                       color: surfaces.textMuted,
@@ -870,7 +870,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     fullWidth: true,
                     size: AIMButtonSize.large,
                     onPressed: _backToLogin,
-                    child: const Text('Back to Sign In'),
+                    child: Text(l10n.authBackToSignIn),
                   ),
                   const SizedBox(height: AimSpacing.space16),
                 ],

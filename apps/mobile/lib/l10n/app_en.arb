@@ -77,9 +77,109 @@
   "@authForgotPassword": {
     "description": "Non-interactive 'forgot password' link text shown on the login form."
   },
+  "authForgotPasswordBadge": "FORGOT PASSWORD?",
+  "@authForgotPasswordBadge": {
+    "description": "Small all-caps category badge shown above the title on the forgot-password email step."
+  },
+  "authResetPasswordTitle": "Reset your\npassword",
+  "@authResetPasswordTitle": {
+    "description": "Title on the forgot-password email step. Contains a line break."
+  },
+  "authResetPasswordSubtitle": "Enter the email linked to your account and we'll send you a link to reset your password.",
+  "@authResetPasswordSubtitle": {
+    "description": "Subtitle on the forgot-password email step."
+  },
+  "authEmailAddressHint": "Email address",
+  "@authEmailAddressHint": {
+    "description": "Placeholder text shown inside the empty email field on the forgot-password screen."
+  },
+  "authSendResetLinkButton": "Send Reset Link",
+  "@authSendResetLinkButton": {
+    "description": "Submit button label on the forgot-password email step."
+  },
+  "authRememberedPasswordPrompt": "Remembered your password? ",
+  "@authRememberedPasswordPrompt": {
+    "description": "Prompt shown before the 'Back to Sign In' link on the forgot-password screen."
+  },
+  "authBackToSignIn": "Back to Sign In",
+  "@authBackToSignIn": {
+    "description": "Link/button text to return to the sign-in screen, used across the forgot-password flow."
+  },
+  "authPasswordResetLinkSentTo": "We sent a password reset link to",
+  "@authPasswordResetLinkSentTo": {
+    "description": "Line shown above the recipient email on the 'email sent' confirmation step."
+  },
+  "authYourEmailFallback": "your email",
+  "@authYourEmailFallback": {
+    "description": "Fallback text shown in place of the recipient email address when it is unexpectedly empty."
+  },
+  "authResendEmailButton": "Didn't get it? Resend email",
+  "@authResendEmailButton": {
+    "description": "Button label to resend the password reset email."
+  },
+  "authResetPasswordPreviewShortcut": "Continue to Reset Password (Preview)",
+  "@authResetPasswordPreviewShortcut": {
+    "description": "Shortcut button label on the 'email sent' step that jumps directly to the new-password step, used while the reset link redirect is being tested."
+  },
+  "authResetPasswordBadge": "RESET PASSWORD",
+  "@authResetPasswordBadge": {
+    "description": "Small all-caps category badge shown above the title on the create-new-password step."
+  },
+  "authCreateNewPasswordTitle": "Create a new\npassword",
+  "@authCreateNewPasswordTitle": {
+    "description": "Title on the create-new-password step. Contains a line break."
+  },
+  "authCreateNewPasswordSubtitle": "Choose a strong password you haven't used before.",
+  "@authCreateNewPasswordSubtitle": {
+    "description": "Subtitle on the create-new-password step."
+  },
+  "authPasswordMinEight": "Password must be at least 8 characters.",
+  "@authPasswordMinEight": {
+    "description": "Validation error shown when the new password on the reset-password step is shorter than 8 characters."
+  },
+  "authNewPasswordHint": "New password",
+  "@authNewPasswordHint": {
+    "description": "Placeholder text shown inside the empty new-password field."
+  },
+  "authConfirmNewPasswordHint": "Confirm new password",
+  "@authConfirmNewPasswordHint": {
+    "description": "Placeholder text shown inside the empty confirm-new-password field."
+  },
+  "authResetPasswordButton": "Reset Password",
+  "@authResetPasswordButton": {
+    "description": "Submit button label on the create-new-password step."
+  },
+  "authPasswordResetSuccessTitle": "Password Reset!",
+  "@authPasswordResetSuccessTitle": {
+    "description": "Heading on the password-reset success step."
+  },
+  "authPasswordResetSuccessBody": "Your password has been updated. Sign in with your new password.",
+  "@authPasswordResetSuccessBody": {
+    "description": "Body text on the password-reset success step."
+  },
   "authSignInButton": "Sign In",
   "@authSignInButton": {
     "description": "Label for the primary sign-in submit button."
+  },
+  "authWelcomeBackTitle": "Welcome back",
+  "@authWelcomeBackTitle": {
+    "description": "Title on the login page welcome section."
+  },
+  "authWelcomeBackSubtitle": "Enter your credentials to access your courses and continue learning.",
+  "@authWelcomeBackSubtitle": {
+    "description": "Subtitle on the login page welcome section."
+  },
+  "authStartYourJourneyBadge": "START YOUR JOURNEY",
+  "@authStartYourJourneyBadge": {
+    "description": "Small all-caps badge shown above the title on the register page."
+  },
+  "authCreateAccountTitle": "Create an account",
+  "@authCreateAccountTitle": {
+    "description": "Title on the register page welcome section."
+  },
+  "authCreateAccountSubtitle": "Takes less than a minute. Enter your details below.",
+  "@authCreateAccountSubtitle": {
+    "description": "Subtitle on the register page welcome section."
   },
   "authSignInSemantic": "Sign in",
   "@authSignInSemantic": {

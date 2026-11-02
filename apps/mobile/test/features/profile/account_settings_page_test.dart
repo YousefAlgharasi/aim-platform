@@ -10,7 +10,7 @@ import 'package:aim_mobile/l10n/app_localizations.dart';
 
 Widget _wrap({Locale locale = const Locale('en')}) {
   return ProviderScope(
-    overrides: [localeProvider.overrideWith((ref) => locale)],
+    overrides: [localeProvider.overrideWith((ref) => LocaleNotifier(locale))],
     child: MaterialApp(
       theme: AppTheme.light,
       locale: locale,

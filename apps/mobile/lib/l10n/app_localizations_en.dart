@@ -106,7 +106,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authForgotPassword => 'Forgot password?';
 
   @override
+  String get authForgotPasswordBadge => 'FORGOT PASSWORD?';
+
+  @override
+  String get authResetPasswordTitle => 'Reset your\npassword';
+
+  @override
+  String get authResetPasswordSubtitle =>
+      'Enter the email linked to your account and we\'ll send you a link to reset your password.';
+
+  @override
+  String get authEmailAddressHint => 'Email address';
+
+  @override
+  String get authSendResetLinkButton => 'Send Reset Link';
+
+  @override
+  String get authRememberedPasswordPrompt => 'Remembered your password? ';
+
+  @override
+  String get authBackToSignIn => 'Back to Sign In';
+
+  @override
+  String get authPasswordResetLinkSentTo => 'We sent a password reset link to';
+
+  @override
+  String get authYourEmailFallback => 'your email';
+
+  @override
+  String get authResendEmailButton => 'Didn\'t get it? Resend email';
+
+  @override
+  String get authResetPasswordPreviewShortcut =>
+      'Continue to Reset Password (Preview)';
+
+  @override
+  String get authResetPasswordBadge => 'RESET PASSWORD';
+
+  @override
+  String get authCreateNewPasswordTitle => 'Create a new\npassword';
+
+  @override
+  String get authCreateNewPasswordSubtitle =>
+      'Choose a strong password you haven\'t used before.';
+
+  @override
+  String get authPasswordMinEight => 'Password must be at least 8 characters.';
+
+  @override
+  String get authNewPasswordHint => 'New password';
+
+  @override
+  String get authConfirmNewPasswordHint => 'Confirm new password';
+
+  @override
+  String get authResetPasswordButton => 'Reset Password';
+
+  @override
+  String get authPasswordResetSuccessTitle => 'Password Reset!';
+
+  @override
+  String get authPasswordResetSuccessBody =>
+      'Your password has been updated. Sign in with your new password.';
+
+  @override
   String get authSignInButton => 'Sign In';
+
+  @override
+  String get authWelcomeBackTitle => 'Welcome back';
+
+  @override
+  String get authWelcomeBackSubtitle => 'Sign in to keep your streak alive';
+
+  @override
+  String get authStartYourJourneyBadge => 'START YOUR JOURNEY';
+
+  @override
+  String get authCreateAccountTitle => 'Create an account';
+
+  @override
+  String get authCreateAccountSubtitle =>
+      'Takes less than a minute. Enter your details below.';
 
   @override
   String get authSignInSemantic => 'Sign in';
@@ -122,12 +202,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authOpenEndpointTester => 'Open API Endpoint Tester';
-
-  @override
-  String get authWelcomeBackTitle => 'Welcome back';
-
-  @override
-  String get authWelcomeBackSubtitle => 'Sign in to keep your streak alive';
 
   @override
   String get authOrContinueWith => 'OR CONTINUE WITH';

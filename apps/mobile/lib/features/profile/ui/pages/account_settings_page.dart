@@ -342,7 +342,7 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                     selected: {localeCode},
                     onSelectionChanged: (s) => ref
                         .read(localeProvider.notifier)
-                        .state = Locale(s.first),
+                        .setLocale(Locale(s.first)),
                   ),
                 ],
               ),

@@ -137,7 +137,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: AimSpacing.sectionGap),
 
                 Text(
-                  'Start your journey'.toUpperCase(),
+                  l10n.authStartYourJourneyBadge,
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.primary600,
                     fontWeight: AimFontWeights.extrabold,
@@ -147,7 +148,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: AimSpacing.space4),
 
                 Text(
-                  'Create an account',
+                  l10n.authCreateAccountTitle,
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.h1.copyWith(
                     color: surfaces.textPrimary,
                     fontSize: 28,
@@ -157,7 +159,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: AimSpacing.innerGap),
 
                 Text(
-                  'Takes less than a minute. Enter your details below.',
+                  l10n.authCreateAccountSubtitle,
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
@@ -345,11 +348,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: AimSpacing.space24),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
                   children: [
                     Text(
-                      'Already have an account? ',
+                      l10n.authAlreadyHaveAccount,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -357,7 +360,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     GestureDetector(
                       onTap: () => context.go(AppRoutePaths.signIn),
                       child: Text(
-                        'Sign In',
+                        l10n.authSignInButton,
                         style: AimTextStyles.bodySm.copyWith(
                           fontWeight: AimFontWeights.bold,
                           color: AimColors.primary500,

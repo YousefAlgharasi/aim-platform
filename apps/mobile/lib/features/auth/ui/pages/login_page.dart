@@ -122,7 +122,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: AimSpacing.sectionGap),
 
                 Text(
-                  'SIGN IN',
+                  l10n.authSignInButton.toUpperCase(),
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.caption.copyWith(
                     color: AimColors.primary600,
                     fontWeight: AimFontWeights.extrabold,
@@ -132,7 +133,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: AimSpacing.space4),
 
                 Text(
-                  'Welcome back',
+                  l10n.authWelcomeBackTitle,
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.h1.copyWith(
                     color: surfaces.textPrimary,
                     fontSize: 28,
@@ -142,7 +144,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: AimSpacing.innerGap),
 
                 Text(
-                  'Enter your credentials to access your courses and continue learning.',
+                  l10n.authWelcomeBackSubtitle,
+                  textAlign: TextAlign.start,
                   style: AimTextStyles.bodySm.copyWith(
                     color: surfaces.textSecondary,
                     height: 1.5,
@@ -312,11 +315,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: AimSpacing.space24),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
                   children: [
                     Text(
-                      'Don\'t have an account? ',
+                      l10n.authNoAccountPrompt,
                       style: AimTextStyles.bodySm.copyWith(
                         color: surfaces.textSecondary,
                       ),
@@ -324,7 +327,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     GestureDetector(
                       onTap: _openRegister,
                       child: Text(
-                        'Create one',
+                        l10n.authCreateOneLink,
                         style: AimTextStyles.bodySm.copyWith(
                           fontWeight: AimFontWeights.bold,
                           color: AimColors.primary500,

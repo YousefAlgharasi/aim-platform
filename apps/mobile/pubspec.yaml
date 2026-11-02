@@ -35,6 +35,7 @@ dependencies:
   in_app_update: ^5.0.0
   connectivity_plus: ^7.3.2
   image_picker: ^1.2.4
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:

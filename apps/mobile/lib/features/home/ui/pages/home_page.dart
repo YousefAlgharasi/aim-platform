@@ -655,6 +655,7 @@ class _HomeTopBar extends ConsumerWidget {
             ],
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
                 onTap: () {
@@ -664,7 +665,6 @@ class _HomeTopBar extends ConsumerWidget {
                 child: Container(
                   width: 36,
                   height: 36,
-                  margin: const EdgeInsets.only(right: AimSpacing.space8),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: surfaces.surfaceSunken,
@@ -678,13 +678,14 @@ class _HomeTopBar extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: AimSpacing.space8),
               GestureDetector(
                 onTap: () {
                   ref.read(mainShellTabIndexProvider.notifier).state = 4;
                 },
                 child: Container(
-                  width: 34,
-                  height: 34,
+                  width: 36,
+                  height: 36,
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
                     gradient: AimGradients.gzHero,

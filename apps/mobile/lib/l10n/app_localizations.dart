@@ -284,11 +284,161 @@ abstract class AppLocalizations {
   /// **'Forgot password?'**
   String get authForgotPassword;
 
+  /// Small all-caps category badge shown above the title on the forgot-password email step.
+  ///
+  /// In en, this message translates to:
+  /// **'FORGOT PASSWORD?'**
+  String get authForgotPasswordBadge;
+
+  /// Title on the forgot-password email step. Contains a line break.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your\npassword'**
+  String get authResetPasswordTitle;
+
+  /// Subtitle on the forgot-password email step.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the email linked to your account and we\'ll send you a link to reset your password.'**
+  String get authResetPasswordSubtitle;
+
+  /// Placeholder text shown inside the empty email field on the forgot-password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get authEmailAddressHint;
+
+  /// Submit button label on the forgot-password email step.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get authSendResetLinkButton;
+
+  /// Prompt shown before the 'Back to Sign In' link on the forgot-password screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered your password? '**
+  String get authRememberedPasswordPrompt;
+
+  /// Link/button text to return to the sign-in screen, used across the forgot-password flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Sign In'**
+  String get authBackToSignIn;
+
+  /// Line shown above the recipient email on the 'email sent' confirmation step.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a password reset link to'**
+  String get authPasswordResetLinkSentTo;
+
+  /// Fallback text shown in place of the recipient email address when it is unexpectedly empty.
+  ///
+  /// In en, this message translates to:
+  /// **'your email'**
+  String get authYourEmailFallback;
+
+  /// Button label to resend the password reset email.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t get it? Resend email'**
+  String get authResendEmailButton;
+
+  /// Shortcut button label on the 'email sent' step that jumps directly to the new-password step, used while the reset link redirect is being tested.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Reset Password (Preview)'**
+  String get authResetPasswordPreviewShortcut;
+
+  /// Small all-caps category badge shown above the title on the create-new-password step.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET PASSWORD'**
+  String get authResetPasswordBadge;
+
+  /// Title on the create-new-password step. Contains a line break.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new\npassword'**
+  String get authCreateNewPasswordTitle;
+
+  /// Subtitle on the create-new-password step.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a strong password you haven\'t used before.'**
+  String get authCreateNewPasswordSubtitle;
+
+  /// Validation error shown when the new password on the reset-password step is shorter than 8 characters.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters.'**
+  String get authPasswordMinEight;
+
+  /// Placeholder text shown inside the empty new-password field.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get authNewPasswordHint;
+
+  /// Placeholder text shown inside the empty confirm-new-password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get authConfirmNewPasswordHint;
+
+  /// Submit button label on the create-new-password step.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get authResetPasswordButton;
+
+  /// Heading on the password-reset success step.
+  ///
+  /// In en, this message translates to:
+  /// **'Password Reset!'**
+  String get authPasswordResetSuccessTitle;
+
+  /// Body text on the password-reset success step.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been updated. Sign in with your new password.'**
+  String get authPasswordResetSuccessBody;
+
   /// Label for the primary sign-in submit button.
   ///
   /// In en, this message translates to:
   /// **'Sign In'**
   String get authSignInButton;
+
+  /// Heading shown in the login page's gradient hero header.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get authWelcomeBackTitle;
+
+  /// Subtitle shown beneath the welcome-back heading on the login page.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to keep your streak alive'**
+  String get authWelcomeBackSubtitle;
+
+  /// Small all-caps badge shown above the title on the register page.
+  ///
+  /// In en, this message translates to:
+  /// **'START YOUR JOURNEY'**
+  String get authStartYourJourneyBadge;
+
+  /// Title on the register page welcome section.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get authCreateAccountTitle;
+
+  /// Subtitle on the register page welcome section.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes less than a minute. Enter your details below.'**
+  String get authCreateAccountSubtitle;
 
   /// Accessibility label for the sign-in submit button.
   ///
@@ -319,18 +469,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open API Endpoint Tester'**
   String get authOpenEndpointTester;
-
-  /// Heading shown in the login page's gradient hero header.
-  ///
-  /// In en, this message translates to:
-  /// **'Welcome back'**
-  String get authWelcomeBackTitle;
-
-  /// Subtitle shown beneath the welcome-back heading on the login page.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to keep your streak alive'**
-  String get authWelcomeBackSubtitle;
 
   /// Divider label above the social sign-in buttons on the login page.
   ///

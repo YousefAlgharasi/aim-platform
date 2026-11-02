@@ -118,6 +118,9 @@ class _OnboardingWalkthroughOverlayState
                 onPageChanged: (i) => setState(() => _index = i),
                 itemBuilder: (context, i) {
                   final slide = _slides[i];
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  final isSmallScreen = screenHeight < 600;
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AimSpacing.screenPaddingMobile,
@@ -134,26 +137,31 @@ class _OnboardingWalkthroughOverlayState
                             padding: const EdgeInsets.all(AimSpacing.space24),
                             child: Icon(
                               slide.icon,
-                              size: AimSizes.iconLg * 1.5,
+                              size: isSmallScreen ? AimSizes.iconLg : AimSizes.iconLg * 1.5,
                               color: AimColors.neutral0,
                             ),
                           ),
                         ),
-                        const SizedBox(height: AimSpacing.sectionGap),
+                        SizedBox(height: isSmallScreen ? AimSpacing.componentGap : AimSpacing.sectionGap),
                         Text(
                           slide.titleBuilder(l10n),
                           style: AimTextStyles.h2.copyWith(
                             color: AimColors.neutral0,
                           ),
                           textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: AimSpacing.componentGap),
                         Text(
                           slide.bodyBuilder(l10n),
                           style: AimTextStyles.bodyMd.copyWith(
                             color: AimColors.neutral0.withValues(alpha: 0.85),
+                            height: 1.5,
                           ),
                           textAlign: TextAlign.center,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
