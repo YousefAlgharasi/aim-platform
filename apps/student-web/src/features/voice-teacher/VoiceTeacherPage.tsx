@@ -17,6 +17,8 @@ import {
 import { MicIcon } from '../../components/common/Icons';
 import { ThumbButton, pillLinkClass } from '../ai-teacher/ui';
 import { useI18n } from '../../i18n/I18nContext';
+import { PracticeBanner } from '../practice-topics/PracticeBanner';
+import type { PracticeSessionState } from '../practice-topics/practiceTopicsApi';
 
 const WAVE_HEIGHTS = [4, 8, 14, 22, 16, 28, 18, 12, 24, 15, 8, 5];
 
@@ -24,6 +26,8 @@ interface VoiceLocationState {
   lessonTitle?: string | null;
   lastSessionRecap?: string | null;
   focusRecap?: string | null;
+  /** Set when opened from Practice Speaking: shows the timer + finish-for-XP bar. */
+  practice?: PracticeSessionState;
 }
 
 type FeedbackEntry = { rating: FeedbackRating | null; status: 'submitting' | 'done' };
@@ -348,6 +352,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         </Link>
       </div>
 
+      {navState.practice && <PracticeBanner practice={navState.practice} />}
       {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
       {navState.lastSessionRecap && (
         <Banner variant="success">
