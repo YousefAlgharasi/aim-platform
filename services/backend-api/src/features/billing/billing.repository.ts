@@ -826,6 +826,61 @@ export class BillingRepository {
     }));
   }
 
+  /**
+   * Course sales (manual wallet payments): money from APPROVED course payment
+   * requests, counted when an admin approves them. Amounts are in major units
+   * (e.g. 8000.00 YER), unlike payments.amount which is minor units, so this is
+   * kept as its own block and never summed into getRevenueMtdByCurrency().
+   */
+  async getCourseSalesByCurrency(): Promise<CourseSalesCurrencyRow[]> {
+    const result = await this.db.query<Record<string, string>>(
+      `SELECT currency,
+              COALESCE(SUM(amount) FILTER (WHERE status = 'approved' AND reviewed_at >= date_trunc('month', now())), 0)::text AS revenue_mtd,
+              COALESCE(SUM(amount) FILTER (WHERE status = 'approved'), 0)::text AS revenue_all_time,
+              COALESCE(SUM(discount_amount) FILTER (WHERE status = 'approved'), 0)::text AS discounts_given,
+              COUNT(*) FILTER (WHERE status = 'approved' AND reviewed_at >= date_trunc('month', now()))::text AS approved_mtd,
+              COUNT(*) FILTER (WHERE status = 'approved')::text AS approved_total,
+              COUNT(*) FILTER (WHERE status = 'pending')::text AS pending_count,
+              COALESCE(SUM(amount) FILTER (WHERE status = 'pending'), 0)::text AS pending_amount,
+              COUNT(*) FILTER (WHERE status = 'rejected')::text AS rejected_count
+       FROM course_payment_requests
+       GROUP BY currency
+       ORDER BY currency`,
+    );
+    return result.rows.map((r) => ({
+      currency: r.currency,
+      revenueMtd: Number(r.revenue_mtd),
+      revenueAllTime: Number(r.revenue_all_time),
+      discountsGiven: Number(r.discounts_given),
+      approvedThisMonth: Number(r.approved_mtd),
+      approvedTotal: Number(r.approved_total),
+      pendingCount: Number(r.pending_count),
+      pendingAmount: Number(r.pending_amount),
+      rejectedCount: Number(r.rejected_count),
+    }));
+  }
+
+  /** Approved course revenue per course (top 50), for the admin overview table. */
+  async getCourseSalesByCourse(): Promise<CourseSalesCourseRow[]> {
+    const result = await this.db.query<{ course_id: string; title: string; currency: string; payments: string; revenue: string }>(
+      `SELECT co.id AS course_id, co.title, r.currency,
+              COUNT(*)::text AS payments, SUM(r.amount)::text AS revenue
+       FROM course_payment_requests r
+       JOIN courses co ON co.id = r.course_id
+       WHERE r.status = 'approved'
+       GROUP BY co.id, co.title, r.currency
+       ORDER BY SUM(r.amount) DESC
+       LIMIT 50`,
+    );
+    return result.rows.map((r) => ({
+      courseId: r.course_id,
+      title: r.title,
+      currency: r.currency,
+      payments: Number(r.payments),
+      revenue: Number(r.revenue),
+    }));
+  }
+
   async countPendingRefunds(): Promise<number> {
     const result = await this.db.query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM refunds WHERE status = 'pending'`,
@@ -840,4 +895,24 @@ export class BillingRepository {
     );
     return parseInt(result.rows[0]?.count ?? '0', 10);
   }
+}
+
+export interface CourseSalesCurrencyRow {
+  readonly currency: string;
+  readonly revenueMtd: number;
+  readonly revenueAllTime: number;
+  readonly discountsGiven: number;
+  readonly approvedThisMonth: number;
+  readonly approvedTotal: number;
+  readonly pendingCount: number;
+  readonly pendingAmount: number;
+  readonly rejectedCount: number;
+}
+
+export interface CourseSalesCourseRow {
+  readonly courseId: string;
+  readonly title: string;
+  readonly currency: string;
+  readonly payments: number;
+  readonly revenue: number;
 }

@@ -119,7 +119,7 @@ function BillingOverviewPanel() {
             }
           />
           <StatCard
-            label="Revenue (MTD)"
+            label="Card / subscription revenue (MTD)"
             value={
               overview?.revenueMtd != null
                 ? String(overview.revenueMtd)
@@ -151,6 +151,95 @@ function BillingOverviewPanel() {
             }
           />
         </div>
+      )}
+      {!isLoading && <CourseSalesPanel courseSales={overview?.courseSales as CourseSales | undefined} />}
+    </div>
+  );
+}
+
+interface CourseSalesCurrency {
+  currency: string;
+  revenueMtd: number;
+  revenueAllTime: number;
+  discountsGiven: number;
+  approvedThisMonth: number;
+  approvedTotal: number;
+  pendingCount: number;
+  pendingAmount: number;
+  rejectedCount: number;
+}
+interface CourseSalesCourse {
+  courseId: string;
+  title: string;
+  currency: string;
+  payments: number;
+  revenue: number;
+}
+interface CourseSales {
+  byCurrency: CourseSalesCurrency[];
+  byCourse: CourseSalesCourse[];
+}
+
+function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString('en-US')} ${currency}`;
+  }
+}
+
+/** Real money from course payments an admin APPROVED (wallet transfers). */
+export function CourseSalesPanel({ courseSales }: { readonly courseSales?: CourseSales }) {
+  const rows = courseSales?.byCurrency ?? [];
+  const byCourse = courseSales?.byCourse ?? [];
+  return (
+    <div className="flex flex-col gap-4 mt-2" data-testid="course-sales">
+      <div>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Course sales</h2>
+        <p className="text-xs text-[var(--text-secondary)]">
+          Counted when you approve a student&apos;s wallet payment. Pending payments are not counted as revenue yet.
+        </p>
+      </div>
+      {rows.length === 0 ? (
+        <AdminCard className="p-6 text-center text-sm text-[var(--text-muted)]">
+          No course payments yet. Approved payments will appear here.
+        </AdminCard>
+      ) : (
+        rows.map((r) => (
+          <div key={r.currency} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label={`Revenue this month (${r.currency})`} value={formatMoney(r.revenueMtd, r.currency)} />
+            <StatCard label={`Revenue all time (${r.currency})`} value={formatMoney(r.revenueAllTime, r.currency)} />
+            <StatCard label="Approved payments" value={`${r.approvedTotal} (${r.approvedThisMonth} this month)`} />
+            <StatCard
+              label="Waiting for review"
+              value={`${r.pendingCount} · ${formatMoney(r.pendingAmount, r.currency)}`}
+            />
+            <StatCard label="Discounts given" value={formatMoney(r.discountsGiven, r.currency)} />
+            <StatCard label="Rejected" value={String(r.rejectedCount)} />
+          </div>
+        ))
+      )}
+      {byCourse.length > 0 && (
+        <AdminCard className="p-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-[var(--text-muted)]">
+                <th className="py-1 pr-4 font-medium">Course</th>
+                <th className="py-1 pr-4 font-medium">Payments</th>
+                <th className="py-1 font-medium">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byCourse.map((c) => (
+                <tr key={`${c.courseId}-${c.currency}`} className="border-t border-[var(--border)]">
+                  <td className="py-1.5 pr-4 text-[var(--text-primary)]">{c.title}</td>
+                  <td className="py-1.5 pr-4">{c.payments}</td>
+                  <td className="py-1.5 font-semibold">{formatMoney(c.revenue, c.currency)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </AdminCard>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { BillingRepository } from './billing.repository';
+import { BillingRepository, CourseSalesCourseRow, CourseSalesCurrencyRow } from './billing.repository';
 import { EntitlementService } from './entitlement.service';
 import { Subscription } from './billing.entities';
 import { validateUUID } from './billing.validation';
@@ -205,13 +205,17 @@ export class SubscriptionService {
     revenueMtdByCurrency: Array<{ currency: string; amount: number }>;
     pendingRefunds: number;
     failedPayments: number;
+    /** Manual wallet course payments an admin approved (major units, per currency). */
+    courseSales: { byCurrency: CourseSalesCurrencyRow[]; byCourse: CourseSalesCourseRow[] };
   }> {
-    const [activeSubscriptions, revenueMtdByCurrency, pendingRefunds, failedPayments] =
+    const [activeSubscriptions, revenueMtdByCurrency, pendingRefunds, failedPayments, salesByCurrency, salesByCourse] =
       await Promise.all([
         this.billingRepo.countActiveSubscriptions(),
         this.billingRepo.getRevenueMtdByCurrency(),
         this.billingRepo.countPendingRefunds(),
         this.billingRepo.countRecentFailedPayments(7),
+        this.billingRepo.getCourseSalesByCurrency(),
+        this.billingRepo.getCourseSalesByCourse(),
       ]);
 
     const revenueMtd = revenueMtdByCurrency.length === 1 ? revenueMtdByCurrency[0].amount : null;
@@ -224,6 +228,7 @@ export class SubscriptionService {
       revenueMtdByCurrency,
       pendingRefunds,
       failedPayments,
+      courseSales: { byCurrency: salesByCurrency, byCourse: salesByCourse },
     };
   }
 }
