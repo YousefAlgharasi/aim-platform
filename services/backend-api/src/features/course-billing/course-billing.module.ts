@@ -7,6 +7,7 @@ import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
 import { AdminCourseBillingController } from './admin-course-billing.controller';
 import { CourseAccessService } from './course-access.service';
+import { CourseBillingOverviewService } from './course-billing-overview.service';
 import { CoursePaymentService } from './course-payment.service';
 import { CoursePriceService } from './course-price.service';
 import { PaymentImageService } from './payment-image.service';
@@ -19,6 +20,7 @@ import { StudentCourseBillingController } from './student-course-billing.control
   controllers: [StudentCourseBillingController, PublicWalletImageController, AdminCourseBillingController],
   providers: [
     CourseAccessService,
+    CourseBillingOverviewService,
     CoursePaymentService,
     CoursePriceService,
     PaymentImageService,

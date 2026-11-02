@@ -269,7 +269,7 @@ export default function AdminSettingsPage() {
             <div className="sett-card-body">
               <ToggleRow label="Incident Alerts" description="Notify when new incidents are created or escalated" enabled={notifPrefs.incidentAlerts} onToggle={() => setNotifPrefs(p => ({ ...p, incidentAlerts: !p.incidentAlerts }))} />
               <ToggleRow label="New User Registration" description="Alert when new users sign up on the platform" enabled={notifPrefs.newUserAlerts} onToggle={() => setNotifPrefs(p => ({ ...p, newUserAlerts: !p.newUserAlerts }))} />
-              <ToggleRow label="Billing Events" description="Notify for failed payments, overdue invoices, and subscription changes" enabled={notifPrefs.billingAlerts} onToggle={() => setNotifPrefs(p => ({ ...p, billingAlerts: !p.billingAlerts }))} />
+              <ToggleRow label="Billing Events" description="Notify when a student submits a course payment that needs review" enabled={notifPrefs.billingAlerts} onToggle={() => setNotifPrefs(p => ({ ...p, billingAlerts: !p.billingAlerts }))} />
             </div>
           </div>
 
