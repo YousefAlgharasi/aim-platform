@@ -20,7 +20,7 @@ import {
   type BillingPrice,
   type CheckoutStatus,
 } from './billingApi';
-import { PageHeader, BackLink, KV, h2Cls, subCls, textLinkCls } from '../profile/ui';
+import { PageHeader, KV, h2Cls, subCls, textLinkCls } from '../profile/ui';
 
 // Flow (mirrors Flutter checkout_start_page + checkout_status_page):
 // 1. POST /billing/checkout { priceId, successUrl, cancelUrl, promotionCode? }.
@@ -191,7 +191,7 @@ export function CheckoutPage() {
     const state = status?.status ?? 'pending';
     return (
       <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
-        <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
+        <PageHeader eyebrow={t('Billing')} title={t('Checkout')} />
         <Card>
           <div className="flex flex-col gap-4 items-stretch">
             {statusError ? (
@@ -258,7 +258,7 @@ export function CheckoutPage() {
   // ----- Start view -----
   return (
     <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
-      <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
+      <PageHeader eyebrow={t('Billing')} title={t('Checkout')} />
 
       {result === 'cancel' && <Banner variant="info">{t('Payment was cancelled. You have not been charged.')}</Banner>}
 

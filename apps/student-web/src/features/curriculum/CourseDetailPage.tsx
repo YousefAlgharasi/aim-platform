@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { plural } from '../../i18n';
 import { Button } from '../../components/common/Button';
@@ -22,7 +22,6 @@ import {
   type StudentCourse,
 } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
-import { BackArrowIcon } from './CurriculumIcons';
 import { formatDate } from '../../i18n';
 
 /** Route: /curriculum/:subjectId — the param is a course id. */
@@ -99,13 +98,6 @@ export function CourseDetailPage() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3">
-        <Link
-          to="/curriculum"
-          aria-label={t('All courses')}
-          className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
-        >
-          <BackArrowIcon />
-        </Link>
         <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">{t('All courses')}</span>
       </div>
 

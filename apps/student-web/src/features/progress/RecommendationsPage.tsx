@@ -22,7 +22,6 @@ export function RecommendationsPage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
       <h1 className={ui.h1}>{t('Recommendations')}</h1>
       <p className={ui.intro}>{t('Personalized next steps from the AIM engine, most important first.')}</p>
 

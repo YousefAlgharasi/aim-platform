@@ -16,7 +16,7 @@ import {
   type SupportTicket,
   type SupportTicketComment,
 } from './supportApi';
-import { PageHeader, BackLink, SectionTitle, Field, StatusPill, labelCls, bodyCls, textareaCls } from '../profile/ui';
+import { PageHeader, SectionTitle, Field, StatusPill, labelCls, bodyCls, textareaCls } from '../profile/ui';
 
 function statusTone(status: SupportTicket['status']): 'success' | 'neutral' | 'indigo' {
   switch (status) {
@@ -83,7 +83,7 @@ export function TicketDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Support ticket')} title={ticket.subject} back={<BackLink to="/support" label="Back to support" />} />
+      <PageHeader eyebrow={t('Support ticket')} title={ticket.subject} />
 
       <div className="grid gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1">

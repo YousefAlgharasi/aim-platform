@@ -65,7 +65,6 @@ export function ReviewSchedulePage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
       <h1 className={ui.h1}>{t('Review schedule')}</h1>
       <p className={ui.intro}>{t('Spaced-repetition reviews scheduled for you to keep skills fresh.')}</p>
 

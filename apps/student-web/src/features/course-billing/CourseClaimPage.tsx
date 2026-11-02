@@ -9,7 +9,6 @@ import { Modal } from '../../components/common/Modal';
 import { formatDate } from '../../i18n';
 import { useI18n } from '../../i18n/I18nContext';
 import { fetchStudentCourses } from '../curriculum/curriculumApi';
-import { BackArrowIcon } from '../curriculum/CurriculumIcons';
 import { formatMoney } from './billingFormat';
 import {
   fetchCourseBilling,
@@ -109,9 +108,6 @@ export function CourseClaimPage() {
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
-      <Link to="/curriculum" className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 no-underline">
-        <BackArrowIcon className="size-4 rtl:rotate-180" /> {t('Courses')}
-      </Link>
       <div>
         <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Get this course')}</span>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{courseTitle}</h1>

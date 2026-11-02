@@ -13,7 +13,7 @@ import {
 } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { SparkleIcon, MicIcon } from '../../components/common/Icons';
-import { BackLink, SendIcon, ThumbButton, pillLinkClass } from './ui';
+import { SendIcon, ThumbButton, pillLinkClass } from './ui';
 import { useI18n } from '../../i18n/I18nContext';
 
 // Same quick-action prompts as Flutter's AiSuggestedPromptsRow.
@@ -232,7 +232,6 @@ export function AIChatPage() {
   return (
     <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] max-w-3xl w-full mx-auto">
       <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
         <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm">
           <SparkleIcon className="size-4 text-white" />
         </div>

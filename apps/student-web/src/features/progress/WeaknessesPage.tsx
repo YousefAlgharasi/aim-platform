@@ -45,7 +45,6 @@ export function WeaknessesPage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
       <h1 className={ui.h1}>{t('Areas to improve')}</h1>
       <p className={ui.intro}>{t('Skills the AIM engine detected you are struggling with, based on your attempts.')}</p>
 

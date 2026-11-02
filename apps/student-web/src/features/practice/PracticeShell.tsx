@@ -20,7 +20,6 @@ import {
   type SessionSummary,
 } from './practiceApi';
 import { linkButton, linkButtonPrimary } from './practiceStyles';
-import { BackArrowIcon } from '../curriculum/CurriculumIcons';
 import { useI18n } from '../../i18n/I18nContext';
 
 type Status = 'loading' | 'locked' | 'expired' | 'failed' | 'empty' | 'active' | 'finished';
@@ -249,14 +248,6 @@ export function PracticeShell() {
   return (
     <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
       <div className="flex items-center gap-3">
-        <Link
-          to={`/lessons/${lessonId}`}
-          state={navState}
-          aria-label={t('Back to lesson')}
-          className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
-        >
-          <BackArrowIcon />
-        </Link>
         <div className="min-w-0">
           <h1 className="text-xs font-extrabold text-[#4F46E5] dark:text-indigo-400 uppercase tracking-wider m-0">{t('Practice Session')}</h1>
           {navState.lessonTitle && (

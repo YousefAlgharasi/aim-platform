@@ -80,8 +80,6 @@ export function AssessmentDeadlinesPage() {
         eyebrow={t('Assessments')}
         title={t('Deadlines')}
         subtitle={t('Everything that is open, upcoming or past due.')}
-        backTo="/assessments"
-        backLabel={t('All assessments')}
       />
       {total === 0 ? (
         <EmptyState title={t('No deadlines')} message={t("You don't have any assessment deadlines right now.")} />

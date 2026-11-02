@@ -15,7 +15,7 @@ import {
   type VoiceMessage,
 } from './voiceTeacherApi';
 import { MicIcon } from '../../components/common/Icons';
-import { BackLink, ThumbButton, pillLinkClass } from '../ai-teacher/ui';
+import { ThumbButton, pillLinkClass } from '../ai-teacher/ui';
 import { useI18n } from '../../i18n/I18nContext';
 
 const WAVE_HEIGHTS = [4, 8, 14, 22, 16, 28, 18, 12, 24, 15, 8, 5];
@@ -337,7 +337,6 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
   return (
     <div className="flex flex-col gap-4 max-w-3xl w-full mx-auto">
       <div className="flex items-center gap-3">
-        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
         <div className="flex-1 min-w-0">
           <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Voice Teacher')}</h1>
           <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">

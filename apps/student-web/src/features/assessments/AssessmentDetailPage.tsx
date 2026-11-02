@@ -94,8 +94,6 @@ export function AssessmentDetailPage() {
   return (
     <div className="mx-auto w-full max-w-3xl flex flex-col gap-5">
       <PageHeader
-        backTo="/assessments"
-        backLabel={t('All assessments')}
         eyebrow={
           <span className="inline-flex flex-wrap items-center gap-2">
             <Badge tone={detail.type === 'quiz' ? 'indigo' : 'violet'}>{assessmentTypeLabel(detail.type)}</Badge>

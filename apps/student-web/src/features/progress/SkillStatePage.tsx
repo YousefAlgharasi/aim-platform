@@ -28,7 +28,6 @@ export function SkillStatePage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
       <h1 className={ui.h1}>{t('Skills')}</h1>
 
       {skills.length === 0 ? (

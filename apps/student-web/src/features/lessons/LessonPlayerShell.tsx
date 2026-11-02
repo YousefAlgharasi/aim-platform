@@ -17,7 +17,6 @@ import {
 } from './lessonsApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { plural } from '../../i18n';
-import { BackArrowIcon } from '../curriculum/CurriculumIcons';
 import { CheckIcon, SparkleIcon, ZapIcon } from '../../components/common/Icons';
 
 /** Navigation state accepted by /lessons/:lessonId and /practice/lesson/:lessonId. */
@@ -86,8 +85,6 @@ export function LessonPlayerShell() {
 
   useEffect(() => { load(); }, [load]);
 
-  const backTo = courseId ? `/curriculum/${courseId}` : '/curriculum';
-  const backLabel = courseId ? t('Back to course') : t('Back to courses');
 
   if (loading) return <LoadingSpinner />;
   if (error || !lesson) {
@@ -100,18 +97,6 @@ export function LessonPlayerShell() {
 
   return (
     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
-      <div className="flex items-center gap-3">
-        <Link
-          to={backTo}
-          aria-label={backLabel}
-          title={backLabel}
-          className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors shrink-0"
-        >
-          <BackArrowIcon />
-        </Link>
-        <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 tracking-tight">{backLabel}</span>
-      </div>
-
       <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">

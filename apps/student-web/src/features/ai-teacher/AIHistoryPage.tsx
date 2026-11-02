@@ -8,7 +8,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { MicIcon, SparkleIcon } from '../../components/common/Icons';
-import { BackLink, pillLinkClass } from './ui';
+import { pillLinkClass } from './ui';
 import { useI18n } from '../../i18n/I18nContext';
 
 /**
@@ -43,7 +43,6 @@ export function AIHistoryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
         <div className="flex-1 min-w-0">
           <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('AI Teacher')}</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Conversation History')}</h1>
