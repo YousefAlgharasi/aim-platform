@@ -43,6 +43,8 @@ export interface AiTeacherContextSnapshot {
   focusDirective: Record<string, unknown> | null;
   difficultyDecision: Record<string, unknown> | null;
   emotionalState: Record<string, unknown> | null;
+  /** Only set for speaking-practice sessions (`practice:` contextRef): the role the AI plays. */
+  practiceTopic?: Record<string, unknown> | null;
 }
 
 export interface BuildContextInput {

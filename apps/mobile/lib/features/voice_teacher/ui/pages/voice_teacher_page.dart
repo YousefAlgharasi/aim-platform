@@ -46,6 +46,7 @@
 // (see VoicePushToTalkButton). This is a deliberate UX choice over the
 // previous hands-free auto-listen loop: the student controls exactly when
 // their turn starts and ends instead of the app guessing from amplitude.
+import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -74,9 +75,12 @@ import '../widgets/voice_waveform_indicator.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class VoiceTeacherPage extends ConsumerStatefulWidget {
-  const VoiceTeacherPage({required this.contextRef, this.recorder, super.key});
+  const VoiceTeacherPage({required this.contextRef, this.recorder, this.practice, super.key});
 
   final String contextRef;
+
+  /// Set when opened from Practice Speaking: shows the timer + Finish (XP) bar under the call view.
+  final PracticeSessionInfo? practice;
 
   /// Injectable for widget tests, which have no real platform channel to
   /// back the `record` package's `AudioRecorder` (its own constructor
@@ -386,6 +390,8 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const _VoiceTeacherHeader(),
+      bottomNavigationBar:
+          widget.practice == null ? null : PracticeSessionBar(practice: widget.practice!),
       body: DecoratedBox(
         decoration: const BoxDecoration(gradient: AimGradients.gzHero),
         child: SafeArea(

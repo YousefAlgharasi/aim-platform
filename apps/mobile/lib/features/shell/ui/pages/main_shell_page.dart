@@ -260,6 +260,18 @@ class _AIMAppDrawerWithMoreState
         onTap: () => _selectTab(3),
       ),
       AIMDrawerItemData(
+        icon: const Icon(Icons.mic_none_rounded),
+        label: l10n.homeMissionPracticeSpeaking,
+        selected: false,
+        onTap: () => _navigateTo(AppRoutePaths.practiceSpeaking),
+      ),
+      AIMDrawerItemData(
+        icon: const Icon(Icons.edit_outlined),
+        label: l10n.homeMissionWriteParagraph,
+        selected: false,
+        onTap: () => _navigateTo(AppRoutePaths.practiceWriting),
+      ),
+      AIMDrawerItemData(
         icon: const Icon(Icons.emoji_events_outlined),
         label: l10n.shellAchievements,
         selected: false,

@@ -87,6 +87,9 @@ class AppRoutePaths {
 
   // TASK-14: Voice Teacher routes
   static const String voiceTeacher = '/voice-teacher';
+  static const String practiceSpeaking = '/practice/speaking';
+  static const String practiceWriting = '/practice/writing';
+  static const String practiceWritingTopic = '/practice/writing/topic';
 
   // TASK-14: AI Teacher routes
   static const String aiTeacherSettings = '/ai-teacher/settings';

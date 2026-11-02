@@ -55,7 +55,11 @@ import { AiCostQuotaService } from '../governance/ai-cost-quota.service';
 import { ModelConfigService } from '../governance/model-config.service';
 import { AiInputBlockedError } from '../governance/ai-input-blocked.error';
 import { AiQuotaExceededError } from '../governance/ai-quota-exceeded.error';
-import { AI_TEACHER_GREETING_INSTRUCTION } from '../prompt-builder/prompt-builder.constants';
+import {
+  AI_PRACTICE_GREETING_INSTRUCTION,
+  AI_TEACHER_GREETING_INSTRUCTION,
+} from '../prompt-builder/prompt-builder.constants';
+import { isPracticeContextRef } from '../../practice/practice-context-ref';
 import {
   ChatTurnInput,
   ChatTurnResult,
@@ -135,7 +139,8 @@ export class AiTeacherOrchestratorService {
 
     // Lazily resolve+persist for any session that predates this feature
     // (resolved_lesson_id still null) — a no-op write once already set.
-    if (!session.resolved_lesson_id) {
+    // Speaking practice has no lesson: never resolve (or later complete) one for it.
+    if (!session.resolved_lesson_id && !isPracticeContextRef(input.contextRef)) {
       await this.lessonStageService.resolveAndPersistLesson(
         input.studentId,
         input.sessionId,
@@ -289,11 +294,14 @@ export class AiTeacherOrchestratorService {
     // Resolve+persist this session's lesson right away, at the same point
     // the session itself is created, so every later turn (and the
     // completion trigger) already has it.
-    await this.lessonStageService.resolveAndPersistLesson(
-      input.studentId,
-      input.sessionId,
-      input.contextRef,
-    );
+    const isPractice = isPracticeContextRef(input.contextRef);
+    if (!isPractice) {
+      await this.lessonStageService.resolveAndPersistLesson(
+        input.studentId,
+        input.sessionId,
+        input.contextRef,
+      );
+    }
 
     const context = await this.contextBuilder.buildContext({
       studentId: input.studentId,
@@ -302,7 +310,7 @@ export class AiTeacherOrchestratorService {
     });
 
     const prompt = this.promptBuilder.buildPrompt({
-      studentMessage: AI_TEACHER_GREETING_INSTRUCTION,
+      studentMessage: isPractice ? AI_PRACTICE_GREETING_INSTRUCTION : AI_TEACHER_GREETING_INSTRUCTION,
       context,
       lessonStage: 'greeting',
     });

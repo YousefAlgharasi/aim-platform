@@ -6713,6 +6713,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t send your payment. Please try again.'**
   String get billingErrorGeneric;
+
+  /// Pick a topic and talk with your AI teacher. Earn XP when you finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a topic and talk with your AI teacher. Earn XP when you finish.'**
+  String get practiceSpeakingSubtitle;
+
+  /// Pick a topic and write a paragraph. Your AI teacher marks it and shows how to improve.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a topic and write a paragraph. Your AI teacher marks it and shows how to improve.'**
+  String get practiceWritingSubtitle;
+
+  /// Start a course to unlock this
+  ///
+  /// In en, this message translates to:
+  /// **'Start a course to unlock this'**
+  String get practiceLockedTitle;
+
+  /// Practice Speaking and Write a Paragraph are part of your course. Start a course to use them.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Speaking and Write a Paragraph are part of your course. Start a course to use them.'**
+  String get practiceLockedBody;
+
+  /// Choose a course
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a course'**
+  String get practiceChooseCourse;
+
+  /// No topics yet
+  ///
+  /// In en, this message translates to:
+  /// **'No topics yet'**
+  String get practiceNoTopicsTitle;
+
+  /// New topics will appear here soon.
+  ///
+  /// In en, this message translates to:
+  /// **'New topics will appear here soon.'**
+  String get practiceNoTopicsBody;
+
+  /// Could not start this topic. Please try again.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start this topic. Please try again.'**
+  String get practiceStartError;
+
+  /// XP badge on a practice topic
+  ///
+  /// In en, this message translates to:
+  /// **'+{xp} XP'**
+  String practiceXpBadge(int xp);
+
+  /// Time limit badge
+  ///
+  /// In en, this message translates to:
+  /// **'{min} min'**
+  String practiceMinutesBadge(int min);
+
+  /// Minimum words badge
+  ///
+  /// In en, this message translates to:
+  /// **'{n}+ words'**
+  String practiceMinWordsBadge(int n);
+
+  /// Words typed so far
+  ///
+  /// In en, this message translates to:
+  /// **'{n} words'**
+  String practiceWordCount(int n);
+
+  /// Minimum words hint
+  ///
+  /// In en, this message translates to:
+  /// **'at least {n}'**
+  String practiceAtLeast(int n);
+
+  /// Time's up
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up'**
+  String get practiceTimeUp;
+
+  /// Write your paragraph here…
+  ///
+  /// In en, this message translates to:
+  /// **'Write your paragraph here…'**
+  String get practiceWritePlaceholder;
+
+  /// Submit for marking
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for marking'**
+  String get practiceSubmitForMarking;
+
+  /// Marking your paragraph…
+  ///
+  /// In en, this message translates to:
+  /// **'Marking your paragraph…'**
+  String get practiceMarking;
+
+  /// Your score
+  ///
+  /// In en, this message translates to:
+  /// **'Your score'**
+  String get practiceYourScore;
+
+  /// You already earned XP for this topic today.
+  ///
+  /// In en, this message translates to:
+  /// **'You already earned XP for this topic today.'**
+  String get practiceAlreadyEarnedToday;
+
+  /// What to fix
+  ///
+  /// In en, this message translates to:
+  /// **'What to fix'**
+  String get practiceWhatToFix;
+
+  /// More topics
+  ///
+  /// In en, this message translates to:
+  /// **'More topics'**
+  String get practiceMoreTopics;
+
+  /// Try again
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get practiceTryAgain;
+
+  /// We could not mark your paragraph right now. Please try again.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not mark your paragraph right now. Please try again.'**
+  String get practiceMarkFailed;
+
+  /// Finish
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get practiceFinish;
+
+  /// Finishing…
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing…'**
+  String get practiceFinishing;
+
+  /// Finish to earn +{xp} XP
+  ///
+  /// In en, this message translates to:
+  /// **'Finish to earn +{xp} XP'**
+  String practiceFinishToEarn(int xp);
+
+  /// Well done!
+  ///
+  /// In en, this message translates to:
+  /// **'Well done!'**
+  String get practiceWellDone;
+
+  /// Could not finish. Please try again.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not finish. Please try again.'**
+  String get practiceFinishFailed;
 }
 
 class _AppLocalizationsDelegate

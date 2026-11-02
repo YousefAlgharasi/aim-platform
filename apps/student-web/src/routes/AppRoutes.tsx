@@ -39,6 +39,8 @@ import { PlacementGatePage } from '../features/placement/PlacementGatePage';
 import { AssessmentDeadlinesPage } from '../features/assessments/AssessmentDeadlinesPage';
 import { PracticeLessonStart } from '../features/practice/PracticeLessonStart';
 import { VoiceTeacherPage } from '../features/voice-teacher/VoiceTeacherPage';
+import { PracticeTopicsPage } from '../features/practice-topics/PracticeTopicsPage';
+import { WritingPracticePage } from '../features/practice-topics/WritingPracticePage';
 import { WeaknessesPage } from '../features/progress/WeaknessesPage';
 import { ReviewSchedulePage } from '../features/progress/ReviewSchedulePage';
 import { RecommendationsPage } from '../features/progress/RecommendationsPage';
@@ -95,6 +97,9 @@ export function AppRoutes() {
         <Route path="/ai-teacher/:conversationId" element={<AIChatPage />} />
         <Route path="/voice-teacher" element={<VoiceTeacherPage />} />
         <Route path="/voice-teacher/:sessionId" element={<VoiceTeacherPage />} />
+        <Route path="/practice/speaking" element={<PracticeTopicsPage kind="speaking" />} />
+        <Route path="/practice/writing" element={<PracticeTopicsPage kind="writing" />} />
+        <Route path="/practice/writing/:topicId" element={<WritingPracticePage />} />
         <Route path="/notifications" element={<NotificationCenterPage />} />
         <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
         <Route path="/billing" element={<BillingPage />} />
