@@ -156,7 +156,9 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 
       if (token != null && state.sessionId != null) {
         // Ensure startedAt is safely in the past relative to server time to avoid clock drift rejection
-        final safeShownAt = _questionShownAt.subtract(const Duration(seconds: 2));
+        // Always UTC (ends in 'Z') like the student web — a local time without
+        // a zone is read by the backend as UTC and is off by the phone's offset.
+        final safeShownAt = _questionShownAt.toUtc().subtract(const Duration(seconds: 2));
         ref.read(questionAnswerSessionProvider.notifier).presentQuestion(
               question: currentQ,
               itemShownAt: safeShownAt.toIso8601String(),
@@ -177,7 +179,10 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
       if (token != null && state.sessionId != null && backendIsCorrect == null) {
         // The backend never confirmed the answer (timeout, network error, or
         // no verdict). Do not record it as wrong — let the student retry.
-        _showSubmitError(submitState.submitError);
+        _showSubmitError(submitState.submitError ??
+            (submitState.attemptResult != null
+                ? 'Answer saved but the server returned no verdict (isCorrect missing).'
+                : 'Submit did not run (status: ${submitState.submitStatus.name}).'));
         return;
       }
       final isCorrect = backendIsCorrect ?? false;
@@ -206,8 +211,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
         ref.read(questionAnswerSessionProvider.notifier).reset();
         await ref.read(practiceSessionProvider.notifier).advance();
       }
-    } catch (_) {
-      if (mounted) _showSubmitError(null);
+    } catch (e) {
+      if (mounted) _showSubmitError(e.toString());
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);

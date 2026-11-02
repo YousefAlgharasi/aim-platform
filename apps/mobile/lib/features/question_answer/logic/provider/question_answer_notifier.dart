@@ -112,7 +112,7 @@ class QuestionAnswerNotifier extends StateNotifier<QuestionSessionState> {
 
     final question = state.question!;
     final answerValue = state.selectedOptionId ?? state.writtenAnswer;
-    final startedAt = state.itemShownAt ?? DateTime.now().toIso8601String();
+    final startedAt = state.itemShownAt ?? DateTime.now().toUtc().toIso8601String();
 
     state = state.copyWith(
       submitStatus: QuestionSubmitStatus.submitting,
@@ -141,7 +141,7 @@ class QuestionAnswerNotifier extends StateNotifier<QuestionSessionState> {
     } catch (e) {
       state = state.copyWith(
         submitStatus: QuestionSubmitStatus.failed,
-        submitError: 'Failed to submit answer',
+        submitError: 'Failed to submit answer: $e',
       );
     }
   }
