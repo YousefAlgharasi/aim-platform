@@ -269,6 +269,12 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
 
     final sessionState = ref.watch(practiceSessionProvider);
     final authContextState = ref.watch(authContextProvider);
+    // The answer notifier is auto-dispose and this page only `ref.read`s it.
+    // Without a listener Riverpod disposes it while the attempt request is in
+    // flight, and the state update then throws "Tried to use
+    // QuestionAnswerNotifier after dispose". Listening keeps it alive for as
+    // long as the page is open (no rebuilds: the callback does nothing).
+    ref.listen(questionAnswerSessionProvider, (_, __) {});
 
     final avatarLetter = switch (authContextState) {
       AppAsyncSuccess(:final data) =>

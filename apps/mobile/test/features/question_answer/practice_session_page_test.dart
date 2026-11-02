@@ -8,6 +8,8 @@
 //   3. Backend 403 (P20-010 course gating) shows the locked-course message.
 //   4. Failure shows the error state with a retry affordance.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,7 +41,12 @@ class _FakeRepository implements QuestionAnswerRepository {
     this.questions = const [],
     this.questionsError,
     this.attemptResponse,
+    this.submitGate,
   });
+
+  /// When set, the attempt call waits on it — lets a test hold the request
+  /// "in flight" while real time (and Riverpod's disposal task) passes.
+  final Completer<void>? submitGate;
 
   final List<QuestionModel> questions;
   final AppException? questionsError;
@@ -81,8 +88,9 @@ class _FakeRepository implements QuestionAnswerRepository {
     required String bearerToken,
     required String sessionId,
     required AttemptSubmitRequestModel request,
-  }) async =>
-      attemptResponse ??
+  }) async {
+    if (submitGate != null) await submitGate!.future;
+    return attemptResponse ??
       const AttemptSubmitResponseModel(
         attemptId: 'att-1',
         answerId: 'ans-1',
@@ -91,6 +99,7 @@ class _FakeRepository implements QuestionAnswerRepository {
         aimOutcome: 'pending',
         isCorrect: true,
       );
+  }
 
   @override
   Future<SessionFeedbackModel> getSessionState({
@@ -269,6 +278,35 @@ void main() {
     expect(find.text('WRONG'), findsOneWidget);
     expect(find.text('You got 1 wrong answer out of 1 question'), findsOneWidget);
     expect(find.text('Question Review'), findsOneWidget);
+  });
+
+  testWidgets('9. submit survives the request being in flight (answer notifier not disposed)', (tester) async {
+    // Regression: the page only `ref.read` the auto-dispose answer notifier,
+    // so Riverpod disposed it while the request was in flight and the state
+    // update threw "Tried to use QuestionAnswerNotifier after dispose".
+    // Riverpod's disposal runs on the real microtask queue, so real time has
+    // to pass (runAsync) while the attempt call is held open.
+    final gate = Completer<void>();
+    final repo = _FakeRepository(
+      questions: [_question('q-1')],
+      submitGate: gate,
+    );
+
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('is'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Complete Session'));
+    await tester.pump();
+
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Bad state'), findsNothing);
+    expect(find.textContaining("Couldn't submit"), findsNothing);
+    expect(find.text('Practice complete!'), findsOneWidget);
   });
 
   testWidgets('8. advances smoothly across multiple questions with all answers evaluated at the end', (tester) async {
