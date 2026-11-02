@@ -249,15 +249,15 @@ export function PracticeShell() {
     <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
       <div className="flex items-center gap-3">
         <div className="min-w-0">
-          <h1 className="text-xs font-extrabold text-[#4F46E5] dark:text-indigo-400 uppercase tracking-wider m-0">{t('Practice Session')}</h1>
+          <h1 className="text-xs font-extrabold text-brand-ink uppercase tracking-wider m-0">{t('Practice Session')}</h1>
           {navState.lessonTitle && (
-            <span className="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{navState.lessonTitle}</span>
+            <span className="block text-sm font-bold text-ink truncate">{navState.lessonTitle}</span>
           )}
         </div>
       </div>
 
       <div
-        className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+        className="h-2 bg-control rounded-full overflow-hidden"
         role="progressbar"
         aria-valuenow={progressPct}
         aria-valuemin={0}
@@ -265,7 +265,7 @@ export function PracticeShell() {
         aria-label={t('Practice progress')}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500 transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-brand to-secondary transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -285,8 +285,8 @@ export function PracticeShell() {
           <div
             className={`rounded-2xl p-4 ring-1 ${
               feedback.isCorrect === false
-                ? 'bg-rose-50 dark:bg-rose-950/40 ring-rose-200 dark:ring-rose-900 text-rose-800 dark:text-rose-300'
-                : 'bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-900 text-emerald-800 dark:text-emerald-300'
+                ? 'bg-danger-soft ring-danger-line text-danger-ink'
+                : 'bg-success-soft ring-success-line text-success-ink'
             }`}
             role="status"
           >

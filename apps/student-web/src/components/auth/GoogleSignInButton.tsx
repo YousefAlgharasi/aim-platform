@@ -75,13 +75,13 @@ export function GoogleSignInButton({
 
   return (
     <div className="pt-4">
-      <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase">
-        <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+      <div className="flex items-center gap-3 text-ink-muted text-xs font-semibold uppercase">
+        <span className="flex-1 h-px bg-surface-strong" />
         {t('or')}
-        <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+        <span className="flex-1 h-px bg-surface-strong" />
       </div>
       <div className={`relative mt-4 ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
-        <div className="h-[54px] w-full inline-flex items-center justify-center gap-2.5 rounded-[14px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0F172A] dark:text-white font-semibold text-[15px]">
+        <div className="h-[54px] w-full inline-flex items-center justify-center gap-2.5 rounded-[14px] border border-line bg-surface text-ink font-semibold text-[15px]">
           <GoogleIcon />
           {t('Continue with Google')}
         </div>

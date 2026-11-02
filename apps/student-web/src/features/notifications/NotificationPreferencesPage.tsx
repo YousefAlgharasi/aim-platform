@@ -216,7 +216,7 @@ export function NotificationPreferencesPage() {
         action={<Link to="/notifications" className={textLinkCls}>{t('Inbox')}</Link>}
       />
 
-      <div className="grid gap-5 lg:grid-cols-2 items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 items-start">
         <div className="lg:col-span-2">
           <Card>
             <div className="flex flex-col gap-4">
@@ -224,17 +224,17 @@ export function NotificationPreferencesPage() {
                 {t('Channels')}
               </SectionTitle>
               {prefError && <Banner variant="error">{prefError}</Banner>}
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {NOTIFICATION_CATEGORIES.map(category => (
-                  <div key={category} className="rounded-2xl bg-slate-50 dark:bg-slate-900/40 p-3.5 flex flex-col gap-1">
-                    <span className="text-sm font-extrabold text-slate-900 dark:text-white">{categoryLabel(category)}</span>
+                  <div key={category} className="rounded-2xl bg-surface-sunken p-3.5 flex flex-col gap-1">
+                    <span className="text-sm font-extrabold text-ink">{categoryLabel(category)}</span>
                     {NOTIFICATION_CHANNELS.map(channel => {
                       const enabled = isEnabled(channel, category);
                       const saving = savingPrefs.has(prefKey(channel, category));
                       const label = t('{channel} notifications for {category}', { channel: channelLabel(channel), category: categoryLabel(category) });
                       return (
                         <div key={channel} className="flex items-center justify-between gap-3 min-h-[40px]">
-                          <span className="text-sm text-slate-500 dark:text-slate-400">{channelLabel(channel)}</span>
+                          <span className="text-sm text-ink-muted">{channelLabel(channel)}</span>
                           <button
                             type="button"
                             onClick={() => togglePref(channel, category)}
@@ -242,7 +242,7 @@ export function NotificationPreferencesPage() {
                             aria-checked={enabled}
                             aria-label={label}
                             disabled={saving}
-                            className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${enabled ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${enabled ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'}`}
                           >
                             <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
                           </button>
@@ -271,19 +271,19 @@ export function NotificationPreferencesPage() {
                 <p className={subCls}>{t('Non-urgent notifications are held during this window.')}</p>
                 {quietStatus && <Banner variant={quietStatus.variant}>{quietStatus.message}</Banner>}
                 <div className="flex items-center justify-between gap-3 min-h-[40px]">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{t('Enable quiet hours')}</span>
+                  <span className="text-sm font-bold text-ink">{t('Enable quiet hours')}</span>
                   <button
                     type="button"
                     onClick={() => { setQuietEnabled(v => !v); setQuietStatus(null); }}
                     role="switch"
                     aria-checked={quietEnabled}
                     aria-label={t('Enable quiet hours')}
-                    className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors ${quietEnabled ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                    className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors ${quietEnabled ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'}`}
                   >
                     <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${quietEnabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
                   </button>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
                     {t('From')}
                     <input
@@ -297,7 +297,7 @@ export function NotificationPreferencesPage() {
                       aria-describedby={quietErrors.start ? 'quiet-start-error' : undefined}
                       required
                     />
-                    {quietErrors.start && <span id="quiet-start-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.start}</span>}
+                    {quietErrors.start && <span id="quiet-start-error" role="alert" className="text-xs text-danger-ink font-medium">{quietErrors.start}</span>}
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5`}>
                     {t('To')}
@@ -312,7 +312,7 @@ export function NotificationPreferencesPage() {
                       aria-describedby={quietErrors.end ? 'quiet-end-error' : undefined}
                       required
                     />
-                    {quietErrors.end && <span id="quiet-end-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.end}</span>}
+                    {quietErrors.end && <span id="quiet-end-error" role="alert" className="text-xs text-danger-ink font-medium">{quietErrors.end}</span>}
                   </label>
                   <label className={`${labelCls} flex flex-col gap-1.5 sm:col-span-2`}>
                     {t('Timezone')}
@@ -329,7 +329,7 @@ export function NotificationPreferencesPage() {
                       aria-describedby={quietErrors.timezone ? 'quiet-timezone-error' : undefined}
                       required
                     />
-                    {quietErrors.timezone && <span id="quiet-timezone-error" role="alert" className="text-xs text-red-500 dark:text-red-400 font-medium">{quietErrors.timezone}</span>}
+                    {quietErrors.timezone && <span id="quiet-timezone-error" role="alert" className="text-xs text-danger-ink font-medium">{quietErrors.timezone}</span>}
                   </label>
                 </div>
                 <div>
@@ -357,18 +357,18 @@ export function NotificationPreferencesPage() {
             ) : (
               <>
                 {reminderActionError && <Banner variant="error">{reminderActionError}</Banner>}
-                <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+                <div className="flex flex-col divide-y divide-line-subtle dark:divide-line">
                   {reminders.map(r => {
                     const busy = busyReminders.has(r.id);
                     const finished = r.status === 'cancelled' || r.status === 'completed';
                     return (
                       <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                         <div className="flex flex-col gap-1 min-w-0">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold text-ink flex items-center gap-2 flex-wrap">
                             {REMINDER_KIND_LABELS[r.kind] ? t(REMINDER_KIND_LABELS[r.kind]) : r.kind}
                             <StatusPill tone={r.status === 'active' ? 'success' : r.status === 'paused' ? 'warning' : 'neutral'}>{statusLabel(r.status)}</StatusPill>
                           </span>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <span className="text-xs text-ink-muted">
                             {r.cadence}
                             {!finished && r.next_run_at && ` · ${t('next {time}', { time: formatDateTime(r.next_run_at) })}`}
                           </span>

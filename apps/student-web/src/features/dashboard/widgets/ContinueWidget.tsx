@@ -52,7 +52,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
         {continueLesson ? (
           <>
             <span className={ui.eyebrow}>{t('Continue learning')}</span>
-            <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{continueLesson.lessonTitle}</span>
+            <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{continueLesson.lessonTitle}</span>
             <div
               className={ui.barTrack}
               role="progressbar"
@@ -74,7 +74,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
               {t('Start here')}{quickStart.skillName ? <> · <bdi>{quickStart.skillName}</bdi></> : null}
             </span>
             <div className="flex items-start gap-1.5">
-              <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
+              <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
               {quickStart.lessonDescription && (
                 <InfoPopoverButton
                   title={t('About this lesson')}
@@ -90,12 +90,12 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
         ) : null}
 
         {course && (
-          <div className="mt-1 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-700">
+          <div className="mt-1 flex items-center justify-between gap-3 border-t border-line-subtle pt-3 dark:border-line">
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className={ui.label}>{enrolledCourse ? t('Current course') : t('Recommended course')}</span>
-              <span className="truncate text-sm font-bold text-slate-900 dark:text-white">{course.title}</span>
+              <span className="truncate text-sm font-bold text-ink">{course.title}</span>
               {!enrolledCourse && recommendedCourse?.estimatedLevel && (
-                <span className="text-xs text-slate-500 dark:text-slate-400">{t('Level: {level}', { level: recommendedCourse.estimatedLevel })}</span>
+                <span className="text-xs text-ink-muted">{t('Level: {level}', { level: recommendedCourse.estimatedLevel })}</span>
               )}
             </div>
             <Link to={`/curriculum/${course.id}`} className={`${ui.link} shrink-0`}>{t('Open course')}</Link>

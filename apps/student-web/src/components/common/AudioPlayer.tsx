@@ -90,7 +90,7 @@ export function AudioPlayer({ src, onRequestSource, loading = false, slow = fals
   return (
     <div className="flex flex-col gap-1.5">
       <div
-        className="flex items-center gap-3 rounded-2xl bg-slate-50 p-2.5 pe-3 ring-1 ring-[#E2E8F0] dark:bg-slate-900/60 dark:ring-slate-700"
+        className="flex items-center gap-3 rounded-2xl bg-surface-sunken p-2.5 pe-3 ring-1 ring-line"
         dir="ltr"
       >
         <button
@@ -98,7 +98,7 @@ export function AudioPlayer({ src, onRequestSource, loading = false, slow = fals
           onClick={togglePlay}
           disabled={loading}
           aria-label={buttonLabel}
-          className="relative size-11 shrink-0 cursor-pointer rounded-full border-0 bg-[#4F46E5] text-white shadow-[0_4px_12px_rgba(79,70,229,0.25)] transition duration-150 hover:bg-[#4338CA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 active:scale-95 disabled:cursor-progress disabled:bg-[#A5B4FC] disabled:shadow-none motion-reduce:transition-none motion-reduce:active:scale-100 dark:focus-visible:ring-indigo-400 dark:focus-visible:ring-offset-slate-900 dark:disabled:bg-indigo-900"
+          className="relative size-11 shrink-0 cursor-pointer rounded-full border-0 bg-brand text-white shadow-md shadow-brand/25 transition duration-150 hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-page active:scale-95 disabled:cursor-progress disabled:bg-brand/50 disabled:shadow-none motion-reduce:transition-none motion-reduce:active:scale-100"
         >
           {loading ? (
             <svg className="absolute inset-0 m-auto size-5 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -124,14 +124,14 @@ export function AudioPlayer({ src, onRequestSource, loading = false, slow = fals
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100" dir="auto">
+            <span className="truncate text-[13px] font-semibold text-ink" dir="auto">
               {label ?? t('Play audio')}
             </span>
             <button
               type="button"
               onClick={cycleRate}
               aria-label={`${t('Playback speed')}: ${rate}x`}
-              className="h-7 min-w-[2.75rem] shrink-0 cursor-pointer rounded-full border-0 bg-white px-2 text-xs font-semibold tabular-nums text-slate-600 ring-1 ring-[#E2E8F0] transition-colors hover:text-[#4F46E5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:text-indigo-300 dark:focus-visible:ring-indigo-400"
+              className="h-7 min-w-[2.75rem] shrink-0 cursor-pointer rounded-full border-0 bg-surface px-2 text-xs font-semibold tabular-nums text-ink-soft ring-1 ring-line transition-colors hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
             >
               {rate}x
             </button>
@@ -156,24 +156,24 @@ export function AudioPlayer({ src, onRequestSource, loading = false, slow = fals
                 className="peer absolute inset-0 z-10 m-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
               />
               <div
-                className="relative h-1.5 w-full overflow-hidden rounded-full bg-slate-200 peer-focus-visible:ring-2 peer-focus-visible:ring-[#4F46E5] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-slate-50 dark:bg-slate-700 dark:peer-focus-visible:ring-indigo-400 dark:peer-focus-visible:ring-offset-slate-900"
+                className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-strong peer-focus-visible:ring-2 peer-focus-visible:ring-brand-ink peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-page"
                 aria-hidden="true"
               >
                 {loading ? (
-                  <div className="h-full w-1/3 animate-pulse rounded-full bg-[#A5B4FC] motion-reduce:animate-none dark:bg-indigo-700" />
+                  <div className="h-full w-1/3 animate-pulse rounded-full bg-brand-line motion-reduce:animate-none" />
                 ) : (
-                  <div className="h-full rounded-full bg-[#4F46E5] dark:bg-indigo-400" style={{ width: `${progress}%` }} />
+                  <div className="h-full rounded-full bg-brand dark:bg-brand-ink" style={{ width: `${progress}%` }} />
                 )}
               </div>
               {src && duration > 0 && (
                 <div
-                  className="pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#4F46E5] shadow ring-2 ring-white dark:bg-indigo-400 dark:ring-slate-900"
+                  className="pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand shadow ring-2 ring-surface dark:bg-brand-ink"
                   style={{ left: `${progress}%` }}
                   aria-hidden="true"
                 />
               )}
             </div>
-            <span className="shrink-0 text-xs font-medium tabular-nums text-slate-500 dark:text-slate-400">
+            <span className="shrink-0 text-xs font-medium tabular-nums text-ink-muted">
               {formatClock(time)} / {src && duration ? formatClock(duration) : '--:--'}
             </span>
           </div>
@@ -184,7 +184,7 @@ export function AudioPlayer({ src, onRequestSource, loading = false, slow = fals
         {loading ? (slow ? t('Still preparing the audio. This can take a few seconds.') : t('Preparing audio…')) : ''}
       </p>
       {loading && slow && (
-        <p className="m-0 text-xs text-slate-500 dark:text-slate-400" aria-hidden="true">
+        <p className="m-0 text-xs text-ink-muted" aria-hidden="true">
           {t('Still preparing the audio. This can take a few seconds.')}
         </p>
       )}

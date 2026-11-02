@@ -90,11 +90,11 @@ export function SettingsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('Settings')} />
 
-      <div className="grid gap-5 md:grid-cols-2 items-start">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 items-start">
         <Card>
           <div className="flex flex-col gap-3.5">
             <div className="flex items-center gap-3">
-              <span className="size-9 rounded-xl bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0 font-extrabold text-sm" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></span>
+              <span className="size-9 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center shrink-0 font-extrabold text-sm" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></span>
               <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>
             </div>
             {languageStatus && <Banner variant={languageStatus.variant}>{languageStatus.message}</Banner>}
@@ -111,7 +111,7 @@ export function SettingsPage() {
         <Card>
           <div className="flex flex-col gap-3.5">
             <div className="flex items-center gap-3">
-              <span className="size-9 rounded-xl bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shrink-0" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
+              <span className="size-9 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center shrink-0" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
               <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
             </div>
             <ThemeSwitch />
@@ -121,7 +121,7 @@ export function SettingsPage() {
         <Card>
           <div className="flex flex-col gap-1">
             <SectionTitle>{t('Notifications')}</SectionTitle>
-            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
               <li><LinkRow to="/notifications/preferences">{t('Notification channels, quiet hours & reminders')}</LinkRow></li>
               <li><LinkRow to="/notifications">{t('Notification inbox')}</LinkRow></li>
             </ul>
@@ -131,7 +131,7 @@ export function SettingsPage() {
         <Card>
           <div className="flex flex-col gap-1">
             <SectionTitle>{t('Account')}</SectionTitle>
-            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
               <li><LinkRow to="/profile">{t('Edit profile')}</LinkRow></li>
               <li><LinkRow to="/billing">{t('Subscription & billing')}</LinkRow></li>
               <li><LinkRow to="/support">{t('Help & support')}</LinkRow></li>
@@ -151,15 +151,15 @@ export function SettingsPage() {
           </div>
         </Card>
 
-        <div className="rounded-2xl p-4 sm:p-5 bg-red-50 dark:bg-red-950/30 ring-1 ring-red-100 dark:ring-red-900/50 flex flex-col gap-3.5">
-          <h2 className="text-base font-extrabold tracking-tight text-red-600 dark:text-red-300 m-0">{t('Sign out')}</h2>
+        <div className="rounded-2xl p-4 sm:p-5 bg-danger-soft ring-1 ring-danger-line flex flex-col gap-3.5">
+          <h2 className="text-base font-extrabold tracking-tight text-danger-ink m-0">{t('Sign out')}</h2>
           <div>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setConfirmLogout(true)}
               disabled={loggingOut}
-              className="!text-red-600 dark:!text-red-300"
+              className="!text-danger-ink"
             >
               <LogOutIcon className="size-4" />
               {t('Sign out')}
@@ -170,7 +170,7 @@ export function SettingsPage() {
 
       <Modal open={confirmLogout} onClose={() => !loggingOut && setConfirmLogout(false)} title={t('Sign out?')}>
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-red-600 dark:text-red-400">{t("You'll need to sign in again to continue learning.")}</p>
+          <p className="text-sm text-danger-ink">{t("You'll need to sign in again to continue learning.")}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setConfirmLogout(false)} disabled={loggingOut}>{t('Cancel')}</Button>
             <Button variant="primary" onClick={handleLogout} disabled={loggingOut}>

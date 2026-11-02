@@ -26,6 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDarkMode ? '#0F172A' : '#4762EE');
     try {
       localStorage.setItem(STORAGE_KEY, String(isDarkMode));
     } catch {

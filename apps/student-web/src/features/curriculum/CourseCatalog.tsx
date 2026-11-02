@@ -116,12 +116,12 @@ export function CourseCatalog() {
               key={course.courseId}
               role="button"
               tabIndex={0}
-              className={`flex flex-col gap-2.5 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 ring-1 shadow-sm transition-all duration-200 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+              className={`flex flex-col gap-2.5 bg-surface rounded-2xl p-4 sm:p-5 ring-1 shadow-sm transition-all duration-200 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                 course.locked
-                  ? 'ring-slate-200/60 dark:ring-slate-800 opacity-65 cursor-not-allowed'
+                  ? 'ring-line !bg-surface-sunken cursor-not-allowed'
                   : isCurrent
-                    ? 'ring-2 ring-[#4F46E5] dark:ring-indigo-400 hover:shadow-md cursor-pointer'
-                    : 'ring-[#E2E8F0] dark:ring-slate-700 hover:ring-indigo-300 dark:hover:ring-indigo-700 hover:shadow-md cursor-pointer'
+                    ? 'ring-2 ring-brand-ink hover:shadow-md cursor-pointer'
+                    : 'ring-line hover:ring-brand-line hover:shadow-md cursor-pointer'
               }`}
               onClick={(e) => handleOpen(course, e.currentTarget)}
               onKeyDown={(e) => {
@@ -146,7 +146,7 @@ export function CourseCatalog() {
         placement="cover"
         title={t('Locked')}
       >
-        <p className="flex items-start gap-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
+        <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-muted m-0">
           <LockIcon className="size-4 mt-0.5 shrink-0" />
           <span>{t(COURSE_LOCKED_MESSAGE)}</span>
         </p>
@@ -160,7 +160,7 @@ export function CourseCatalog() {
         title={t('Start this course?')}
       >
         <div className="flex flex-col gap-3">
-          <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 m-0">
+          <p className="text-sm leading-relaxed text-ink-muted m-0">
             {enrollment?.found && enrollment.courseTitle
               ? t("You're currently in {current}. Switching to {next} will make it your active course instead.", { current: enrollment.courseTitle, next: shownCourse?.title ?? '' })
               : t('{title} will become your active course.', { title: shownCourse?.title ?? '' })}

@@ -101,15 +101,15 @@ export function LessonPlayerShell() {
     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
       <BackButton fallback={courseId ? `/curriculum/${courseId}` : '/curriculum'} className="self-start" />
 
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-brand via-brand to-secondary rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-indigo-100 text-[11px] font-extrabold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
+          <span className="text-on-brand text-[11px] font-extrabold uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full">
             {t('Lesson')}
           </span>
           {completed && (
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1">
-              <CheckIcon className="size-3 text-emerald-300" /> {t('Completed')}
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-white bg-success px-2.5 py-1 rounded-full flex items-center gap-1">
+              <CheckIcon className="size-3 text-white" /> {t('Completed')}
             </span>
           )}
         </div>
@@ -126,10 +126,10 @@ export function LessonPlayerShell() {
             </span>
           )}
         </div>
-        <div className="flex flex-wrap gap-2 text-xs font-semibold text-indigo-100">
-          <span className="bg-white/15 px-2.5 py-1 rounded-full">{plural(assets.length, { one: t('1 step'), two: t('2 steps'), few: t('{n} steps', { n: assets.length }), other: t('{n} steps', { n: assets.length }) })}</span>
-          {totalSeconds > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{t('~{n} min', { n: Math.max(1, Math.round(totalSeconds / 60)) })}</span>}
-          {lesson.xpValue > 0 && <span className="bg-white/15 px-2.5 py-1 rounded-full">{t('{n} XP', { n: lesson.xpValue })}</span>}
+        <div className="flex flex-wrap gap-2 text-xs font-semibold text-on-brand">
+          <span className="bg-black/20 px-2.5 py-1 rounded-full">{plural(assets.length, { one: t('1 step'), two: t('2 steps'), few: t('{n} steps', { n: assets.length }), other: t('{n} steps', { n: assets.length }) })}</span>
+          {totalSeconds > 0 && <span className="bg-black/20 px-2.5 py-1 rounded-full">{t('~{n} min', { n: Math.max(1, Math.round(totalSeconds / 60)) })}</span>}
+          {lesson.xpValue > 0 && <span className="bg-black/20 px-2.5 py-1 rounded-full">{t('{n} XP', { n: lesson.xpValue })}</span>}
         </div>
         <div className="h-2 bg-black/20 rounded-full overflow-hidden p-0.5 mt-4" aria-hidden="true">
           <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: completed ? '100%' : '0%' }} />
@@ -143,7 +143,7 @@ export function LessonPlayerShell() {
       )}
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0 px-1">{t('What’s inside')}</h2>
+        <h2 className="text-ink font-extrabold text-base tracking-tight m-0 px-1">{t('What’s inside')}</h2>
         {assets.length === 0 ? (
           <EmptyState
             title={t('No content yet')}
@@ -157,40 +157,40 @@ export function LessonPlayerShell() {
       <div className="flex flex-col gap-3">
         {completed ? (
           <div className="px-1">
-            <h2 className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight m-0">{t('Lesson mastered! 🌟')}</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs m-0 mt-0.5">
+            <h2 className="text-ink font-extrabold text-base tracking-tight m-0">{t('Lesson mastered! 🌟')}</h2>
+            <p className="text-ink-muted text-xs m-0 mt-0.5">
               {t('Reinforce your knowledge or practice with quick exercises.')}
             </p>
           </div>
         ) : (
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed m-0 px-1">
+          <p className="text-ink-muted text-sm leading-relaxed m-0 px-1">
             {t('Finish this lesson by completing its practice questions. Your answers are checked by AIM and the lesson is marked complete when you reach the end.')}
           </p>
         )}
 
         {position.locked ? (
-          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-semibold">
+          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-control text-ink-muted text-sm font-semibold">
             {t('🔒 Practice unlocks after the previous lesson')}
           </span>
         ) : completed ? (
           <Link
             to={`/practice/lesson/${lesson.id}`}
             state={practiceState}
-            className="w-full bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-slate-800 dark:to-indigo-950/80 ring-2 ring-[#4F46E5] rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-md shadow-indigo-500/10"
+            className="w-full bg-gradient-to-r from-brand-soft to-secondary-soft dark:from-surface dark:to-brand-soft ring-2 ring-brand-ink rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-md shadow-brand/10"
           >
-            <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-md">
+            <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-secondary text-white flex items-center justify-center shrink-0 shadow-md">
               <ZapIcon className="size-6 text-white" />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block font-extrabold text-indigo-700 dark:text-indigo-300 text-base">{t('Practice again ⚡')}</span>
-              <span className="block text-slate-600 dark:text-slate-300 text-xs mt-0.5">{t('Test your comprehension with quick interactive exercises.')}</span>
+              <span className="block font-extrabold text-brand-ink text-base">{t('Practice again ⚡')}</span>
+              <span className="block text-ink-soft text-xs mt-0.5">{t('Test your comprehension with quick interactive exercises.')}</span>
             </span>
           </Link>
         ) : (
           <Link
             to={`/practice/lesson/${lesson.id}`}
             state={practiceState}
-            className="w-full h-[54px] rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 text-white font-extrabold text-base no-underline shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2.5 hover:opacity-95 transition-all"
+            className="w-full h-[54px] rounded-2xl bg-gradient-to-r from-brand via-brand to-secondary text-white font-extrabold text-base no-underline shadow-lg shadow-brand/25 flex items-center justify-center gap-2.5 hover:opacity-95 transition-all"
           >
             {t('Start practice to complete lesson ⚡')}
           </Link>
@@ -198,16 +198,16 @@ export function LessonPlayerShell() {
 
         <Link
           to={`/ai-teacher?lessonId=${encodeURIComponent(lesson.id)}&lessonTitle=${encodeURIComponent(lesson.title)}`}
-          className="w-full bg-white dark:bg-slate-800/90 ring-1 ring-slate-200/80 dark:ring-slate-700/80 hover:ring-indigo-300 rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-sm"
+          className="w-full bg-surface ring-1 ring-line/80 hover:ring-brand-line rounded-2xl p-4 flex items-center gap-4 no-underline transition-all shadow-sm"
         >
-          <span className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+          <span className="w-12 h-12 rounded-xl bg-secondary-soft text-secondary-ink flex items-center justify-center shrink-0">
             <SparkleIcon className="size-6" />
           </span>
-          <span className="font-bold text-slate-900 dark:text-white text-sm">{t('Ask AI tutor ✨')}</span>
+          <span className="font-bold text-ink text-sm">{t('Ask AI tutor ✨')}</span>
         </Link>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex items-center justify-between gap-3 pt-2 border-t border-line-subtle">
         <LessonNavigation position={position} courseId={courseId} />
       </div>
     </div>

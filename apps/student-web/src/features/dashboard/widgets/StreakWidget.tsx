@@ -19,7 +19,7 @@ export function StreakWidget({ goal }: StreakWidgetProps) {
         <div className="flex items-center gap-3">
           <span className={ui.iconPill} aria-hidden="true"><FlameIcon className="size-5" /></span>
           <div className="flex flex-col">
-            <span className="text-2xl font-extrabold text-slate-900 dark:text-white">—</span>
+            <span className="text-2xl font-extrabold text-ink">—</span>
             <span className={ui.label}>{t('Streak unavailable')}</span>
           </div>
         </div>
@@ -35,14 +35,14 @@ export function StreakWidget({ goal }: StreakWidgetProps) {
     <Card>
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-500 dark:bg-amber-950/40" aria-hidden="true">
-            <FlameIcon className="size-5 fill-amber-400" />
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-warning-soft text-warning-ink" aria-hidden="true">
+            <FlameIcon className="size-5 text-gold fill-gold" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-2xl font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{goal.streakDays}</span>
+            <span className="text-2xl font-extrabold leading-none tracking-tight text-ink">{goal.streakDays}</span>
             <span className={ui.label}>{t('Day streak')}</span>
           </div>
-          <span className={goalMet ? 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : ui.meta}>
+          <span className={goalMet ? 'rounded-full bg-success-soft px-2.5 py-1 text-xs font-extrabold text-success-ink' : ui.meta}>
             {goalMet ? t('Goal met today') : t('{done}/{total} today', { done: goal.completedToday, total: target })}
           </span>
         </div>
@@ -55,7 +55,7 @@ export function StreakWidget({ goal }: StreakWidgetProps) {
           aria-valuemax={100}
           aria-valuenow={pct}
         >
-          <div className={goalMet ? 'h-full rounded-full bg-emerald-500' : ui.barFill} style={{ width: `${pct}%` }} />
+          <div className={goalMet ? 'h-full rounded-full bg-success' : ui.barFill} style={{ width: `${pct}%` }} />
         </div>
 
         <span className={ui.label}>

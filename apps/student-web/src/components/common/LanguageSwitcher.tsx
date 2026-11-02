@@ -11,7 +11,7 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
       lang={next}
       aria-label={next === 'ar' ? 'التبديل إلى العربية' : 'Switch to English'}
       title={next === 'ar' ? 'العربية' : 'English'}
-      className={`h-9 min-w-9 px-2.5 rounded-xl flex items-center justify-center border-none cursor-pointer text-[13px] font-bold transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400 ${className}`}
+      className={`h-9 min-w-9 px-2.5 rounded-xl flex items-center justify-center border-none cursor-pointer text-[13px] font-bold transition-colors bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink ${className}`}
     >
       {next === 'ar' ? 'عربي' : 'EN'}
     </button>

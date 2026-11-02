@@ -10,11 +10,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 // (PrimaryButton / SecondaryButton / TextButton): 14px radius, indigo-600 primary.
 const VARIANT: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-[#4F46E5] hover:bg-[#4338CA] text-[#F8FAFC] shadow-[0_4px_16px_rgba(79,70,229,0.2)] active:scale-[0.99] disabled:bg-[#A5B4FC] dark:disabled:bg-indigo-900 disabled:shadow-none',
+    'bg-brand hover:bg-brand-hover active:bg-brand-active text-on-brand shadow-md shadow-brand/20 active:scale-[0.99] disabled:bg-disabled disabled:text-ink-disabled disabled:shadow-none',
   secondary:
-    'bg-[#F1F5F9] dark:bg-slate-800 text-[#0F172A] dark:text-white hover:bg-[#E2E8F0] dark:hover:bg-slate-700 active:scale-[0.99] disabled:opacity-50',
+    'bg-control text-ink hover:bg-surface-strong active:scale-[0.99] disabled:bg-disabled disabled:text-ink-disabled',
   ghost:
-    'bg-transparent text-[#4F46E5] dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 disabled:opacity-50',
+    'bg-transparent text-brand-ink hover:bg-brand-soft disabled:text-ink-disabled',
 };
 
 const SIZE: Record<NonNullable<ButtonProps['size']>, string> = {

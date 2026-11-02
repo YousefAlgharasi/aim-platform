@@ -114,20 +114,20 @@ export function ProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('Profile')} />
 
-      <div className="grid gap-5 lg:grid-cols-3 items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1 flex flex-col gap-5">
           <Card>
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3.5">
                 <div
-                  className="size-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
+                  className="size-14 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
                   aria-hidden="true"
                 >
                   {initial}
                 </div>
                 <div className="min-w-0">
-                  {displayName && <p className="font-bold text-base m-0 text-slate-900 dark:text-white truncate">{displayName}</p>}
-                  <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400 break-all">{user.email}</p>
+                  {displayName && <p className="font-bold text-base m-0 text-ink truncate">{displayName}</p>}
+                  <p className="text-xs m-0 mt-0.5 text-ink-muted break-all">{user.email}</p>
                 </div>
               </div>
             </div>
@@ -136,7 +136,7 @@ export function ProfilePage() {
           <Card>
             <nav className="flex flex-col gap-1" aria-label={t('Account links')}>
               <SectionTitle>{t('More')}</SectionTitle>
-              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
                 {QUICK_LINKS.map(l => (
                   <li key={l.to}><LinkRow to={l.to}>{t(l.label)}</LinkRow></li>
                 ))}

@@ -22,7 +22,7 @@ export function MobileTabBar({ onOpenMenu }: MobileTabBarProps) {
   return (
     <nav
       aria-label={t('Quick navigation')}
-      className="md:hidden fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-slate-900/95"
+      className="md:hidden fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)] dark:border-line-subtle dark:bg-elevated/95"
     >
       {TABS.map(({ to, label, end, icon }) => (
         <NavLink
@@ -30,7 +30,7 @@ export function MobileTabBar({ onOpenMenu }: MobileTabBarProps) {
           to={to}
           end={end}
           className={({ isActive }) =>
-            `${TAB} ${isActive ? 'text-indigo-600 dark:text-indigo-300' : 'text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300'}`
+            `${TAB} ${isActive ? 'text-brand-ink' : 'text-ink-soft hover:text-brand-ink dark:text-ink-muted'}`
           }
         >
           {icon}
@@ -40,7 +40,7 @@ export function MobileTabBar({ onOpenMenu }: MobileTabBarProps) {
       <button
         type="button"
         onClick={onOpenMenu}
-        className={`${TAB} text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300`}
+        className={`${TAB} text-ink-soft hover:text-brand-ink dark:text-ink-muted`}
       >
         <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <path d="M4 7h16M4 12h16M4 17h16" />

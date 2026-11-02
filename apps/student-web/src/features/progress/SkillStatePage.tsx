@@ -47,7 +47,7 @@ export function SkillStatePage() {
               <Card key={s.skillId}>
                 <div className="flex flex-col gap-2.5">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-base font-bold text-slate-900 dark:text-white [overflow-wrap:anywhere]" title={s.skillId}>{name}</span>
+                    <span className="text-base font-bold text-ink [overflow-wrap:anywhere]" title={s.skillId}>{name}</span>
                     <span className={ui.badge(tier === 'needsWork' || weakSkillIds.has(s.skillId) ? ui.tone.error : ui.tone.primary)}>
                       {t(tierLabel[tier])}
                     </span>
@@ -63,17 +63,17 @@ export function SkillStatePage() {
                     <div className={tier === 'needsWork' ? ui.barFillWeak : ui.barFill} style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-medium text-ink-muted">
                       {t('Mastery {pct}%', { pct })}{prev != null ? ` · ${t('was {pct}%', { pct: prev })}` : ''}
                     </span>
-                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{trendLabel(s.masteryTrend)}</span>
+                    <span className="text-xs font-medium text-ink-muted">{trendLabel(s.masteryTrend)}</span>
                   </div>
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <span className="text-xs font-medium text-ink-muted">
                     {t('Confidence {pct}%', { pct: toPercent(s.masteryConfidence) })} ·{' '}
                     {t('Last evaluated {date}', { date: formatDate(s.lastEvaluatedAt) })}
                   </span>
                   {weakSkillIds.has(s.skillId) && (
-                    <p className="m-0 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 [&_a]:font-semibold [&_a]:text-[#4F46E5] dark:[&_a]:text-indigo-400">
+                    <p className="m-0 rounded-xl bg-warning-soft px-3 py-2 text-xs text-warning-ink [&_a]:font-semibold [&_a]:text-brand-ink">
                       {t('This skill is flagged as an area to improve.')} <Link to="/progress/weaknesses">{t('See details')}</Link>
                     </p>
                   )}

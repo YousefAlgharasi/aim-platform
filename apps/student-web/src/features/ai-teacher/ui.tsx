@@ -23,7 +23,7 @@ export function BackLink({ to, label }: { to: string; label: string }) {
     <Link
       to={to}
       aria-label={t(label)}
-      className="size-10 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 flex items-center justify-center transition-colors"
+      className="size-10 shrink-0 rounded-xl bg-control hover:bg-brand-soft text-ink-soft hover:text-brand-ink flex items-center justify-center transition-colors"
     >
       <ChevronBackIcon />
     </Link>
@@ -31,7 +31,7 @@ export function BackLink({ to, label }: { to: string; label: string }) {
 }
 
 export const pillLinkClass =
-  'inline-flex items-center justify-center gap-1.5 min-h-10 px-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 text-sm font-semibold no-underline hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors';
+  'inline-flex items-center justify-center gap-1.5 min-h-10 px-3.5 rounded-xl bg-brand-soft text-brand-ink text-sm font-semibold no-underline hover:bg-brand-soft transition-colors';
 
 export function ThumbButton({
   kind, active, disabled, onClick, label,
@@ -45,8 +45,8 @@ export function ThumbButton({
       aria-label={label}
       className={`size-8 rounded-lg flex items-center justify-center border-none cursor-pointer transition-colors disabled:cursor-default ${
         active
-          ? 'bg-indigo-100 dark:bg-indigo-900/60 text-[#4F46E5] dark:text-indigo-300'
-          : 'bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 disabled:opacity-60'
+          ? 'bg-brand-soft text-brand-ink'
+          : 'bg-surface-muted text-ink-muted dark:text-ink-soft hover:bg-brand-soft disabled:opacity-60'
       }`}
     >
       <svg className={`size-4 ${kind === 'down' ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

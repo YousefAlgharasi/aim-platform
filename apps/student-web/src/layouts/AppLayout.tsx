@@ -84,14 +84,14 @@ export function AppLayout() {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+    <div className="flex min-h-screen bg-page text-ink">
       <a
         href="#main-content"
         onClick={(e) => {
           e.preventDefault();
           mainRef.current?.focus();
         }}
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[60] focus:rounded-xl focus:bg-indigo-600 focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:no-underline focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[60] focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:no-underline focus:shadow-lg"
       >
         {t('Skip to main content')}
       </a>
@@ -118,7 +118,7 @@ export function AppLayout() {
             type="button"
             onClick={() => setMenuOpen(true)}
             aria-label={t('Open navigation menu')}
-            className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/35 flex items-center justify-center border-none cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 md:hidden"
+            className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-gradient-to-br from-brand to-secondary text-white shadow-xl shadow-brand/35 flex items-center justify-center border-none cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 md:hidden"
           >
             <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <line x1="4" y1="7" x2="20" y2="7" />

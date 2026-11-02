@@ -133,7 +133,7 @@ export function NotificationCenterPage() {
       {unreadCount > 0 && (
         <div className="flex items-center gap-3">
           <span
-            className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-[#4F46E5] text-white text-xs font-extrabold"
+            className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-brand text-white text-xs font-extrabold"
             aria-label={t('{count} unread', { count: unreadCount })}
           >
             {unreadCount}
@@ -166,8 +166,8 @@ export function NotificationCenterPage() {
                 key={notif.id}
                 className={`flex items-start gap-3 p-4 rounded-2xl ring-1 shadow-sm cursor-pointer transition-colors ${
                   unread
-                    ? 'bg-indigo-50/70 dark:bg-indigo-950/30 ring-indigo-100 dark:ring-indigo-900/60'
-                    : 'bg-white dark:bg-slate-800 ring-[#E2E8F0] dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60'
+                    ? 'bg-brand-soft/70 ring-brand-line'
+                    : 'bg-surface ring-line hover:bg-surface-sunken dark:hover:bg-surface-muted/60'
                 }`}
                 onClick={() => open(notif)}
                 role="button"
@@ -177,21 +177,21 @@ export function NotificationCenterPage() {
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(notif); } }}
               >
                 <span
-                  className={`mt-1.5 size-2.5 rounded-full shrink-0 ${unread ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                  className={`mt-1.5 size-2.5 rounded-full shrink-0 ${unread ? 'bg-brand' : 'bg-surface-strong'}`}
                   aria-hidden="true"
                 />
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <span className={`text-sm text-slate-900 dark:text-white ${unread ? 'font-extrabold' : 'font-semibold'}`}>{title}</span>
+                  <span className={`text-sm text-ink ${unread ? 'font-extrabold' : 'font-semibold'}`}>{title}</span>
                   {body && (
-                    <span className={`text-sm text-slate-500 dark:text-slate-400 leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
+                    <span className={`text-sm text-ink-muted leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
                   )}
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <span className="text-xs font-semibold text-ink-muted">
                     {categoryLabel(notif.category)} · {formatDateTime(notif.created_at)}
                   </span>
                 </div>
                 <button
                   type="button"
-                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xl disabled:opacity-50"
+                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-ink-muted hover:text-ink-soft hover:bg-surface-muted cursor-pointer text-xl disabled:opacity-50"
                   onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
                   disabled={busy}
                   aria-label={t('Dismiss {title}', { title })}

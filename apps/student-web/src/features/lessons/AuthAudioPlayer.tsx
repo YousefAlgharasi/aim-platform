@@ -49,7 +49,7 @@ export function AuthAudioPlayer({ load, label }: AuthAudioPlayerProps) {
       onRequestSource={handleLoad}
       loading={loading}
       label={label ?? t('Play audio')}
-      footer={message ? <span className="text-xs text-slate-500 dark:text-slate-400" role="status">{message}</span> : null}
+      footer={message ? <span className="text-xs text-ink-muted" role="status">{message}</span> : null}
     />
   );
 }

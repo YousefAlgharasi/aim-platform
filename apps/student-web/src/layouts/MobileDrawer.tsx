@@ -63,15 +63,15 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
         tabIndex={-1}
         aria-label={t('Close menu')}
         onClick={onClose}
-        className="absolute inset-0 border-none bg-slate-900/40 backdrop-blur-sm cursor-default"
+        className="absolute inset-0 border-none bg-overlay/40 backdrop-blur-sm cursor-default"
       />
-      <div ref={panelRef} className="relative w-4/5 max-w-[300px] h-full shadow-2xl bg-white dark:bg-slate-900">
+      <div ref={panelRef} className="relative w-4/5 max-w-[300px] h-full shadow-2xl bg-surface dark:bg-elevated">
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label={t('Close menu')}
-          className="absolute top-4 end-4 z-10 size-10 rounded-full flex items-center justify-center border-none cursor-pointer bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
+          className="absolute top-4 end-4 z-10 size-10 rounded-full flex items-center justify-center border-none cursor-pointer bg-control text-ink-soft hover:text-ink"
         >
           <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" />

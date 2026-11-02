@@ -99,7 +99,7 @@ export function CourseDetailPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="sticky top-3 z-10 -mt-3 flex items-stretch gap-3 bg-[#4F46E5] text-white rounded-2xl ps-4 pe-2 py-3.5 shadow-lg shadow-indigo-500/30 dark:shadow-black/40">
+      <div className="sticky top-3 z-10 -mt-3 flex items-stretch gap-3 bg-brand text-white rounded-2xl ps-4 pe-2 py-3.5 shadow-lg shadow-brand/30 dark:shadow-black/40">
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <CourseCardBody course={course} isCurrent={isCurrent} titleAs="h1" variant="primary" />
         </div>
@@ -108,7 +108,7 @@ export function CourseDetailPage() {
           to="/curriculum"
           aria-label={t('Courses')}
           title={t('Courses')}
-          className="shrink-0 self-center size-10 rounded-xl flex items-center justify-center text-white no-underline hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors"
+          className="shrink-0 self-center size-10 rounded-xl flex items-center justify-center text-white no-underline hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-surface transition-colors"
         >
           <BookIcon className="size-5" />
         </Link>

@@ -109,7 +109,8 @@ describe('CourseClaimPage', () => {
     mockBilling = { courseId: 'c1', price: PRICE, access: ACCESS('rejected', { rejectionNote: 'Wrong amount' }) };
     render(<CourseClaimPage />);
     expect(await screen.findByText('Payment not accepted')).toBeInTheDocument();
-    expect(screen.getByText(/Note: Wrong amount/)).toBeInTheDocument();
+    // the note is wrapped in Unicode isolates (U+2068/U+2069) so its direction can't flip the sentence
+    expect(screen.getByText(/Note:\s*\u2068?Wrong amount/)).toBeInTheDocument();
     expect(screen.getByLabelText('2. Transaction number')).toBeInTheDocument();
   });
 
