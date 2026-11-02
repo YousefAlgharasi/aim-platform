@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
 import { AiContextSnapshotRepository } from '../repositories/ai-context-snapshot.repository';
 import { StudentProfileContextAdapter } from './adapters/student-profile-context.adapter';
@@ -7,6 +7,8 @@ import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-conte
 import { FocusDirectiveContextAdapter } from './adapters/focus-directive-context.adapter';
 import { DifficultyDecisionContextAdapter } from './adapters/difficulty-decision-context.adapter';
 import { EmotionalStateContextAdapter } from './adapters/emotional-state-context.adapter';
+import { PracticeTopicContextAdapter } from './adapters/practice-topic-context.adapter';
+import { isPracticeContextRef } from '../../practice/practice-context-ref';
 import { AiTeacherContextSnapshot, BuildContextInput } from './context-builder.types';
 
 /**
@@ -50,10 +52,29 @@ export class ContextBuilderService {
     private readonly difficultyDecisionContext: DifficultyDecisionContextAdapter,
     private readonly emotionalStateContext: EmotionalStateContextAdapter,
     private readonly contextSnapshotRepository: AiContextSnapshotRepository,
+    @Optional() private readonly practiceTopicContext?: PracticeTopicContextAdapter,
   ) {}
 
   async buildContext(input: BuildContextInput): Promise<AiTeacherContextSnapshot> {
     this.logger.log(`Building AI Teacher context for session ${input.sessionId}`);
+
+    // Speaking practice: only the student's profile and the topic's role prompt. No lesson,
+    // skill, focus or difficulty context — those belong to the lesson flow.
+    if (isPracticeContextRef(input.contextRef)) {
+      const profile = await this.studentProfileContext.getProfileContext(input.studentId);
+      const practiceTopic = await this.practiceTopicContext?.getContext(input.studentId, input.contextRef);
+      return {
+        studentId: input.studentId,
+        sessionId: input.sessionId,
+        studentProfile: profile as unknown as Record<string, unknown> | null,
+        currentLesson: null,
+        curriculumSkill: null,
+        focusDirective: null,
+        difficultyDecision: null,
+        emotionalState: null,
+        practiceTopic: (practiceTopic ?? null) as unknown as Record<string, unknown> | null,
+      };
+    }
 
     const explicitLessonId = this.parseLessonIdFromContextRef(input.contextRef);
     const studentProfile = await this.studentProfileContext.getProfileContext(input.studentId);

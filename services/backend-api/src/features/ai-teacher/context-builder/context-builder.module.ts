@@ -21,6 +21,7 @@ import { CurriculumSkillContextAdapter } from './adapters/curriculum-skill-conte
 import { FocusDirectiveContextAdapter } from './adapters/focus-directive-context.adapter';
 import { DifficultyDecisionContextAdapter } from './adapters/difficulty-decision-context.adapter';
 import { EmotionalStateContextAdapter } from './adapters/emotional-state-context.adapter';
+import { PracticeTopicContextAdapter } from './adapters/practice-topic-context.adapter';
 import { ContextBuilderService } from './context-builder.service';
 import { ContextBudgetPolicyService } from './context-budget-policy.service';
 
@@ -42,6 +43,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     FocusDirectiveContextAdapter,
     DifficultyDecisionContextAdapter,
     EmotionalStateContextAdapter,
+    PracticeTopicContextAdapter,
   ],
   exports: [
     ContextBuilderService,
@@ -52,6 +54,7 @@ import { ContextBudgetPolicyService } from './context-budget-policy.service';
     FocusDirectiveContextAdapter,
     DifficultyDecisionContextAdapter,
     EmotionalStateContextAdapter,
+    PracticeTopicContextAdapter,
   ],
 })
 export class ContextBuilderModule {}

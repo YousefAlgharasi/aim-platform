@@ -28,6 +28,7 @@ import { BillingModule } from './billing/billing.module';
 import { OperationsModule } from './operations/operations.module';
 import { AppVersionModule } from './app-version/app-version.module';
 import { CourseBillingModule } from './course-billing/course-billing.module';
+import { PracticeModule } from './practice/practice.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { CourseBillingModule } from './course-billing/course-billing.module';
     EnrollmentModule,
     AppVersionModule,
     CourseBillingModule,
+    PracticeModule,
   ],
   exports: [
     AuthModule,
