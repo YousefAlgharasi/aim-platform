@@ -1,6 +1,8 @@
 // Placement test.
 export const placement: Record<string, string> = {
   // Gate
+  'You already took the placement test recently. You can retake it later.': 'لقد أجريتَ اختبار تحديد المستوى مؤخراً. يمكنك إعادته لاحقاً.',
+  'You are not eligible to start a new placement attempt right now.': 'لا يمكنك بدء محاولة جديدة لاختبار تحديد المستوى الآن.',
   'Get started': 'ابدأ الآن',
   'How would you like to start?': 'كيف تودّ أن تبدأ؟',
   'Choose how you want to begin learning. This choice is only asked once.':

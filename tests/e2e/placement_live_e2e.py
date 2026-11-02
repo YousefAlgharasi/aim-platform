@@ -198,7 +198,7 @@ def main():
         check("latest attempt is the completed one", s == 200 and latest and latest.get("attemptId") == aid and latest.get("status") == "completed", f"{s} {latest}")
 
         s, nxt = call("POST", "/placement/attempts", token=token)
-        print(f"     (info) starting another attempt right after completing -> HTTP {s}")
+        check("retake right after finishing is refused (cooldown)", s == 409 and "PLACEMENT_RETAKE_NOT_ALLOWED" in json.dumps(nxt), f"{s} {nxt}")
 
         print("6. Security")
         s, _ = call("GET", "/placement/active")
