@@ -9,7 +9,8 @@ export default function CoursePaymentsLayout({ children }: Readonly<{ children: 
     <section className="cpl-layout">
       <nav className="cpl-nav" aria-label="Course payments navigation">
         <ul className="cpl-nav-list" role="list">
-          <li><a href="/admin/course-payments" className="cpl-nav-link">Payments</a></li>
+          <li><a href="/admin/course-payments" className="cpl-nav-link">Overview</a></li>
+          <li><a href="/admin/course-payments/requests" className="cpl-nav-link">Payments</a></li>
           <li><a href="/admin/course-payments/prices" className="cpl-nav-link">Course Prices</a></li>
           <li><a href="/admin/course-payments/wallets" className="cpl-nav-link">Wallets</a></li>
           <li><a href="/admin/course-payments/access" className="cpl-nav-link">Course Access</a></li>

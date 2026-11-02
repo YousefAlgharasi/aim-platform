@@ -57,6 +57,22 @@ export function CoursePaymentsStyles() {
 
       .cp-error { padding: var(--space-12) var(--space-16); background: var(--error-soft); border: 1px solid var(--color-error-200); border-radius: var(--radius-md); font-size: 13px; color: var(--color-error-700); }
       .cp-success { padding: var(--space-12) var(--space-16); background: var(--success-soft); border: 1px solid var(--color-success-200); border-radius: var(--radius-md); font-size: 13px; color: var(--color-success-700); }
+      .cp-kpis { display: grid; gap: var(--space-16); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+      .cp-kpi { padding: var(--space-16); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); display: flex; flex-direction: column; gap: var(--space-4); }
+      .cp-kpi--accent { border-color: var(--color-primary-500); }
+      .cp-kpi--warn { border-color: var(--color-warning-500, #f59e0b); }
+      .cp-kpi-label { font-size: 12px; font-weight: var(--weight-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+      .cp-kpi-value { font-size: 22px; font-weight: var(--weight-bold); color: var(--text-primary); }
+      .cp-kpi-sub { font-size: 12px; color: var(--text-muted); }
+      .cp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .cp-table th { text-align: left; font-size: 12px; font-weight: var(--weight-semibold); color: var(--text-muted); padding: var(--space-4) var(--space-12) var(--space-8) 0; }
+      .cp-table td { padding: var(--space-8) var(--space-12) var(--space-8) 0; border-top: 1px solid var(--border); color: var(--text-primary); }
+      .cp-table .cp-num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+      .cp-bars { display: flex; align-items: flex-end; gap: var(--space-12); height: 140px; }
+      .cp-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: var(--space-4); height: 100%; min-width: 0; }
+      .cp-bar-fill { width: 100%; max-width: 56px; border-radius: 6px 6px 0 0; background: var(--color-primary-500); min-height: 2px; }
+      .cp-bar-label { font-size: 11px; color: var(--text-muted); }
+      .cp-bar-value { font-size: 11px; font-weight: var(--weight-semibold); color: var(--text-primary); }
       .cp-empty { padding: var(--space-32); text-align: center; color: var(--text-muted); border: 1px dashed var(--border); border-radius: var(--radius-lg); }
 
       .cp-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }

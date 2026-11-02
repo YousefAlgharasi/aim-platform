@@ -72,15 +72,21 @@ export default async function AdminAnalyticsOverviewPage() {
             <StatCard label="Learning Today" value={stats.activity.learningSessionsToday} accent />
           </div>
 
-          <h2 className="ov-section-title">Billing</h2>
+          <h2 className="ov-section-title">Course payments</h2>
           <div className="ov-kpi-grid">
-            <StatCard label="Active Subs" value={stats.billing.activeSubscriptions} accent />
-            <StatCard label="Trialing" value={stats.billing.trialingSubscriptions} />
-            <StatCard label="Canceled" value={stats.billing.canceledSubscriptions} />
-            <StatCard label="Total Revenue" value={`${stats.billing.currency} ${stats.billing.totalRevenue.toLocaleString()}`} />
-            <StatCard label="Revenue This Month" value={`${stats.billing.currency} ${stats.billing.revenueThisMonth.toLocaleString()}`} accent />
-            <StatCard label="Paid Invoices" value={stats.billing.paidInvoices} />
-            <StatCard label="Overdue Invoices" value={stats.billing.overdueInvoices} warn={stats.billing.overdueInvoices > 0} />
+            {stats.billing.currencies.length === 0 ? (
+              <StatCard label="Total Revenue" value="0" />
+            ) : (
+              stats.billing.currencies.flatMap((c) => [
+                <StatCard key={`${c.currency}-t`} label={`Total Revenue (${c.currency})`} value={`${c.totalRevenue.toLocaleString()} ${c.currency}`} accent />,
+                <StatCard key={`${c.currency}-m`} label={`This Month (${c.currency})`} value={`${c.revenueThisMonth.toLocaleString()} ${c.currency}`} />,
+              ])
+            )}
+            <StatCard label="Approved Payments" value={stats.billing.approvedPayments} />
+            <StatCard label="Waiting For Review" value={stats.billing.pendingPayments} warn={stats.billing.pendingPayments > 0} />
+            <StatCard label="Paying Students" value={stats.billing.payingStudents} />
+            <StatCard label="Active Courses" value={stats.billing.access.active} />
+            <StatCard label="Ran Out Of Time" value={stats.billing.access.failed} />
           </div>
 
           <h2 className="ov-section-title">Operations</h2>

@@ -122,9 +122,43 @@ async function unwrap<T>(res: Response, fallback: string): Promise<T> {
   return (json?.data ?? json) as T;
 }
 
+export type CurrencyTotals = {
+  currency: string;
+  revenueToday: number;
+  revenueMtd: number;
+  revenueLastMonth: number;
+  revenueAllTime: number;
+  approvedTotal: number;
+  approvedThisMonth: number;
+  averagePayment: number;
+  discountsGiven: number;
+  pendingCount: number;
+  pendingAmount: number;
+  rejectedCount: number;
+};
+export type CourseRevenue = { courseId: string; title: string; currency: string; payments: number; revenue: number };
+export type WalletRevenue = { walletId: string; name: string; currency: string; payments: number; revenue: number };
+export type MonthRevenue = { month: string; currency: string; payments: number; revenue: number };
+export type RecentPayment = {
+  id: string; studentEmail: string | null; courseTitle: string; walletName: string;
+  amount: number; currency: string; status: string; createdAt: string; reviewedAt: string | null;
+};
+export type CoursePaymentsOverview = {
+  currencies: CurrencyTotals[];
+  byCourse: CourseRevenue[];
+  byWallet: WalletRevenue[];
+  monthly: MonthRevenue[];
+  access: { active: number; expiringWithin7Days: number; completed: number; failed: number };
+  payingStudents: number;
+  recent: RecentPayment[];
+};
+
 const BASE = '/admin/course-billing';
 
 export const coursePaymentsApi = {
+  getOverview: async () =>
+    unwrap<CoursePaymentsOverview>(await backendFetch(`${BASE}/overview`), 'Failed to load the overview'),
+
   listPrices: async () => unwrap<CoursePrice[]>(await backendFetch(`${BASE}/prices`), 'Failed to load prices'),
   savePrice: async (courseId: string, input: CoursePriceInput) =>
     unwrap<CoursePrice>(
@@ -190,7 +224,7 @@ export function walletImageUrl(wallet: Wallet, kind: 'logo' | 'qr'): string | nu
   return `${backendAssetUrl(`${BASE}/wallets/${wallet.id}/${kind}`)}?v=${version}`;
 }
 
-export function formatMoney(amount: number, currency: Currency): string {
+export function formatMoney(amount: number, currency: Currency | string): string {
   return `${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${currency}`;
 }
 

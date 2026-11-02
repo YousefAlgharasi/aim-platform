@@ -1,6 +1,7 @@
 /// <reference types="multer" />
 // Admin course billing endpoints (operations admins).
 //
+//   GET    /admin/course-billing/overview                   sales totals, per course/wallet/month
 //   GET    /admin/course-billing/prices                     every course with its price
 //   PUT    /admin/course-billing/prices/:courseId           set price / discount / access days
 //   GET    /admin/course-billing/wallets                    all wallets
@@ -42,6 +43,7 @@ import { AuthenticatedRequest } from '../../auth/authenticated-user';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { OperationsAdminGuard, OperationsAdminOnly } from '../operations/operations.guards';
 import { CourseAccessService } from './course-access.service';
+import { CourseBillingOverview, CourseBillingOverviewService } from './course-billing-overview.service';
 import { ReviewPaymentDto, UpsertCoursePriceDto, WalletDto } from './course-billing.dtos';
 import { AdminCoursePriceView, AdminPaymentRequestView, WalletView } from './course-billing.types';
 import { CoursePaymentService } from './course-payment.service';
@@ -64,7 +66,17 @@ export class AdminCourseBillingController {
     private readonly wallets: PaymentWalletService,
     private readonly payments: CoursePaymentService,
     private readonly access: CourseAccessService,
+    private readonly overview: CourseBillingOverviewService,
   ) {}
+
+  // ── Overview ──
+
+  @Get('overview')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Course sales totals, per course / wallet / month, access summary (admin).' })
+  async getOverview(): Promise<CourseBillingOverview> {
+    return this.overview.getOverview();
+  }
 
   // ── Prices ──
 
