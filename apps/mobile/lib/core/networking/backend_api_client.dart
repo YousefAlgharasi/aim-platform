@@ -158,7 +158,7 @@ class BackendApiClient {
 
     final saved = cacheKey == null ? null : await cache!.read(cacheKey);
     if (saved != null && cache!.isFresh(saved)) {
-      return _parseResponse<T>(http.Response(saved.body, 200), decodeData: decodeData);
+      return _parseResponse<T>(http.Response.bytes(utf8.encode(saved.body), 200, headers: const {'content-type': 'application/json; charset=utf-8'}), decodeData: decodeData);
     }
 
     try {
@@ -175,7 +175,7 @@ class BackendApiClient {
       // Offline: show the last saved copy instead of an error.
       if (saved != null && isConnectivityError(e)) {
         _networkStatus?.reportServedFromCache();
-        return _parseResponse<T>(http.Response(saved.body, 200), decodeData: decodeData);
+        return _parseResponse<T>(http.Response.bytes(utf8.encode(saved.body), 200, headers: const {'content-type': 'application/json; charset=utf-8'}), decodeData: decodeData);
       }
       rethrow;
     }
