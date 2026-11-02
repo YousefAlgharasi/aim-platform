@@ -18,9 +18,9 @@ class LessonProgressModel extends LessonProgress {
 
   factory LessonProgressModel.fromJson(Map<String, dynamic> json) {
     return LessonProgressModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
+      id: json['id'].toString(),
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       xpValue: (json['xpValue'] as num?)?.toInt() ?? 0,
       completed: json['completed'] as bool? ?? false,
       current: json['current'] as bool? ?? false,

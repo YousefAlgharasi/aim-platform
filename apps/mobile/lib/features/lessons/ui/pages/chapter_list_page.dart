@@ -747,7 +747,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _loadError = e is AppException && e.message.isNotEmpty ? e.message : '';
+          _loadError = e is AppException && e.message.isNotEmpty ? e.message : e.toString();
         });
       }
     }
