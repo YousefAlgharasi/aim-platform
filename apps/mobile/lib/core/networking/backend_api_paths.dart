@@ -125,6 +125,13 @@ class BackendApiPaths {
   // Course billing — wallet payments for paid courses.
   static const String studentBillingWallets = '/student/billing/wallets';
   static const String studentPaymentRequests = '/student/payment-requests';
+
+  // Practice Speaking + Write a Paragraph
+  static const String practiceTopics = '/student/practice/topics';
+  static const String practiceSpeakingStart = '/student/practice/speaking/start';
+  static String practiceSpeakingComplete(String attemptId) =>
+      '/student/practice/speaking/${Uri.encodeComponent(attemptId)}/complete';
+  static const String practiceWritingSubmit = '/student/practice/writing/submit';
   static String studentCourseBilling(String courseId) =>
       '/student/courses/$courseId/billing';
   static String studentCoursePaymentRequests(String courseId) =>

@@ -3952,4 +3952,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get billingErrorGeneric =>
       'Couldn\'t send your payment. Please try again.';
+
+  @override
+  String get practiceSpeakingSubtitle =>
+      'Pick a topic and talk with your AI teacher. Earn XP when you finish.';
+
+  @override
+  String get practiceWritingSubtitle =>
+      'Pick a topic and write a paragraph. Your AI teacher marks it and shows how to improve.';
+
+  @override
+  String get practiceLockedTitle => 'Start a course to unlock this';
+
+  @override
+  String get practiceLockedBody =>
+      'Practice Speaking and Write a Paragraph are part of your course. Start a course to use them.';
+
+  @override
+  String get practiceChooseCourse => 'Choose a course';
+
+  @override
+  String get practiceNoTopicsTitle => 'No topics yet';
+
+  @override
+  String get practiceNoTopicsBody => 'New topics will appear here soon.';
+
+  @override
+  String get practiceStartError =>
+      'Could not start this topic. Please try again.';
+
+  @override
+  String practiceXpBadge(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String practiceMinutesBadge(int min) {
+    return '$min min';
+  }
+
+  @override
+  String practiceMinWordsBadge(int n) {
+    return '$n+ words';
+  }
+
+  @override
+  String practiceWordCount(int n) {
+    return '$n words';
+  }
+
+  @override
+  String practiceAtLeast(int n) {
+    return 'at least $n';
+  }
+
+  @override
+  String get practiceTimeUp => 'Time\'s up';
+
+  @override
+  String get practiceWritePlaceholder => 'Write your paragraph here…';
+
+  @override
+  String get practiceSubmitForMarking => 'Submit for marking';
+
+  @override
+  String get practiceMarking => 'Marking your paragraph…';
+
+  @override
+  String get practiceYourScore => 'Your score';
+
+  @override
+  String get practiceAlreadyEarnedToday =>
+      'You already earned XP for this topic today.';
+
+  @override
+  String get practiceWhatToFix => 'What to fix';
+
+  @override
+  String get practiceMoreTopics => 'More topics';
+
+  @override
+  String get practiceTryAgain => 'Try again';
+
+  @override
+  String get practiceMarkFailed =>
+      'We could not mark your paragraph right now. Please try again.';
+
+  @override
+  String get practiceFinish => 'Finish';
+
+  @override
+  String get practiceFinishing => 'Finishing…';
+
+  @override
+  String practiceFinishToEarn(int xp) {
+    return 'Finish to earn +$xp XP';
+  }
+
+  @override
+  String get practiceWellDone => 'Well done!';
+
+  @override
+  String get practiceFinishFailed => 'Could not finish. Please try again.';
 }
