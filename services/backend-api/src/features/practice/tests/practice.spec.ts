@@ -115,3 +115,12 @@ describe('speaking practice prompt + context', () => {
     expect(adapters.skill.getSkillContext).not.toHaveBeenCalled();
   });
 });
+
+describe('LOOSE_UUID (seeded topic ids)', () => {
+  it('accepts seeded readable ids and real uuids, rejects junk', async () => {
+    const { LOOSE_UUID } = await import('../practice.dtos');
+    expect(LOOSE_UUID.test('e0000000-0000-0000-0000-000000000101')).toBe(true);
+    expect(LOOSE_UUID.test('3f2b8c1e-5d4a-4b6f-9a1c-2e7d8f9a0b1c')).toBe(true);
+    expect(LOOSE_UUID.test('not-a-uuid')).toBe(false);
+  });
+});
