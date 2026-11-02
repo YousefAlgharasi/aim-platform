@@ -29,6 +29,7 @@ import {
 } from './placement.types';
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementAnalyticsService } from './placement-analytics.service';
+import { PlacementRetakePolicyService } from './placement-retake-policy.service';
 
 /**
  * Total time budget for the whole placement attempt, in seconds (45 minutes).
@@ -43,6 +44,7 @@ export class PlacementAttemptService {
     private readonly db: DatabaseService,
     private readonly audit: PlacementAuditService,
     private readonly analytics: PlacementAnalyticsService,
+    private readonly retakePolicy: PlacementRetakePolicyService,
   ) {}
 
   /**
@@ -83,13 +85,22 @@ export class PlacementAttemptService {
       [studentId],
     );
 
-    // 3. Abandon any existing active/submitted attempts so the student can restart freely.
+    // 3a. Retake policy (P4-049): a student who already COMPLETED the test must
+    //     wait out the cooldown. Restarting an attempt that is still in
+    //     progress ('active') stays allowed — only a finished test is gated.
+    //     A 'submitted' attempt is being scored, so it blocks as well.
+    const eligibility = await this.retakePolicy.checkEligibility(studentId, test.id);
+    if (!eligibility.allowed && eligibility.errorCode !== PlacementErrorCode.ACTIVE_ATTEMPT_EXISTS) {
+      await this.retakePolicy.enforceRetakePolicy(studentId, test.id); // throws 409
+    }
+
+    // 3b. Abandon any in-progress attempt so the student can restart freely.
     const abandonedResult = await this.db.query<{ id: string }>(
       `UPDATE placement_attempts
        SET status = 'abandoned', updated_at = now()
        WHERE student_id = $1
          AND placement_test_id = $2
-         AND status IN ('active', 'submitted')
+         AND status = 'active'
        RETURNING id`,
       [studentId, test.id],
     );

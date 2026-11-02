@@ -204,16 +204,16 @@ export function DashboardHome() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="relative overflow-hidden rounded-3xl border border-indigo-400/20 bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 p-5 sm:p-6 text-white shadow-xl shadow-indigo-500/25">
+      <div className="relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-5 sm:p-6 text-white shadow-xl shadow-brand/25">
         <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-10 -start-10 size-32 rounded-full bg-violet-400/20 blur-xl" />
+        <div className="pointer-events-none absolute -bottom-10 -start-10 size-32 rounded-full bg-secondary/30 blur-xl" />
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="m-0 text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
               {firstName ? t('Welcome back, {name}', { name: firstName }) : t('Welcome back')}
             </h1>
             {data && (stats || courseTitle) && (
-              <p className="m-0 mt-1 text-xs sm:text-sm font-medium text-indigo-100/90">
+              <p className="m-0 mt-1 text-xs sm:text-sm font-medium text-on-brand">
                 {stats ? t('Level {level}', { level: stats.level }) : ''}
                 {stats && courseTitle ? ' · ' : ''}
                 {courseTitle ?? ''}
@@ -221,8 +221,8 @@ export function DashboardHome() {
             )}
           </div>
           {streakDays != null && (
-            <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/20 px-3 py-1 text-xs font-extrabold shadow-sm backdrop-blur-md">
-              <FlameIcon className="size-4 text-amber-300 fill-amber-300" />
+            <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/25 bg-black/20 px-3 py-1 text-xs font-extrabold shadow-sm backdrop-blur-md">
+              <FlameIcon className="size-4 text-gold-on-brand fill-gold-on-brand" />
               <span>
                 {plural(streakDays, {
                   one: t('{n} Day', { n: streakDays }),
@@ -236,7 +236,7 @@ export function DashboardHome() {
         </div>
         {goal && (
           <div className="relative z-10 mt-4 flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3 text-xs font-bold text-indigo-100">
+            <div className="flex items-center justify-between gap-3 text-xs font-bold text-on-brand">
               <span>
                 {t('Daily goal: {lessons}', {
                   lessons: plural(goalTarget, {
@@ -252,14 +252,14 @@ export function DashboardHome() {
               </span>
             </div>
             <div
-              className="h-2 overflow-hidden rounded-full bg-white/25"
+              className="h-2 overflow-hidden rounded-full bg-black/20"
               role="progressbar"
               aria-label={t('Daily goal progress')}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={goalPct}
             >
-              <div className={`h-full rounded-full ${goalMet ? 'bg-emerald-300' : 'bg-white'}`} style={{ width: `${goalPct}%` }} />
+              <div className={`h-full rounded-full bg-white`} style={{ width: `${goalPct}%` }} />
             </div>
           </div>
         )}
@@ -328,18 +328,18 @@ export function DashboardHome() {
       ) : null}
 
       <section className="flex flex-col gap-3">
-        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Quick links')}</h2>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Quick links')}</h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className="block rounded-2xl no-underline transition-all duration-200 hover:-translate-y-0.5 [&>div]:h-full [&>div]:hover:ring-indigo-300 dark:[&>div]:hover:ring-indigo-500/60"
+              className="block rounded-2xl no-underline transition-all duration-200 hover:-translate-y-0.5 [&>div]:h-full [&>div]:hover:ring-brand-line dark:[&>div]:hover:ring-brand-ink/60"
             >
               <Card>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t(link.type)}</span>
-                <p className="m-0 mt-1 text-sm font-bold text-slate-900 dark:text-white">{t(link.title)}</p>
-                <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(link.description)}</p>
+                <span className="text-xs font-extrabold uppercase tracking-wider text-brand-ink">{t(link.type)}</span>
+                <p className="m-0 mt-1 text-sm font-bold text-ink">{t(link.title)}</p>
+                <p className="m-0 mt-0.5 text-xs leading-relaxed text-ink-muted">{t(link.description)}</p>
               </Card>
             </Link>
           ))}

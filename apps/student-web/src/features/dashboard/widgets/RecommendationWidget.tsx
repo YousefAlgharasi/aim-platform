@@ -33,14 +33,14 @@ export function RecommendationWidget({ recommendations, limit = 3 }: Recommendat
         </div>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {recommendations.slice(0, limit).map((rec) => (
-            <li key={rec.id} className="rounded-xl bg-slate-50 p-3 transition-colors hover:bg-indigo-50 dark:bg-slate-900/40 dark:hover:bg-indigo-950/40">
+            <li key={rec.id} className="rounded-xl bg-surface-sunken p-3 transition-colors hover:bg-brand-soft">
               <Link
                 to={rec.targetLessonId ? `/lessons/${rec.targetLessonId}` : '/progress/recommendations'}
                 className="flex flex-col gap-0.5 no-underline"
               >
                 <span className={ui.eyebrow}>{humanize(rec.kind)}</span>
-                <span className="text-sm font-bold text-slate-900 dark:text-white [unicode-bidi:plaintext]">{prettifySkillId(rec.targetSkillId)}</span>
-                <span className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{humanize(rec.reason)}</span>
+                <span className="text-sm font-bold text-ink [unicode-bidi:plaintext]">{prettifySkillId(rec.targetSkillId)}</span>
+                <span className="text-xs leading-relaxed text-ink-muted">{humanize(rec.reason)}</span>
               </Link>
             </li>
           ))}

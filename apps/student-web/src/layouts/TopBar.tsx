@@ -49,13 +49,13 @@ export function TopBar() {
   const streakDays = useStreakDays(pathname);
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 h-16 shrink-0 border-b rounded-b-3xl shadow-sm bg-white/80 border-slate-100 dark:bg-slate-900/80 dark:border-slate-800">
+    <header className="sticky top-0 z-20 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 h-16 shrink-0 border-b rounded-b-3xl shadow-sm bg-surface/80 border-line-subtle dark:bg-elevated/80">
       <div className="flex items-center gap-2.5 justify-self-start min-w-0">
         {showBack && <BackButton />}
-        <div className={`size-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 items-center justify-center text-white font-black text-xs shadow-md shadow-indigo-500/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
+        <div className={`size-8 rounded-xl bg-gradient-to-br from-brand to-secondary items-center justify-center text-white font-black text-xs shadow-md shadow-brand/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
           AIM
         </div>
-        <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-slate-900 dark:text-white md:hidden">{t('AIM English')}</span>
+        <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-ink md:hidden">{t('AIM English')}</span>
       </div>
 
       <div className="justify-self-center">
@@ -64,9 +64,9 @@ export function TopBar() {
             role="img"
             aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
             title={t('Day streak')}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-warning-soft text-warning-ink dark:bg-warning/15"
           >
-            <FlameIcon className="size-[18px] text-amber-500 fill-amber-400" />
+            <FlameIcon className="size-[18px] text-gold fill-gold" />
             <span aria-hidden="true">{formatNumber(streakDays)}</span>
           </span>
         )}
@@ -76,14 +76,14 @@ export function TopBar() {
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
-          className="relative size-9 rounded-xl flex items-center justify-center no-underline transition-colors bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
+          className="relative size-9 rounded-xl flex items-center justify-center no-underline transition-colors bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink"
         >
           <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
           {unread > 0 && (
-            <span aria-hidden="true" className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-white dark:ring-slate-900">
+            <span aria-hidden="true" className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-elevated">
               {unread > 9 ? '9+' : formatNumber(unread)}
             </span>
           )}

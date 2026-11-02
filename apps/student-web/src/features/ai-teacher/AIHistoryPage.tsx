@@ -53,7 +53,7 @@ export function AIHistoryPage() {
           onAction={() => navigate('/ai-teacher')}
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {sessions.map((session) => {
             const state: AIChatLocationState = { lessonTitle: session.contextTitle };
             return (
@@ -64,12 +64,12 @@ export function AIHistoryPage() {
                     state={state}
                     className="flex-1 min-w-0 flex items-center gap-3 p-1 no-underline rounded-xl"
                   >
-                    <span className="size-10 shrink-0 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 flex items-center justify-center">
+                    <span className="size-10 shrink-0 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center">
                       <SparkleIcon className="size-4.5" />
                     </span>
                     <span className="min-w-0 flex flex-col">
-                      <span className="font-semibold text-slate-900 dark:text-white truncate">{sessionLabel(session)}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="font-semibold text-ink truncate">{sessionLabel(session)}</span>
+                      <span className="text-xs text-ink-muted">
                         {session.status === 'active' ? t('Active') : t('Closed')} · {relativeTime(session.updatedAt)}
                       </span>
                     </span>

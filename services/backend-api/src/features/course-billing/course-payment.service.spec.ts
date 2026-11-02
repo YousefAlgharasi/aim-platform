@@ -1,10 +1,10 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { CoursePaymentService } from './course-payment.service';
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2]);
 const quote = { isFree: false, currency: 'YER', originalAmount: 10000, discountAmount: 2000, amount: 8000, discountActive: true, discountType: 'percent', discountValue: 20, discountEndsAt: null, accessDays: 30 };
 
-function setup(opts: { accessStatus?: string; isFree?: boolean; duplicate?: boolean; requestStatus?: string } = {}) {
+function setup(opts: { accessStatus?: string; isFree?: boolean; duplicate?: boolean; requestStatus?: string; locked?: boolean } = {}) {
   const requestRow = {
     id: 'r1', student_id: 'u1', course_id: 'c1', course_title: 'Starter', wallet_id: 'w1', wallet_name: 'Jawali',
     transaction_number: 'TX1', receipt_image_id: 'img1', original_amount: '10000', discount_amount: '2000', amount: '8000',
@@ -25,6 +25,9 @@ function setup(opts: { accessStatus?: string; isFree?: boolean; duplicate?: bool
     resolveStudent: jest.fn().mockResolvedValue({ userId: 'u1', forms: ['u1'] }),
     getPriceRows: jest.fn().mockResolvedValue(new Map([['c1', { course_id: 'c1', amount: '10000', currency: 'YER', discount_type: 'none', discount_value: '0', discount_starts_at: null, discount_ends_at: null, access_days: 45 }]])),
     grantAccess: jest.fn().mockResolvedValue(undefined),
+    assertCourseUnlocked: opts.locked
+      ? jest.fn().mockRejectedValue(new ForbiddenException('This course is locked. Finish the earlier course first.'))
+      : jest.fn().mockResolvedValue(undefined),
   };
   const wallets = { getActive: jest.fn().mockResolvedValue({ id: 'w1', name: 'Jawali' }) };
   const images = { store: jest.fn().mockResolvedValue('img1') };
@@ -68,6 +71,12 @@ describe('CoursePaymentService.submit', () => {
 });
 
 describe('CoursePaymentService review', () => {
+  it('cannot pay for a locked course (above the placement ceiling / not finished the earlier one)', async () => {
+    const { svc, images } = setup({ locked: true });
+    await expect(svc.submit('u1', 'c1', { walletId: 'w1', transactionNumber: 'TX9' }, receipt)).rejects.toThrow('locked');
+    expect(images.store).not.toHaveBeenCalled(); // nothing stored, nothing inserted
+  });
+
   it('approve grants access for the course access days', async () => {
     const { svc, access } = setup();
     const now = new Date('2026-11-01T00:00:00Z');

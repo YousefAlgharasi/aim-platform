@@ -51,11 +51,11 @@ export function PageTitleBar({ title, subtitle, meta, action, fallback, titleAs:
     <header className="flex flex-col gap-1.5">
       <div className="grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3">
         <BackButton fallback={fallback} className="justify-self-start" />
-        <Title className="m-0 text-center text-xl sm:text-2xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white">{title}</Title>
+        <Title className="m-0 text-center text-xl sm:text-2xl font-extrabold tracking-tight leading-tight text-ink">{title}</Title>
         <div className="justify-self-end">{action}</div>
       </div>
       {meta && <div className="flex justify-center">{meta}</div>}
-      {subtitle && <p className="m-0 text-center text-sm leading-relaxed text-slate-500 dark:text-slate-400">{subtitle}</p>}
+      {subtitle && <p className="m-0 text-center text-sm leading-relaxed text-ink-muted">{subtitle}</p>}
     </header>
   );
 }

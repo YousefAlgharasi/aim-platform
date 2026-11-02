@@ -59,6 +59,7 @@ export const billing: Record<string, string> = {
   "An image file is required": "صورة الإيصال مطلوبة",
   "This course needs to be purchased before you can continue.": "تحتاج إلى شراء هذه الدورة قبل المتابعة.",
   "Your time for this course ended. Pay again to retake it.": "انتهى وقتك في هذه الدورة. ادفع مرة أخرى لإعادتها.",
+  "This course is locked. Finish the earlier course first.": "هذه الدورة مقفلة. أنهِ الدورة السابقة أولاً.",
   "Choose screenshot": "اختر صورة",
   "Change screenshot": "تغيير الصورة",
 };

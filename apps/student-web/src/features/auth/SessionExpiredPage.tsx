@@ -10,8 +10,8 @@ export function SessionExpiredPage() {
     <>
       <AuthLogo />
       <div className="my-auto text-center flex flex-col items-center gap-2">
-        <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">{t('Session expired')}</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
+        <h1 className="text-ink font-extrabold text-2xl tracking-tight m-0">{t('Session expired')}</h1>
+        <p className="text-ink-muted text-sm leading-relaxed max-w-[280px]">
           {t('Your session has expired. Please sign in again to continue.')}
         </p>
       </div>

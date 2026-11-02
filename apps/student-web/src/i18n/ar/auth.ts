@@ -55,6 +55,7 @@ export const auth: Record<string, string> = {
   'Not Found': 'العنصر المطلوب غير موجود.',
   Conflict: 'يتعارض هذا الطلب مع بيانات موجودة.',
   'Too Many Requests': 'طلبات كثيرة جداً. يُرجى المحاولة لاحقاً.',
+  'Too many requests. Please wait a moment and try again.': 'طلبات كثيرة جداً. يُرجى الانتظار قليلاً ثم المحاولة مرة أخرى.',
   'Internal server error': 'حدث خطأ في الخادم. يُرجى المحاولة لاحقاً.',
   'Service unavailable': 'الخدمة غير متاحة حالياً. يُرجى المحاولة لاحقاً.',
 

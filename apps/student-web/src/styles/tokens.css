@@ -1,8 +1,25 @@
 /*
- * Design tokens, aligned with design-prototype (indigo #4F46E5 on slate, 14px/16px radii).
- * Feature CSS Modules read these variables; Tailwind utilities cover the rest.
+ * AIM Student Web — design tokens.
+ *
+ * Three layers (see .agents/skills/design-tokens-system):
+ *   1. Primitives  (--p-*)  raw palette values. The ONLY place raw colours live.
+ *   2. Semantic    (--c-*)  what a colour is FOR (page, surface, ink, brand, success ...).
+ *                           Defined for light in :root and re-pointed for dark in .dark.
+ *   3. Application          Tailwind maps the semantic tokens to classes (bg-surface,
+ *                           text-ink, border-line, ring-focus ...). See tailwind.config.js.
+ *
+ * Colours are stored as space-separated RGB channels so Tailwind opacity modifiers work
+ * (e.g. bg-brand/20). Components must use the semantic classes, never hex values.
+ *
+ * Brand: primary #4762EE, secondary #8455E4, accent #15A898.
+ * Contrast of the important pairs is asserted in src/__tests__/theme-contrast.test.ts.
+ *
+ * Accent note: #15A898 is only 2.96:1 on white, so it is decorative (fills, icons next to
+ * text, charts). Text and icons that must be read use --c-accent-ink instead.
  */
+
 :root {
+  /* ── Layout / shape / type (not theme dependent) ───────────────────────────── */
   --space-2: 2px;
   --space-4: 4px;
   --space-8: 8px;
@@ -29,73 +46,242 @@
   --type-h2-size: 22px;
   --type-h3-size: 17px;
 
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-500: #4f46e5;
-  --color-primary-600: #4338ca;
-  --color-primary-700: #3730a3;
-  --color-secondary-500: #7c3aed;
-  --color-accent-500: #f59e0b;
+  /* ── 1. Primitives ─────────────────────────────────────────────────────────── */
+  /* Light neutrals: a faintly blue-tinted ramp so greys sit well next to the brand. */
+  --p-n-0: 255 255 255;
+  --p-n-25: 247 248 252;
+  --p-n-50: 244 246 251;
+  --p-n-100: 238 241 248;
+  --p-n-150: 233 237 246;
+  --p-n-175: 227 232 243;
+  --p-n-200: 221 226 239;
+  --p-n-300: 110 119 146;
+  --p-n-400: 124 134 162;
+  --p-n-450: 114 124 152;
+  --p-n-500: 86 96 122;
+  --p-n-700: 53 61 85;
+  --p-n-900: 20 26 44;
 
-  --color-neutral-0: #ffffff;
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
+  /* Dark neutrals (slate) */
+  --p-s-0: 255 255 255;
+  --p-s-300: 203 213 225;
+  --p-s-400: 163 177 198;
+  --p-s-500: 130 146 170;
+  --p-s-600: 71 85 105;
+  --p-s-700: 51 65 85;
+  --p-s-750: 42 53 72;
+  --p-s-800: 30 41 59;
+  --p-s-850: 24 34 52;
+  --p-s-900: 15 23 42;
 
-  --color-surface: #ffffff;
-  --color-success-50: #ecfdf5;
-  --color-success-100: #d1fae5;
-  --color-success-600: #059669;
-  --color-success-700: #047857;
-  --color-success: #059669;
-  --color-success-bg: #ecfdf5;
-  --color-warning: #d97706;
-  --color-warning-bg: #fffbeb;
-  --color-error: #dc2626;
-  --color-error-bg: #fef2f2;
-  --color-danger-500: #ef4444;
+  /* Brand — primary */
+  --p-brand-50: 233 238 254;
+  --p-brand-100: 220 228 253;
+  --p-brand-200: 197 209 252;
+  --p-brand-300: 156 173 255;
+  --p-brand-500: 71 98 238;
+  --p-brand-600: 58 82 214;
+  --p-brand-700: 48 69 190;
+  --p-brand-ink: 49 73 207;
+  --p-brand-d-soft: 37 51 91;
+  --p-brand-d-soft-hover: 44 59 105;
+  --p-brand-d-line: 58 78 154;
 
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.06);
+  /* Brand — secondary */
+  --p-secondary-500: 132 85 228;
+  --p-secondary-50: 241 235 253;
+  --p-secondary-200: 217 201 248;
+  --p-secondary-ink: 106 60 203;
+  --p-secondary-300: 183 155 255;
+  --p-secondary-d-soft: 49 49 89;
+  --p-secondary-d-line: 84 65 142;
+
+  /* Brand — accent */
+  --p-accent-500: 21 168 152;
+  --p-accent-50: 225 245 242;
+  --p-accent-200: 166 224 216;
+  --p-accent-ink: 11 116 104;
+  --p-accent-300: 63 208 190;
+  --p-accent-d-soft: 29 64 76;
+  --p-accent-d-line: 42 124 122;
+
+  /* Status */
+  --p-green-solid: 21 128 61;
+  --p-green-50: 230 245 236;
+  --p-green-200: 185 224 200;
+  --p-green-ink: 19 102 58;
+  --p-green-300: 52 211 153;
+  --p-green-d-solid: 4 120 87;
+  --p-green-d-soft: 26 58 66;
+  --p-green-d-line: 31 107 85;
+
+  --p-amber-solid: 180 83 9;
+  --p-amber-50: 255 243 214;
+  --p-amber-200: 243 213 144;
+  --p-amber-ink: 138 74 0;
+  --p-amber-300: 251 191 36;
+  --p-amber-d-solid: 180 83 9;
+  --p-amber-d-soft: 60 53 51;
+  --p-amber-d-line: 122 84 16;
+
+  --p-red-solid: 217 45 32;
+  --p-red-50: 253 236 234;
+  --p-red-200: 245 184 177;
+  --p-red-ink: 174 32 18;
+  --p-red-300: 252 165 165;
+  --p-red-d-solid: 220 38 38;
+  --p-red-d-soft: 60 41 56;
+  --p-red-d-line: 127 42 42;
+
+  --p-blue-solid: 21 112 200;
+  --p-blue-50: 229 241 251;
+  --p-blue-200: 179 212 240;
+  --p-blue-ink: 10 90 158;
+  --p-blue-300: 125 184 240;
+  --p-blue-d-solid: 29 78 216;
+  --p-blue-d-soft: 31 54 82;
+  --p-blue-d-line: 45 90 142;
+
+  /* Gamification gold (streak flame, rating stars) */
+  --p-gold-600: 217 119 6;
+  --p-gold-400: 251 191 36;
+  --p-gold-300: 252 211 77;
+
+  /* ── 2. Semantic tokens — LIGHT (default) ──────────────────────────────────── */
+  color-scheme: light;
+
+  /* Surfaces */
+  --c-page: var(--p-n-50); /* app background: soft, not pure white */
+  --c-surface: var(--p-n-0); /* cards, panels, popovers */
+  --c-surface-muted: var(--p-n-100); /* secondary surface: chips, inset areas, icon pills */
+  --c-surface-sunken: var(--p-n-25); /* quiet inset inside a card */
+  --c-surface-strong: var(--p-n-175); /* progress tracks, switches (off) */
+  --c-elevated: var(--p-n-0); /* dialogs / modals */
+  --c-field: var(--p-n-25); /* input background */
+  --c-control: var(--p-n-100); /* icon buttons that sit on the page */
+  --c-overlay: var(--p-n-900); /* scrim behind dialogs (use with /50) */
+
+  /* Text */
+  --c-ink: var(--p-n-900); /* primary text */
+  --c-ink-soft: var(--p-n-700); /* secondary text */
+  --c-ink-muted: var(--p-n-500); /* muted text, placeholders (AA on every surface) */
+  --c-ink-faint: var(--p-n-450); /* non-text icons, chevrons (>= 3:1) */
+  --c-ink-disabled: var(--p-n-300);
+  --c-ink-inverse: var(--p-n-0);
+  --c-on-brand: var(--p-n-0); /* text on brand / secondary fills and gradients */
+
+  /* Borders */
+  --c-line: var(--p-n-200); /* card outlines */
+  --c-line-subtle: var(--p-n-150); /* dividers */
+  --c-line-strong: var(--p-n-400); /* input borders (>= 3:1) */
+
+  /* Brand */
+  --c-brand: var(--p-brand-500);
+  --c-brand-hover: var(--p-brand-600);
+  --c-brand-active: var(--p-brand-700);
+  --c-brand-soft: var(--p-brand-50);
+  --c-brand-soft-hover: var(--p-brand-100);
+  --c-brand-ink: var(--p-brand-ink); /* brand-coloured text / icons */
+  --c-brand-line: var(--p-brand-200);
+  --c-secondary: var(--p-secondary-500);
+  --c-secondary-soft: var(--p-secondary-50);
+  --c-secondary-ink: var(--p-secondary-ink);
+  --c-secondary-line: var(--p-secondary-200);
+  --c-accent: var(--p-accent-500);
+  --c-accent-soft: var(--p-accent-50);
+  --c-accent-ink: var(--p-accent-ink);
+  --c-accent-line: var(--p-accent-200);
+
+  /* Interaction */
+  --c-focus: var(--p-brand-ink); /* focus ring */
+  --c-disabled: var(--p-n-150); /* disabled background */
+
+  /* Status: solid (fills, white text on top), soft (tinted bg), ink (text), line (outline) */
+  --c-success: var(--p-green-solid);
+  --c-success-soft: var(--p-green-50);
+  --c-success-ink: var(--p-green-ink);
+  --c-success-line: var(--p-green-200);
+  --c-warning: var(--p-amber-solid);
+  --c-warning-soft: var(--p-amber-50);
+  --c-warning-ink: var(--p-amber-ink);
+  --c-warning-line: var(--p-amber-200);
+  --c-danger: var(--p-red-solid);
+  --c-danger-soft: var(--p-red-50);
+  --c-danger-ink: var(--p-red-ink);
+  --c-danger-line: var(--p-red-200);
+  --c-info: var(--p-blue-solid);
+  --c-info-soft: var(--p-blue-50);
+  --c-info-ink: var(--p-blue-ink);
+  --c-info-line: var(--p-blue-200);
+
+  /* Streak flame / rating stars. gold = icon on a surface (3.2:1 on white); gold-on-brand = on the brand gradient. */
+  --c-gold: var(--p-gold-600);
+  --c-gold-on-brand: var(--p-gold-300);
 }
 
+/* ── 2b. Semantic tokens — DARK ─────────────────────────────────────────────────
+ * Same names, re-pointed. Dark surfaces keep the established slate look.            */
 .dark {
   color-scheme: dark;
-  --color-primary-50: rgba(79, 70, 229, 0.16);
-  --color-primary-100: rgba(79, 70, 229, 0.28);
-  --color-primary-500: #6366f1;
-  --color-primary-600: #818cf8;
-  --color-primary-700: #a5b4fc;
 
-  --color-neutral-0: #0f172a;
-  --color-neutral-50: #0b1220;
-  --color-neutral-100: #1e293b;
-  --color-neutral-200: #334155;
-  --color-neutral-300: #475569;
-  --color-neutral-400: #64748b;
-  --color-neutral-500: #94a3b8;
-  --color-neutral-600: #cbd5e1;
-  --color-neutral-700: #e2e8f0;
-  --color-neutral-800: #f1f5f9;
-  --color-neutral-900: #f8fafc;
+  --c-page: var(--p-s-900);
+  --c-surface: var(--p-s-800);
+  --c-surface-muted: var(--p-s-700);
+  --c-surface-sunken: var(--p-s-850);
+  --c-surface-strong: var(--p-s-700);
+  --c-elevated: var(--p-s-900);
+  --c-field: var(--p-s-800);
+  --c-control: var(--p-s-800);
+  --c-overlay: var(--p-s-900);
 
-  --color-surface: #1e293b;
-  --color-success-50: rgba(5, 150, 105, 0.16);
-  --color-success-100: rgba(5, 150, 105, 0.26);
-  --color-success-600: #34d399;
-  --color-success-700: #6ee7b7;
-  --color-success: #34d399;
-  --color-success-bg: rgba(5, 150, 105, 0.16);
-  --color-warning: #fbbf24;
-  --color-warning-bg: rgba(217, 119, 6, 0.16);
-  --color-error: #f87171;
-  --color-error-bg: rgba(220, 38, 38, 0.16);
-  --color-danger-500: #f87171;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --c-ink: var(--p-s-0);
+  --c-ink-soft: var(--p-s-300);
+  --c-ink-muted: var(--p-s-400);
+  --c-ink-faint: var(--p-s-500);
+  --c-ink-disabled: var(--p-s-500);
+  --c-ink-inverse: var(--p-s-900);
+  --c-on-brand: var(--p-s-0);
+
+  --c-line: var(--p-s-700);
+  --c-line-subtle: var(--p-s-750);
+  --c-line-strong: var(--p-s-500);
+
+  --c-brand: var(--p-brand-500);
+  --c-brand-hover: var(--p-brand-600);
+  --c-brand-active: var(--p-brand-700);
+  --c-brand-soft: var(--p-brand-d-soft);
+  --c-brand-soft-hover: var(--p-brand-d-soft-hover);
+  --c-brand-ink: var(--p-brand-300);
+  --c-brand-line: var(--p-brand-d-line);
+  --c-secondary: var(--p-secondary-500);
+  --c-secondary-soft: var(--p-secondary-d-soft);
+  --c-secondary-ink: var(--p-secondary-300);
+  --c-secondary-line: var(--p-secondary-d-line);
+  --c-accent: var(--p-accent-500);
+  --c-accent-soft: var(--p-accent-d-soft);
+  --c-accent-ink: var(--p-accent-300);
+  --c-accent-line: var(--p-accent-d-line);
+
+  --c-focus: var(--p-brand-300);
+  --c-disabled: var(--p-s-750);
+
+  --c-success: var(--p-green-d-solid);
+  --c-success-soft: var(--p-green-d-soft);
+  --c-success-ink: var(--p-green-300);
+  --c-success-line: var(--p-green-d-line);
+  --c-warning: var(--p-amber-d-solid);
+  --c-warning-soft: var(--p-amber-d-soft);
+  --c-warning-ink: var(--p-amber-300);
+  --c-warning-line: var(--p-amber-d-line);
+  --c-danger: var(--p-red-d-solid);
+  --c-danger-soft: var(--p-red-d-soft);
+  --c-danger-ink: var(--p-red-300);
+  --c-danger-line: var(--p-red-d-line);
+  --c-info: var(--p-blue-d-solid);
+  --c-info-soft: var(--p-blue-d-soft);
+  --c-info-ink: var(--p-blue-300);
+  --c-info-line: var(--p-blue-d-line);
+
+  --c-gold: var(--p-gold-400);
+  --c-gold-on-brand: var(--p-gold-300);
 }

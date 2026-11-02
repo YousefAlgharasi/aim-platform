@@ -12,8 +12,8 @@ export function PublicLayout() {
   // Auth forms manage their own focus (first invalid field), so only the tab title is kept in sync here.
   useRouteAccessibility(mainRef, { moveFocus: false });
   return (
-    <div className="min-h-[100dvh] bg-[#E8EAF0] dark:bg-slate-950 flex items-start sm:items-center justify-center p-0 sm:p-4">
-      <main ref={mainRef} className="relative w-full sm:max-w-[420px] min-h-[100dvh] sm:min-h-[640px] flex flex-col sm:rounded-[40px] sm:shadow-2xl bg-gradient-to-b from-indigo-50/40 via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-[100dvh] bg-surface-strong dark:bg-elevated flex items-start sm:items-center justify-center p-0 sm:p-4">
+      <main ref={mainRef} className="relative w-full sm:max-w-[420px] min-h-[100dvh] sm:min-h-[640px] flex flex-col sm:rounded-[40px] sm:shadow-2xl bg-gradient-to-b from-brand-soft/40 via-white to-surface-sunken/50 dark:from-elevated dark:via-elevated dark:to-elevated">
         <div className="absolute top-4 end-4 z-10">
           <LanguageSwitcher />
         </div>

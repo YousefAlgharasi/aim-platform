@@ -68,7 +68,7 @@ export function FacebookIcon({ className = 'size-[18px]' }: IconProps) {
   )
 }
 
-export function BrainIcon({ className = 'size-6', color = '#4F46E5' }: IconProps) {
+export function BrainIcon({ className = 'size-6', color = 'currentColor' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill={color}>
       <path d="M13 3a4 4 0 0 1 3.46 6A4 4 0 0 1 13 15v6h-2v-2a4 4 0 0 1-3.46-6A4 4 0 0 1 9 7V3h4zm-2 2H9v2a2 2 0 0 0 2 2V5zm4 0v4a2 2 0 0 0 2-2 2 2 0 0 0-2-2zM7 11a2 2 0 0 0 0 4 4 4 0 0 0 2-.53V11H7zm10 0h-2v3.47c.63.34 1.32.53 2 .53a2 2 0 0 0 0-4z" />

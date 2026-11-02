@@ -23,15 +23,15 @@ export function ChallengeWidget({ challenge, courseId }: ChallengeWidgetProps) {
           <span
             className={
               challenge.completed
-                ? 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                : 'rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-extrabold text-[#4F46E5] dark:bg-indigo-950/60 dark:text-indigo-400'
+                ? 'rounded-full bg-success-soft px-2.5 py-1 text-xs font-extrabold text-success-ink'
+                : 'rounded-full bg-brand-soft px-2.5 py-1 text-xs font-extrabold text-brand-ink'
             }
           >
             {challenge.completed ? t('Completed') : `${challenge.progressCount}/${challenge.targetCount}`}
           </span>
         </div>
-        <span className="text-lg font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white [unicode-bidi:plaintext]">{t(challenge.title)}</span>
-        <span className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 [unicode-bidi:plaintext]">{t(challenge.description)}</span>
+        <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{t(challenge.title)}</span>
+        <span className="text-sm leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{t(challenge.description)}</span>
         <div
           className={ui.barTrack}
           role="progressbar"
@@ -40,7 +40,7 @@ export function ChallengeWidget({ challenge, courseId }: ChallengeWidgetProps) {
           aria-valuemax={100}
           aria-valuenow={pct}
         >
-          <div className={challenge.completed ? 'h-full rounded-full bg-emerald-500' : ui.barFill} style={{ width: `${pct}%` }} />
+          <div className={challenge.completed ? 'h-full rounded-full bg-success' : ui.barFill} style={{ width: `${pct}%` }} />
         </div>
         {!challenge.completed && (
           <div className="flex flex-wrap items-center gap-3">

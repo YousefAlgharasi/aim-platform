@@ -118,6 +118,9 @@ export class CoursePaymentService {
     );
     if (!course.rows[0]) throw new NotFoundException('Course not found');
 
+    // A locked course cannot be paid for (placement ceiling / finish-earlier-first rule).
+    await this.access.assertCourseUnlocked(studentId, course.rows[0].id);
+
     const billing = await this.access.getBilling(studentId, course.rows[0].id);
     if (billing.price.isFree) throw new BadRequestException('This course is free — no payment needed');
     if (billing.access.status === 'active' || billing.access.status === 'completed') {

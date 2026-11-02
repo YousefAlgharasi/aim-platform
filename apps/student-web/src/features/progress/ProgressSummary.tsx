@@ -52,11 +52,11 @@ export function ProgressSummary() {
   const tile = (value: string | number, label: string, icon?: React.ReactNode) => (
     <Card>
       <div className="flex flex-col gap-1">
-        <span className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <span className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight text-ink">
           {icon}
           {value}
         </span>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs font-semibold text-ink-muted">{label}</span>
       </div>
     </Card>
   );
@@ -76,7 +76,7 @@ export function ProgressSummary() {
         {tile(skillStates.length, t('Skills tracked'))}
         {tile(avgMastery == null ? '—' : `${avgMastery}%`, t('Average mastery'))}
         {tile(openReviews.length, t('Reviews scheduled'))}
-        {tile(goal ? goal.streakDays : '—', t('Day streak'), <FlameIcon className="size-5 text-amber-400 fill-amber-400" />)}
+        {tile(goal ? goal.streakDays : '—', t('Day streak'), <FlameIcon className="size-5 text-gold fill-gold" />)}
       </div>
 
       {isEmpty ? (
@@ -98,7 +98,7 @@ export function ProgressSummary() {
                     return (
                       <div key={s.skillId} className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">{prettifySkillId(s.skillId)}</span>
+                          <span className="text-sm font-bold text-ink">{prettifySkillId(s.skillId)}</span>
                           <span className={ui.badge(ui.tone.primary)}>{t(tierLabel[masteryTier(s.masteryScore)])}</span>
                         </div>
                         <div
@@ -111,7 +111,7 @@ export function ProgressSummary() {
                         >
                           <div className={ui.barFill} style={{ width: `${pct}%` }} />
                         </div>
-                        <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex justify-between text-xs font-medium text-ink-muted">
                           <span>{t('Mastery {pct}%', { pct })}</span>
                           <span>{t('Confidence {pct}%', { pct: toPercent(s.masteryConfidence) })}</span>
                         </div>
@@ -150,8 +150,8 @@ export function ProgressSummary() {
                   <ul className="m-0 flex list-none flex-col gap-3 p-0">
                     {openReviews.slice(0, 4).map((r) => (
                       <li key={r.scheduleId} className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">{prettifySkillId(r.skillId)}</span>
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{dueLabel(r.dueAt)}</span>
+                        <span className="text-sm font-bold text-ink">{prettifySkillId(r.skillId)}</span>
+                        <span className="text-xs font-medium text-ink-muted">{dueLabel(r.dueAt)}</span>
                       </li>
                     ))}
                   </ul>
@@ -168,8 +168,8 @@ export function ProgressSummary() {
               ) : (
                 <ul className="m-0 flex list-none flex-col gap-3 p-0">
                   {recommendations.slice(0, 3).map((r) => (
-                    <li key={r.id} className="flex flex-col gap-1 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 dark:bg-slate-900/40 dark:text-slate-200">
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <li key={r.id} className="flex flex-col gap-1 rounded-xl bg-surface-sunken p-3 text-sm text-ink-soft">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-brand-ink">
                         {humanize(r.kind)} · {prettifySkillId(r.targetSkillId)}
                       </span>
                       <span>{humanize(r.reason)}</span>
@@ -196,7 +196,7 @@ export function ProgressSummary() {
             <Link
               key={to}
               to={to}
-              className="block rounded-2xl text-sm font-bold text-slate-900 no-underline transition-all hover:-translate-y-0.5 dark:text-white [&>div]:h-full [&>div]:hover:ring-indigo-300"
+              className="block rounded-2xl text-sm font-bold text-ink no-underline transition-all hover:-translate-y-0.5 [&>div]:h-full [&>div]:hover:ring-brand-line"
             >
               <Card>{t(text)}</Card>
             </Link>

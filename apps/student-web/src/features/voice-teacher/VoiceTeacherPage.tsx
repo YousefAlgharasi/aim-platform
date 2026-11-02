@@ -95,7 +95,7 @@ function VoiceSessionStarter() {
   return (
     <div className="flex flex-col items-center gap-2">
       <LoadingSpinner />
-      <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t('Starting Voice Teacher session…')}</p>
+      <p className="m-0 text-sm text-ink-muted">{t('Starting Voice Teacher session…')}</p>
     </div>
   );
 }
@@ -338,8 +338,8 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
     <div className="flex flex-col gap-4 max-w-3xl w-full mx-auto">
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Voice Teacher')}</h1>
-          <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-ink m-0">{t('Voice Teacher')}</h1>
+          <span className="block text-xs text-ink-muted truncate">
             {navState.lessonTitle || t('Practise speaking with your AI teacher')}
           </span>
         </div>
@@ -356,22 +356,22 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
       )}
 
       <section
-        className="rounded-3xl bg-gradient-to-b from-indigo-50/60 via-white to-slate-50/60 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm px-5 py-8 flex flex-col items-center text-center gap-3"
+        className="rounded-3xl bg-gradient-to-b from-brand-soft/60 via-white to-surface-sunken/60 dark:from-surface dark:via-surface dark:to-elevated ring-1 ring-line shadow-sm px-5 py-8 flex flex-col items-center text-center gap-3"
         aria-label={t('Voice conversation')}
       >
         <span
-          className="text-[#4F46E5] dark:text-indigo-400 font-extrabold text-xs uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full"
+          className="text-brand-ink font-extrabold text-xs uppercase tracking-wider bg-brand-soft px-3 py-1 rounded-full"
           role="status"
           aria-live="polite"
         >
           {t('Status: {status}', { status: status.label })}
         </span>
-        <p className="m-0 text-slate-900 dark:text-white font-extrabold text-xl sm:text-2xl tracking-tight leading-snug">
+        <p className="m-0 text-ink font-extrabold text-xl sm:text-2xl tracking-tight leading-snug">
           {status.heading}
         </p>
 
         {lastTeacher && !showTranscript && (
-          <p className="m-0 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl rounded-es-none p-4 text-start">
+          <p className="m-0 max-w-xl text-sm leading-relaxed text-ink-soft bg-surface dark:bg-surface-sunken/60 ring-1 ring-line/80 rounded-2xl rounded-es-none p-4 text-start">
             {lastTeacher.text}
           </p>
         )}
@@ -405,7 +405,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
               <div
                 key={i}
                 className={`w-1.5 rounded-full transition-all duration-200 ${
-                  waveActive ? 'bg-indigo-600 dark:bg-indigo-400 animate-pulse' : 'bg-slate-200 dark:bg-slate-700'
+                  waveActive ? 'bg-brand dark:bg-brand-ink animate-pulse' : 'bg-surface-strong'
                 }`}
                 style={{ height: `${waveActive ? h * 1.5 : 8}px` }}
               />
@@ -415,8 +415,8 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
           <div className="relative">
             {isRecording && (
               <>
-                <div className="absolute -inset-6 rounded-full bg-indigo-600/10 animate-ping" aria-hidden="true" />
-                <div className="absolute -inset-3 rounded-full bg-indigo-600/20" aria-hidden="true" />
+                <div className="absolute -inset-6 rounded-full bg-brand/10 animate-ping" aria-hidden="true" />
+                <div className="absolute -inset-3 rounded-full bg-brand/20" aria-hidden="true" />
               </>
             )}
             <button
@@ -427,8 +427,8 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
               aria-label={isRecording ? t('Stop recording and send') : t('Start recording')}
               className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isRecording
-                  ? 'bg-rose-500 text-white shadow-rose-200 dark:shadow-rose-900/40'
-                  : 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-indigo-500/25'
+                  ? 'bg-danger text-white shadow-danger/30'
+                  : 'bg-gradient-to-br from-brand to-secondary text-white shadow-brand/25'
               }`}
             >
               {submitting ? (
@@ -441,7 +441,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
             </button>
           </div>
 
-          <p className={`text-sm font-bold mt-5 mb-0 ${isRecording ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'}`}>
+          <p className={`text-sm font-bold mt-5 mb-0 ${isRecording ? 'text-danger-ink' : 'text-ink-muted'}`}>
             {recorder.status === 'requesting'
               ? t('Waiting for microphone permission…')
               : isRecording
@@ -451,7 +451,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   : t('Tap to speak')}
           </p>
           {isRecording && (
-            <span className="text-[#4F46E5] dark:text-indigo-400 font-mono text-xs font-bold mt-1 tracking-widest">
+            <span className="text-brand-ink font-mono text-xs font-bold mt-1 tracking-widest">
               {formatSeconds(recorder.elapsedMs)} / {formatSeconds(MAX_RECORDING_MS)}
             </span>
           )}
@@ -473,7 +473,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
       {showTranscript && (
         <div className="flex flex-col gap-3.5" role="log" aria-label={t('Voice conversation messages')}>
           {messages.length === 0 && (
-            <p className="m-0 text-center text-sm text-slate-500 dark:text-slate-400">{t('No messages yet. Tap the microphone to start.')}</p>
+            <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone to start.')}</p>
           )}
           {messages.map((msg) => {
             const isTeacher = msg.role === 'teacher';
@@ -488,13 +488,13 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                 <div
                   className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                     isTeacher
-                      ? 'bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 rounded-es-none shadow-sm'
-                      : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-ee-none shadow-md shadow-indigo-500/15'
+                      ? 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
+                      : 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
                   }`}
                 >
                   {msg.text}
                 </div>
-                <div className="flex items-center gap-2 mt-1 px-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-2 mt-1 px-1 text-[11px] font-medium text-ink-muted">
                   <span className="inline-flex items-center gap-1">
                     {msg.channel === 'voice' && <MicIcon className="size-3" />}
                     {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
@@ -502,7 +502,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   {source && key && (
                     <button
                       type="button"
-                      className="min-h-8 px-3 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 text-xs font-semibold border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="min-h-8 px-3 rounded-full bg-brand-soft text-brand-ink text-xs font-semibold border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => (playingKey === key ? stopPlayback() : play(source))}
                       disabled={loadingKey === key || isRecording}
                       aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}
@@ -513,7 +513,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                 </div>
                 {isTeacher && (
                   <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-ink-muted">
                       {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
                     </span>
                     <ThumbButton

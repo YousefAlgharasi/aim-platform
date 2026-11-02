@@ -9,15 +9,15 @@ export function ThemeSwitch() {
 
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm font-bold text-slate-900 dark:text-white">{label}</span>
+      <span className="text-sm font-bold text-ink">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={isDarkMode}
         aria-label={label}
         onClick={() => setDarkMode(!isDarkMode)}
-        className={`relative h-7 w-12 shrink-0 rounded-full border-none cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800 ${
-          isDarkMode ? 'bg-[#4F46E5]' : 'bg-slate-300 dark:bg-slate-600'
+        className={`relative h-7 w-12 shrink-0 rounded-full border-none cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+          isDarkMode ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'
         }`}
       >
         <span

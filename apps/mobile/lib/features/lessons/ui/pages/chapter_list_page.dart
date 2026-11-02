@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/errors/app_exception.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -161,6 +162,18 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                 AppAsyncLoading() => const AIMFullScreenLoading(),
                 AppAsyncFailure(:final code) when code == 'COURSE_PAYMENT_REQUIRED' =>
                   _buildPaymentRequired(context),
+                // Server says this course is above the student's unlocked level
+                // (placement result / finish the earlier course first).
+                AppAsyncFailure(:final code) when code == 'COURSE_LOCKED' =>
+                  Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(AimSpacing.space24),
+                      child: AIMEmptyState(
+                        icon: const Icon(Icons.lock_outline_rounded),
+                        title: AppLocalizations.of(context).lessonsCourseLockedMessage,
+                      ),
+                    ),
+                  ),
                 AppAsyncFailure(:final message) => AIMFullScreenError(
                     message: message,
                     onRetry: _load,
@@ -684,6 +697,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
   List<LessonProgress>? _lessons;
   ChapterQuizSummary? _quiz;
   bool _isLoading = false;
+  String? _loadError;
 
   @override
   void initState() {
@@ -708,7 +722,10 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
     try {
       final repository = ref.read(lessonsRepositoryProvider);
       final list = await repository.getLessonsWithProgress(
@@ -726,8 +743,13 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
           _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadError = e is AppException && e.message.isNotEmpty ? e.message : '';
+        });
+      }
     }
   }
 
@@ -1008,6 +1030,27 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  else if (_loadError != null)
+                    // The request failed (payment required, locked, offline, ...):
+                    // say so and let the student retry, instead of claiming
+                    // there are no lessons.
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_loadError!.isNotEmpty)
+                            Text(
+                              _loadError!,
+                              style: TextStyle(fontSize: 13, color: surfaces.textMuted),
+                            ),
+                          TextButton(
+                            onPressed: () => _fetchLessons(force: true),
+                            child: Text(l10n.commonRetry),
+                          ),
+                        ],
+                      ),
                     )
                   else if (_lessons == null || _lessons!.isEmpty)
                     Padding(

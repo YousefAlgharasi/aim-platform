@@ -76,6 +76,9 @@ function normalizeException(exception: unknown): NormalizedException {
   };
 }
 
+/** Student-facing text for HTTP 429. Keep in sync with the web/mobile translations. */
+export const RATE_LIMITED_MESSAGE = 'Too many requests. Please wait a moment and try again.';
+
 function normalizeHttpException(exception: HttpException): NormalizedException {
   const statusCode = exception.getStatus();
   const responseBody = exception.getResponse();
@@ -89,7 +92,12 @@ function normalizeHttpException(exception: HttpException): NormalizedException {
     };
   }
 
-  const message = readMessage(responseBody) ?? exception.message;
+  // @nestjs/throttler's own message is the class-name string
+  // "ThrottlerException: Too Many Requests" — never show that to a student.
+  const message =
+    statusCode === HttpStatus.TOO_MANY_REQUESTS
+      ? RATE_LIMITED_MESSAGE
+      : readMessage(responseBody) ?? exception.message;
   const details = readValidationDetails(responseBody);
 
   return {

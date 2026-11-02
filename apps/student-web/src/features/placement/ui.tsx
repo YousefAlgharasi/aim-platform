@@ -10,18 +10,18 @@ import { t } from '../../i18n';
  */
 
 export const CARD =
-  'bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm';
+  'bg-surface rounded-2xl ring-1 ring-line shadow-sm';
 
-export const EYEBROW = 'text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider';
+export const EYEBROW = 'text-brand-ink text-xs font-extrabold uppercase tracking-wider';
 
-export const H1 = 'm-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight';
+export const H1 = 'm-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-ink leading-tight';
 
-export const H2 = 'm-0 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white';
+export const H2 = 'm-0 text-lg font-extrabold tracking-tight text-ink';
 
-export const BODY = 'm-0 text-sm leading-relaxed text-slate-500 dark:text-slate-400';
+export const BODY = 'm-0 text-sm leading-relaxed text-ink-muted';
 
 export const TEXTAREA =
-  'w-full bg-[#F1F5F9] dark:bg-slate-800 border-1.5 border-[#E2E8F0] dark:border-slate-700 focus:border-[#4F46E5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 rounded-xl p-3.5 text-sm text-[#0F172A] dark:text-white resize-y leading-relaxed font-sans placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:opacity-60';
+  'w-full bg-control border-1.5 border-line focus:border-focus focus:outline-none focus-visible:ring-2 focus-visible:ring-focus/30 rounded-xl p-3.5 text-sm text-ink resize-y leading-relaxed font-sans placeholder:text-ink-muted disabled:opacity-60';
 
 export const SR_ONLY = 'sr-only';
 
@@ -41,8 +41,8 @@ export function PageHeader({
 }
 
 export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; tone?: 'indigo' | 'emerald' }) {
-  const glow = tone === 'emerald' ? 'from-emerald-500 to-teal-500' : 'from-indigo-500 to-violet-500';
-  const face = tone === 'emerald' ? 'from-emerald-500 to-teal-600 shadow-emerald-500/25' : 'from-indigo-600 to-violet-600 shadow-indigo-500/25';
+  const glow = tone === 'emerald' ? 'from-success to-accent' : 'from-brand to-secondary';
+  const face = tone === 'emerald' ? 'from-success to-accent shadow-success/25' : 'from-brand to-secondary shadow-brand/25';
   return (
     <div className="relative size-16 shrink-0" aria-hidden="true">
       <div className={`absolute -inset-2 bg-gradient-to-r ${glow} rounded-3xl opacity-20 blur-md`} />
@@ -56,9 +56,9 @@ export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; 
 export function ProgressBar({ value, total, label }: { value: number; total: number; label?: string }) {
   const pct = total > 0 ? Math.min(100, Math.max(0, (value / total) * 100)) : 0;
   return (
-    <div className="h-1.5 bg-[#E2E8F0] dark:bg-slate-700 rounded-full overflow-hidden">
+    <div className="h-1.5 bg-surface-strong rounded-full overflow-hidden">
       <div
-        className="h-full bg-[#4F46E5] rounded-full transition-all duration-400 ease-out"
+        className="h-full bg-brand rounded-full transition-all duration-400 ease-out"
         style={{ width: `${pct}%` }}
         role="progressbar"
         aria-label={label}
@@ -76,8 +76,8 @@ export function TimerPill({ children, warning = false }: { children: ReactNode; 
       aria-live="off"
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono font-semibold text-xs ${
         warning
-          ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400'
-          : 'bg-[rgba(79,70,229,0.08)] dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400'
+          ? 'bg-danger-soft text-danger-ink'
+          : 'bg-brand-soft text-brand-ink'
       }`}
     >
       <svg className="size-3.5" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -116,18 +116,18 @@ export function ChoiceRow({
   const shape = large ? 'gap-4 px-4 py-4 rounded-2xl' : 'gap-3 p-3.5 rounded-xl';
   const state = selected
     ? large
-      ? 'bg-[rgba(79,70,229,0.07)] dark:bg-indigo-950/40 ring-2 ring-[#4F46E5] shadow-[0_4px_20px_rgba(79,70,229,0.15)]'
-      : 'bg-[rgba(79,70,229,0.08)] dark:bg-indigo-950/60 ring-[1.5px] ring-[#4F46E5]'
-    : 'bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-sm';
+      ? 'bg-brand-soft ring-2 ring-brand-ink shadow-lg shadow-brand/15'
+      : 'bg-brand-soft ring-[1.5px] ring-brand-ink'
+    : 'bg-surface ring-1 ring-line hover:ring-brand-line hover:shadow-sm';
   return (
     <label
-      className={`relative flex items-center cursor-pointer transition-all duration-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#4F46E5] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 ${shape} ${state}`}
+      className={`relative flex items-center cursor-pointer transition-all duration-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 ${shape} ${state}`}
     >
       <input type="radio" name={name} value={value} checked={selected} onChange={onChange} disabled={disabled} className="sr-only" />
       {icon && (
         <span
           className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-            selected ? 'bg-indigo-100 dark:bg-indigo-900/50 text-[#4F46E5] dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+            selected ? 'bg-brand-soft text-brand-ink' : 'bg-surface-muted text-ink-muted'
           }`}
         >
           {icon}
@@ -136,7 +136,7 @@ export function ChoiceRow({
       {keyLabel && (
         <span
           className={`size-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold ${
-            selected ? 'bg-[#4F46E5] text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'
+            selected ? 'bg-brand text-white' : 'bg-surface-muted text-ink-muted dark:text-ink-soft'
           }`}
         >
           {keyLabel}
@@ -145,29 +145,29 @@ export function ChoiceRow({
       <span className="flex-1 min-w-0 flex flex-col">
         <span
           className={`${large ? 'text-[15px] font-bold' : 'text-sm'} leading-snug ${
-            selected ? 'text-[#4F46E5] dark:text-indigo-400 font-semibold' : 'text-[#0F172A] dark:text-white'
+            selected ? 'text-brand-ink font-semibold' : 'text-ink'
           }`}
         >
           {children}
         </span>
         {subtitle && (
-          <span className={`text-xs mt-0.5 leading-relaxed ${selected ? 'text-indigo-400' : 'text-[#94A3B8] dark:text-slate-500'}`}>
+          <span className={`text-xs mt-0.5 leading-relaxed ${selected ? 'text-brand-ink' : 'text-ink-muted'}`}>
             {subtitle}
           </span>
         )}
       </span>
       {large ? (
         selected ? (
-          <span className="size-6 rounded-full bg-[#4F46E5] flex items-center justify-center shrink-0 shadow-md">
+          <span className="size-6 rounded-full bg-brand flex items-center justify-center shrink-0 shadow-md">
             <CheckIcon className="size-3 text-white" />
           </span>
         ) : (
-          <span className="size-6 rounded-full ring-1 ring-[#CBD5E1] dark:ring-slate-600 shrink-0" />
+          <span className="size-6 rounded-full ring-1 ring-line-strong shrink-0" />
         )
       ) : (
         <span
           className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-            selected ? 'border-[#4F46E5] bg-[#4F46E5]' : 'border-[#CBD5E1] dark:border-slate-600 bg-transparent'
+            selected ? 'border-brand-ink bg-brand' : 'border-line-strong bg-transparent'
           }`}
         >
           {selected && <span className="size-1.5 rounded-full bg-white" />}
@@ -180,12 +180,12 @@ export function ChoiceRow({
 export type BadgeTone = 'indigo' | 'violet' | 'emerald' | 'amber' | 'red' | 'slate';
 
 const TONES: Record<BadgeTone, string> = {
-  indigo: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300',
-  violet: 'bg-violet-50 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
-  emerald: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
-  amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
-  red: 'bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300',
-  slate: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+  indigo: 'bg-brand-soft text-brand-ink',
+  violet: 'bg-secondary-soft text-secondary-ink',
+  emerald: 'bg-success-soft text-success-ink',
+  amber: 'bg-warning-soft text-warning-ink',
+  red: 'bg-danger-soft text-danger-ink',
+  slate: 'bg-surface-muted text-ink-soft',
 };
 
 export function Badge({ tone = 'slate', children }: { tone?: BadgeTone; children: ReactNode }) {

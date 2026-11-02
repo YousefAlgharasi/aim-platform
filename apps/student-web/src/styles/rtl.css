@@ -1,6 +1,6 @@
 /* Direction is set on <html dir="rtl|ltr"> by I18nProvider; layouts use logical utilities. */
 html[dir='rtl'] body {
-  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif;
   line-height: 1.7;
 }
 

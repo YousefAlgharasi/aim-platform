@@ -34,15 +34,15 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     <dialog
       ref={dialogRef}
       aria-labelledby="modal-title"
-      className="m-auto w-[90vw] max-w-[480px] rounded-3xl border-0 p-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl backdrop:bg-slate-900/50 backdrop:backdrop-blur-sm"
+      className="m-auto w-[90vw] max-w-[480px] rounded-3xl border-0 p-0 bg-elevated text-ink shadow-2xl backdrop:bg-overlay/50 backdrop:backdrop-blur-sm"
     >
-      <header className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+      <header className="flex items-center justify-between px-5 py-4 border-b border-line-subtle">
         <h2 id="modal-title" className="m-0 text-[17px] font-extrabold tracking-tight">{title}</h2>
         <button
           type="button"
           onClick={onClose}
           aria-label={t('Close')}
-          className="size-8 rounded-full flex items-center justify-center border-none cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          className="size-8 rounded-full flex items-center justify-center border-none cursor-pointer bg-control text-ink-muted hover:text-ink dark:hover:text-ink-soft"
         >
           ✕
         </button>

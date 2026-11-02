@@ -180,7 +180,7 @@ export function SupportPage() {
 
       {success && <Banner variant="success">{success}</Banner>}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {([
           { key: 'ticket' as const, icon: <ClipboardIcon className="size-5" />, title: t('Submit a Ticket'), desc: t('Report an issue or ask for help') },
           { key: 'feedback' as const, icon: <ChatIcon className="size-5" />, title: t('Send Feedback'), desc: t('Share your thoughts and suggestions') },
@@ -190,14 +190,14 @@ export function SupportPage() {
             type="button"
             onClick={() => openPanel(c.key)}
             aria-expanded={panel === c.key}
-            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
-              panel === c.key ? 'ring-2 ring-[#4F46E5]' : 'ring-1 ring-[#E2E8F0] dark:ring-slate-700'
+            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-surface shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
+              panel === c.key ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
             }`}
           >
-            <span className="size-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
+            <span className="size-11 rounded-xl bg-gradient-to-br from-brand to-secondary text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
             <span className="flex flex-col gap-0.5 min-w-0">
               <h2 className={h2Cls}>{c.title}</h2>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{c.desc}</span>
+              <span className="text-sm text-ink-muted">{c.desc}</span>
             </span>
           </button>
         ))}
@@ -208,7 +208,7 @@ export function SupportPage() {
           <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket} noValidate>
             <SectionTitle>{t('New Support Ticket')}</SectionTitle>
             {formError && <Banner variant="error">{formError}</Banner>}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label={t('Category')} htmlFor="ticket-category">
                 <select id="ticket-category" className={selectCls} value={category} onChange={e => setCategory(e.target.value as TicketCategory)}>
                   {(Object.keys(TICKET_CATEGORY_LABELS) as TicketCategory[]).map(c => (
@@ -276,10 +276,10 @@ export function SupportPage() {
                     role="radio"
                     aria-checked={fbRating === n}
                     aria-label={plural(n, { one: t('1 star'), two: t('2 stars'), few: t('{n} stars', { n }), other: t('{n} stars', { n }) })}
-                    className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-amber-50 dark:hover:bg-slate-700 ${n <= fbRating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
+                    className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-warning-soft ${n <= fbRating ? 'text-gold' : 'text-ink-faint'}`}
                     onClick={() => setFbRating(prev => (prev === n ? 0 : n))}
                   >
-                    ★
+                    {n <= fbRating ? '★' : '☆'}
                   </button>
                 ))}
               </div>
@@ -323,16 +323,16 @@ export function SupportPage() {
         ) : tickets.length === 0 ? (
           <EmptyState title={t('No tickets yet')} message={t('Submit a ticket above if you need help.')} />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {tickets.map(ticket => (
               <Link
                 key={ticket.id}
                 to={`/support/tickets/${ticket.id}`}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm no-underline hover:shadow-md transition-shadow"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-surface ring-1 ring-line shadow-sm no-underline hover:shadow-md transition-shadow"
               >
                 <span className="flex-1 min-w-0 flex flex-col gap-1.5">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{ticket.subject}</span>
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="text-sm font-bold text-ink truncate">{ticket.subject}</span>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
                     <span>{ticketCategoryLabel(ticket.category)}</span>
                     <span>{formatDate(ticket.createdAt)}</span>
                     <StatusPill tone={ticketTone(ticket.status)}>
@@ -340,7 +340,7 @@ export function SupportPage() {
                     </StatusPill>
                   </span>
                 </span>
-                <ChevronIcon className="size-4 text-slate-400 shrink-0" />
+                <ChevronIcon className="size-4 text-ink-faint shrink-0" />
               </Link>
             ))}
           </div>

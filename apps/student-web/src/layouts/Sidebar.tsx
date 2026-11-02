@@ -20,21 +20,21 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex flex-col h-full justify-between p-5 gap-4 overflow-y-auto">
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <div className="size-9 rounded-xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white shadow-md shadow-brand/20">
             <SparkleIcon className="size-[18px] text-white" />
           </div>
-          <span className="font-black text-2xl tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+          <span className="font-black text-2xl tracking-tight bg-gradient-to-r from-brand to-secondary bg-clip-text text-transparent">
             AIM
           </span>
         </div>
 
-        <div className="rounded-2xl p-3.5 mb-5 border flex items-center gap-3 bg-gradient-to-r from-indigo-50 to-violet-50 border-indigo-100 dark:from-slate-800 dark:to-slate-800 dark:border-slate-700">
-          <div className="size-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-base shadow-sm">
+        <div className="rounded-2xl p-3.5 mb-5 border flex items-center gap-3 bg-gradient-to-r from-brand-soft to-secondary-soft border-brand-line dark:from-surface dark:to-surface dark:border-line">
+          <div className="size-11 shrink-0 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-base shadow-sm">
             {user?.name?.charAt(0).toUpperCase() || '?'}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-sm m-0 truncate text-slate-900 dark:text-white">{user?.name}</p>
-            <p className="text-xs m-0 truncate text-slate-500 dark:text-slate-400">{user?.email}</p>
+            <p className="font-bold text-sm m-0 truncate text-ink">{user?.name}</p>
+            <p className="text-xs m-0 truncate text-ink-muted">{user?.email}</p>
           </div>
         </div>
 
@@ -48,8 +48,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               className={({ isActive }) =>
                 `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-semibold text-sm no-underline transition-colors ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300'
-                    : 'text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/70 dark:text-slate-300 dark:hover:text-indigo-400 dark:hover:bg-slate-800'
+                    ? 'bg-brand-soft text-brand-ink'
+                    : 'text-ink-soft hover:text-brand-ink hover:bg-brand-soft/70'
                 }`
               }
             >
@@ -63,7 +63,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-bold text-red-700 dark:text-red-400 bg-transparent border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer transition-colors"
+        className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-bold text-danger-ink bg-transparent border border-danger-line hover:bg-danger-soft cursor-pointer transition-colors"
       >
         <LogOutIcon className="size-4" aria-hidden="true" />
         {t('Log out')}
@@ -77,7 +77,7 @@ export function Sidebar() {
   return (
     <aside
       aria-label={t('Sidebar')}
-      className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-white dark:bg-slate-900 border-e border-slate-100 dark:border-slate-800"
+      className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-surface dark:bg-elevated border-e border-line-subtle"
     >
       <SidebarContent />
     </aside>

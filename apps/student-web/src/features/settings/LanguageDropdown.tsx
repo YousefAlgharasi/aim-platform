@@ -56,16 +56,16 @@ export function LanguageDropdown({ value, onChange, onSave, disabled, loading }:
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+        className="w-full px-3 py-2 rounded-lg border border-line bg-surface text-ink text-sm flex items-center justify-between hover:bg-surface-sunken dark:hover:bg-surface-muted/50 transition-colors"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <span>{currentLabel}</span>
-        <ChevronDownIcon className="size-4 text-slate-400" />
+        <ChevronDownIcon className="size-4 text-ink-faint" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full start-0 end-0 mt-2 z-50 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+        <div className="absolute top-full start-0 end-0 mt-2 z-50 rounded-lg border border-line bg-surface shadow-lg">
           <ul className="list-none m-0 p-2 flex flex-col gap-1" role="listbox">
             {LANGUAGE_OPTIONS.map(option => (
               <li key={option.value}>
@@ -74,8 +74,8 @@ export function LanguageDropdown({ value, onChange, onSave, disabled, loading }:
                   onClick={() => onChange(option.value as 'en' | 'ar')}
                   className={`w-full px-3 py-2 rounded text-sm text-start transition-colors ${
                     value === option.value
-                      ? 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 font-semibold'
-                      : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-200'
+                      ? 'bg-brand-soft text-brand-ink font-semibold'
+                      : 'hover:bg-surface-muted text-ink dark:text-ink-soft'
                   }`}
                   role="option"
                   aria-selected={value === option.value}
@@ -86,7 +86,7 @@ export function LanguageDropdown({ value, onChange, onSave, disabled, loading }:
             ))}
           </ul>
 
-          <div className="border-t border-slate-100 dark:border-slate-700 p-2">
+          <div className="border-t border-line-subtle dark:border-line p-2">
             <Button
               type="button"
               variant="secondary"

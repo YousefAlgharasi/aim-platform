@@ -17,9 +17,9 @@ body,
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: var(--color-neutral-900);
-  background: var(--color-neutral-50);
+  font-family: 'Inter', 'IBM Plex Sans Arabic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: rgb(var(--c-ink));
+  background: rgb(var(--c-page));
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -36,6 +36,6 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary-500);
+  outline: 2px solid rgb(var(--c-focus));
   outline-offset: 2px;
 }

@@ -55,8 +55,8 @@ export function ForgotPasswordPage() {
         <AuthLogo />
         <div className="flex flex-col items-center text-center my-auto">
           <MailBadge />
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0 mb-2">{t('Check Your Email')}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
+          <h1 className="text-ink font-extrabold text-2xl tracking-tight m-0 mb-2">{t('Check Your Email')}</h1>
+          <p className="text-ink-muted text-sm leading-relaxed max-w-[280px]">
             {t('We sent a password reset link to {email}. Open it to continue.', { email })}
           </p>
         </div>

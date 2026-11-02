@@ -89,15 +89,17 @@ export class PlacementRetakePolicyService {
     const eligibility = await this.checkEligibility(studentId, placementTestId);
 
     if (!eligibility.allowed) {
-      const detail =
-        eligibility.nextEligibleAt
-          ? ` You may retake after ${eligibility.nextEligibleAt}.`
-          : '';
+      // Static, translatable sentence; the exact time goes in `details`.
+      const message =
+        eligibility.errorCode === PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE
+          ? 'You already took the placement test recently. You can retake it later.'
+          : 'You are not eligible to start a new placement attempt right now.';
 
       throw new AppError({
         code: eligibility.errorCode ?? PlacementErrorCode.RETAKE_COOLDOWN_ACTIVE,
-        message: `You are not eligible to start a new placement attempt.${detail}`,
+        message,
         statusCode: HttpStatus.CONFLICT,
+        ...(eligibility.nextEligibleAt ? { details: { nextEligibleAt: eligibility.nextEligibleAt } } : {}),
       });
     }
   }
@@ -121,6 +123,9 @@ export class PlacementRetakePolicyService {
        WHERE student_id = $1
          AND placement_test_id = $2
          AND status != 'abandoned'
+         -- "Start from scratch" seeds a 0-second completed attempt; it is not a real
+         -- test and must not put the student on cooldown.
+         AND COALESCE(duration_seconds, 1) > 0
        ORDER BY created_at DESC
        LIMIT 1`,
       [studentId, placementTestId],

@@ -32,7 +32,7 @@ function ReviewList({ items }: { items: ReviewScheduleEntry[] }) {
               <span className={ui.itemTitle} title={r.skillId}>{prettifySkillId(r.skillId)}</span>
               <span className={ui.badge(statusTone(r.status))}>{humanize(r.status)}</span>
             </div>
-            <span className="text-[15px] font-bold text-slate-900 dark:text-white">{dueLabel(r.dueAt)}</span>
+            <span className="text-[15px] font-bold text-ink">{dueLabel(r.dueAt)}</span>
             <p className={ui.meta}>
               {t('Every {interval}', { interval: formatInterval(r.intervalDays) })} ·{' '}
               {plural(r.repetitionCount, {
