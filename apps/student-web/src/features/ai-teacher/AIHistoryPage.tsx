@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -8,7 +9,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { MicIcon, SparkleIcon } from '../../components/common/Icons';
-import { BackLink, pillLinkClass } from './ui';
+import { pillLinkClass } from './ui';
 import { useI18n } from '../../i18n/I18nContext';
 
 /**
@@ -42,13 +43,7 @@ export function AIHistoryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
-        <div className="flex-1 min-w-0">
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('AI Teacher')}</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('Conversation History')}</h1>
-        </div>
-      </div>
+      <PageTitleBar title={t('Conversation History')} fallback="/ai-teacher" />
 
       {sessions.length === 0 ? (
         <EmptyState
@@ -58,7 +53,7 @@ export function AIHistoryPage() {
           onAction={() => navigate('/ai-teacher')}
         />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {sessions.map((session) => {
             const state: AIChatLocationState = { lessonTitle: session.contextTitle };
             return (
@@ -69,12 +64,12 @@ export function AIHistoryPage() {
                     state={state}
                     className="flex-1 min-w-0 flex items-center gap-3 p-1 no-underline rounded-xl"
                   >
-                    <span className="size-10 shrink-0 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 flex items-center justify-center">
+                    <span className="size-10 shrink-0 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center">
                       <SparkleIcon className="size-4.5" />
                     </span>
                     <span className="min-w-0 flex flex-col">
-                      <span className="font-semibold text-slate-900 dark:text-white truncate">{sessionLabel(session)}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="font-semibold text-ink truncate">{sessionLabel(session)}</span>
+                      <span className="text-xs text-ink-muted">
                         {session.status === 'active' ? t('Active') : t('Closed')} · {relativeTime(session.updatedAt)}
                       </span>
                     </span>

@@ -13,6 +13,7 @@ import { AiTeacherContextSnapshot } from '../context-builder/context-builder.typ
 import {
   AI_TEACHER_PROMPT_SECTION_ORDER,
   buildLessonStageInstructions,
+  buildPracticeInstructions,
   buildStudentIdentityInstructions,
 } from './prompt-builder.constants';
 import { AiTeacherPrompt, BuildPromptInput, PromptSection } from './prompt-builder.types';
@@ -33,10 +34,9 @@ export class PromptBuilderService {
       sections.push(historySection);
     }
 
-    const systemInstructions = [
-      buildStudentIdentityInstructions(),
-      buildLessonStageInstructions(input.lessonStage),
-    ].join(' ');
+    const systemInstructions = input.context.practiceTopic
+      ? buildPracticeInstructions()
+      : [buildStudentIdentityInstructions(), buildLessonStageInstructions(input.lessonStage)].join(' ');
 
     return {
       systemInstructions,

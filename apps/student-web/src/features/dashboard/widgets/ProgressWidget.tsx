@@ -16,12 +16,12 @@ export function ProgressWidget({ completionPercent, label, meta }: ProgressWidge
           <svg viewBox="0 0 36 36" className="size-16 -rotate-90" aria-hidden="true">
             <defs>
               <linearGradient id="levelRingGradient" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#4F46E5" />
-                <stop offset="100%" stopColor="#8B5CF6" />
+                <stop offset="0%" style={{ stopColor: 'rgb(var(--c-brand))' }} />
+                <stop offset="100%" style={{ stopColor: 'rgb(var(--c-secondary))' }} />
               </linearGradient>
             </defs>
             <path
-              className="stroke-slate-100 dark:stroke-slate-700"
+              className="stroke-surface-strong"
               fill="none"
               strokeWidth="3.5"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -35,12 +35,12 @@ export function ProgressWidget({ completionPercent, label, meta }: ProgressWidge
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-slate-900 dark:text-white">
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-ink">
             {pct}%
           </span>
         </div>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">{label}</span>
+          <span className="text-base font-extrabold tracking-tight text-ink">{label}</span>
           {meta && <span className={ui.meta}>{meta}</span>}
         </div>
       </div>

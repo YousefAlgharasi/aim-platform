@@ -17,12 +17,48 @@ interface AuthMeResponse {
 }
 
 interface LoginResponse extends SessionTokens {
-  user: { id: string; email: string | null };
+  user: {
+    id: string;
+    email: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    preferredLanguage?: string | null;
+    timezone?: string | null;
+    userType?: string;
+    status?: string;
+    profileId?: string | null;
+  };
+  profile?: {
+    id: string | null;
+    profileType: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    preferredLanguage?: string | null;
+    timezone?: string | null;
+  } | null;
 }
 
 interface RegisterResponse extends Partial<SessionTokens> {
   requiresEmailConfirmation: boolean;
-  user?: { id: string; email: string | null };
+  user?: {
+    id: string;
+    email: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    preferredLanguage?: string | null;
+    timezone?: string | null;
+    userType?: string;
+    status?: string;
+    profileId?: string | null;
+  };
+  profile?: {
+    id: string | null;
+    profileType: string | null;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    preferredLanguage?: string | null;
+    timezone?: string | null;
+  } | null;
 }
 
 interface AuthState {
@@ -121,9 +157,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (email: string, password: string, name: string) => {
+      const trimmedName = name.trim();
       const result = await apiClient.post<RegisterResponse>(
         '/auth/register',
-        { email: email.trim(), password, redirectUrl: `${window.location.origin}/login` },
+        {
+          email: email.trim(),
+          password,
+          ...(trimmedName ? { displayName: trimmedName } : {}),
+          redirectUrl: `${window.location.origin}/login`,
+        },
         { auth: false },
       );
       if (result.requiresEmailConfirmation || !result.accessToken || !result.refreshToken) {
@@ -134,8 +176,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshToken: result.refreshToken,
         expiresAt: result.expiresAt ?? 0,
       });
-      if (name.trim()) {
-        await apiClient.patch('/profile/me', { displayName: name.trim() });
+      if (trimmedName) {
+        await apiClient.patch('/profile/me', { displayName: trimmedName });
         setUser(await loadUser());
       }
       return { requiresEmailConfirmation: false };

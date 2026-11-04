@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
+import { DEFAULT_LOCALE, SupportedLocale, chapterTextSql } from '../../../common/locale';
+import { loadAvailableLocales, runInTransaction, syncEnglishTranslation } from '../translations/entity-translations.helpers';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import {
@@ -11,6 +13,15 @@ import {
   CurriculumContentStatus,
   UpdateChapterInput,
 } from './chapters.types';
+
+const CHAPTER_TRANSLATION_TABLE = {
+  entityTable: 'chapters',
+  translationTable: 'chapter_translations',
+  foreignKey: 'chapter_id',
+} as const;
+
+const CHAPTER_RETURNING = `id, level_id, title, slug, description, sort_order, status, created_at, updated_at,
+         'en'::text AS locale, ARRAY['en']::text[] AS available_locales`;
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -27,6 +38,8 @@ function toChapterSummary(row: ChapterRow): ChapterSummary {
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    locale: row.locale,
+    availableLocales: row.available_locales ?? [],
   };
 }
 
@@ -50,6 +63,7 @@ export class ChaptersService {
     levelId?: string,
     status?: string,
     q?: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<ChapterListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -64,19 +78,21 @@ export class ChaptersService {
     let idx = 1;
 
     if (levelId !== undefined) {
-      conditions.push(`level_id = $${idx++}`);
+      conditions.push(`c.level_id = $${idx++}`);
       values.push(levelId);
     }
 
     if (status !== undefined) {
-      conditions.push(`status = $${idx++}`);
+      conditions.push(`c.status = $${idx++}`);
       values.push(status);
     }
 
     const search = q?.trim();
     if (search) {
       conditions.push(
-        `(title ILIKE $${idx} OR COALESCE(slug, '') ILIKE $${idx} OR COALESCE(description, '') ILIKE $${idx})`,
+        `(c.title ILIKE $${idx} OR COALESCE(c.slug, '') ILIKE $${idx} OR COALESCE(c.description, '') ILIKE $${idx}
+          OR EXISTS (SELECT 1 FROM chapter_translations st WHERE st.chapter_id = c.id
+                       AND (st.title ILIKE $${idx} OR COALESCE(st.description, '') ILIKE $${idx})))`,
       );
       values.push(`%${search}%`);
       idx++;
@@ -85,19 +101,24 @@ export class ChaptersService {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ total: string }>(
-      `SELECT COUNT(*)::text AS total FROM chapters ${where}`,
+      `SELECT COUNT(*)::text AS total FROM chapters c ${where}`,
       values,
     );
 
     const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
+    const text = chapterTextSql('c', `$${idx}`);
     const dataResult = await this.db.query<ChapterRow>(
-      `SELECT id, level_id, title, slug, description, sort_order, status, created_at, updated_at
-         FROM chapters
+      `SELECT c.id, c.level_id, ${text.title} AS title, c.slug, ${text.description} AS description,
+              c.sort_order, c.status, c.created_at, c.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM chapter_translations al WHERE al.chapter_id = c.id ORDER BY al.locale) AS available_locales
+         FROM chapters c
+         ${text.joins}
          ${where}
-         ORDER BY sort_order ASC, created_at ASC
-         LIMIT $${idx++} OFFSET $${idx++}`,
-      [...values, safeLimit, offset],
+         ORDER BY c.sort_order ASC, c.created_at ASC
+         LIMIT $${idx + 1} OFFSET $${idx + 2}`,
+      [...values, locale, safeLimit, offset],
     );
 
     return {
@@ -108,12 +129,17 @@ export class ChaptersService {
     };
   }
 
-  async getChapter(id: string): Promise<ChapterSummary> {
+  async getChapter(id: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<ChapterSummary> {
+    const text = chapterTextSql('c', '$2');
     const result = await this.db.query<ChapterRow>(
-      `SELECT id, level_id, title, slug, description, sort_order, status, created_at, updated_at
-         FROM chapters
-         WHERE id = $1`,
-      [id],
+      `SELECT c.id, c.level_id, ${text.title} AS title, c.slug, ${text.description} AS description,
+              c.sort_order, c.status, c.created_at, c.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM chapter_translations al WHERE al.chapter_id = c.id ORDER BY al.locale) AS available_locales
+         FROM chapters c
+         ${text.joins}
+         WHERE c.id = $1`,
+      [id, locale],
     );
 
     if (result.rows.length === 0) {
@@ -170,14 +196,21 @@ export class ChaptersService {
         ? sortOrder
         : await this.nextSortOrder(levelId);
 
-    const result = await this.db.query<ChapterRow>(
-      `INSERT INTO chapters (level_id, title, slug, description, sort_order, status)
-         VALUES ($1, $2, $3, $4, $5, 'draft')
-         RETURNING id, level_id, title, slug, description, sort_order, status, created_at, updated_at`,
-      [levelId, title.trim(), slug ?? null, description?.trim() ?? null, resolvedSortOrder],
+    const row = await runInTransaction(
+      (callback) => this.db.withClient(callback),
+      async (client) => {
+        const result = await client.query<ChapterRow>(
+          `INSERT INTO chapters (level_id, title, slug, description, sort_order, status)
+             VALUES ($1, $2, $3, $4, $5, 'draft')
+             RETURNING ${CHAPTER_RETURNING}`,
+          [levelId, title.trim(), slug ?? null, description?.trim() ?? null, resolvedSortOrder],
+        );
+        await syncEnglishTranslation(client, CHAPTER_TRANSLATION_TABLE, result.rows[0].id);
+        return result.rows[0];
+      },
     );
 
-    return toChapterSummary(result.rows[0]);
+    return toChapterSummary(row);
   }
 
   async updateChapter(id: string, input: UpdateChapterInput): Promise<ChapterSummary> {
@@ -248,15 +281,27 @@ export class ChaptersService {
 
     values.push(id);
 
-    const result = await this.db.query<ChapterRow>(
-      `UPDATE chapters
-         SET ${setClauses.join(', ')}
-         WHERE id = $${idx}
-         RETURNING id, level_id, title, slug, description, sort_order, status, created_at, updated_at`,
-      values,
+    const touchesEnglishText = input.title !== undefined || 'description' in input;
+
+    const row = await runInTransaction(
+      (callback) => this.db.withClient(callback),
+      async (client) => {
+        const result = await client.query<ChapterRow>(
+          `UPDATE chapters
+             SET ${setClauses.join(', ')}
+             WHERE id = $${idx}
+             RETURNING ${CHAPTER_RETURNING}`,
+          values,
+        );
+        if (touchesEnglishText) {
+          await syncEnglishTranslation(client, CHAPTER_TRANSLATION_TABLE, id);
+        }
+        const available = await loadAvailableLocales(client, CHAPTER_TRANSLATION_TABLE, id);
+        return { ...result.rows[0], available_locales: available };
+      },
     );
 
-    return toChapterSummary(result.rows[0]);
+    return toChapterSummary(row);
   }
 
   private async nextSortOrder(levelId: string): Promise<number> {

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { LocaleModule } from '../../common/locale/locale.module';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { CourseBillingModule } from '../course-billing/course-billing.module';
@@ -13,7 +14,7 @@ import { CourseCompletionService } from './course-completion.service';
 import { ChapterCompletionService } from './chapter-completion.service';
 
 @Module({
-  imports: [CourseBillingModule, DatabaseModule, AuthModule, RolesModule, UsersModule, NotificationsModule],
+  imports: [CourseBillingModule, DatabaseModule, AuthModule, RolesModule, UsersModule, NotificationsModule, LocaleModule],
   controllers: [LessonsController],
   providers: [
     LessonsService,

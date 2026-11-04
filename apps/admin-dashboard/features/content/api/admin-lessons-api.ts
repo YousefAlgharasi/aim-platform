@@ -27,6 +27,8 @@ export type AdminLessonSummary = {
   readonly systemPrompt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly locale?: string;
+  readonly availableLocales?: readonly string[];
 };
 
 export type AdminLessonListData = {
@@ -67,6 +69,10 @@ function decodeLessonSummary(value: unknown): AdminLessonSummary {
     systemPrompt: typeof value.systemPrompt === 'string' ? value.systemPrompt : null,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
+    locale: typeof value.locale === 'string' ? value.locale : 'en',
+    availableLocales: Array.isArray(value.availableLocales)
+      ? value.availableLocales.filter((l): l is string => typeof l === 'string')
+      : [],
   };
 }
 

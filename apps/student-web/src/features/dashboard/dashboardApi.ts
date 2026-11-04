@@ -77,6 +77,7 @@ export interface RecommendedCourse {
   courseId: string;
   courseTitle: string;
   courseDescription: string | null;
+  locale?: string;
   estimatedLevel: string | null;
 }
 
@@ -98,6 +99,7 @@ export interface CurrentEnrollment {
   found: boolean;
   courseId: string | null;
   courseTitle: string | null;
+  locale?: string | null;
   enrolledAt: string | null;
 }
 

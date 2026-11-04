@@ -9,7 +9,7 @@ CREATE TABLE student_level_state (
     current_cefr_rank        SMALLINT      NOT NULL,
     max_unlocked_cefr_rank   SMALLINT      NOT NULL,
     source                   TEXT          NOT NULL
-                                          CHECK (source IN ('placement', 'aim_engine')),
+                                          CHECK (source IN ('placement', 'aim_engine', 'scratch')),
     last_computed_at         TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     created_at                TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at                TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

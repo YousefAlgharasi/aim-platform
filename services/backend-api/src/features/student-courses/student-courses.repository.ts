@@ -14,11 +14,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { SupportedLocale } from '../../common/locale/locale.constants';
+import { courseTextSql } from '../../common/locale/course-text.sql';
 
 interface StudentCourseRow {
   readonly course_id: string;
   readonly title: string;
   readonly description: string | null;
+  readonly locale: string;
   readonly sort_order: number;
   readonly level_code: string | null;
   readonly lesson_count: string;
@@ -36,7 +39,8 @@ interface StudentCourseRow {
 export class StudentCoursesRepository {
   constructor(private readonly db: DatabaseService) {}
 
-  async findCoursesWithProgress(studentId: string): Promise<StudentCourseRow[]> {
+  async findCoursesWithProgress(studentId: string, locale: SupportedLocale = 'en'): Promise<StudentCourseRow[]> {
+    const text = courseTextSql('co', '$2');
     const result = await this.db.query<StudentCourseRow>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
@@ -67,8 +71,9 @@ export class StudentCoursesRepository {
        )
        SELECT
          co.id AS course_id,
-         co.title AS title,
-         co.description AS description,
+         ${text.title} AS title,
+         ${text.description} AS description,
+         ${text.locale} AS locale,
          co.sort_order AS sort_order,
          cl.level_code AS level_code,
          COUNT(DISTINCT clsn.lesson_id) AS lesson_count,
@@ -119,6 +124,7 @@ export class StudentCoursesRepository {
          co.cefr_rank AS cefr_rank,
          ls.max_unlocked_cefr_rank AS max_unlocked_cefr_rank
        FROM courses co
+       ${text.joins}
        LEFT JOIN course_levels cl ON cl.course_id = co.id
        LEFT JOIN course_lessons clsn ON clsn.course_id = co.id
        LEFT JOIN lesson_progress lp
@@ -134,10 +140,10 @@ export class StudentCoursesRepository {
          OR (ls.track_slug = 'general_english' AND (co.track_slug = 'english' OR co.track_slug IS NULL OR co.track_slug = 'general_english'))
        )
        WHERE co.status = 'published'
-       GROUP BY co.id, co.title, co.description, co.sort_order, cl.level_code,
+       GROUP BY co.id, co_ct_req.id, co_ct_en.id, co.title, co.description, co.sort_order, cl.level_code,
                 co.track_slug, co.cefr_rank, ls.max_unlocked_cefr_rank
        ORDER BY co.cefr_rank ASC NULLS LAST, co.sort_order ASC, co.created_at ASC`,
-      [studentId],
+      [studentId, locale],
     );
     return result.rows;
   }

@@ -15,6 +15,8 @@ export interface ChapterRow {
   status: CurriculumContentStatus;
   created_at: string;
   updated_at: string;
+  locale: string;
+  available_locales: string[];
 }
 
 export interface ChapterSummary {
@@ -27,6 +29,8 @@ export interface ChapterSummary {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  locale: string;
+  availableLocales: string[];
 }
 
 export interface ChapterListResponse {

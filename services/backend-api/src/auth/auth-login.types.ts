@@ -9,11 +9,31 @@ export interface AuthTokenResult {
   readonly expiresAt: number;
 }
 
+export interface AuthUserInfo {
+  readonly id: string;
+  readonly email: string | null;
+  readonly internalUserId?: string;
+  readonly profileId?: string | null;
+  readonly displayName?: string | null;
+  readonly avatarUrl?: string | null;
+  readonly preferredLanguage?: string | null;
+  readonly timezone?: string | null;
+  readonly userType?: string;
+  readonly status?: string;
+}
+
+export interface AuthProfileInfo {
+  readonly id: string | null;
+  readonly profileType: string | null;
+  readonly displayName: string | null;
+  readonly avatarUrl: string | null;
+  readonly preferredLanguage: string | null;
+  readonly timezone: string | null;
+}
+
 export interface AuthLoginResult extends AuthTokenResult {
-  readonly user: {
-    readonly id: string;
-    readonly email: string | null;
-  };
+  readonly user: AuthUserInfo;
+  readonly profile?: AuthProfileInfo | null;
 }
 
 export interface AuthRefreshInput {
@@ -23,6 +43,12 @@ export interface AuthRefreshInput {
 export interface AuthRegisterInput {
   readonly email: string;
   readonly password: string;
+  readonly displayName?: string;
+  readonly name?: string;
+  readonly fullName?: string;
+  readonly avatarUrl?: string;
+  readonly preferredLanguage?: string;
+  readonly timezone?: string;
   readonly redirectUrl?: string;
 }
 
@@ -44,10 +70,8 @@ export interface AuthRegisterResult {
   readonly accessToken?: string;
   readonly refreshToken?: string;
   readonly expiresAt?: number;
-  readonly user?: {
-    readonly id: string;
-    readonly email: string | null;
-  };
+  readonly user?: AuthUserInfo;
+  readonly profile?: AuthProfileInfo | null;
 }
 
 export interface AuthGoogleLoginInput {
@@ -67,7 +91,9 @@ export interface SupabaseAuthTokenResponse {
   readonly user?: {
     readonly id: string;
     readonly email?: string | null;
+    readonly phone?: string | null;
     readonly app_metadata?: { readonly role?: string };
+    readonly user_metadata?: Record<string, unknown>;
   };
 }
 
@@ -81,6 +107,8 @@ export interface SupabaseAuthErrorResponse {
 export interface SupabaseSignUpResponse {
   readonly id?: string;
   readonly email?: string | null;
+  readonly phone?: string | null;
+  readonly user_metadata?: Record<string, unknown>;
   /**
    * With email confirmation enabled, Supabase answers a signup for an
    * already-registered email with a 200 and an obfuscated user whose
@@ -94,6 +122,8 @@ export interface SupabaseSignUpResponse {
   readonly user?: {
     readonly id: string;
     readonly email?: string | null;
+    readonly phone?: string | null;
+    readonly user_metadata?: Record<string, unknown>;
     readonly identities?: readonly unknown[] | null;
   };
 }

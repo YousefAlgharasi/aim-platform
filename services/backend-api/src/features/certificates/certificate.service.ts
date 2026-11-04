@@ -17,6 +17,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { courseTextSql } from '../../common/locale/course-text.sql';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 import { CourseCompletionService } from '../lessons/course-completion.service';
 import { Certificate, CertificateScoreSnapshotEntry } from './certificate.types';
 import {
@@ -193,18 +195,20 @@ export class CertificateService {
     return row ? this.toCertificate(row) : null;
   }
 
-  async getById(id: string): Promise<Certificate | null> {
+  async getById(id: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<Certificate | null> {
+    const text = courseTextSql('co', '$2');
     const result = await this.db.query<CertificateRow>(
-      `SELECT cert.id, cert.student_id, cert.course_id, co.title AS course_title,
+      `SELECT cert.id, cert.student_id, cert.course_id, ${text.title} AS course_title,
               COALESCE(sp.display_name, u.email) AS display_name,
               u.email, cert.issued_at, cert.score_snapshot
        FROM certificates cert
        JOIN courses co ON co.id = cert.course_id
+       ${text.joins}
        LEFT JOIN users u ON u.id = cert.student_id OR u.supabase_auth_uid = cert.student_id
        LEFT JOIN student_profiles sp ON sp.user_id = u.id OR sp.id = cert.student_id
        WHERE cert.id = $1
        LIMIT 1`,
-      [id],
+      [id, locale],
     );
     const row = result.rows[0];
     return row ? this.toCertificate(row) : null;
@@ -214,7 +218,7 @@ export class CertificateService {
    * List all certificates for a student. Automatically checks completed courses
    * and issues certificates for any completed course that doesn't have one yet.
    */
-  async listForStudent(studentId: string): Promise<Certificate[]> {
+  async listForStudent(studentId: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<Certificate[]> {
     const completedCourses = await this.db.query<{ course_id: string }>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
@@ -248,6 +252,7 @@ export class CertificateService {
       await this.issueIfCompleted(studentId, row.course_id);
     }
 
+    const text = courseTextSql('co', '$2');
     const result = await this.db.query<CertificateRow>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
@@ -256,11 +261,12 @@ export class CertificateService {
          WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
          LIMIT 1
        )
-       SELECT cert.id, cert.student_id, cert.course_id, co.title AS course_title,
+       SELECT cert.id, cert.student_id, cert.course_id, ${text.title} AS course_title,
               COALESCE(sp.display_name, u.email) AS display_name,
               u.email, cert.issued_at, cert.score_snapshot
        FROM certificates cert
        JOIN courses co ON co.id = cert.course_id
+       ${text.joins}
        LEFT JOIN users u ON u.id = cert.student_id OR u.supabase_auth_uid = cert.student_id
        LEFT JOIN student_profiles sp ON sp.user_id = u.id OR sp.id = cert.student_id
        WHERE cert.student_id = $1
@@ -268,7 +274,7 @@ export class CertificateService {
           OR cert.student_id IN (SELECT user_id FROM resolved_student)
           OR cert.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
        ORDER BY cert.issued_at DESC`,
-      [studentId],
+      [studentId, locale],
     );
 
     return Promise.all(result.rows.map((r) => this.toCertificate(r)));

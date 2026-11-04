@@ -8,7 +8,7 @@ export function CourseBillingBadge({ price, access }: { price?: CoursePriceQuote
   if (!price || !access) return null;
 
   let label = '';
-  let tone = 'text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-950/60';
+  let tone = 'text-brand-ink bg-brand-soft';
   switch (access.status) {
     case 'none':
     case 'rejected':
@@ -16,18 +16,18 @@ export function CourseBillingBadge({ price, access }: { price?: CoursePriceQuote
       break;
     case 'pending':
       label = t('Payment pending');
-      tone = 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/50';
+      tone = 'text-warning-ink bg-warning-soft';
       break;
     case 'failed':
       label = t('Time ran out');
-      tone = 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/50';
+      tone = 'text-danger-ink bg-danger-soft';
       break;
     case 'active': {
       const n = access.daysLeft ?? 0;
       label = n <= 0
         ? t('Less than a day left')
         : plural(n, { one: t('1 day left'), two: t('2 days left'), few: t('{n} days left [few]', { n }), other: t('{n} days left', { n }) });
-      if (n <= 5) tone = 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/50';
+      if (n <= 5) tone = 'text-warning-ink bg-warning-soft';
       break;
     }
     default:

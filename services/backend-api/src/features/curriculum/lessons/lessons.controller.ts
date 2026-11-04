@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,6 +25,12 @@ import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { PermissionGuard } from '../../../auth/authorization/permission.guard';
 import { RequirePermissions } from '../../../auth/authorization/required-permissions.decorator';
 import { CurriculumPermission } from '../curriculum.permissions';
+import {
+  LocaleContext,
+  LocaleHeadersInterceptor,
+  LocaleResolverService,
+  RequestLocale,
+} from '../../../common/locale';
 import { LessonsService } from './lessons.service';
 import { CreateLessonInput, UpdateLessonInput } from './lessons.types';
 
@@ -37,9 +44,11 @@ export class LessonsController {
   constructor(
     private readonly lessonsService: LessonsService,
     private readonly lessonPublishValidationService: LessonPublishValidationService,
+    private readonly localeResolver: LocaleResolverService,
   ) {}
 
   @Get()
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List lessons. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'chapterId', required: false, type: String })
@@ -58,6 +67,7 @@ export class LessonsController {
     @Query('limit') limit = '20',
     @Query('status') status?: string,
     @Query('q') q?: string,
+    @RequestLocale() localeCtx?: LocaleContext,
   ) {
     return this.lessonsService.listLessons(
       parseInt(page, 10) || 1,
@@ -65,16 +75,21 @@ export class LessonsController {
       chapterId,
       status,
       q,
+      this.explicitLocale(localeCtx),
     );
   }
 
   @Get(':id')
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get lesson by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Lesson detail.' })
   @ApiNotFoundResponse({ description: 'Lesson not found.' })
-  async getLesson(@Param('id', ParseUUIDPipe) id: string) {
-    return this.lessonsService.getLesson(id);
+  async getLesson(
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() localeCtx?: LocaleContext,
+  ) {
+    return this.lessonsService.getLesson(id, this.explicitLocale(localeCtx));
   }
 
   @Post()
@@ -105,5 +120,9 @@ export class LessonsController {
     @Body() body: UpdateLessonInput,
   ) {
     return this.lessonsService.updateLesson(id, body);
+  }
+
+  private explicitLocale(localeCtx?: LocaleContext) {
+    return localeCtx ? this.localeResolver.resolveExplicit(localeCtx) : undefined;
   }
 }

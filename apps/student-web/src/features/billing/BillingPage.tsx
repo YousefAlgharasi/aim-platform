@@ -120,7 +120,7 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader eyebrow={t('Account')} title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
+      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 
@@ -131,25 +131,25 @@ export function BillingPage() {
             <p className={subCls}>{t("You don't have an active subscription. Choose a plan below to get started.")}</p>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {liveSubscriptions.map(sub => {
               const plan = planById(sub.planId);
               const price = plan ? priceById(plan.priceId) : undefined;
               return (
                 <div
                   key={sub.id}
-                  className="rounded-2xl p-5 bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md flex flex-col gap-3"
+                  className="rounded-2xl p-5 bg-gradient-to-br from-brand to-secondary text-white shadow-md flex flex-col gap-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/20">
                       {keyLabel(sub.status)}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1.5 text-sm">
                     {price && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">{t('Price')}</span>
+                        <span className="text-on-brand">{t('Price')}</span>
                         <span className="font-bold">
                           {t('{price} / {interval}', { price: formatMoney(price.amount, price.currency), interval: intervalLabel(price.billingInterval) })}
                         </span>
@@ -157,13 +157,13 @@ export function BillingPage() {
                     )}
                     {sub.trialEnd && sub.status === 'trialing' && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">{t('Trial ends')}</span>
+                        <span className="text-on-brand">{t('Trial ends')}</span>
                         <span className="font-bold">{fmtDate(sub.trialEnd)}</span>
                       </div>
                     )}
                     {sub.currentPeriodEnd && (
                       <div className="flex justify-between gap-3">
-                        <span className="text-indigo-100">{sub.cancelAtPeriodEnd ? t('Ends') : t('Renews')}</span>
+                        <span className="text-on-brand">{sub.cancelAtPeriodEnd ? t('Ends') : t('Renews')}</span>
                         <span className="font-bold">{fmtDate(sub.currentPeriodEnd)}</span>
                       </div>
                     )}
@@ -172,13 +172,13 @@ export function BillingPage() {
                     <Banner variant="warning">{t('Your last payment failed. Please update your payment method with our payment provider.')}</Banner>
                   )}
                   {sub.cancelAtPeriodEnd ? (
-                    <p className="text-sm text-indigo-100 m-0">{t('Cancellation requested — you keep access until the end of the current period.')}</p>
+                    <p className="text-sm text-on-brand m-0">{t('Cancellation requested — you keep access until the end of the current period.')}</p>
                   ) : (
                     <div>
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="!bg-white/15 !text-white hover:!bg-white/25"
+                        className="!bg-black/20 !text-white hover:!bg-black/30"
                         onClick={() => { setCancelError(''); setCancelTarget(sub); }}
                       >
                         {t('Cancel subscription')}
@@ -196,18 +196,18 @@ export function BillingPage() {
         <section className="flex flex-col gap-3">
           <h2 className={h2Cls}>{t("What's included")}</h2>
           <Card>
-            <ul className="list-none m-0 p-0 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+            <ul className="list-none m-0 p-0 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {activeEntitlements.map(e => (
-                <li key={e.id} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
+                <li key={e.id} className="flex items-center gap-2.5 text-sm text-ink-soft">
                   <span
-                    className={`size-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${e.granted ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300'}`}
+                    className={`size-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${e.granted ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'}`}
                     aria-hidden="true"
                   >
                     {e.granted ? '✓' : '✕'}
                   </span>
                   <span className="flex-1 min-w-0">{keyLabel(e.featureKey)}</span>
                   {e.usageLimit !== null && (
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{e.usageCount} / {e.usageLimit}</span>
+                    <span className="text-xs font-semibold text-ink-muted">{e.usageCount} / {e.usageLimit}</span>
                   )}
                 </li>
               ))}
@@ -221,7 +221,7 @@ export function BillingPage() {
         {data.plans.length === 0 ? (
           <EmptyState title={t('No plans available')} message={t('There are no plans available for purchase right now.')} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.plans.map(plan => {
               const isCurrent = liveSubscriptions.some(s => s.planId === plan.id);
               const price = priceById(plan.priceId);
@@ -229,30 +229,30 @@ export function BillingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-2xl p-5 bg-white dark:bg-slate-800 shadow-sm flex flex-col gap-3.5 ${
-                    isCurrent ? 'ring-2 ring-[#4F46E5]' : 'ring-1 ring-[#E2E8F0] dark:ring-slate-700'
+                  className={`rounded-2xl p-5 bg-surface shadow-sm flex flex-col gap-3.5 ${
+                    isCurrent ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{plan.name}</h3>
+                    <h3 className="text-base font-extrabold tracking-tight text-ink m-0">{plan.name}</h3>
                     {isCurrent && <span className={pillCls}>{t('Current')}</span>}
                   </div>
                   {price ? (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold tracking-tight text-[#4F46E5] dark:text-indigo-400">{formatMoney(price.amount, price.currency)}</span>
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                      <span className="text-3xl font-extrabold tracking-tight text-brand-ink">{formatMoney(price.amount, price.currency)}</span>
+                      <span className="text-sm text-ink-muted">
                         {price.billingInterval === 'one_time' ? ` ${intervalLabel('one_time')}` : `/${intervalLabel(price.billingInterval)}`}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{t('Price unavailable')}</span>
+                    <span className="text-sm text-ink-muted">{t('Price unavailable')}</span>
                   )}
                   {plan.description && <p className={subCls}>{plan.description}</p>}
                   {features.length > 0 && (
                     <ul className="list-none m-0 p-0 flex flex-col gap-2 flex-1">
                       {features.map(f => (
-                        <li key={f} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-200">
-                          <span className="size-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-xs font-extrabold shrink-0" aria-hidden="true">✓</span>
+                        <li key={f} className="flex items-center gap-2.5 text-sm text-ink-soft">
+                          <span className="size-5 rounded-full bg-success-soft text-success-ink flex items-center justify-center text-xs font-extrabold shrink-0" aria-hidden="true">✓</span>
                           {f}
                         </li>
                       ))}
@@ -283,19 +283,19 @@ export function BillingPage() {
           <Card><p className={subCls}>{t('No invoices yet.')}</p></Card>
         ) : (
           <div className={tableWrapCls}>
-            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+            <div className="flex flex-col divide-y divide-line-subtle dark:divide-line">
               {data.invoices.map(inv => (
                 <button
                   key={inv.id}
                   type="button"
-                  className="flex items-center justify-between gap-3 px-4 py-3.5 min-h-[56px] bg-transparent border-none text-start cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  className="flex items-center justify-between gap-3 px-4 py-3.5 min-h-[56px] bg-transparent border-none text-start cursor-pointer text-sm font-semibold text-ink hover:bg-surface-sunken dark:hover:bg-surface-muted/50 transition-colors"
                   onClick={() => openInvoice(inv)}
                 >
                   <span>{fmtDate(inv.paidAt ?? inv.periodEnd ?? inv.createdAt)}</span>
                   <span className="flex items-center gap-3">
                     <span className="font-extrabold">{formatMoney(inv.total, inv.currency)}</span>
                     <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{keyLabel(inv.status)}</StatusPill>
-                    <ChevronIcon className="size-4 text-slate-400" />
+                    <ChevronIcon className="size-4 text-ink-faint" />
                   </span>
                 </button>
               ))}
@@ -308,11 +308,11 @@ export function BillingPage() {
         <section className="flex flex-col gap-3">
           <h2 className={h2Cls}>{t('Past subscriptions')}</h2>
           <div className={tableWrapCls}>
-            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+            <div className="flex flex-col divide-y divide-line-subtle dark:divide-line">
               {pastSubscriptions.map(sub => (
                 <div key={sub.id} className="flex items-center justify-between gap-3 px-4 py-3.5 text-sm">
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">{planById(sub.planId)?.name ?? t('Subscription')}</span>
-                  <span className="text-slate-500 dark:text-slate-400">
+                  <span className="font-semibold text-ink">{planById(sub.planId)?.name ?? t('Subscription')}</span>
+                  <span className="text-ink-muted">
                     {keyLabel(sub.status)}{sub.canceledAt ? ` · ${fmtDate(sub.canceledAt)}` : ''}
                   </span>
                 </div>
@@ -355,7 +355,7 @@ export function BillingPage() {
             {invoiceDetail.invoice.paidAt && (
               <KV label={t('Paid')}>{fmtDate(invoiceDetail.invoice.paidAt)}</KV>
             )}
-            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
+            <div className="h-px bg-surface-muted my-1" />
             {invoiceDetail.items.map(item => (
               <KV key={item.id} label={item.quantity > 1 ? t('{description} × {quantity}', { description: item.description, quantity: item.quantity }) : item.description}>
                 {formatMoney(item.amount, item.currency)}

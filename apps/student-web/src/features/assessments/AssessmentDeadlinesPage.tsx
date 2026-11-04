@@ -29,14 +29,14 @@ function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
   return (
     <Link
       to={`/assessments/${item.assessmentId}`}
-      className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-md transition-all duration-200`}
+      className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-brand-line hover:shadow-md transition-all duration-200`}
     >
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={statusTone(item.status)}>{deadlineStatusLabel(item.status)}</Badge>
         {item.extendedClosesAt && <Badge tone="indigo">{t('Extended')}</Badge>}
       </div>
-      <h3 className="m-0 text-base font-bold leading-snug text-slate-900 dark:text-white">{item.assessmentTitle}</h3>
-      <p className="m-0 text-xs font-medium text-slate-500 dark:text-slate-400">
+      <h3 className="m-0 text-base font-bold leading-snug text-ink">{item.assessmentTitle}</h3>
+      <p className="m-0 text-xs font-medium text-ink-muted">
         {item.status === 'upcoming' ? (
           <>{t('Opens {date}', { date: formatDateTime(item.opensAt) })}</>
         ) : (
@@ -77,19 +77,16 @@ export function AssessmentDeadlinesPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Assessments')}
         title={t('Deadlines')}
         subtitle={t('Everything that is open, upcoming or past due.')}
-        backTo="/assessments"
-        backLabel={t('All assessments')}
       />
       {total === 0 ? (
         <EmptyState title={t('No deadlines')} message={t("You don't have any assessment deadlines right now.")} />
       ) : (
         GROUPS.filter((g) => deadlines[g.key].length > 0).map((g) => (
           <section key={g.key} className="flex flex-col gap-3">
-            <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">{t(g.title)}</h2>
-            <div className="grid gap-3 md:grid-cols-2">
+            <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-ink">{t(g.title)}</h2>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {deadlines[g.key].map((item) => (
                 <DeadlineCard key={`${item.deadlineId}-${item.assessmentId}`} item={item} />
               ))}

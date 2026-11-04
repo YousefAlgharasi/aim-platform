@@ -68,7 +68,7 @@ export function FacebookIcon({ className = 'size-[18px]' }: IconProps) {
   )
 }
 
-export function BrainIcon({ className = 'size-6', color = '#4F46E5' }: IconProps) {
+export function BrainIcon({ className = 'size-6', color = 'currentColor' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill={color}>
       <path d="M13 3a4 4 0 0 1 3.46 6A4 4 0 0 1 13 15v6h-2v-2a4 4 0 0 1-3.46-6A4 4 0 0 1 9 7V3h4zm-2 2H9v2a2 2 0 0 0 2 2V5zm4 0v4a2 2 0 0 0 2-2 2 2 0 0 0-2-2zM7 11a2 2 0 0 0 0 4 4 4 0 0 0 2-.53V11H7zm10 0h-2v3.47c.63.34 1.32.53 2 .53a2 2 0 0 0 0-4z" />
@@ -221,6 +221,15 @@ export function ClockIcon({ className = 'size-5' }: IconProps) {
   )
 }
 
+export function InfoIcon({ className = 'size-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4M12 8h.01" />
+    </svg>
+  )
+}
+
 export function ClipboardIcon({ className = 'size-5' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -354,6 +363,14 @@ export function TrendingUpIcon({ className = 'size-5' }: IconProps) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
       <polyline points="17 6 23 6 23 12" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon({ className = 'size-5' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }

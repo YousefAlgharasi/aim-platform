@@ -6,6 +6,7 @@ export interface EnrollmentRow {
   readonly id: string;
   readonly course_id: string;
   readonly course_title: string;
+  readonly course_locale: string;
   readonly enrolled_at: string;
 }
 
@@ -14,6 +15,7 @@ export interface CurrentEnrollmentResponse {
   readonly found: boolean;
   readonly courseId: string | null;
   readonly courseTitle: string | null;
+  readonly locale: string | null;
   readonly enrolledAt: string | null;
 }
 
@@ -21,5 +23,6 @@ export interface CurrentEnrollmentResponse {
 export interface EnrollResponse {
   readonly courseId: string;
   readonly courseTitle: string;
+  readonly locale: string;
   readonly enrolledAt: string;
 }

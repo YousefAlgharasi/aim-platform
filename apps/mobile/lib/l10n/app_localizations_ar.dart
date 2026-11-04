@@ -4061,4 +4061,106 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get billingErrorGeneric => 'تعذّر إرسال دفعتك. حاول مرة أخرى.';
+
+  @override
+  String get practiceSpeakingSubtitle =>
+      'اختر موضوعًا وتحدّث مع معلمك الذكي. تكسب نقاط الخبرة عند الانتهاء.';
+
+  @override
+  String get practiceWritingSubtitle =>
+      'اختر موضوعًا واكتب فقرة. يصحّحها معلمك الذكي ويوضح لك كيف تتحسّن.';
+
+  @override
+  String get practiceLockedTitle => 'ابدأ دورة لتفعيل هذه الميزة';
+
+  @override
+  String get practiceLockedBody =>
+      'المحادثة وكتابة الفقرات جزء من دورتك. ابدأ دورة لتستخدمهما.';
+
+  @override
+  String get practiceChooseCourse => 'اختر دورة';
+
+  @override
+  String get practiceNoTopicsTitle => 'لا توجد مواضيع بعد';
+
+  @override
+  String get practiceNoTopicsBody => 'ستظهر مواضيع جديدة هنا قريبًا.';
+
+  @override
+  String get practiceStartError =>
+      'تعذّر بدء هذا الموضوع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String practiceXpBadge(int xp) {
+    return '+$xp نقطة خبرة';
+  }
+
+  @override
+  String practiceMinutesBadge(int min) {
+    return '$min دقيقة';
+  }
+
+  @override
+  String practiceMinWordsBadge(int n) {
+    return '$n+ كلمة';
+  }
+
+  @override
+  String practiceWordCount(int n) {
+    return '$n كلمة';
+  }
+
+  @override
+  String practiceAtLeast(int n) {
+    return 'على الأقل $n';
+  }
+
+  @override
+  String get practiceTimeUp => 'انتهى الوقت';
+
+  @override
+  String get practiceWritePlaceholder => 'اكتب فقرتك هنا…';
+
+  @override
+  String get practiceSubmitForMarking => 'أرسل للتصحيح';
+
+  @override
+  String get practiceMarking => 'جارٍ تصحيح فقرتك…';
+
+  @override
+  String get practiceYourScore => 'درجتك';
+
+  @override
+  String get practiceAlreadyEarnedToday =>
+      'لقد كسبت نقاط الخبرة لهذا الموضوع اليوم.';
+
+  @override
+  String get practiceWhatToFix => 'ما يجب تصحيحه';
+
+  @override
+  String get practiceMoreTopics => 'مواضيع أخرى';
+
+  @override
+  String get practiceTryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get practiceMarkFailed =>
+      'تعذّر تصحيح فقرتك الآن. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get practiceFinish => 'إنهاء';
+
+  @override
+  String get practiceFinishing => 'جارٍ الإنهاء…';
+
+  @override
+  String practiceFinishToEarn(int xp) {
+    return 'أنهِ لتكسب +$xp نقطة خبرة';
+  }
+
+  @override
+  String get practiceWellDone => 'أحسنت!';
+
+  @override
+  String get practiceFinishFailed => 'تعذّر الإنهاء. يرجى المحاولة مرة أخرى.';
 }

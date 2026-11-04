@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { CourseClaimPage } from '../features/course-billing/CourseClaimPage';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { CourseCatalog } from '../features/curriculum/CourseCatalog';
 
 const mockNavigate = jest.fn();
@@ -49,83 +48,11 @@ beforeEach(() => {
 });
 
 describe('CourseCatalog with paid courses', () => {
-  it('shows the price and opens the buy page instead of enrolling', async () => {
+  it('hides the price and opens the course when the card is clicked', async () => {
     render(<CourseCatalog />);
-    expect(await screen.findByText('8,000 YER')).toBeInTheDocument();
+    await screen.findByRole('button', { name: 'English Basics' });
+    expect(screen.queryByText('8,000 YER')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'English Basics' }));
-    expect(mockNavigate).toHaveBeenCalledWith('/curriculum/c1/buy');
-  });
-});
-
-describe('CourseClaimPage', () => {
-  it('shows the price with discount and the time rule', async () => {
-    render(<CourseClaimPage />);
-    expect(await screen.findByText('8,000 YER')).toBeInTheDocument();
-    expect(screen.getByText('10,000 YER')).toBeInTheDocument();
-    expect(screen.getByText(/30 days to finish this course/)).toBeInTheDocument();
-  });
-
-  it('shows wallet transfer details and QR after choosing a wallet', async () => {
-    render(<CourseClaimPage />);
-    fireEvent.change(await screen.findByLabelText('1. Choose the wallet you paid with'), { target: { value: 'w1' } });
-    expect(screen.getByText('Transfer 8,000 YER to:')).toBeInTheDocument();
-    expect(screen.getByText('777123456')).toBeInTheDocument();
-    expect(screen.getByAltText('Account number / QR code')).toHaveAttribute('src', '/api/billing/wallets/w1/qr?v=2');
-  });
-
-  it('submits wallet, transaction number and receipt', async () => {
-    mockSubmit.mockResolvedValue({ id: 'r1', status: 'pending' });
-    render(<CourseClaimPage />);
-    const submit = await screen.findByRole('button', { name: 'Send payment for review' });
-    expect(submit).toBeDisabled();
-
-    fireEvent.change(screen.getByLabelText('1. Choose the wallet you paid with'), { target: { value: 'w1' } });
-    fireEvent.change(screen.getByLabelText('2. Transaction number'), { target: { value: ' TX-55 ' } });
-    const file = new File([new Uint8Array([137, 80, 78, 71])], 'receipt.png', { type: 'image/png' });
-    global.URL.createObjectURL = jest.fn(() => 'blob:preview');
-    global.URL.revokeObjectURL = jest.fn();
-    fireEvent.change(screen.getByLabelText('3. Receipt screenshot'), { target: { files: [file] } });
-
-    expect(submit).not.toBeDisabled();
-    fireEvent.click(submit);
-    await waitFor(() => expect(mockSubmit).toHaveBeenCalledWith('c1', { walletId: 'w1', transactionNumber: 'TX-55', receipt: file }));
-  });
-
-  it('rejects non-image receipts', async () => {
-    render(<CourseClaimPage />);
-    const input = await screen.findByLabelText('3. Receipt screenshot');
-    fireEvent.change(input, { target: { files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] } });
-    expect(await screen.findByText('Choose a PNG, JPEG or WebP image.')).toBeInTheDocument();
-  });
-
-  it('pending payment hides the form', async () => {
-    mockBilling = { courseId: 'c1', price: PRICE, access: ACCESS('pending') };
-    render(<CourseClaimPage />);
-    expect(await screen.findByText('Waiting for confirmation')).toBeInTheDocument();
-    expect(screen.queryByLabelText('2. Transaction number')).not.toBeInTheDocument();
-  });
-
-  it('rejected payment shows the note and the form', async () => {
-    mockBilling = { courseId: 'c1', price: PRICE, access: ACCESS('rejected', { rejectionNote: 'Wrong amount' }) };
-    render(<CourseClaimPage />);
-    expect(await screen.findByText('Payment not accepted')).toBeInTheDocument();
-    expect(screen.getByText(/Note: Wrong amount/)).toBeInTheDocument();
-    expect(screen.getByLabelText('2. Transaction number')).toBeInTheDocument();
-  });
-
-  it('failed course asks to pay again', async () => {
-    mockBilling = { courseId: 'c1', price: PRICE, access: ACCESS('failed') };
-    render(<CourseClaimPage />);
-    expect(await screen.findByText('Time ran out')).toBeInTheDocument();
-    expect(screen.getByLabelText('2. Transaction number')).toBeInTheDocument();
-  });
-
-  it('active access shows days left and opens the course', async () => {
-    mockBilling = { courseId: 'c1', price: PRICE, access: ACCESS('active', { daysLeft: 12, expiresAt: '2026-12-01T00:00:00Z' }) };
-    render(<CourseClaimPage />);
-    expect(await screen.findByText('You have access')).toBeInTheDocument();
-    expect(screen.getByText(/12 days left/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Open course' }));
     expect(mockNavigate).toHaveBeenCalledWith('/curriculum/c1');
   });
 });

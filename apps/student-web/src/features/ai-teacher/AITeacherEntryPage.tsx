@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -114,18 +115,17 @@ export function AITeacherEntryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <span className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider">{t('Your tutor')}</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0 mt-1">{t('AI Teacher')}</h1>
-        </div>
-        <Link to="/ai-teacher/history" className={pillLinkClass}>
-          {t('History')}
-        </Link>
-      </div>
+      <PageTitleBar
+        title={t('AI Teacher')}
+        action={
+          <Link to="/ai-teacher/history" className={pillLinkClass}>
+            {t('History')}
+          </Link>
+        }
+      />
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 p-6 sm:p-8 text-white shadow-lg shadow-indigo-500/20 flex flex-col items-center text-center gap-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+        <div className="rounded-3xl bg-gradient-to-br from-brand to-secondary p-6 sm:p-8 text-white shadow-lg shadow-brand/20 flex flex-col items-center text-center gap-4">
           <img src={chatIllustration} alt="" aria-hidden="true" className="h-36 sm:h-44 w-auto" />
           <div className="size-11 rounded-xl bg-white/20 flex items-center justify-center">
             <SparkleIcon className="size-5 text-white" />
@@ -134,7 +134,7 @@ export function AITeacherEntryPage() {
             {t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
           </p>
           {startError && (
-            <p className="m-0 rounded-xl bg-red-50 text-red-700 ring-1 ring-red-200 px-3 py-2 text-sm" role="alert">
+            <p className="m-0 rounded-xl bg-danger-soft text-danger-ink ring-1 ring-danger-line px-3 py-2 text-sm" role="alert">
               {startError}
             </p>
           )}
@@ -143,13 +143,13 @@ export function AITeacherEntryPage() {
               type="button"
               onClick={() => startSession(GENERAL_CONTEXT_REF)}
               disabled={starting}
-              className="flex-1 h-[54px] rounded-[14px] bg-white text-[#4F46E5] font-semibold border-none cursor-pointer hover:bg-indigo-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 h-[54px] rounded-[14px] bg-white text-brand font-semibold border-none cursor-pointer hover:bg-white/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
-              className="flex-1 h-[54px] rounded-[14px] bg-white/15 ring-1 ring-white/30 text-white font-semibold no-underline flex items-center justify-center gap-2 hover:bg-white/25 transition-colors"
+              className="flex-1 h-[54px] rounded-[14px] bg-black/20 ring-1 ring-white/30 text-white font-semibold no-underline flex items-center justify-center gap-2 hover:bg-white/25 transition-colors"
             >
               <MicIcon className="size-4.5 text-white" />
               {t('Talk with Voice Teacher')}
@@ -159,22 +159,22 @@ export function AITeacherEntryPage() {
 
         {recent.length > 0 && (
           <section>
-            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white mt-0 mb-3">{t('Recent Conversations')}</h2>
+            <h2 className="text-lg font-extrabold tracking-tight text-ink mt-0 mb-3">{t('Recent Conversations')}</h2>
             <div className="flex flex-col gap-3">
               {recent.map((session) => (
                 <Card key={session.sessionId} className="!p-0">
                   <Link
                     to={`/ai-teacher/${session.sessionId}`}
                     state={chatState(session.contextTitle)}
-                    className="flex items-center justify-between gap-3 p-4 no-underline rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors"
+                    className="flex items-center justify-between gap-3 p-4 no-underline rounded-2xl hover:bg-surface-sunken dark:hover:bg-surface-muted/40 transition-colors"
                   >
                     <span className="flex items-center gap-3 min-w-0">
-                      <span className="size-10 shrink-0 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-300 flex items-center justify-center">
+                      <span className="size-10 shrink-0 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center">
                         <SparkleIcon className="size-4.5" />
                       </span>
-                      <span className="font-semibold text-slate-900 dark:text-white truncate">{sessionLabel(session)}</span>
+                      <span className="font-semibold text-ink truncate">{sessionLabel(session)}</span>
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">{relativeTime(session.updatedAt)}</span>
+                    <span className="text-xs text-ink-muted shrink-0">{relativeTime(session.updatedAt)}</span>
                   </Link>
                 </Card>
               ))}

@@ -25,6 +25,21 @@ interface ChallengeTemplateRow {
   readonly target_count: number;
 }
 
+/**
+ * XP earned from Practice Speaking / Write a Paragraph (practice_attempts.xp_awarded), as a scalar
+ * subquery for the student in $1 (matched by users.id or the Supabase auth uid, like other tables).
+ * [extraCondition] narrows it by date. Added to the lesson XP so one total drives levels and badges.
+ */
+const practiceXp = (extraCondition = ''): string =>
+  `COALESCE((SELECT SUM(pa.xp_awarded) FROM practice_attempts pa
+     WHERE pa.student_id IN (SELECT u.id FROM users u WHERE u.id = $1 OR u.supabase_auth_uid = $1)
+       AND pa.xp_awarded > 0 ${extraCondition}), 0)::int`;
+
+const PRACTICE_XP_TODAY = `AND (pa.completed_at AT TIME ZONE 'UTC')::date = (now() AT TIME ZONE 'UTC')::date`;
+const PRACTICE_XP_LAST_WEEK = `AND (pa.completed_at AT TIME ZONE 'UTC')::date >= date_trunc('week', (now() AT TIME ZONE 'UTC'))::date - 7
+       AND (pa.completed_at AT TIME ZONE 'UTC')::date < date_trunc('week', (now() AT TIME ZONE 'UTC'))::date`;
+const PRACTICE_XP_ON_DAY = `AND (pa.completed_at AT TIME ZONE 'UTC')::date = daily.day`;
+
 @Injectable()
 export class EngagementRepository {
   constructor(private readonly db: DatabaseService) {}
@@ -95,7 +110,7 @@ export class EngagementRepository {
 
   async sumTotalXp(studentId: string): Promise<number> {
     const result = await this.db.query<{ total_xp: number }>(
-      `SELECT COALESCE(SUM(l.xp_value), 0)::int AS total_xp
+      `SELECT (COALESCE(SUM(l.xp_value), 0) + ${practiceXp()})::int AS total_xp
        FROM lesson_progress lp
        JOIN lessons l ON l.id = lp.lesson_id
        WHERE lp.student_id = $1 AND lp.completed = true`,
@@ -106,7 +121,7 @@ export class EngagementRepository {
 
   async sumXpToday(studentId: string): Promise<number> {
     const result = await this.db.query<{ xp_today: number }>(
-      `SELECT COALESCE(SUM(l.xp_value), 0)::int AS xp_today
+      `SELECT (COALESCE(SUM(l.xp_value), 0) + ${practiceXp(PRACTICE_XP_TODAY)})::int AS xp_today
        FROM lesson_progress lp
        JOIN lessons l ON l.id = lp.lesson_id
        WHERE lp.student_id = $1 AND lp.completed = true
@@ -122,7 +137,7 @@ export class EngagementRepository {
       `WITH week_bounds AS (
          SELECT date_trunc('week', (now() AT TIME ZONE 'UTC'))::date AS week_start
        )
-       SELECT COALESCE(SUM(l.xp_value), 0)::int AS total_xp
+       SELECT (COALESCE(SUM(l.xp_value), 0) + ${practiceXp(PRACTICE_XP_LAST_WEEK)})::int AS total_xp
        FROM lesson_progress lp
        JOIN lessons l ON l.id = lp.lesson_id, week_bounds wb
        WHERE lp.student_id = $1 AND lp.completed = true
@@ -145,7 +160,8 @@ export class EngagementRepository {
          SELECT (wb.week_start + d.day_offset) AS day
          FROM week_bounds wb, days d
        )
-       SELECT daily.day::text AS day, COALESCE(SUM(l.xp_value), 0)::int AS xp
+       SELECT daily.day::text AS day,
+              (COALESCE(SUM(l.xp_value), 0) + ${practiceXp(PRACTICE_XP_ON_DAY)})::int AS xp
        FROM daily
        LEFT JOIN lesson_progress lp
          ON lp.student_id = $1 AND lp.completed = true

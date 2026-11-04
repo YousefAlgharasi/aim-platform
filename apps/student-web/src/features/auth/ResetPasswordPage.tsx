@@ -58,8 +58,8 @@ export function ResetPasswordPage() {
       <>
         <div className="my-auto flex flex-col items-center text-center">
           <SuccessBadge />
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-3xl tracking-tight m-0">{t('Password Reset!')}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 max-w-[260px] leading-relaxed">
+          <h1 className="text-ink font-extrabold text-3xl tracking-tight m-0">{t('Password Reset!')}</h1>
+          <p className="text-ink-muted text-sm mt-1.5 max-w-[260px] leading-relaxed">
             {t('Your password has been updated. Sign in with your new password.')}
           </p>
         </div>
@@ -73,8 +73,8 @@ export function ResetPasswordPage() {
       <>
         <AuthLogo />
         <div className="my-auto text-center flex flex-col items-center gap-2">
-          <h1 className="text-slate-900 dark:text-white font-extrabold text-2xl tracking-tight m-0">{t('Invalid reset link')}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]">
+          <h1 className="text-ink font-extrabold text-2xl tracking-tight m-0">{t('Invalid reset link')}</h1>
+          <p className="text-ink-muted text-sm leading-relaxed max-w-[280px]">
             {t('This link is missing or has expired. Request a new one.')}
           </p>
         </div>
@@ -87,7 +87,6 @@ export function ResetPasswordPage() {
     <>
       <div>
       <AuthHeader
-        eyebrow={t('Reset Password')}
         title={t('Create a new password')}
         subtitle={t("Choose a strong password you haven't used before.")}
       />

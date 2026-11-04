@@ -109,10 +109,17 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   Future<RegisterResult> register({
     required String email,
     required String password,
+    String? displayName,
   }) async {
+    final trimmedName = displayName?.trim();
     final envelope = await _apiClient.post<RegisterResult>(
       BackendApiPaths.authRegister,
-      body: {'email': email, 'password': password},
+      body: {
+        'email': email,
+        'password': password,
+        if (trimmedName != null && trimmedName.isNotEmpty)
+          'displayName': trimmedName,
+      },
       requiresAuth: false,
       decodeData: (json) =>
           RegisterResult.fromJson(json as Map<String, dynamic>),

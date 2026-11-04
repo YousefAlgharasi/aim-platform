@@ -17,7 +17,7 @@ import {
   type ProfileMeResponse,
 } from './profileApi';
 import { validateMaxLength, mapApiFieldErrors } from '../../utils/validation';
-import { PageHeader, SectionTitle, Field, LinkRow, selectCls, labelCls, bodyCls, pillCls } from './ui';
+import { PageHeader, SectionTitle, Field, LinkRow, selectCls, pillCls } from './ui';
 
 const QUICK_LINKS = [
   { to: '/settings', label: 'Account settings' },
@@ -112,51 +112,31 @@ export function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Account')} title={t('Profile')} />
+      <PageHeader title={t('Profile')} />
 
-      <div className="grid gap-5 lg:grid-cols-3 items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1 flex flex-col gap-5">
           <Card>
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3.5">
                 <div
-                  className="size-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
+                  className="size-14 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
                   aria-hidden="true"
                 >
                   {initial}
                 </div>
                 <div className="min-w-0">
-                  {displayName && <p className="font-bold text-base m-0 text-slate-900 dark:text-white truncate">{displayName}</p>}
-                  <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400 break-all">{user.email}</p>
+                  {displayName && <p className="font-bold text-base m-0 text-ink truncate">{displayName}</p>}
+                  <p className="text-xs m-0 mt-0.5 text-ink-muted break-all">{user.email}</p>
                 </div>
               </div>
-              <dl className="m-0 flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <dt className={labelCls}>{t('Email')}</dt>
-                  <dd className={`${bodyCls} break-all`}>{user.email}</dd>
-                </div>
-                {profile?.userType && (
-                  <div className="flex flex-col gap-1">
-                    <dt className={labelCls}>{t('Account type')}</dt>
-                    <dd className={bodyCls}>{profile.userType}</dd>
-                  </div>
-                )}
-                {user.roles.length > 0 && (
-                  <div className="flex flex-col gap-1.5">
-                    <dt className={labelCls}>{t('Roles')}</dt>
-                    <dd className="m-0 flex flex-wrap gap-2">
-                      {user.roles.map(r => <span key={r} className={pillCls}>{r}</span>)}
-                    </dd>
-                  </div>
-                )}
-              </dl>
             </div>
           </Card>
 
           <Card>
             <nav className="flex flex-col gap-1" aria-label={t('Account links')}>
               <SectionTitle>{t('More')}</SectionTitle>
-              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
+              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
                 {QUICK_LINKS.map(l => (
                   <li key={l.to}><LinkRow to={l.to}>{t(l.label)}</LinkRow></li>
                 ))}

@@ -84,11 +84,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [user, refreshUser],
   );
 
+  const t = useCallback((text: string, params?: TParams) => translate(locale, text, params), [locale]);
+
   const value = useMemo<I18nState>(
     () => ({
       locale,
       dir: locale === 'ar' ? 'rtl' : 'ltr',
-      t: (text, params) => translate(locale, text, params),
+      t,
       setLocale,
       formatNumber,
       formatDate,
@@ -96,7 +98,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       formatDateTime,
       plural,
     }),
-    [locale, setLocale],
+    [locale, t, setLocale],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

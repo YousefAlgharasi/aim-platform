@@ -304,8 +304,9 @@ void main() {
 
       expect(find.text('Daily Missions'), findsOneWidget);
       expect(find.text('Read a Book'), findsOneWidget);
-      expect(find.text('Practice Speaking'), findsOneWidget);
-      expect(find.text('Write a Paragraph'), findsOneWidget);
+      // Practice Speaking / Write a Paragraph moved to the menu (they need a started course).
+      expect(find.text('Practice Speaking'), findsNothing);
+      expect(find.text('Write a Paragraph'), findsNothing);
     });
 
     testWidgets('renders without error under RTL directionality', (tester) async {

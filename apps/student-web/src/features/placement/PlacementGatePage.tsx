@@ -98,7 +98,6 @@ export function PlacementGatePage() {
   return (
     <div className="mx-auto w-full max-w-xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Get started')}
         title={t('How would you like to start?')}
         subtitle={t('Choose how you want to begin learning. This choice is only asked once.')}
       />
@@ -112,7 +111,7 @@ export function PlacementGatePage() {
           return (
             <div key={choice.value} className={`relative ${recommended ? 'mt-3' : ''}`}>
               {recommended && (
-                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-indigo-600 shadow-[0_2px_8px_rgba(79,70,229,0.45)] text-[11px] font-bold tracking-widest text-white uppercase">
+                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-brand shadow-md shadow-brand/40 text-[11px] font-bold tracking-widest text-white uppercase">
                   {t('Recommended')}
                 </span>
               )}

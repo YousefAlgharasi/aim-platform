@@ -220,6 +220,31 @@ function makeInput() {
 }
 
 describe('AiTeacherOrchestratorService', () => {
+  const PRACTICE_REF = 'practice:11111111-1111-4111-8111-111111111111:22222222-2222-4222-8222-222222222222';
+
+  it('never resolves a lesson for a speaking-practice turn (no lesson can be completed from practice)', async () => {
+    const { service, sessionRepository, lessonStageService } = makeOrchestrator();
+    (sessionRepository.findById as jest.Mock).mockResolvedValue({
+      id: 'session-1', student_id: 'student-1', context_ref: PRACTICE_REF, status: 'active',
+      created_at: 'now', updated_at: 'now', lesson_teaching_stage: 'greeting', resolved_lesson_id: null,
+    });
+
+    await service.handleTurn({ ...makeInput(), contextRef: PRACTICE_REF });
+
+    expect(lessonStageService.resolveAndPersistLesson).not.toHaveBeenCalled();
+  });
+
+  it('opens a speaking-practice session with the practice greeting and without resolving a lesson', async () => {
+    const { service, lessonStageService, promptBuilder } = makeOrchestrator();
+
+    await service.generateGreeting({ studentId: 'student-1', sessionId: 'session-1', contextRef: PRACTICE_REF });
+
+    expect(lessonStageService.resolveAndPersistLesson).not.toHaveBeenCalled();
+    expect(promptBuilder.buildPrompt).toHaveBeenCalledWith(
+      expect.objectContaining({ studentMessage: expect.stringContaining('open the conversation') }),
+    );
+  });
+
   it('asserts the provider config is safe before doing anything else', async () => {
     const { service, noSecretCheck, contextBuilder } = makeOrchestrator();
 

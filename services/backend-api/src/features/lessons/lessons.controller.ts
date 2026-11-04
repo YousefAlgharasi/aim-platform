@@ -12,7 +12,7 @@
 //   - studentId always resolved from the JWT — never from client input.
 //   - No AIM Engine runtime, mastery, difficulty, or skill-map logic here.
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -20,6 +20,9 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
+import { LocaleHeadersInterceptor } from '../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../common/locale/request-locale.decorator';
 import { LessonProgressService } from './lesson-progress.service';
 import { CourseAccessService } from '../course-billing/course-access.service';
 import {
@@ -42,6 +45,7 @@ export class LessonsController {
   constructor(
     private readonly lessonProgress: LessonProgressService,
     private readonly courseAccess: CourseAccessService,
+    private readonly localeResolver: LocaleResolverService,
   ) {}
 
   @Post(':id/progress')
@@ -65,28 +69,37 @@ export class LessonsController {
   @Get('continue')
   @ApiOperation({ summary: 'Get the most recently active, incomplete lesson for the student (for "Continue Learning").' })
   @ApiOkResponse({ description: 'The continue-learning lesson, or null if none exists.' })
+  @UseInterceptors(LocaleHeadersInterceptor)
   async getContinueLearningLesson(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<ContinueLearningLesson | null> {
-    return this.lessonProgress.findContinueLearningLesson(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
+    return this.lessonProgress.findContinueLearningLesson(user.id, locale);
   }
 
   @Get('quick-start')
   @ApiOperation({ summary: 'Get the next lesson to start, derived from the student\'s placement result.' })
   @ApiOkResponse({ description: 'The recommended next lesson, or null if none available.' })
+  @UseInterceptors(LocaleHeadersInterceptor)
   async getQuickStartLesson(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx?: LocaleContext,
   ): Promise<QuickStartLesson | null> {
-    return this.lessonProgress.findQuickStartLesson(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
+    return this.lessonProgress.findQuickStartLesson(user.id, locale);
   }
 
   @Get('recommended-course')
   @ApiOperation({ summary: 'Get the course recommended for the student based on their placement result.' })
   @ApiOkResponse({ description: 'The recommended course, or null if none available.' })
+  @UseInterceptors(LocaleHeadersInterceptor)
   async getRecommendedCourse(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<RecommendedCourse | null> {
-    return this.lessonProgress.findRecommendedCourse(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.lessonProgress.findRecommendedCourse(user.id, locale);
   }
 
   @Post(':id/complete')

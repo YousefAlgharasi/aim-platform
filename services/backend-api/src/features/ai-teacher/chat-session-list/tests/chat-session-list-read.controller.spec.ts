@@ -5,6 +5,7 @@ import { ChatSessionListReadController } from '../chat-session-list-read.control
 import { ChatSessionListReadService } from '../chat-session-list-read.service';
 import { ListChatSessionsResult } from '../chat-session-list-read.types';
 import { AuthenticatedUser } from '../../../../auth/authenticated-user';
+import { LocaleResolverService } from '../../../../common/locale/locale-resolver.service';
 
 function makeUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
   return { id: 'student-1', email: 'student@example.com', ...overrides } as AuthenticatedUser;
@@ -31,7 +32,7 @@ describe('ChatSessionListReadController', () => {
     const service = {
       listSessions: jest.fn().mockResolvedValue(result),
     } as unknown as ChatSessionListReadService;
-    const controller = new ChatSessionListReadController(service);
+    const controller = new ChatSessionListReadController(service, { resolve: jest.fn().mockResolvedValue('en'), resolveExplicit: jest.fn((c: { requested: string | null }) => c.requested ?? 'en') } as unknown as LocaleResolverService);
     return { controller, service };
   }
 
@@ -40,7 +41,7 @@ describe('ChatSessionListReadController', () => {
 
     await controller.listSessions(makeUser({ id: 'student-1' }).id);
 
-    expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'student-1' });
+    expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'student-1', locale: 'en' });
   });
 
   it('returns the service result unchanged', async () => {

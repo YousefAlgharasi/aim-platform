@@ -13,8 +13,6 @@ import {
   fetchTickets,
   createTicket,
   submitFeedback,
-  fetchReleaseNotes,
-  fetchOperationalStatus,
   TICKET_CATEGORY_LABELS,
   TICKET_SEVERITY_LABELS,
   FEEDBACK_CATEGORY_LABELS,
@@ -22,15 +20,12 @@ import {
   ticketSeverityLabel,
   ticketStatusLabel,
   feedbackCategoryLabel,
-  serviceStatusLabel,
   SUBJECT_MAX,
   FEEDBACK_TITLE_MAX,
   type SupportTicket,
   type TicketCategory,
   type TicketSeverity,
   type FeedbackCategory,
-  type ReleaseNote,
-  type OperationalStatus,
 } from './supportApi';
 import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateMaxLength, validateRequired, type FieldErrors } from '../../utils/validation';
 import { ClipboardIcon, ChatIcon } from '../../components/common/Icons';
@@ -79,11 +74,6 @@ export function SupportPage() {
   const [fbError, setFbError] = useState('');
   const [fbErrors, setFbErrors] = useState<FieldErrors<'title' | 'body'>>({});
 
-  // Status + release notes
-  const [statuses, setStatuses] = useState<OperationalStatus[] | null>(null);
-  const [statusError, setStatusError] = useState('');
-  const [notes, setNotes] = useState<ReleaseNote[] | null>(null);
-  const [notesError, setNotesError] = useState('');
 
   const loadTickets = useCallback(() => {
     setLoading(true);
@@ -94,28 +84,9 @@ export function SupportPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const loadStatus = useCallback(() => {
-    setStatusError('');
-    setStatuses(null);
-    fetchOperationalStatus()
-      .then(setStatuses)
-      .catch(err => setStatusError(getErrorMessage(err, t('Failed to load system status'))));
-  }, []);
-
-  const loadNotes = useCallback(() => {
-    setNotesError('');
-    setNotes(null);
-    fetchReleaseNotes()
-      // The endpoint ignores `audience`; only show notes meant for students.
-      .then(all => setNotes(all.filter(n => n.audience === 'all' || n.audience === 'students')))
-      .catch(err => setNotesError(getErrorMessage(err, t('Failed to load release notes'))));
-  }, []);
-
   useEffect(() => {
     loadTickets();
-    loadStatus();
-    loadNotes();
-  }, [loadTickets, loadStatus, loadNotes]);
+  }, [loadTickets]);
 
   function openPanel(next: Panel) {
     setPanel(prev => (prev === next ? 'none' : next));
@@ -205,11 +176,11 @@ export function SupportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Support')} title={t('Help & Support')} subtitle={t('Get help, share feedback and check our status.')} />
+      <PageHeader title={t('Help & Support')} subtitle={t('Get help, share feedback and check our status.')} />
 
       {success && <Banner variant="success">{success}</Banner>}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {([
           { key: 'ticket' as const, icon: <ClipboardIcon className="size-5" />, title: t('Submit a Ticket'), desc: t('Report an issue or ask for help') },
           { key: 'feedback' as const, icon: <ChatIcon className="size-5" />, title: t('Send Feedback'), desc: t('Share your thoughts and suggestions') },
@@ -219,14 +190,14 @@ export function SupportPage() {
             type="button"
             onClick={() => openPanel(c.key)}
             aria-expanded={panel === c.key}
-            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
-              panel === c.key ? 'ring-2 ring-[#4F46E5]' : 'ring-1 ring-[#E2E8F0] dark:ring-slate-700'
+            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-surface shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
+              panel === c.key ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
             }`}
           >
-            <span className="size-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
+            <span className="size-11 rounded-xl bg-gradient-to-br from-brand to-secondary text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
             <span className="flex flex-col gap-0.5 min-w-0">
               <h2 className={h2Cls}>{c.title}</h2>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{c.desc}</span>
+              <span className="text-sm text-ink-muted">{c.desc}</span>
             </span>
           </button>
         ))}
@@ -237,7 +208,7 @@ export function SupportPage() {
           <form className="flex flex-col gap-4" onSubmit={handleSubmitTicket} noValidate>
             <SectionTitle>{t('New Support Ticket')}</SectionTitle>
             {formError && <Banner variant="error">{formError}</Banner>}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label={t('Category')} htmlFor="ticket-category">
                 <select id="ticket-category" className={selectCls} value={category} onChange={e => setCategory(e.target.value as TicketCategory)}>
                   {(Object.keys(TICKET_CATEGORY_LABELS) as TicketCategory[]).map(c => (
@@ -305,10 +276,10 @@ export function SupportPage() {
                     role="radio"
                     aria-checked={fbRating === n}
                     aria-label={plural(n, { one: t('1 star'), two: t('2 stars'), few: t('{n} stars', { n }), other: t('{n} stars', { n }) })}
-                    className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-amber-50 dark:hover:bg-slate-700 ${n <= fbRating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
+                    className={`size-10 rounded-xl border-none bg-transparent cursor-pointer text-2xl transition-colors hover:bg-warning-soft ${n <= fbRating ? 'text-gold' : 'text-ink-faint'}`}
                     onClick={() => setFbRating(prev => (prev === n ? 0 : n))}
                   >
-                    ★
+                    {n <= fbRating ? '★' : '☆'}
                   </button>
                 ))}
               </div>
@@ -352,16 +323,16 @@ export function SupportPage() {
         ) : tickets.length === 0 ? (
           <EmptyState title={t('No tickets yet')} message={t('Submit a ticket above if you need help.')} />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {tickets.map(ticket => (
               <Link
                 key={ticket.id}
                 to={`/support/tickets/${ticket.id}`}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-800 ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm no-underline hover:shadow-md transition-shadow"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-surface ring-1 ring-line shadow-sm no-underline hover:shadow-md transition-shadow"
               >
                 <span className="flex-1 min-w-0 flex flex-col gap-1.5">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{ticket.subject}</span>
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="text-sm font-bold text-ink truncate">{ticket.subject}</span>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
                     <span>{ticketCategoryLabel(ticket.category)}</span>
                     <span>{formatDate(ticket.createdAt)}</span>
                     <StatusPill tone={ticketTone(ticket.status)}>
@@ -369,65 +340,13 @@ export function SupportPage() {
                     </StatusPill>
                   </span>
                 </span>
-                <ChevronIcon className="size-4 text-slate-400 shrink-0" />
+                <ChevronIcon className="size-4 text-ink-faint shrink-0" />
               </Link>
             ))}
           </div>
         )}
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>{t('System Status')}</h2>
-        <Card>
-          {statusError ? (
-            <ErrorState message={statusError} onRetry={loadStatus} />
-          ) : statuses === null ? (
-            <LoadingSpinner />
-          ) : statuses.length === 0 ? (
-            <p className={subCls}>{t('No status information is available right now.')}</p>
-          ) : (
-            <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
-              {statuses.map(s => (
-                <div key={s.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{s.component}</span>
-                    {s.description && <span className={subCls}>{s.description}</span>}
-                  </div>
-                  <StatusPill tone={serviceTone(s.status)}>
-                    {serviceStatusLabel(s.status)}
-                  </StatusPill>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className={h2Cls}>{t("What's New")}</h2>
-        {notesError ? (
-          <ErrorState message={notesError} onRetry={loadNotes} />
-        ) : notes === null ? (
-          <LoadingSpinner />
-        ) : notes.length === 0 ? (
-          <Card><p className={subCls}>{t('No release notes yet.')}</p></Card>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
-            {notes.map(note => (
-              <Card key={note.id}>
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white m-0">{note.title}</h3>
-                    <span className={pillCls} dir="ltr">v{note.version}</span>
-                  </div>
-                  {note.publishedAt && <span className="text-xs text-slate-500 dark:text-slate-400">{formatDate(note.publishedAt)}</span>}
-                  {note.body && <p className={`${subCls} whitespace-pre-wrap`}>{note.body}</p>}
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }

@@ -20,7 +20,7 @@ import {
   type BillingPrice,
   type CheckoutStatus,
 } from './billingApi';
-import { PageHeader, BackLink, KV, h2Cls, subCls, textLinkCls } from '../profile/ui';
+import { PageHeader, KV, h2Cls, subCls, textLinkCls } from '../profile/ui';
 
 // Flow (mirrors Flutter checkout_start_page + checkout_status_page):
 // 1. POST /billing/checkout { priceId, successUrl, cancelUrl, promotionCode? }.
@@ -191,7 +191,7 @@ export function CheckoutPage() {
     const state = status?.status ?? 'pending';
     return (
       <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
-        <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
+        <PageHeader title={t('Checkout')} />
         <Card>
           <div className="flex flex-col gap-4 items-stretch">
             {statusError ? (
@@ -204,7 +204,7 @@ export function CheckoutPage() {
               </>
             ) : state === 'completed' ? (
               <>
-                <div className="size-14 rounded-2xl mx-auto bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✓</div>
+                <div className="size-14 rounded-2xl mx-auto bg-success-soft text-success-ink flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✓</div>
                 <h2 className={`${h2Cls} text-center`}>{t('Payment successful')}</h2>
                 <p className={`${subCls} text-center`}>
                   {plan ? t("You're now subscribed to {plan}.", { plan: plan.name }) : t('Your subscription is active.')}
@@ -213,7 +213,7 @@ export function CheckoutPage() {
               </>
             ) : state === 'failed' || state === 'expired' ? (
               <>
-                <div className="size-14 rounded-2xl mx-auto bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-300 flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✕</div>
+                <div className="size-14 rounded-2xl mx-auto bg-danger-soft text-danger-ink flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✕</div>
                 <h2 className={`${h2Cls} text-center`}>{state === 'expired' ? t('Checkout expired') : t('Payment failed')}</h2>
                 <p className={`${subCls} text-center`}>{t('No charge was completed. You can try again.')}</p>
                 <Button variant="primary" size="lg" fullWidth onClick={startOver}>{t('Try again')}</Button>
@@ -258,7 +258,7 @@ export function CheckoutPage() {
   // ----- Start view -----
   return (
     <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
-      <PageHeader eyebrow={t('Billing')} title={t('Checkout')} back={<BackLink to="/billing" label="Back to billing" />} />
+      <PageHeader title={t('Checkout')} />
 
       {result === 'cancel' && <Banner variant="info">{t('Payment was cancelled. You have not been charged.')}</Banner>}
 
@@ -267,7 +267,7 @@ export function CheckoutPage() {
           <h2 className={h2Cls}>{plan.name}</h2>
           {plan.description && <p className={subCls}>{plan.description}</p>}
           {price ? (
-            <div className="rounded-xl bg-slate-50 dark:bg-slate-900/40 px-4 py-3">
+            <div className="rounded-xl bg-surface-sunken px-4 py-3">
               <KV label={t('Plan ({interval})', { interval: intervalLabel(price.billingInterval) })} strong>
                 {formatMoney(price.amount, price.currency)}
               </KV>

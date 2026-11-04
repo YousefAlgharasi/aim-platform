@@ -23,8 +23,10 @@ import {
   StudentCourseBilling,
 } from './course-billing.types';
 import { quoteCoursePrice } from './course-pricing.util';
+import { computeUnlockFrontier, isRankUnlocked } from './course-unlock.util';
 
 export const COURSE_PAYMENT_REQUIRED = 'COURSE_PAYMENT_REQUIRED';
+export const COURSE_LOCKED = 'COURSE_LOCKED';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -221,9 +223,111 @@ export class CourseAccessService {
     return { ...base, status: 'none', hasAccess: false };
   }
 
-  /** Throws COURSE_PAYMENT_REQUIRED (402) unless the student may use [courseId]. */
+  /**
+   * Highest unlocked cefr_rank per track for this student (see course-unlock.util.ts).
+   * Tracks the student has no signal for fall back to the first course only.
+   */
+  async getUnlockFrontiers(studentId: string): Promise<Map<string, number>> {
+    const student = await this.resolveStudent(studentId);
+    const result = await this.db.query<{
+      track_slug: string;
+      ceiling: number | null;
+      started: number | null;
+      completed: number | null;
+    }>(
+      `WITH tracks AS (
+         SELECT DISTINCT track_slug FROM courses WHERE cefr_rank IS NOT NULL AND status = 'published'
+       ),
+       ceiling AS (
+         SELECT sls.track_slug, MAX(sls.max_unlocked_cefr_rank) AS rank
+         FROM student_level_state sls
+         JOIN student_profiles sp ON sp.id = sls.student_id
+         WHERE sp.user_id = $1
+         GROUP BY sls.track_slug
+       ),
+       started AS (
+         SELECT c.track_slug, MAX(c.cefr_rank) AS rank
+         FROM courses c
+         WHERE c.cefr_rank IS NOT NULL AND (
+           c.id IN (SELECT course_id FROM course_enrollments WHERE student_id::text = ANY($2))
+           OR c.id IN (SELECT course_id FROM course_access WHERE student_id = $1 AND status <> 'revoked')
+           OR c.id IN (SELECT course_id FROM course_payment_requests
+                       WHERE student_id = $1 AND status IN ('pending', 'approved'))
+         )
+         GROUP BY c.track_slug
+       ),
+       completed AS (
+         SELECT c.track_slug, MAX(c.cefr_rank) AS rank
+         FROM courses c
+         WHERE c.cefr_rank IS NOT NULL AND c.status = 'published' AND (
+           c.id IN (SELECT course_id FROM course_access WHERE student_id = $1 AND status = 'completed')
+           OR (
+             EXISTS (SELECT 1 FROM levels lv JOIN chapters ch ON ch.level_id = lv.id
+                     JOIN lessons les ON les.chapter_id = ch.id WHERE lv.course_id = c.id)
+             AND NOT EXISTS (
+               SELECT 1 FROM levels lv JOIN chapters ch ON ch.level_id = lv.id
+               JOIN lessons les ON les.chapter_id = ch.id
+               WHERE lv.course_id = c.id
+                 AND NOT EXISTS (SELECT 1 FROM lesson_progress lp
+                                 WHERE lp.lesson_id = les.id AND lp.completed = true
+                                   AND lp.student_id::text = ANY($2))
+             )
+           )
+         )
+         GROUP BY c.track_slug
+       )
+       SELECT t.track_slug, ce.rank AS ceiling, st.rank AS started, co.rank AS completed
+       FROM tracks t
+       LEFT JOIN ceiling ce ON ce.track_slug = t.track_slug
+       LEFT JOIN started st ON st.track_slug = t.track_slug
+       LEFT JOIN completed co ON co.track_slug = t.track_slug`,
+      [student.userId, student.forms],
+    );
+    return new Map(
+      result.rows.map((r) => [
+        r.track_slug,
+        computeUnlockFrontier({
+          ceiling: r.ceiling === null ? null : Number(r.ceiling),
+          startedMax: r.started === null ? null : Number(r.started),
+          completedMax: r.completed === null ? null : Number(r.completed),
+        }),
+      ]),
+    );
+  }
+
+  /** Throws COURSE_LOCKED (403) when [courseId] is above the student's unlock frontier. */
+  async assertCourseUnlocked(studentId: string, courseId: string | null): Promise<void> {
+    if (!courseId) return;
+    const course = await this.db.query<{ track_slug: string; cefr_rank: number | null }>(
+      `SELECT track_slug, cefr_rank FROM courses WHERE id::text = $1`,
+      [courseId],
+    );
+    const row = course.rows[0];
+    if (!row || row.cefr_rank === null) return; // unknown course (404 elsewhere) / not gated
+    const frontier = (await this.getUnlockFrontiers(studentId)).get(row.track_slug) ?? 1;
+    if (!isRankUnlocked(Number(row.cefr_rank), frontier)) {
+      throw new AppError({
+        code: COURSE_LOCKED,
+        message: 'This course is locked. Finish the earlier course first.',
+        statusCode: HttpStatus.FORBIDDEN,
+        details: { courseId },
+      });
+    }
+  }
+
+  /**
+   * Browsing a course's chapters and lessons: only the unlock-order lock applies, payment is not required.
+   * Progress, completion, assessments and practice still go through [assertAccess].
+   */
+  async assertCanView(studentId: string, courseId: string | null): Promise<void> {
+    if (!courseId) return;
+    await this.assertCourseUnlocked(studentId, courseId);
+  }
+
+  /** Throws COURSE_LOCKED (403) / COURSE_PAYMENT_REQUIRED (402) unless the student may use [courseId]. */
   async assertAccess(studentId: string, courseId: string | null): Promise<void> {
     if (!courseId) return;
+    await this.assertCourseUnlocked(studentId, courseId);
     const billing = await this.getBilling(studentId, courseId);
     if (!billing.access.hasAccess) {
       throw new AppError({

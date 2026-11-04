@@ -254,11 +254,11 @@ export function PlacementQuestionUI() {
   if (expired) {
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Placement Test')} title={t("Time's up")} />
+        <PageHeader title={t("Time's up")} />
         {submitError && <Banner variant="error">{submitError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="size-11 rounded-xl bg-warning-soft text-warning-ink flex items-center justify-center">
               <ClockIcon className="size-5" />
             </div>
             <p className={BODY}>
@@ -307,7 +307,7 @@ export function PlacementQuestionUI() {
   const header = (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
           {phase === 'review'
             ? t('All sections complete')
             : t('Section {current} of {total}', { current: sectionIndex + 1, total: sections.length })}
@@ -327,20 +327,20 @@ export function PlacementQuestionUI() {
         <Card>
           <div className="flex flex-col items-center text-center gap-4 py-2">
             <div className="relative">
-              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 opacity-20 blur-lg" />
-              <div className="relative size-20 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/25 rotate-3">
+              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-brand to-secondary opacity-20 blur-lg" />
+              <div className="relative size-20 rounded-3xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center shadow-xl shadow-brand/25 rotate-3">
                 <svg className="size-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
               </div>
             </div>
             <h2 className={H2}>{t('Ready to submit?')}</h2>
             <div className="grid grid-cols-2 gap-3 w-full max-w-sm text-start">
-              <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Answered')}</span>
-                <span className="block mt-0.5 text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{answered}</span>
+              <div className="rounded-2xl ring-1 ring-line/80 bg-surface/80 p-4">
+                <span className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">{t('Answered')}</span>
+                <span className="block mt-0.5 text-xl font-extrabold text-success-ink">{answered}</span>
               </div>
-              <div className="rounded-2xl ring-1 ring-slate-200/80 dark:ring-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t('Skipped')}</span>
-                <span className="block mt-0.5 text-xl font-extrabold text-amber-600 dark:text-amber-400">{skipped}</span>
+              <div className="rounded-2xl ring-1 ring-line/80 bg-surface/80 p-4">
+                <span className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">{t('Skipped')}</span>
+                <span className="block mt-0.5 text-xl font-extrabold text-warning-ink">{skipped}</span>
               </div>
             </div>
             <p className={`${BODY} max-w-sm`}>
@@ -378,7 +378,7 @@ export function PlacementQuestionUI() {
             <Button size="lg" onClick={() => loadQuestions(0)}>{t('Start section')}</Button>
           </div>
         </Card>
-        <Link to="/placement" className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">
+        <Link to="/placement" className="text-center text-sm font-semibold text-brand-ink hover:underline">
           {t('Exit — you can continue later')}
         </Link>
       </div>
@@ -427,8 +427,8 @@ export function PlacementQuestionUI() {
           {t(sections[sectionIndex].title)} · {t('Question {current} of {total}', { current: questionIndex + 1, total: questions.length })}
         </p>
         <h2
-          className={`m-0 text-base sm:text-lg leading-snug text-[#0F172A] dark:text-white ${
-            question.type === 'reading' ? 'font-normal italic text-slate-500 dark:text-slate-400' : 'font-medium'
+          className={`m-0 text-base sm:text-lg leading-snug text-ink ${
+            question.type === 'reading' ? 'font-normal italic text-ink-muted' : 'font-medium'
           }`}
         >
           {question.text}

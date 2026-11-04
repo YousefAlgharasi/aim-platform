@@ -17,26 +17,26 @@ export function Input({ label, error, id, rightSlot, className = '', placeholder
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
-      <label htmlFor={inputId} className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">
+      <label htmlFor={inputId} className="text-[13px] font-semibold text-ink-soft">
         {label}
       </label>
       <div
-        className={`h-[54px] bg-[#F1F5F9] dark:bg-slate-800 border-[1.5px] ${
-          error ? 'border-red-500' : 'border-[#CBD5E1] dark:border-slate-700'
-        } focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/25 rounded-[14px] flex items-center px-4 gap-2 transition-colors duration-150 ${className}`}
+        className={`h-[54px] bg-field border-[1.5px] ${
+          error ? 'border-danger' : 'border-line-strong dark:border-line'
+        } focus-within:border-brand-ink focus-within:ring-2 focus-within:ring-brand-ink/25 rounded-[14px] flex items-center px-4 gap-2 transition-colors duration-150 ${className}`}
       >
         <input
           id={inputId}
           placeholder={placeholder}
           aria-describedby={errorId}
           aria-invalid={!!error}
-          className="flex-1 min-w-0 h-full bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none text-[15px] text-[#0F172A] dark:text-white placeholder-slate-500 dark:placeholder-slate-400 font-normal"
+          className="flex-1 min-w-0 h-full bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none text-[15px] text-ink placeholder-ink-muted font-normal"
           {...props}
         />
         {rightSlot}
       </div>
       {error && (
-        <span id={errorId} role="alert" className="text-[13px] text-red-600 dark:text-red-400 font-medium">
+        <span id={errorId} role="alert" className="text-[13px] text-danger-ink font-medium">
           {error}
         </span>
       )}

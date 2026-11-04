@@ -20,7 +20,7 @@ import {
   AuthRegisterResult,
   AuthTokenResult,
 } from './auth-login.types';
-import { AuthForgotPasswordDto, AuthGoogleLoginDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto, AuthResetPasswordDto } from './auth-login.dto';
+import { AuthBootstrapDto, AuthForgotPasswordDto, AuthGoogleLoginDto, AuthLoginDto, AuthRefreshDto, AuthRegisterDto, AuthResetPasswordDto } from './auth-login.dto';
 import { extractBearerToken } from './bearer-token';
 import { AuthenticatedRequest } from './authenticated-user';
 import { RolesService } from '../features/roles/roles.service';
@@ -128,9 +128,14 @@ export class AuthController {
     const result = await this.authLogin.register(body);
 
     if (!result.requiresEmailConfirmation && result.user) {
+      const displayName = (body.displayName ?? body.fullName ?? body.name)?.trim() || undefined;
       await this.profileBootstrap.bootstrap({
         supabaseAuthUid: result.user.id,
         email: result.user.email,
+        ...(displayName ? { displayName } : {}),
+        ...(body.avatarUrl ? { avatarUrl: body.avatarUrl } : {}),
+        ...(body.preferredLanguage ? { preferredLanguage: body.preferredLanguage } : {}),
+        ...(body.timezone ? { timezone: body.timezone } : {}),
       });
     }
 
@@ -140,14 +145,14 @@ export class AuthController {
   /**
    * POST /auth/forgot-password
    *
-   * Sends a password reset email via Supabase. Responds 404 and sends nothing
-   * when no account exists for the email.
+   * Sends a password reset email via Supabase. Always reports success so
+   * the response never reveals whether an account exists for the email.
    */
   @Post('forgot-password')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send a password reset email.' })
-  @ApiOkResponse({ description: 'Reset email sent.' })
+  @ApiOkResponse({ description: 'Reset email sent (if the account exists).' })
   async forgotPassword(@Body() body: AuthForgotPasswordDto): Promise<AuthForgotPasswordResult> {
     return this.authLogin.forgotPassword(body);
   }
@@ -255,10 +260,15 @@ export class AuthController {
   @ApiOkResponse({ description: 'Bootstrap result — user and profile state after upsert.' })
   async bootstrap(
     @CurrentUser() user: AuthenticatedUser,
+    @Body() body?: AuthBootstrapDto,
   ): Promise<BootstrapProfileResult> {
     return this.profileBootstrap.bootstrap({
       supabaseAuthUid: user.id,
       email: user.email ?? null,
+      ...(body?.displayName ? { displayName: body.displayName } : {}),
+      ...(body?.avatarUrl ? { avatarUrl: body.avatarUrl } : {}),
+      ...(body?.preferredLanguage ? { preferredLanguage: body.preferredLanguage } : {}),
+      ...(body?.timezone ? { timezone: body.timezone } : {}),
     });
   }
 }

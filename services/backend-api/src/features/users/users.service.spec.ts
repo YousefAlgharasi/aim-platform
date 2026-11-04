@@ -99,6 +99,42 @@ describe('UsersService', () => {
     });
   });
 
+  describe('findByEmailWithAuthUser', () => {
+    it('returns the canonical UserRecord linked to an active auth.users row', async () => {
+      const row = makeUserRow({
+        id: 'dcc1fb98-357a-4480-85c8-481bb14e0aa4',
+        supabase_auth_uid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+        email: 'ahmedalalawi2022@gmail.com',
+      });
+      const db = makeMockDb([row]);
+      const service = new UsersService(db as never);
+
+      const result = await service.findByEmailWithAuthUser('  ahmedalalawi2022@gmail.com  ');
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.stringContaining('au.id::text = u.supabase_auth_uid::text'),
+        ['ahmedalalawi2022@gmail.com'],
+      );
+      expect(result).toEqual(
+        makeUserRecord({
+          id: 'dcc1fb98-357a-4480-85c8-481bb14e0aa4',
+          supabaseAuthUid: 'f090a6e4-4f6f-4dfc-9a13-bb7b98c87790',
+          email: 'ahmedalalawi2022@gmail.com',
+        }),
+      );
+    });
+
+    it('returns null when email is blank', async () => {
+      const db = makeMockDb([]);
+      const service = new UsersService(db as never);
+
+      const result = await service.findByEmailWithAuthUser('   ');
+
+      expect(db.query).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+    });
+  });
+
   describe('getById', () => {
     it('returns the record when found', async () => {
       const db = makeMockDb([makeUserRow()]);

@@ -13,6 +13,10 @@ import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
 import '../../features/practice/ui/pages/practice_session_page.dart';
+import '../../features/practice_topics/data/practice_topics_models.dart';
+import '../../features/practice_topics/ui/practice_session_bar.dart';
+import '../../features/practice_topics/ui/practice_topics_page.dart';
+import '../../features/practice_topics/ui/writing_practice_page.dart';
 import '../../features/placement/ui/pages/placement_menu_page.dart';
 import '../../features/placement/ui/pages/placement_result_page.dart';
 import '../../features/placement/ui/pages/placement_section_page.dart';
@@ -347,6 +351,22 @@ class AppRouter {
           path: AppRoutePaths.voiceTeacher,
           builder: (context, state) => _buildVoiceTeacherPage(state.extra),
         ),
+        // Practice Speaking + Write a Paragraph
+        GoRoute(
+          path: AppRoutePaths.practiceSpeaking,
+          builder: (context, state) => const PracticeTopicsPage(kind: 'speaking'),
+        ),
+        GoRoute(
+          path: AppRoutePaths.practiceWriting,
+          builder: (context, state) => const PracticeTopicsPage(kind: 'writing'),
+        ),
+        GoRoute(
+          path: AppRoutePaths.practiceWritingTopic,
+          builder: (context, state) {
+            final topic = state.extra;
+            return topic is PracticeTopic ? WritingPracticePage(topic: topic) : const SplashPage();
+          },
+        ),
         // TASK-14: AI Teacher routes
         GoRoute(
           path: AppRoutePaths.aiTeacherSettings,
@@ -662,7 +682,18 @@ class AppRouter {
         ? arguments
         : const <String, dynamic>{};
     final contextRef = (args['contextRef'] as String?) ?? 'general';
-    return VoiceTeacherPage(contextRef: contextRef);
+    final practiceAttemptId = args['practiceAttemptId'];
+    return VoiceTeacherPage(
+      contextRef: contextRef,
+      practice: practiceAttemptId is String
+          ? PracticeSessionInfo(
+              attemptId: practiceAttemptId,
+              title: (args['practiceTitle'] as String?) ?? '',
+              xpReward: (args['practiceXp'] as int?) ?? 0,
+              timeLimitSeconds: args['practiceSeconds'] as int?,
+            )
+          : null,
+    );
   }
 
   static Widget _buildTicketDetailPage(Object? arguments) {
@@ -808,6 +839,9 @@ class AppRouter {
     AppRoutePaths.learningPath,
     AppRoutePaths.assessmentDeadlines,
     AppRoutePaths.voiceTeacher,
+    AppRoutePaths.practiceSpeaking,
+    AppRoutePaths.practiceWriting,
+    AppRoutePaths.practiceWritingTopic,
     AppRoutePaths.aiTeacherSettings,
     AppRoutePaths.aiTeacherHistory,
     AppRoutePaths.notificationPreferences,

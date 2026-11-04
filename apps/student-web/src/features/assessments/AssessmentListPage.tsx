@@ -32,13 +32,12 @@ export function AssessmentListPage() {
   return (
     <div className="mx-auto w-full max-w-4xl flex flex-col gap-5">
       <PageHeader
-        eyebrow={t('Assessments')}
         title={t('Assessments')}
         subtitle={t('Quizzes and exams assigned to you.')}
         action={
           <Link
             to="/assessments/deadlines"
-            className="shrink-0 inline-flex items-center h-10 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="shrink-0 inline-flex items-center h-10 px-4 rounded-xl bg-control text-sm font-semibold text-brand-ink hover:bg-surface-strong transition-colors"
           >
             {t('Deadlines')}
           </Link>
@@ -47,12 +46,12 @@ export function AssessmentListPage() {
       {assessments.length === 0 ? (
         <EmptyState title={t('No assessments')} message={t('Assessments will appear here when available.')} />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {assessments.map((a) => (
             <Link
               key={a.id}
               to={`/assessments/${a.id}`}
-              className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-[#C7D2FE] dark:hover:ring-indigo-700 hover:shadow-md transition-all duration-200`}
+              className={`${CARD} p-4 sm:p-5 flex flex-col gap-2.5 no-underline hover:ring-brand-line hover:shadow-md transition-all duration-200`}
             >
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={a.type === 'quiz' ? 'indigo' : 'violet'}>{assessmentTypeLabel(a.type)}</Badge>
@@ -60,7 +59,7 @@ export function AssessmentListPage() {
                   <Badge tone={statusTone(a.deadlineStatus)}>{deadlineStatusLabel(a.deadlineStatus)}</Badge>
                 )}
               </div>
-              <h2 className="m-0 text-base font-bold leading-snug text-slate-900 dark:text-white">{a.title}</h2>
+              <h2 className="m-0 text-base font-bold leading-snug text-ink">{a.title}</h2>
               {a.description && <p className={BODY}>{a.description}</p>}
             </Link>
           ))}

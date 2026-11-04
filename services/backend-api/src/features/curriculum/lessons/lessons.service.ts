@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
+import { DEFAULT_LOCALE, SupportedLocale, lessonTextSql } from '../../../common/locale';
+import { loadAvailableLocales, runInTransaction, syncEnglishTranslation } from '../translations/entity-translations.helpers';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import {
@@ -11,6 +13,15 @@ import {
   LessonSummary,
   UpdateLessonInput,
 } from './lessons.types';
+
+const LESSON_TRANSLATION_TABLE = {
+  entityTable: 'lessons',
+  translationTable: 'lesson_translations',
+  foreignKey: 'lesson_id',
+} as const;
+
+const LESSON_RETURNING = `id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at,
+         'en'::text AS locale, ARRAY['en']::text[] AS available_locales`;
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -29,6 +40,8 @@ function toLessonSummary(row: LessonRow): LessonSummary {
     teachingOutline: row.teaching_outline,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    locale: row.locale,
+    availableLocales: row.available_locales ?? [],
   };
 }
 
@@ -52,6 +65,7 @@ export class LessonsService {
     chapterId?: string,
     status?: string,
     q?: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<LessonListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -66,18 +80,22 @@ export class LessonsService {
     let idx = 1;
 
     if (chapterId !== undefined) {
-      conditions.push(`chapter_id = $${idx++}`);
+      conditions.push(`l.chapter_id = $${idx++}`);
       values.push(chapterId);
     }
 
     if (status !== undefined) {
-      conditions.push(`status = $${idx++}`);
+      conditions.push(`l.status = $${idx++}`);
       values.push(status);
     }
 
     const search = q?.trim();
     if (search) {
-      conditions.push(`(title ILIKE $${idx} OR description ILIKE $${idx})`);
+      conditions.push(
+        `(l.title ILIKE $${idx} OR l.description ILIKE $${idx}
+          OR EXISTS (SELECT 1 FROM lesson_translations st WHERE st.lesson_id = l.id
+                       AND (st.title ILIKE $${idx} OR COALESCE(st.description, '') ILIKE $${idx})))`,
+      );
       values.push(`%${search}%`);
       idx++;
     }
@@ -85,19 +103,24 @@ export class LessonsService {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ total: string }>(
-      `SELECT COUNT(*)::text AS total FROM lessons ${where}`,
+      `SELECT COUNT(*)::text AS total FROM lessons l ${where}`,
       values,
     );
 
     const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
+    const text = lessonTextSql('l', `$${idx}`);
     const dataResult = await this.db.query<LessonRow>(
-      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at
-         FROM lessons
+      `SELECT l.id, l.chapter_id, ${text.title} AS title, ${text.description} AS description,
+              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.created_at, l.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales
+         FROM lessons l
+         ${text.joins}
          ${where}
-         ORDER BY sort_order ASC, created_at ASC
-         LIMIT $${idx++} OFFSET $${idx++}`,
-      [...values, safeLimit, offset],
+         ORDER BY l.sort_order ASC, l.created_at ASC
+         LIMIT $${idx + 1} OFFSET $${idx + 2}`,
+      [...values, locale, safeLimit, offset],
     );
 
     return {
@@ -108,12 +131,17 @@ export class LessonsService {
     };
   }
 
-  async getLesson(id: string): Promise<LessonSummary> {
+  async getLesson(id: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<LessonSummary> {
+    const text = lessonTextSql('l', '$2');
     const result = await this.db.query<LessonRow>(
-      `SELECT id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at
-         FROM lessons
-         WHERE id = $1`,
-      [id],
+      `SELECT l.id, l.chapter_id, ${text.title} AS title, ${text.description} AS description,
+              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.created_at, l.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales
+         FROM lessons l
+         ${text.joins}
+         WHERE l.id = $1`,
+      [id, locale],
     );
 
     if (result.rows.length === 0) {
@@ -164,14 +192,21 @@ export class LessonsService {
         ? sortOrder
         : await this.nextSortOrder(chapterId);
 
-    const result = await this.db.query<LessonRow>(
-      `INSERT INTO lessons (chapter_id, title, description, sort_order, status)
-         VALUES ($1, $2, $3, $4, 'draft')
-         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at`,
-      [chapterId, title.trim(), description.trim(), resolvedSortOrder],
+    const row = await runInTransaction(
+      (callback) => this.db.withClient(callback),
+      async (client) => {
+        const result = await client.query<LessonRow>(
+          `INSERT INTO lessons (chapter_id, title, description, sort_order, status)
+             VALUES ($1, $2, $3, $4, 'draft')
+             RETURNING ${LESSON_RETURNING}`,
+          [chapterId, title.trim(), description.trim(), resolvedSortOrder],
+        );
+        await syncEnglishTranslation(client, LESSON_TRANSLATION_TABLE, result.rows[0].id);
+        return result.rows[0];
+      },
     );
 
-    return toLessonSummary(result.rows[0]);
+    return toLessonSummary(row);
   }
 
   async updateLesson(id: string, input: UpdateLessonInput): Promise<LessonSummary> {
@@ -241,15 +276,27 @@ export class LessonsService {
 
     values.push(id);
 
-    const result = await this.db.query<LessonRow>(
-      `UPDATE lessons
-         SET ${setClauses.join(', ')}
-         WHERE id = $${idx}
-         RETURNING id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at`,
-      values,
+    const touchesEnglishText = input.title !== undefined || input.description !== undefined;
+
+    const row = await runInTransaction(
+      (callback) => this.db.withClient(callback),
+      async (client) => {
+        const result = await client.query<LessonRow>(
+          `UPDATE lessons
+             SET ${setClauses.join(', ')}
+             WHERE id = $${idx}
+             RETURNING ${LESSON_RETURNING}`,
+          values,
+        );
+        if (touchesEnglishText) {
+          await syncEnglishTranslation(client, LESSON_TRANSLATION_TABLE, id);
+        }
+        const available = await loadAvailableLocales(client, LESSON_TRANSLATION_TABLE, id);
+        return { ...result.rows[0], available_locales: available };
+      },
     );
 
-    return toLessonSummary(result.rows[0]);
+    return toLessonSummary(row);
   }
 
   private async nextSortOrder(chapterId: string): Promise<number> {

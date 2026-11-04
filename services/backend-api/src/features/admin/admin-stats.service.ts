@@ -25,16 +25,19 @@ export interface DashboardStats {
     voiceSessions: number;
     learningSessionsToday: number;
   };
+  /** Real money from approved course (wallet) payments; amounts in major units, per currency. */
   billing: {
-    activeSubscriptions: number;
-    trialingSubscriptions: number;
-    canceledSubscriptions: number;
-    totalSubscriptions: number;
-    totalRevenue: number;
-    revenueThisMonth: number;
-    currency: string;
-    paidInvoices: number;
-    overdueInvoices: number;
+    currencies: Array<{
+      currency: string;
+      totalRevenue: number;
+      revenueThisMonth: number;
+      pendingAmount: number;
+    }>;
+    approvedPayments: number;
+    pendingPayments: number;
+    rejectedPayments: number;
+    payingStudents: number;
+    access: { active: number; completed: number; failed: number; expiringWithin7Days: number };
   };
   operations: {
     openTickets: number;
@@ -157,80 +160,71 @@ export class AdminStatsService {
     return { aiSessions, voiceSessions, learningSessionsToday };
   }
 
-  private async getBillingStats() {
-    let activeSubscriptions = 0;
-    let trialingSubscriptions = 0;
-    let canceledSubscriptions = 0;
-    let totalSubscriptions = 0;
-    let totalRevenue = 0;
-    let revenueThisMonth = 0;
-    const currency = 'USD';
-    let paidInvoices = 0;
-    let overdueInvoices = 0;
-
-    try {
-      const result = await this.db.query<{
-        total: string;
-        active: string;
-        trialing: string;
-        canceled: string;
-      }>(`
-        SELECT
-          COUNT(*)::text AS total,
-          COUNT(*) FILTER (WHERE status = 'active')::text AS active,
-          COUNT(*) FILTER (WHERE status = 'trialing')::text AS trialing,
-          COUNT(*) FILTER (WHERE status = 'canceled')::text AS canceled
-        FROM subscriptions
-      `);
-      const row = result.rows[0];
-      totalSubscriptions = parseInt(row.total, 10);
-      activeSubscriptions = parseInt(row.active, 10);
-      trialingSubscriptions = parseInt(row.trialing, 10);
-      canceledSubscriptions = parseInt(row.canceled, 10);
-    } catch {
-      this.logger.debug('subscriptions table not available');
-    }
-
-    try {
-      const result = await this.db.query<{ total: string; this_month: string }>(`
-        SELECT
-          COALESCE(SUM(amount), 0)::text AS total,
-          COALESCE(SUM(amount) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE)), 0)::text AS this_month
-        FROM payments
-        WHERE status = 'succeeded'
-      `);
-      const row = result.rows[0];
-      totalRevenue = parseInt(row.total, 10);
-      revenueThisMonth = parseInt(row.this_month, 10);
-    } catch {
-      this.logger.debug('payments table not available');
-    }
-
-    try {
-      const result = await this.db.query<{ paid: string; overdue: string }>(`
-        SELECT
-          COUNT(*) FILTER (WHERE status = 'paid')::text AS paid,
-          COUNT(*) FILTER (WHERE status = 'open' AND due_date < CURRENT_DATE)::text AS overdue
-        FROM invoices
-      `);
-      const row = result.rows[0];
-      paidInvoices = parseInt(row.paid, 10);
-      overdueInvoices = parseInt(row.overdue, 10);
-    } catch {
-      this.logger.debug('invoices table not available');
-    }
-
-    return {
-      activeSubscriptions,
-      trialingSubscriptions,
-      canceledSubscriptions,
-      totalSubscriptions,
-      totalRevenue,
-      revenueThisMonth,
-      currency,
-      paidInvoices,
-      overdueInvoices,
+  private async getBillingStats(): Promise<DashboardStats['billing']> {
+    const empty: DashboardStats['billing'] = {
+      currencies: [],
+      approvedPayments: 0,
+      pendingPayments: 0,
+      rejectedPayments: 0,
+      payingStudents: 0,
+      access: { active: 0, completed: 0, failed: 0, expiringWithin7Days: 0 },
     };
+
+    try {
+      const totals = await this.db.query<{
+        currency: string;
+        total: string;
+        this_month: string;
+        pending_amount: string;
+      }>(`
+        SELECT currency,
+          COALESCE(SUM(amount) FILTER (WHERE status = 'approved'), 0)::text AS total,
+          COALESCE(SUM(amount) FILTER (WHERE status = 'approved' AND reviewed_at >= date_trunc('month', now())), 0)::text AS this_month,
+          COALESCE(SUM(amount) FILTER (WHERE status = 'pending'), 0)::text AS pending_amount
+        FROM course_payment_requests
+        GROUP BY currency
+        ORDER BY currency
+      `);
+      const counts = await this.db.query<{ approved: string; pending: string; rejected: string; paying: string }>(`
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'approved')::text AS approved,
+          COUNT(*) FILTER (WHERE status = 'pending')::text AS pending,
+          COUNT(*) FILTER (WHERE status = 'rejected')::text AS rejected,
+          COUNT(DISTINCT student_id) FILTER (WHERE status = 'approved')::text AS paying
+        FROM course_payment_requests
+      `);
+      const access = await this.db.query<{ active: string; completed: string; failed: string; expiring: string }>(`
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'active' AND expires_at > now())::text AS active,
+          COUNT(*) FILTER (WHERE status = 'completed')::text AS completed,
+          COUNT(*) FILTER (WHERE status = 'failed' OR (status = 'active' AND expires_at <= now()))::text AS failed,
+          COUNT(*) FILTER (WHERE status = 'active' AND expires_at > now() AND expires_at <= now() + interval '7 days')::text AS expiring
+        FROM course_access
+      `);
+      const c = counts.rows[0];
+      const a = access.rows[0];
+      return {
+        currencies: totals.rows.map((r) => ({
+          currency: r.currency,
+          totalRevenue: Number(r.total),
+          revenueThisMonth: Number(r.this_month),
+          pendingAmount: Number(r.pending_amount),
+        })),
+        approvedPayments: parseInt(c.approved, 10),
+        pendingPayments: parseInt(c.pending, 10),
+        rejectedPayments: parseInt(c.rejected, 10),
+        payingStudents: parseInt(c.paying, 10),
+        access: {
+          active: parseInt(a.active, 10),
+          completed: parseInt(a.completed, 10),
+          failed: parseInt(a.failed, 10),
+          expiringWithin7Days: parseInt(a.expiring, 10),
+        },
+      };
+    } catch (e) {
+      this.logger.error('Failed to fetch course payment stats', e);
+      return empty;
+    }
   }
 
   private async getOperationsStats() {

@@ -1,5 +1,6 @@
 import { screen, renderWithProviders, fireEvent, waitFor } from '../test-utils';
-import CoursePaymentsPage from '../../app/admin/course-payments/page';
+import CoursePaymentsPage from '../../app/admin/course-payments/requests/page';
+import CoursePaymentsOverviewPage from '../../app/admin/course-payments/page';
 import CoursePricesPage from '../../app/admin/course-payments/prices/page';
 import WalletsPage from '../../app/admin/course-payments/wallets/page';
 import CourseAccessPage from '../../app/admin/course-payments/access/page';
@@ -170,5 +171,44 @@ describe('CourseAccessPage', () => {
     expect(await screen.findByText('Sara')).toBeInTheDocument();
     expect(screen.getByText('10 days')).toBeInTheDocument();
     expect(screen.getAllByText('Active')).toHaveLength(2); // filter tab + status badge
+  });
+});
+
+
+const OVERVIEW = {
+  currencies: [{
+    currency: 'YER', revenueToday: 8000, revenueMtd: 18000, revenueLastMonth: 9000, revenueAllTime: 27000,
+    approvedTotal: 3, approvedThisMonth: 2, averagePayment: 9000, discountsGiven: 2000,
+    pendingCount: 1, pendingAmount: 10000, rejectedCount: 1,
+  }],
+  byCourse: [{ courseId: 'c1', title: 'Starter', currency: 'YER', payments: 3, revenue: 27000 }],
+  byWallet: [{ walletId: 'w1', name: 'Jawali', currency: 'YER', payments: 3, revenue: 27000 }],
+  monthly: [{ month: '2026-10', currency: 'YER', payments: 1, revenue: 9000 }, { month: '2026-11', currency: 'YER', payments: 2, revenue: 18000 }],
+  access: { active: 2, expiringWithin7Days: 1, completed: 1, failed: 0 },
+  payingStudents: 2,
+  recent: [{ id: 'p1', studentEmail: 'sara@example.com', courseTitle: 'Starter', walletName: 'Jawali', amount: 8000, currency: 'YER', status: 'approved', createdAt: '2026-11-02T10:00:00Z', reviewedAt: '2026-11-02T11:00:00Z' }],
+};
+
+describe('CoursePaymentsOverviewPage', () => {
+  it('shows total revenue, this month, pending (not counted), per-course and per-wallet money', async () => {
+    mockFetch.mockResolvedValueOnce(ok(OVERVIEW));
+    renderWithProviders(<CoursePaymentsOverviewPage />);
+
+    expect(await screen.findByRole('heading', { name: 'Revenue in YER' })).toBeInTheDocument();
+    expect(screen.getByText('Total revenue').nextSibling).toHaveTextContent('27,000 YER');
+    expect(screen.getByText('This month').nextSibling).toHaveTextContent('18,000 YER');
+    expect(screen.getByText('+100% vs last month')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for review').nextSibling).toHaveTextContent('10,000 YER');
+    expect(screen.getByText(/not counted yet/)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Revenue by course' })).toHaveTextContent('Starter');
+    expect(screen.getByRole('region', { name: 'Revenue by wallet' })).toHaveTextContent('Jawali');
+    expect(screen.getByText('Paying students').nextSibling).toHaveTextContent('2');
+    expect(mockFetch.mock.calls[0][0]).toBe('/api/admin/proxy/course-billing/overview');
+  });
+
+  it('explains the empty state when there are no payments yet', async () => {
+    mockFetch.mockResolvedValueOnce(ok({ ...OVERVIEW, currencies: [], byCourse: [], byWallet: [], monthly: [], recent: [], payingStudents: 0 }));
+    renderWithProviders(<CoursePaymentsOverviewPage />);
+    expect(await screen.findByText(/No course payments yet/)).toBeInTheDocument();
   });
 });

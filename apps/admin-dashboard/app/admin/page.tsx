@@ -23,18 +23,24 @@ type DashboardStats = {
   assessments: { total: number; attempts: number; avgScore: number | null };
   activity: { aiSessions: number; voiceSessions: number; learningSessionsToday: number };
   billing: {
-    activeSubscriptions: number;
-    trialingSubscriptions: number;
-    canceledSubscriptions: number;
-    totalSubscriptions: number;
-    totalRevenue: number;
-    revenueThisMonth: number;
-    currency: string;
-    paidInvoices: number;
-    overdueInvoices: number;
+    currencies: Array<{ currency: string; totalRevenue: number; revenueThisMonth: number; pendingAmount: number }>;
+    approvedPayments: number;
+    pendingPayments: number;
+    rejectedPayments: number;
+    payingStudents: number;
+    access: { active: number; completed: number; failed: number; expiringWithin7Days: number };
   };
   operations: { openTickets: number; activeIncidents: number; pendingFeedback: number };
 };
+
+/** "30,000 YER" — one line per currency (never added together). */
+function moneyText(
+  currencies: DashboardStats['billing']['currencies'],
+  pick: 'totalRevenue' | 'revenueThisMonth' | 'pendingAmount',
+): string {
+  if (currencies.length === 0) return '0';
+  return currencies.map((c) => `${c[pick].toLocaleString('en-US', { maximumFractionDigits: 2 })} ${c.currency}`).join(' · ');
+}
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -48,15 +54,12 @@ export default function AdminDashboardPage() {
       const json = await res.json();
       const raw = json?.data ?? json;
       const defaultBilling = {
-        activeSubscriptions: 0,
-        trialingSubscriptions: 0,
-        canceledSubscriptions: 0,
-        totalSubscriptions: 0,
-        totalRevenue: 0,
-        revenueThisMonth: 0,
-        currency: 'USD',
-        paidInvoices: 0,
-        overdueInvoices: 0,
+        currencies: [],
+        approvedPayments: 0,
+        pendingPayments: 0,
+        rejectedPayments: 0,
+        payingStudents: 0,
+        access: { active: 0, completed: 0, failed: 0, expiringWithin7Days: 0 },
       };
       setStats({ ...raw, billing: { ...defaultBilling, ...raw.billing } });
       setError(null);
@@ -152,13 +155,17 @@ export default function AdminDashboardPage() {
             <KpiCard
               icon={DASHBOARD_ICONS.revenue}
               label="Total Revenue"
-              value={`$${(stats.billing.totalRevenue / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              value={moneyText(stats.billing.currencies, 'totalRevenue')}
+              sub={`${stats.billing.approvedPayments} approved payments`}
+              href="/admin/course-payments"
               accent="emerald"
             />
             <KpiCard
               icon={DASHBOARD_ICONS.trending}
               label="Revenue This Month"
-              value={`$${(stats.billing.revenueThisMonth / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              value={moneyText(stats.billing.currencies, 'revenueThisMonth')}
+              sub={stats.billing.pendingPayments > 0 ? `${moneyText(stats.billing.currencies, 'pendingAmount')} waiting for review` : undefined}
+              href="/admin/course-payments"
               accent="blue"
             />
           </div>
@@ -183,27 +190,16 @@ export default function AdminDashboardPage() {
               />
             </div>
 
-            {/* Subscription breakdown donut */}
+            {/* Course access donut */}
             <div className="p-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] flex flex-col">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-4">
-                Subscriptions
+                Paid Course Access
               </h3>
               <DonutChart
                 segments={[
-                  { value: stats.billing.activeSubscriptions, color: 'var(--color-success-500, #22c55e)', label: 'Active' },
-                  { value: stats.billing.trialingSubscriptions, color: 'var(--color-info-500, #3b82f6)', label: 'Trialing' },
-                  { value: stats.billing.canceledSubscriptions, color: 'var(--color-warning-500, #f59e0b)', label: 'Canceled' },
-                  {
-                    value: Math.max(
-                      0,
-                      stats.billing.totalSubscriptions -
-                        stats.billing.activeSubscriptions -
-                        stats.billing.trialingSubscriptions -
-                        stats.billing.canceledSubscriptions
-                    ),
-                    color: 'var(--color-neutral-300, #d4d4d4)',
-                    label: 'Other',
-                  },
+                  { value: stats.billing.access.active, color: 'var(--color-success-500, #22c55e)', label: 'Active' },
+                  { value: stats.billing.access.completed, color: 'var(--color-info-500, #3b82f6)', label: 'Finished in time' },
+                  { value: stats.billing.access.failed, color: 'var(--color-warning-500, #f59e0b)', label: 'Ran out of time' },
                 ]}
               />
             </div>
@@ -325,20 +321,30 @@ export default function AdminDashboardPage() {
                   <span className="flex-1 text-[var(--text-secondary)]">Pending Feedback</span>
                   <span className="font-bold text-[var(--text-primary)]">{stats.operations.pendingFeedback}</span>
                 </Link>
-                <div className="flex items-center gap-2.5 p-2 rounded-lg text-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="flex-1 text-[var(--text-secondary)]">Paid Invoices</span>
-                  <span className="font-bold text-[var(--text-primary)]">{stats.billing.paidInvoices}</span>
-                </div>
-                <div className="flex items-center gap-2.5 p-2 rounded-lg text-xs">
+                <Link
+                  href="/admin/course-payments/requests"
+                  className="flex items-center gap-2.5 p-2 rounded-lg text-xs hover:bg-[var(--state-hover)] transition-colors"
+                >
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${
-                      stats.billing.overdueInvoices > 0 ? 'bg-red-500' : 'bg-emerald-500'
+                      stats.billing.pendingPayments > 0 ? 'bg-amber-500' : 'bg-emerald-500'
                     }`}
                   />
-                  <span className="flex-1 text-[var(--text-secondary)]">Overdue Invoices</span>
-                  <span className="font-bold text-[var(--text-primary)]">{stats.billing.overdueInvoices}</span>
-                </div>
+                  <span className="flex-1 text-[var(--text-secondary)]">Payments To Review</span>
+                  <span className="font-bold text-[var(--text-primary)]">{stats.billing.pendingPayments}</span>
+                </Link>
+                <Link
+                  href="/admin/course-payments/access"
+                  className="flex items-center gap-2.5 p-2 rounded-lg text-xs hover:bg-[var(--state-hover)] transition-colors"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${
+                      stats.billing.access.expiringWithin7Days > 0 ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}
+                  />
+                  <span className="flex-1 text-[var(--text-secondary)]">Courses Ending In 7 Days</span>
+                  <span className="font-bold text-[var(--text-primary)]">{stats.billing.access.expiringWithin7Days}</span>
+                </Link>
               </div>
             </div>
           </div>
@@ -347,9 +353,10 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard
               icon={DASHBOARD_ICONS.subscription}
-              label="Active Subscriptions"
-              value={stats.billing.activeSubscriptions.toLocaleString()}
-              sub={`of ${stats.billing.totalSubscriptions.toLocaleString()} total`}
+              label="Paying Students"
+              value={stats.billing.payingStudents.toLocaleString()}
+              sub={`${stats.billing.access.active.toLocaleString()} courses running now`}
+              href="/admin/course-payments/access"
               accent="success"
             />
             <KpiCard
@@ -360,14 +367,17 @@ export default function AdminDashboardPage() {
             />
             <KpiCard
               icon={DASHBOARD_ICONS.warning}
-              label="Overdue Invoices"
-              value={stats.billing.overdueInvoices.toLocaleString()}
-              accent={stats.billing.overdueInvoices > 0 ? 'error' : 'success'}
+              label="Payments To Review"
+              value={stats.billing.pendingPayments.toLocaleString()}
+              sub={stats.billing.pendingPayments > 0 ? 'Tap to approve or reject' : 'All reviewed'}
+              href="/admin/course-payments/requests"
+              accent={stats.billing.pendingPayments > 0 ? 'error' : 'success'}
             />
             <KpiCard
               icon={DASHBOARD_ICONS.subscription}
-              label="Trialing"
-              value={stats.billing.trialingSubscriptions.toLocaleString()}
+              label="Ran Out Of Time"
+              value={stats.billing.access.failed.toLocaleString()}
+              sub="Must pay again and restart"
               accent="blue"
             />
           </div>

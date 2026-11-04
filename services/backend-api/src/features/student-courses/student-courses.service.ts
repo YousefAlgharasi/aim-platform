@@ -7,14 +7,14 @@
 // AIM-owned table, so it is not subject to the "no client-side AIM logic"
 // rule (the computation itself lives here, backend-side, not in Flutter).
 //
-// Course/level gating (P20-010): a course with a track_slug/cefr_rank is
-// locked when its cefr_rank exceeds the student's max_unlocked_cefr_rank for
-// that track. A student with no student_level_state row yet has only
-// rank-1 courses unlocked in each track. Courses with no track_slug/cefr_rank
-// mapping are never locked (gating doesn't apply to them).
+// Course/level gating: see ../course-billing/course-unlock.util.ts. A course is
+// locked when its cefr_rank is above the student's unlock frontier — the
+// placement ceiling until they start a course, then sequential from where they
+// started. Courses with no cefr_rank are never locked.
 
 import { Injectable, Optional } from '@nestjs/common';
 import { CourseAccessService } from '../course-billing/course-access.service';
+import { SupportedLocale } from '../../common/locale/locale.constants';
 import { StudentCoursesRepository } from './student-courses.repository';
 import { StudentCourseStatus, StudentCourseSummary, StudentCoursesResponse } from './student-courses.types';
 
@@ -25,7 +25,7 @@ export class StudentCoursesService {
     @Optional() private readonly courseAccess?: CourseAccessService,
   ) {}
 
-  async getCourses(studentId: string): Promise<StudentCoursesResponse> {
+  async getCourses(studentId: string, locale: SupportedLocale = 'en'): Promise<StudentCoursesResponse> {
     // Billing first: settling an expired paid window resets that course's
     // progress, which the progress query below must already reflect.
     const billing = this.courseAccess
@@ -35,8 +35,12 @@ export class StudentCoursesService {
         )
       : null;
 
+    // One shared unlock rule (placement ceiling / start-lower-locks-the-rest /
+    // finish-to-unlock) — the same one enrollment, payment and lesson access enforce.
+    const frontiers = this.courseAccess ? await this.courseAccess.getUnlockFrontiers(studentId) : null;
+
     const [rows, enrolledCourseId] = await Promise.all([
-      this.repository.findCoursesWithProgress(studentId),
+      this.repository.findCoursesWithProgress(studentId, locale),
       this.repository.findActiveEnrollmentCourseId(studentId),
     ]);
 
@@ -89,12 +93,14 @@ export class StudentCoursesService {
         highestCompleted > 0 ? highestCompleted + 1 : 1,
       );
 
-      const locked = row.cefr_rank !== null && row.cefr_rank > effectiveMaxUnlockedRank;
+      const frontier = frontiers?.get(trackSlug) ?? effectiveMaxUnlockedRank;
+      const locked = row.cefr_rank !== null && row.cefr_rank > frontier;
 
       return {
         courseId: row.course_id,
         title: row.title,
         description: row.description,
+        locale: row.locale,
         levelCode: row.level_code,
         lessonCount,
         completedLessonCount,

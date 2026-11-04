@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { PoolClient } from 'pg';
 import { DatabaseService } from '../../../database/database.service';
+import { DEFAULT_LOCALE, SupportedLocale, courseTextSql } from '../../../common/locale';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import {
@@ -26,7 +28,30 @@ function toCourseSummary(row: CourseRow): CourseSummary {
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    locale: row.locale,
+    availableLocales: row.available_locales ?? [],
   };
+}
+
+const COURSE_RETURNING = `id, title, slug, description, sort_order, status, created_at, updated_at,
+         'en'::text AS locale, ARRAY['en']::text[] AS available_locales`;
+
+async function syncEnglishTranslation(client: PoolClient, courseId: string): Promise<void> {
+  await client.query(
+    `INSERT INTO course_translations (course_id, locale, title, description)
+       SELECT id, 'en', title, description FROM courses WHERE id = $1
+       ON CONFLICT (course_id, locale)
+       DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description`,
+    [courseId],
+  );
+}
+
+async function loadAvailableLocales(client: PoolClient, courseId: string): Promise<string[]> {
+  const result = await client.query<{ locale: string }>(
+    `SELECT locale FROM course_translations WHERE course_id = $1 ORDER BY locale`,
+    [courseId],
+  );
+  return result.rows.map((r) => r.locale);
 }
 
 function validateStatus(status: string): asserts status is CurriculumContentStatus {
@@ -48,6 +73,7 @@ export class CoursesService {
     limit: number,
     status?: string,
     q?: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<CourseListResponse> {
     const safePage = Math.max(page, DEFAULT_PAGE);
     const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -62,14 +88,16 @@ export class CoursesService {
     let idx = 1;
 
     if (status !== undefined) {
-      conditions.push(`status = $${idx++}`);
+      conditions.push(`c.status = $${idx++}`);
       values.push(status);
     }
 
     const search = q?.trim();
     if (search) {
       conditions.push(
-        `(title ILIKE $${idx} OR COALESCE(slug, '') ILIKE $${idx} OR COALESCE(description, '') ILIKE $${idx})`,
+        `(c.title ILIKE $${idx} OR COALESCE(c.slug, '') ILIKE $${idx} OR COALESCE(c.description, '') ILIKE $${idx}
+          OR EXISTS (SELECT 1 FROM course_translations st WHERE st.course_id = c.id
+                       AND (st.title ILIKE $${idx} OR COALESCE(st.description, '') ILIKE $${idx})))`,
       );
       values.push(`%${search}%`);
       idx++;
@@ -78,19 +106,25 @@ export class CoursesService {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const countResult = await this.db.query<{ total: string }>(
-      `SELECT COUNT(*)::text AS total FROM courses ${where}`,
+      `SELECT COUNT(*)::text AS total FROM courses c ${where}`,
       values,
     );
 
     const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
+    const text = courseTextSql('c', `$${idx}`);
+    const dataValues = [...values, locale];
     const dataResult = await this.db.query<CourseRow>(
-      `SELECT id, title, slug, description, sort_order, status, created_at, updated_at
-         FROM courses
+      `SELECT c.id, ${text.title} AS title, c.slug, ${text.description} AS description,
+              c.sort_order, c.status, c.created_at, c.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM course_translations al WHERE al.course_id = c.id ORDER BY al.locale) AS available_locales
+         FROM courses c
+         ${text.joins}
          ${where}
-         ORDER BY sort_order ASC, created_at ASC
-         LIMIT $${idx++} OFFSET $${idx++}`,
-      [...values, safeLimit, offset],
+         ORDER BY c.sort_order ASC, c.created_at ASC
+         LIMIT $${idx + 1} OFFSET $${idx + 2}`,
+      [...dataValues, safeLimit, offset],
     );
 
     return {
@@ -101,12 +135,17 @@ export class CoursesService {
     };
   }
 
-  async getCourse(id: string): Promise<CourseSummary> {
+  async getCourse(id: string, locale: SupportedLocale = DEFAULT_LOCALE): Promise<CourseSummary> {
+    const text = courseTextSql('c', '$2');
     const result = await this.db.query<CourseRow>(
-      `SELECT id, title, slug, description, sort_order, status, created_at, updated_at
-         FROM courses
-         WHERE id = $1`,
-      [id],
+      `SELECT c.id, ${text.title} AS title, c.slug, ${text.description} AS description,
+              c.sort_order, c.status, c.created_at, c.updated_at,
+              ${text.locale} AS locale,
+              ARRAY(SELECT al.locale FROM course_translations al WHERE al.course_id = c.id ORDER BY al.locale) AS available_locales
+         FROM courses c
+         ${text.joins}
+         WHERE c.id = $1`,
+      [id, locale],
     );
 
     if (result.rows.length === 0) {
@@ -150,14 +189,18 @@ export class CoursesService {
         ? sortOrder
         : await this.nextSortOrder();
 
-    const result = await this.db.query<CourseRow>(
-      `INSERT INTO courses (title, slug, description, sort_order, status)
-         VALUES ($1, $2, $3, $4, 'draft')
-         RETURNING id, title, slug, description, sort_order, status, created_at, updated_at`,
-      [title.trim(), slug ?? null, description?.trim() ?? null, resolvedSortOrder],
-    );
+    const row = await this.inTransaction(async (client) => {
+      const result = await client.query<CourseRow>(
+        `INSERT INTO courses (title, slug, description, sort_order, status)
+           VALUES ($1, $2, $3, $4, 'draft')
+           RETURNING ${COURSE_RETURNING}`,
+        [title.trim(), slug ?? null, description?.trim() ?? null, resolvedSortOrder],
+      );
+      await syncEnglishTranslation(client, result.rows[0].id);
+      return result.rows[0];
+    });
 
-    return toCourseSummary(result.rows[0]);
+    return toCourseSummary(row);
   }
 
   async updateCourse(id: string, input: UpdateCourseInput): Promise<CourseSummary> {
@@ -220,15 +263,38 @@ export class CoursesService {
 
     values.push(id);
 
-    const result = await this.db.query<CourseRow>(
-      `UPDATE courses
-         SET ${setClauses.join(', ')}
-         WHERE id = $${idx}
-         RETURNING id, title, slug, description, sort_order, status, created_at, updated_at`,
-      values,
-    );
+    const touchesEnglishText = input.title !== undefined || 'description' in input;
 
-    return toCourseSummary(result.rows[0]);
+    const row = await this.inTransaction(async (client) => {
+      const result = await client.query<CourseRow>(
+        `UPDATE courses
+           SET ${setClauses.join(', ')}
+           WHERE id = $${idx}
+           RETURNING ${COURSE_RETURNING}`,
+        values,
+      );
+      if (touchesEnglishText) {
+        await syncEnglishTranslation(client, id);
+      }
+      const available = await loadAvailableLocales(client, id);
+      return { ...result.rows[0], available_locales: available };
+    });
+
+    return toCourseSummary(row);
+  }
+
+  private async inTransaction<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+    return this.db.withClient(async (client) => {
+      await client.query('BEGIN');
+      try {
+        const value = await work(client);
+        await client.query('COMMIT');
+        return value;
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      }
+    });
   }
 
   private async nextSortOrder(): Promise<number> {

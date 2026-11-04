@@ -110,4 +110,31 @@ describe('CoursesList', () => {
     const actionsHeader = document.querySelector('th[aria-label="Actions"]');
     expect(actionsHeader).toBeInTheDocument();
   });
+
+  it('flags courses that lack a translation', () => {
+    renderWithProviders(
+      <CoursesList {...defaultProps} courses={[makeCourse({ availableLocales: ['en'] })]} />,
+    );
+    expect(screen.getByText('Arabic missing')).toBeInTheDocument();
+  });
+
+  it('does not flag fully translated courses or courses with unknown availability', () => {
+    renderWithProviders(
+      <CoursesList
+        {...defaultProps}
+        courses={[makeCourse({ availableLocales: ['en', 'ar'] }), makeCourse({ id: 'course-2', availableLocales: [] })]}
+      />,
+    );
+    expect(screen.queryByText('Arabic missing')).not.toBeInTheDocument();
+  });
+
+  it('passes the translation loader to the edit form', async () => {
+    const loadTranslations = jest.fn().mockResolvedValue({
+      data: { courseId: 'course-1', supportedLocales: ['en', 'ar'], missingLocales: [], translations: [] },
+    });
+    renderWithProviders(<CoursesList {...defaultProps} loadTranslations={loadTranslations} />);
+    fireEvent.click(screen.getByText('English 101'));
+    expect(await screen.findByRole('tab', { name: /العربية/ })).toBeInTheDocument();
+    expect(loadTranslations).toHaveBeenCalledWith('course-1');
+  });
 });

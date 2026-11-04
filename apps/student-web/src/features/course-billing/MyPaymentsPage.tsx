@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useCallback, useEffect, useState } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -9,9 +10,9 @@ import { formatMoney } from './billingFormat';
 import { fetchMyPayments, type CoursePayment } from './courseBillingApi';
 
 const STATUS: Record<CoursePayment['status'], { label: string; tone: string }> = {
-  pending: { label: 'Pending', tone: 'text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/50' },
-  approved: { label: 'Approved', tone: 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/50' },
-  rejected: { label: 'Rejected', tone: 'text-rose-700 bg-rose-50 dark:text-rose-300 dark:bg-rose-950/50' },
+  pending: { label: 'Pending', tone: 'text-warning-ink bg-warning-soft' },
+  approved: { label: 'Approved', tone: 'text-success-ink bg-success-soft' },
+  rejected: { label: 'Rejected', tone: 'text-danger-ink bg-danger-soft' },
 };
 
 /** Route: /billing/payments — the student's course payments and their review status. */
@@ -37,22 +38,22 @@ export function MyPaymentsPage() {
 
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{t('My payments')}</h1>
+      <PageTitleBar title={t('My payments')} />
       {items.length === 0 ? (
         <EmptyState title={t('My payments')} message={t("You haven't made any course payments yet.")} />
       ) : (
         <div className="flex flex-col gap-3">
           {items.map((p) => (
-            <div key={p.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 ring-1 ring-[#E2E8F0] dark:ring-slate-700 flex flex-col gap-1">
+            <div key={p.id} className="bg-surface rounded-2xl p-4 ring-1 ring-line flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-extrabold text-slate-900 dark:text-white">{p.courseTitle}</span>
+                <span className="font-extrabold text-ink">{p.courseTitle}</span>
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS[p.status].tone}`}>{t(STATUS[p.status].label)}</span>
               </div>
-              <span className="font-bold text-slate-800 dark:text-slate-100">{formatMoney(p.amount, p.currency)}</span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{p.walletName} · {t('Transaction {number}', { number: p.transactionNumber })}</span>
-              <span className="text-xs text-slate-400">{formatDate(p.createdAt)}</span>
+              <span className="font-bold text-ink">{formatMoney(p.amount, p.currency)}</span>
+              <span className="text-sm text-ink-muted">{p.walletName} · {t('Transaction {number}', { number: p.transactionNumber })}</span>
+              <span className="text-xs text-ink-muted">{formatDate(p.createdAt)}</span>
               {p.adminNote && (
-                <span className={`text-sm ${p.status === 'rejected' ? 'text-rose-600' : 'text-slate-500'}`}>{t('Note: {note}', { note: p.adminNote })}</span>
+                <span className={`text-sm ${p.status === 'rejected' ? 'text-danger-ink' : 'text-ink-muted'}`}>{t('Note: {note}', { note: `\u2068${p.adminNote}\u2069` })}</span>
               )}
             </div>
           ))}

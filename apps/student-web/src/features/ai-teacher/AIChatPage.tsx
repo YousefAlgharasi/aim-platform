@@ -13,7 +13,7 @@ import {
 } from './aiTeacherApi';
 import type { AIChatLocationState } from './AITeacherEntryPage';
 import { SparkleIcon, MicIcon } from '../../components/common/Icons';
-import { BackLink, SendIcon, ThumbButton, pillLinkClass } from './ui';
+import { SendIcon, ThumbButton, pillLinkClass } from './ui';
 import { useI18n } from '../../i18n/I18nContext';
 
 // Same quick-action prompts as Flutter's AiSuggestedPromptsRow.
@@ -231,14 +231,13 @@ export function AIChatPage() {
 
   return (
     <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] max-w-3xl w-full mx-auto">
-      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <BackLink to="/ai-teacher" label={t('Back to AI Teacher')} />
-        <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+      <div className="flex items-center gap-3 pb-3 border-b border-line-subtle">
+        <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-secondary to-brand flex items-center justify-center text-white shadow-sm">
           <SparkleIcon className="size-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight m-0">{t('AI Teacher')}</h1>
-          <span className="block text-xs text-emerald-500 font-semibold truncate">
+          <h1 className="font-extrabold text-sm sm:text-base text-ink leading-tight m-0">{t('AI Teacher')}</h1>
+          <span className="block text-xs text-success-ink font-semibold truncate">
             {navState.lessonTitle || t('Always here to help')}
           </span>
         </div>
@@ -271,11 +270,11 @@ export function AIChatPage() {
       <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label={t('Chat messages')}>
         {isEmpty && (
           <div className="flex flex-col items-center text-center gap-2 py-8">
-            <div className="size-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+            <div className="size-14 rounded-2xl bg-gradient-to-br from-secondary to-brand flex items-center justify-center shadow-md shadow-brand/20">
               <SparkleIcon className="size-6 text-white" />
             </div>
-            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{t('Ask me anything')}</p>
-            <p className="m-0 text-sm text-slate-500 dark:text-slate-400 max-w-xs">
+            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-ink">{t('Ask me anything')}</p>
+            <p className="m-0 text-sm text-ink-muted max-w-xs">
               {t('Start the conversation with a question or pick a suggestion below.')}
             </p>
           </div>
@@ -294,13 +293,13 @@ export function AIChatPage() {
               <div
                 className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                   isStudent
-                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-ee-none shadow-md shadow-indigo-500/15'
-                    : 'bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 rounded-es-none shadow-sm'
+                    ? 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
+                    : 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
                 }`}
               >
                 {msg.text}
               </div>
-              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 px-1 flex items-center gap-1">
+              <span className="text-[11px] font-medium text-ink-muted mt-1 px-1 flex items-center gap-1">
                 {msg.channel === 'voice' && (
                   <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> {t('Voice')} ·</span>
                 )}
@@ -308,7 +307,7 @@ export function AIChatPage() {
               </span>
               {canRate && (
                 <div className="flex items-center gap-2 mt-1 px-1">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                  <span className="text-xs text-ink-muted">
                     {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
                   </span>
                   <ThumbButton
@@ -333,29 +332,29 @@ export function AIChatPage() {
 
         {sending && streamingText !== null && streamingText.length > 0 && (
           <div className="flex flex-col max-w-[88%] sm:max-w-[78%] self-start items-start" aria-busy="true">
-            <div className="p-4 rounded-2xl rounded-es-none text-sm leading-relaxed whitespace-pre-wrap break-words bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 text-slate-800 dark:text-slate-100 shadow-sm">
+            <div className="p-4 rounded-2xl rounded-es-none text-sm leading-relaxed whitespace-pre-wrap break-words bg-surface ring-1 ring-line/80 text-ink shadow-sm">
               {streamingText}
             </div>
           </div>
         )}
         {sending && !streamingText && (
           <div
-            className="self-start bg-white dark:bg-slate-800 ring-1 ring-slate-200/80 dark:ring-slate-700 rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5 shadow-sm"
+            className="self-start bg-surface ring-1 ring-line/80 rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5 shadow-sm"
             role="status"
           >
             <span className="sr-only">{t('AI Teacher is thinking…')}</span>
-            <div className="size-2 rounded-full bg-indigo-500 animate-bounce" aria-hidden="true" />
-            <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:150ms]" aria-hidden="true" />
-            <div className="size-2 rounded-full bg-indigo-500 animate-bounce [animation-delay:300ms]" aria-hidden="true" />
+            <div className="size-2 rounded-full bg-brand animate-bounce" aria-hidden="true" />
+            <div className="size-2 rounded-full bg-brand animate-bounce [animation-delay:150ms]" aria-hidden="true" />
+            <div className="size-2 rounded-full bg-brand animate-bounce [animation-delay:300ms]" aria-hidden="true" />
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="sticky bottom-4 z-10 flex flex-col gap-2 pt-2 bg-[#F8FAFC]/90 dark:bg-slate-900/90 backdrop-blur-md">
+      <div className="sticky bottom-4 z-10 flex flex-col gap-2 pt-2 bg-surface-sunken/90 dark:bg-elevated/90 backdrop-blur-md">
         {(sendError || feedbackError) && (
           <div
-            className="rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-900 px-3 py-2 text-sm"
+            className="rounded-xl bg-danger-soft text-danger-ink ring-1 ring-danger-line px-3 py-2 text-sm"
             role="alert"
           >
             {sendError || feedbackError}
@@ -369,7 +368,7 @@ export function AIChatPage() {
                 key={prompt}
                 type="button"
                 onClick={() => send(t(prompt))}
-                className="shrink-0 min-h-10 px-4 rounded-full bg-white dark:bg-slate-800 ring-1 ring-indigo-200 dark:ring-slate-700 text-[#4F46E5] dark:text-indigo-300 text-sm font-semibold cursor-pointer border-none hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors"
+                className="shrink-0 min-h-10 px-4 rounded-full bg-surface ring-1 ring-brand-line dark:ring-line text-brand-ink text-sm font-semibold cursor-pointer border-none hover:bg-brand-soft transition-colors"
               >
                 {t(prompt)}
               </button>
@@ -377,9 +376,9 @@ export function AIChatPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2 bg-slate-100 dark:bg-slate-800 rounded-2xl p-2 ps-4 border border-slate-200/60 dark:border-slate-700">
+        <div className="flex items-end gap-2 bg-control rounded-2xl p-2 ps-4 border border-line/60">
           <textarea
-            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-sm text-ink placeholder-ink-muted"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -393,7 +392,7 @@ export function AIChatPage() {
             onClick={() => send(input)}
             disabled={sending || !input.trim()}
             aria-label={sending ? t('Sending…') : t('Send message')}
-            className="size-10 shrink-0 rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className="size-10 shrink-0 rounded-xl bg-brand hover:bg-brand-hover text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <SendIcon />
           </button>

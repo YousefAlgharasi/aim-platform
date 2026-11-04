@@ -5,6 +5,9 @@ export interface StudentChapterSummary {
   readonly title: string;
   readonly description: string | null;
 
+  /** Language of title/description actually served (requested locale if a translation exists, else 'en'). */
+  readonly locale: string;
+
   /** Code of the chapter's parent level (e.g. 'A1', 'B1'), or null if the level has no code. */
   readonly levelCode: string | null;
 

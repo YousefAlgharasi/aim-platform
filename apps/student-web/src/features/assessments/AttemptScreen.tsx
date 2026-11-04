@@ -20,7 +20,7 @@ import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
 import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
 
 const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
-const LINK_BTN = 'border-0 bg-transparent p-0 font-semibold text-[#4F46E5] dark:text-indigo-400 underline cursor-pointer';
+const LINK_BTN = 'border-0 bg-transparent p-0 font-semibold text-brand-ink underline cursor-pointer';
 
 type SaveState = 'saving' | 'saved' | 'error';
 
@@ -172,7 +172,7 @@ export function AttemptScreen() {
           actionLabel={t('View result')}
           onAction={() => navigate(`/assessments/${assessmentId}/result/${attemptId}`)}
         />
-        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">{t('Back to assessment')}</Link>
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-brand-ink hover:underline">{t('Back to assessment')}</Link>
       </div>
     );
   }
@@ -181,7 +181,7 @@ export function AttemptScreen() {
     return (
       <div className={SHELL}>
         <EmptyState title={t('No questions yet')} message={t("This assessment doesn't have any questions yet.")} />
-        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-[#4F46E5] dark:text-indigo-400 hover:underline">{t('Back to assessment')}</Link>
+        <Link to={`/assessments/${assessmentId}`} className="text-center text-sm font-semibold text-brand-ink hover:underline">{t('Back to assessment')}</Link>
       </div>
     );
   }
@@ -198,7 +198,7 @@ export function AttemptScreen() {
     <div className={SHELL}>
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
             {t('Question {current} of {total} · {answered} answered', { current: formatNumber(current + 1), total: formatNumber(questions.length), answered: formatNumber(answeredCount) })}
           </span>
           {remaining !== null && <TimerPill warning={remaining <= 60}>{formatRemaining(remaining)}</TimerPill>}
@@ -219,10 +219,10 @@ export function AttemptScreen() {
               type="button"
               className={`size-10 rounded-xl text-xs font-bold cursor-pointer transition-all duration-150 ${
                 isCurrent
-                  ? 'bg-[#4F46E5] text-white border-0 shadow-md'
+                  ? 'bg-brand text-white border-0 shadow-md'
                   : answered
-                    ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-900 border-0'
-                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 ring-1 ring-[#E2E8F0] dark:ring-slate-700 border-0 hover:ring-[#C7D2FE]'
+                    ? 'bg-success-soft text-success-ink ring-1 ring-success-line border-0'
+                    : 'bg-surface text-ink-muted dark:text-ink-soft ring-1 ring-line border-0 hover:ring-brand-line'
               }`}
               onClick={() => setCurrent(i)}
               aria-current={isCurrent ? 'step' : undefined}
@@ -236,7 +236,7 @@ export function AttemptScreen() {
 
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
         <span className={EYEBROW}>{t('Question {n}', { n: formatNumber(current + 1) })}</span>
-        <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-[#0F172A] dark:text-white">{question.prompt}</h2>
+        <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-ink">{question.prompt}</h2>
 
         {question.type === 'listening_choice' && (
           <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
@@ -256,7 +256,7 @@ export function AttemptScreen() {
           </label>
         )}
 
-        <span className="min-h-4 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+        <span className="min-h-4 text-xs text-ink-muted" aria-live="polite">
           {state === 'saving' ? t('Saving…') : state === 'saved' ? t('Saved') : state === 'error' ? (
             <button type="button" className={LINK_BTN} onClick={() => saveAnswer(linkId, answers[linkId] ?? '')}>
               {t('Not saved — retry')}

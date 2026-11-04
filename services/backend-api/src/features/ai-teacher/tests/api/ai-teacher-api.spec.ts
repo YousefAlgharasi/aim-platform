@@ -54,6 +54,7 @@ import { AiChatSessionRow } from '../../repositories/ai-chat-repository.types';
 import { AppError } from '../../../../common/errors/app-error';
 import { AuthenticatedUser } from '../../../../auth/authenticated-user';
 import { UsersService } from '../../../users/users.service';
+import { LocaleResolverService } from '../../../../common/locale/locale-resolver.service';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -486,7 +487,7 @@ describe('ChatSessionListReadController (P8-074)', () => {
     const service = {
       listSessions: jest.fn().mockResolvedValue(result),
     } as unknown as ChatSessionListReadService;
-    return { controller: new ChatSessionListReadController(service), service };
+    return { controller: new ChatSessionListReadController(service, { resolve: jest.fn().mockResolvedValue('en'), resolveExplicit: jest.fn((c: { requested: string | null }) => c.requested ?? 'en') } as unknown as LocaleResolverService), service };
   }
 
   it('resolves studentId exclusively from the JWT user — no route/query param', async () => {

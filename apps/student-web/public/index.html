@@ -3,11 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#4F46E5" />
+    <meta name="theme-color" content="#4762EE" />
+    <script>
+      // Apply the saved/system theme before first paint so dark users never see a light flash.
+      // Same key and rule as src/state/ThemeContext.tsx.
+      (function () {
+        try {
+          var stored = localStorage.getItem('aim-dark-mode');
+          var dark = stored !== null ? stored === 'true' : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', dark ? '#0F172A' : '#4762EE');
+        } catch (e) {}
+      })();
+    </script>
     <meta name="description" content="AIM Platform — Student Learning Experience" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="%PUBLIC_URL%/fonts/inter/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="%PUBLIC_URL%/fonts/fonts.css" />
     <title>AIM — Student</title>
   </head>
   <body>

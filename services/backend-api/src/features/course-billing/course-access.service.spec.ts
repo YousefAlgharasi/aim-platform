@@ -119,3 +119,39 @@ describe('CourseAccessService', () => {
     await expect(svc.assertAccess('u1', null)).resolves.toBeUndefined();
   });
 });
+
+describe('CourseAccessService unlock rule', () => {
+  function build(rank: number, track: string, frontierRow: { ceiling: number | null; started: number | null; completed: number | null }) {
+    const db = {
+      query: jest.fn(async (sql: string) => {
+        if (sql.includes('FROM users u')) return { rows: [{ user_id: 'u1', supabase_auth_uid: null, profile_id: null }] };
+        if (sql.includes('SELECT track_slug, cefr_rank FROM courses')) return { rows: [{ track_slug: track, cefr_rank: rank }] };
+        if (sql.includes('WITH tracks AS')) return { rows: [{ track_slug: track, ...frontierRow }] };
+        return { rows: [], rowCount: 0 };
+      }),
+    };
+    return new CourseAccessService(db as any);
+  }
+
+  it('allows the placed course and lower ones', async () => {
+    const svc = build(2, 'english', { ceiling: 2, started: null, completed: null });
+    await expect(svc.assertCourseUnlocked('u1', 'c-a11')).resolves.toBeUndefined();
+  });
+
+  it('locks a course above the placement ceiling', async () => {
+    const svc = build(5, 'english', { ceiling: 2, started: null, completed: null });
+    await expect(svc.assertCourseUnlocked('u1', 'c-a21')).rejects.toMatchObject({ code: 'COURSE_LOCKED' });
+  });
+
+  it('starting a lower course keeps the next ones locked until it is finished', async () => {
+    const lockedWhileStarting = build(2, 'english', { ceiling: 2, started: 1, completed: null });
+    await expect(lockedWhileStarting.assertCourseUnlocked('u1', 'c-a11')).rejects.toMatchObject({ code: 'COURSE_LOCKED' });
+    const openAfterFinishing = build(2, 'english', { ceiling: 2, started: 1, completed: 1 });
+    await expect(openAfterFinishing.assertCourseUnlocked('u1', 'c-a11')).resolves.toBeUndefined();
+  });
+
+  it('courses without a rank are never gated', async () => {
+    const db = { query: jest.fn(async (sql: string) => (sql.includes('SELECT track_slug, cefr_rank FROM courses') ? { rows: [{ track_slug: 'english', cefr_rank: null }] } : { rows: [] })) };
+    await expect(new CourseAccessService(db as any).assertCourseUnlocked('u1', 'c')).resolves.toBeUndefined();
+  });
+});

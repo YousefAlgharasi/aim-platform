@@ -36,6 +36,7 @@ export interface StudentLessonProgressListResponse {
 export interface ContinueLearningLesson {
   readonly lessonId: string;
   readonly lessonTitle: string;
+  readonly locale: string;
   readonly percent: number;
   readonly lastActiveAt: string;
 }
@@ -43,7 +44,8 @@ export interface ContinueLearningLesson {
 export interface QuickStartLesson {
   readonly lessonId: string;
   readonly lessonTitle: string;
-  readonly lessonDescription: string;
+  readonly lessonDescription: string | null;
+  readonly locale: string;
   readonly skillName: string | null;
 }
 
@@ -51,5 +53,6 @@ export interface RecommendedCourse {
   readonly courseId: string;
   readonly courseTitle: string;
   readonly courseDescription: string | null;
+  readonly locale: string;
   readonly estimatedLevel: string | null;
 }

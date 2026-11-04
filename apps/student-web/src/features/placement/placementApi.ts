@@ -124,12 +124,27 @@ export interface PlacementLatestStatus {
 // Calls
 // ---------------------------------------------------------------------------
 
-export function fetchPlacementGate(): Promise<PlacementGateStatus> {
-  return apiClient.get<PlacementGateStatus>('/placement/decision');
+type PlacementGateListener = (status: PlacementGateStatus) => void;
+const placementGateListeners = new Set<PlacementGateListener>();
+
+function notifyPlacementGateListeners(status: PlacementGateStatus) {
+  placementGateListeners.forEach((listener) => listener(status));
 }
 
-export function setPlacementDecision(decision: PlacementDecision): Promise<PlacementGateStatus> {
-  return apiClient.post<PlacementGateStatus>('/placement/decision', { decision });
+export async function fetchPlacementGate(): Promise<PlacementGateStatus> {
+  const status = await apiClient.get<PlacementGateStatus>('/placement/decision');
+  if (status && !status.should_show_gate) {
+    notifyPlacementGateListeners(status);
+  }
+  return status;
+}
+
+export async function setPlacementDecision(decision: PlacementDecision): Promise<PlacementGateStatus> {
+  const status = await apiClient.post<PlacementGateStatus>('/placement/decision', { decision });
+  notifyPlacementGateListeners(
+    status ?? { decision, decided_at: new Date().toISOString(), should_show_gate: false },
+  );
+  return status;
 }
 
 export function fetchActivePlacementTest(): Promise<PlacementTest> {
@@ -330,6 +345,21 @@ export function usePlacementGate(enabled = true): PlacementGateState {
   });
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((t) => t + 1), []);
+
+  useEffect(() => {
+    const listener: PlacementGateListener = (gate) => {
+      setState({
+        loading: false,
+        shouldShowGate: !!gate?.should_show_gate,
+        decision: gate?.decision ?? null,
+        error: null,
+      });
+    };
+    placementGateListeners.add(listener);
+    return () => {
+      placementGateListeners.delete(listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!enabled) {

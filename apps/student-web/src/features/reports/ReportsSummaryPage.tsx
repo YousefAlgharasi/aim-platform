@@ -54,7 +54,7 @@ function SectionView({ section }: { section: ReportSection }) {
   const columns = Array.from(new Set(rows.flatMap(r => Object.keys(r ?? {}))));
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white m-0">{section.title}</h3>
+      <h3 className="text-sm font-extrabold tracking-tight text-ink m-0">{section.title}</h3>
       {rows.length === 0 ? (
         <p className={subCls}>{t('No data for this section yet.')}</p>
       ) : (
@@ -62,33 +62,33 @@ function SectionView({ section }: { section: ReportSection }) {
           {/* Phones: card list */}
           <div className="sm:hidden flex flex-col gap-2.5">
             {rows.map((row, i) => (
-              <dl key={i} className="m-0 rounded-xl bg-slate-50 dark:bg-slate-900/40 p-3.5 flex flex-col gap-1.5">
+              <dl key={i} className="m-0 rounded-xl bg-surface-sunken p-3.5 flex flex-col gap-1.5">
                 {columns.map(c => (
                   <div key={c} className="flex items-start justify-between gap-3 text-sm">
-                    <dt className="text-slate-500 dark:text-slate-400">{humanize(c)}</dt>
-                    <dd className="m-0 font-semibold text-slate-900 dark:text-white text-end break-words min-w-0">{formatCell(row?.[c])}</dd>
+                    <dt className="text-ink-muted">{humanize(c)}</dt>
+                    <dd className="m-0 font-semibold text-ink text-end break-words min-w-0">{formatCell(row?.[c])}</dd>
                   </div>
                 ))}
               </dl>
             ))}
           </div>
           {/* Wider screens: table */}
-          <div className="hidden sm:block overflow-x-auto rounded-xl ring-1 ring-[#E2E8F0] dark:ring-slate-700">
+          <div className="hidden sm:block overflow-x-auto rounded-xl ring-1 ring-line">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-900/40">
+                <tr className="bg-surface-sunken">
                   {columns.map(c => (
-                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-wider text-ink-muted whitespace-nowrap">
                       {humanize(c)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-line-subtle dark:divide-line">
                 {rows.map((row, i) => (
                   <tr key={i}>
                     {columns.map(c => (
-                      <td key={c} className="px-3.5 py-2.5 text-slate-800 dark:text-slate-100">{formatCell(row?.[c])}</td>
+                      <td key={c} className="px-3.5 py-2.5 text-ink">{formatCell(row?.[c])}</td>
                     ))}
                   </tr>
                 ))}
@@ -170,7 +170,7 @@ export function ReportsSummaryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Insights')} title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
+      <PageHeader title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
 
       {reports.length === 0 ? (
         <EmptyState
@@ -208,8 +208,8 @@ export function ReportsSummaryPage() {
                     <Banner variant="error">{run.errorMessage || t('This report could not be generated.')}</Banner>
                   )}
                   {result && (
-                    <div className="flex flex-col gap-5 pt-4 border-t border-slate-100 dark:border-slate-700">
-                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col gap-5 pt-4 border-t border-line-subtle dark:border-line">
+                      <span className="text-xs font-semibold text-ink-muted">
                         {t('Generated {time}', { time: fmtDateTime(result.generatedAt) })}
                       </span>
                       {result.sections.length === 0 ? (

@@ -54,16 +54,17 @@ const ALL_NAV_GROUPS: NavGroup[] = [
       { label: 'Students', href: '/admin/students', icon: 'progress' },
       { label: 'Reviews', href: '/admin/reviews', icon: 'clipboard' },
       { label: 'AI Teacher', href: '/admin/ai-teacher', icon: 'spark' },
+      { label: 'Practice Topics', href: '/admin/practice', icon: 'academic' },
     ],
   },
   {
     label: 'Finance',
     items: [
       { label: 'Course Payments', href: '/admin/course-payments', icon: 'banknotes' },
+      { label: 'Payment Requests', href: '/admin/course-payments/requests', icon: 'creditcard' },
       { label: 'Course Prices', href: '/admin/course-payments/prices', icon: 'tag' },
       { label: 'Payment Wallets', href: '/admin/course-payments/wallets', icon: 'wallet' },
       { label: 'Course Access', href: '/admin/course-payments/access', icon: 'clock' },
-      { label: 'Billing', href: '/admin/billing', icon: 'creditcard' },
       { label: 'Analytics', href: '/admin/analytics', icon: 'chart' },
       { label: 'Reports', href: '/admin/reports', icon: 'report' },
     ],

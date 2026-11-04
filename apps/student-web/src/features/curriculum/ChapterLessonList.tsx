@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
@@ -6,58 +6,217 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { fetchStudentLessons, type StudentLessonsResponse } from '../lessons/lessonsApi';
 import type { FinalExamSummary, LevelWithChapters, StudentChapter } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
-import { ChevronDownIcon, ChevronRightIcon, LockIcon } from './CurriculumIcons';
-import { CheckIcon, ClipboardIcon } from '../../components/common/Icons';
+import { LockIcon } from './CurriculumIcons';
+import {
+  BookIcon,
+  ChatIcon,
+  CheckIcon,
+  ClipboardIcon,
+  LightbulbIcon,
+  MicIcon,
+  PencilIcon,
+  TrophyIcon,
+} from '../../components/common/Icons';
 
-type LessonStatus = 'completed' | 'current' | 'available' | 'locked';
+type NodeStatus = 'completed' | 'current' | 'available' | 'locked';
 
 /** Navigation state passed to the lesson player so it can link back to this course. */
 export interface LessonNavState {
   courseId?: string;
 }
 
-const ROW_BASE =
-  'w-full flex items-center gap-3 rounded-2xl p-3 ring-1 transition-all duration-200 text-start no-underline';
-const ROW_ACTIVE =
-  'bg-white dark:bg-slate-800 ring-slate-200/80 dark:ring-slate-700 hover:ring-indigo-200 dark:hover:ring-indigo-700';
-const ROW_CURRENT =
-  'bg-indigo-50/30 dark:bg-indigo-950/30 ring-2 ring-[#4F46E5] dark:ring-indigo-400 shadow-md';
-const ROW_LOCKED = 'bg-white dark:bg-slate-800 ring-slate-200/60 dark:ring-slate-800 opacity-65 cursor-not-allowed';
+// ---- Winding path geometry -------------------------------------------------------------
+// One row per node. The node circle sits NODE_TOP below the row's top (room for the "Next" bubble
+// on the current node); the caption sits beside the node (on the side the path is leaning away from) so the dotted line never crosses it.
+const ROW_H = 176;
+const NODE_TOP = 28;
+const NODE_SIZE = 72;
+const CENTER_Y = NODE_TOP + NODE_SIZE / 2;
+/** Horizontal wobble, in percent of the half-width, cycled down the path. */
+const OFFSETS = [-40, 40];
+/** Decorative glyphs for lessons that are open but not the current one. */
+const GLYPHS = [BookIcon, PencilIcon, ChatIcon, MicIcon, LightbulbIcon];
 
-function statusPill(status: LessonStatus) {
-  const base = 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-extrabold';
+const xPercent = (i: number) => 50 + OFFSETS[i % OFFSETS.length] / 2;
+
+interface PathItem {
+  key: string;
+  status: NodeStatus;
+  shape: 'round' | 'square';
+  glyph: React.ReactNode;
+  /** Small line above the title, e.g. "Lesson 3 · 10 XP". */
+  sub: string;
+  title: string;
+  to?: string;
+  state?: LessonNavState;
+  /** Tooltip for locked nodes. */
+  lockedHint?: string;
+  /** Extra text for screen readers on locked nodes. */
+  srHint?: string;
+}
+
+const NODE_BASE =
+  'relative flex items-center justify-center shrink-0 transition-transform duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus';
+
+function nodeTone(status: NodeStatus): string {
   switch (status) {
-    case 'completed': return `${base} bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400`;
-    case 'current': return `${base} bg-indigo-600 text-white shadow-md shadow-indigo-500/20`;
-    case 'locked': return `${base} bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400`;
-    default: return `${base} bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400`;
+    case 'completed': return 'bg-success text-white shadow-md shadow-success/25';
+    case 'current': return 'bg-gradient-to-br from-brand to-secondary text-white shadow-lg shadow-brand/30 ring-4 ring-brand-soft';
+    case 'available': return 'bg-brand-soft text-brand-ink ring-2 ring-brand-line';
+    default: return 'bg-surface-muted text-ink-muted ring-1 ring-line';
   }
 }
 
-function StatusGlyph({ status }: { status: LessonStatus }) {
+function pillTone(status: NodeStatus): string {
   switch (status) {
-    case 'completed': return <CheckIcon className="size-5 text-emerald-600 dark:text-emerald-400" />;
-    case 'locked': return <LockIcon className="size-4" />;
-    case 'current': return <span aria-hidden="true">▶</span>;
-    default: return <span aria-hidden="true">○</span>;
+    case 'completed': return 'bg-success text-white';
+    case 'current': return 'bg-brand text-white';
+    case 'available': return 'bg-brand-soft text-brand-ink';
+    default: return 'bg-surface-strong text-ink-muted';
   }
 }
 
-function Pill({ tone, children }: { tone: 'done' | 'current' | 'muted'; children: React.ReactNode }) {
-  const cls =
-    tone === 'done'
-      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60'
-      : tone === 'current'
-        ? 'text-white bg-indigo-600'
-        : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700';
+function PlayGlyph() {
   return (
-    <span className={`text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${cls}`}>
-      {children}
-    </span>
+    <svg className="size-8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z" />
+    </svg>
   );
 }
 
-const CARD = 'bg-white dark:bg-slate-800 rounded-2xl ring-1 ring-[#E2E8F0] dark:ring-slate-700 shadow-sm';
+/** One round (or soft-square) node with its caption. Open nodes are links; locked ones are inert. */
+function PathNodeView({ item, courseId }: { item: PathItem; courseId?: string }) {
+  const { t } = useI18n();
+  const locked = item.status === 'locked';
+  const radius = item.shape === 'square' ? 'rounded-[1.4rem]' : 'rounded-full';
+  const circle = `${NODE_BASE} ${radius} ${nodeTone(item.status)}`;
+  const inner = (
+    <>
+      {item.status === 'current' && (
+        <span aria-hidden="true" className={`absolute inset-0 ${radius} bg-brand/30 motion-safe:animate-ping motion-reduce:hidden`} />
+      )}
+      <span className="relative flex items-center justify-center" aria-hidden="true">
+        {item.status === 'completed' ? <CheckIcon className="size-8 text-white" />
+          : item.status === 'current' ? <PlayGlyph />
+            : item.status === 'locked' ? <LockIcon className="size-6" />
+              : item.glyph}
+      </span>
+    </>
+  );
+
+  return (
+    <>
+      <div className="h-7 flex items-end justify-center pb-1">
+        {item.status === 'current' && (
+          <span className="rounded-full bg-surface ring-1 ring-brand-line px-2.5 py-0.5 text-[11px] font-extrabold text-brand-ink shadow-sm">
+            {t('Next')}
+          </span>
+        )}
+      </div>
+      {locked || !item.to ? (
+        <div className={circle} style={{ width: NODE_SIZE, height: NODE_SIZE }}>{inner}</div>
+      ) : (
+        <Link
+          to={item.to}
+          state={courseId ? ({ courseId } satisfies LessonNavState) : undefined}
+          aria-label={item.title}
+          className={`${circle} no-underline hover:scale-105 active:scale-95 motion-reduce:transition-none`}
+          style={{ width: NODE_SIZE, height: NODE_SIZE }}
+        >
+          {inner}
+        </Link>
+      )}
+      <div className={`mt-2 w-max max-w-[10rem] rounded-full px-4 py-1 text-center text-[13px] font-bold leading-5 break-words line-clamp-2 shadow-sm ${pillTone(item.status)}`}>
+        {item.title}
+      </div>
+      <span className="sr-only">{item.sub}</span>
+      {locked && item.srHint && <span className="sr-only">{item.srHint}</span>}
+    </>
+  );
+}
+
+/** Nodes laid out along a sine-like track, joined by dotted curves. Mirrors itself in RTL. */
+/** Width of [ref] in px, kept up to date (the dotted turns are drawn in real pixels so their corners stay round). */
+function useWidth(ref: React.RefObject<HTMLElement | null>): number {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const read = () => setW(el.clientWidth);
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return w;
+}
+
+/** Radius of the rounded right-angle turns. */
+const TURN_R = 18;
+/** Where the horizontal run sits inside a row: just under the title pill. */
+const RUN_Y = 160;
+
+function WindingPath({ items, courseId }: { items: PathItem[]; courseId?: string }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const width = useWidth(boxRef);
+  const n = items.length;
+  if (n === 0) return null;
+  const height = n * ROW_H;
+  const segments = width === 0 ? [] : items.slice(0, -1).map((item, i) => {
+    const x1 = (width * xPercent(i)) / 100;
+    const x2 = (width * xPercent(i + 1)) / 100;
+    const dir = x2 >= x1 ? 1 : -1;
+    const yRun = i * ROW_H + RUN_Y;
+    // Stop above the "Next" bubble when the next node is the current one, so the line never runs behind it.
+    const yEnd = (i + 1) * ROW_H + (items[i + 1].status === 'current' ? 0 : NODE_TOP - 4);
+    const tone = item.status === 'completed'
+      ? (items[i + 1].status === 'completed' ? 'text-success' : 'text-brand')
+      : 'text-line-strong';
+    // Out from under the title pill, straight across, round corner, straight down into the next node.
+    const d = `M ${x1} ${yRun} H ${x2 - dir * TURN_R} Q ${x2} ${yRun} ${x2} ${yRun + TURN_R} V ${yEnd}`;
+    return { d, tone, key: item.key };
+  });
+
+  return (
+    <div ref={boxRef} className="relative w-full" style={{ height: height + 24 }} role="list">
+      <svg
+        className="absolute inset-x-0 top-0 overflow-visible rtl:-scale-x-100"
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width || 1} ${height}`}
+        aria-hidden="true"
+      >
+        {segments.map((s) => (
+          <path
+            key={s.key}
+            d={s.d}
+            className={s.tone}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray="0 12"
+          />
+        ))}
+      </svg>
+      {items.map((item, i) => (
+        <div
+          key={item.key}
+          role="listitem"
+          aria-disabled={item.status === 'locked' ? true : undefined}
+          title={item.status === 'locked' ? item.lockedHint : undefined}
+          className="absolute flex flex-col items-center -translate-x-1/2 rtl:translate-x-1/2"
+          style={{ top: i * ROW_H, height: ROW_H, width: NODE_SIZE, insetInlineStart: `${xPercent(i)}%` }}
+        >
+          <PathNodeView item={item} courseId={courseId} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---- Chapter list ----------------------------------------------------------------------
 
 interface ChapterLessonListProps {
   courseId: string;
@@ -70,64 +229,54 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
   // before it (in course order) is fully complete (backend-computed status,
   // which includes passing the chapter quiz). The backend independently
   // enforces the previous-lesson gate on progress/completion.
-  const { t, plural } = useI18n();
+  const { t } = useI18n();
   const ordered = levels.flatMap(l => l.chapters);
   const lockedById = new Map<string, boolean>();
   ordered.forEach((ch, i) => {
     const prevDone = i === 0 || ordered[i - 1].status === 'completed';
     lockedById.set(ch.chapterId, ch.status !== 'completed' && !prevDone);
   });
-  const autoExpandId =
-    ordered.find(ch => ch.status === 'in_progress')?.chapterId ??
-    ordered.find(ch => ch.status !== 'completed' && !lockedById.get(ch.chapterId))?.chapterId;
 
   let chapterNumber = 0;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex justify-between items-center px-1">
-        <span className="text-slate-900 dark:text-white font-extrabold text-base tracking-tight">{t('Course Chapters')}</span>
-        <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">{plural(ordered.length, { one: t('1 Chapter'), two: t('2 Chapters'), few: t('{n} Chapters', { n: ordered.length }), other: t('{n} Chapters', { n: ordered.length }) })}</span>
-      </div>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-2">
       {levels.map(({ level, chapters }) => (
-        <section key={level.id} className="flex flex-col gap-3" aria-label={level.title}>
+        <div key={level.id} className="flex flex-col gap-2" aria-label={level.title}>
           {levels.length > 1 && (
-            <h2 className="text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-wider m-0 mt-2 px-1">
+            <h2 className="text-brand-ink text-xs font-extrabold uppercase tracking-wider m-0 mt-2 px-1">
               {level.code ? `${level.code} · ` : ''}{level.title}
             </h2>
           )}
           {chapters.map(chapter => {
             chapterNumber += 1;
             return (
-              <ChapterCard
+              <ChapterPath
                 key={chapter.chapterId}
                 courseId={courseId}
                 chapter={chapter}
                 number={chapterNumber}
                 locked={!!lockedById.get(chapter.chapterId)}
-                defaultExpanded={chapter.chapterId === autoExpandId}
               />
             );
           })}
-        </section>
+        </div>
       ))}
 
-      {finalExam && <FinalExamCard exam={finalExam} />}
+      {finalExam && <FinalExamNode exam={finalExam} />}
     </div>
   );
 }
 
-interface ChapterCardProps {
+interface ChapterPathProps {
   courseId: string;
   chapter: StudentChapter;
   number: number;
   locked: boolean;
-  defaultExpanded: boolean;
 }
 
-function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: ChapterCardProps) {
+function ChapterPath({ courseId, chapter, number, locked }: ChapterPathProps) {
   const { t } = useI18n();
-  const [expanded, setExpanded] = useState(defaultExpanded && !locked);
   const [data, setData] = useState<StudentLessonsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -141,223 +290,170 @@ function ChapterCard({ courseId, chapter, number, locked, defaultExpanded }: Cha
       .finally(() => setLoading(false));
   }, [chapter.chapterId, t]);
 
+  // Unlocked chapters load their lessons right away; locked ones show placeholders and never fetch.
   useEffect(() => {
-    if (expanded && !data && !loading && !error) load();
-  }, [expanded, data, loading, error, load]);
+    if (!locked && !data && !loading && !error) load();
+  }, [locked, data, loading, error, load]);
 
+  const isCompleted = chapter.status === 'completed';
   const statusText = locked
     ? t('Locked')
-    : chapter.status === 'completed'
+    : isCompleted
       ? t('Completed')
       : chapter.status === 'in_progress'
         ? t('In progress')
         : t('Not started');
 
-  const lessons = data?.lessons ?? [];
-  const currentIndex = lessons.findIndex(l => l.current);
-  const isCompleted = chapter.status === 'completed';
+  const lessonHint = t('Complete the previous lesson first');
+  const items: PathItem[] = [];
 
-  const badgeCls = isCompleted
-    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-    : locked
-      ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-      : 'bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400';
+  if (locked) {
+    for (let i = 0; i < chapter.lessonCount; i += 1) {
+      items.push({
+        key: `p${i}`,
+        status: 'locked',
+        shape: 'round',
+        glyph: null,
+        sub: '',
+        title: t('Lesson {n}', { n: i + 1 }),
+        lockedHint: lessonHint,
+      });
+    }
+    if (chapter.quizCount > 0) {
+      items.push({
+        key: 'pq',
+        status: 'locked',
+        shape: 'square',
+        glyph: null,
+        sub: t('Chapter quiz'),
+        title: t('Chapter quiz'),
+        lockedHint: t('Complete every lesson in this chapter to unlock the quiz'),
+      });
+    }
+  } else if (data) {
+    const lessons = data.lessons ?? [];
+    const currentIndex = lessons.findIndex(l => l.current);
+    lessons.forEach((lesson, i) => {
+      const status: NodeStatus = lesson.completed
+        ? 'completed'
+        : lesson.current
+          ? 'current'
+          : currentIndex >= 0 && i > currentIndex
+            ? 'locked'
+            : 'available';
+      const Glyph = GLYPHS[i % GLYPHS.length];
+      items.push({
+        key: lesson.id,
+        status,
+        shape: 'round',
+        glyph: <Glyph className="size-7" />,
+        sub: lesson.xpValue > 0
+          ? `${t('Lesson {n}', { n: i + 1 })} · ${t('{n} XP', { n: lesson.xpValue })}`
+          : t('Lesson {n}', { n: i + 1 }),
+        title: lesson.title,
+        to: `/lessons/${lesson.id}`,
+        lockedHint: lessonHint,
+      });
+    });
+    const quiz = data.quiz;
+    if (quiz) {
+      const quizLocked = quiz.locked && !quiz.completed;
+      items.push({
+        key: `quiz-${quiz.assessmentId}`,
+        status: quiz.completed ? 'completed' : quizLocked ? 'locked' : 'available',
+        shape: 'square',
+        glyph: <ClipboardIcon className="size-7" />,
+        sub: t('Chapter quiz'),
+        title: quiz.title,
+        to: `/assessments/${quiz.assessmentId}`,
+        lockedHint: t('Complete every lesson in this chapter to unlock the quiz'),
+        srHint: t('Chapter quiz · finish all lessons to unlock'),
+      });
+    }
+  }
 
   return (
-    <div className={`${CARD} p-4 sm:p-5 ${locked ? 'opacity-65' : ''}`}>
-      <div
-        role="button"
-        tabIndex={0}
-        className="flex items-start gap-4 cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        onClick={() => setExpanded(v => !v)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setExpanded(v => !v);
-          }
-        }}
-        aria-expanded={expanded}
-      >
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-extrabold text-base ${badgeCls}`}>
-          {isCompleted ? <CheckIcon className="size-6 text-white" /> : locked ? <LockIcon className="size-5" /> : <span>{t('Ch.{n}', { n: number })}</span>}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-center gap-2 mb-1">
-            <h3 className="font-bold text-slate-900 dark:text-white text-base m-0 leading-tight">
-              {t('Chapter {n}: {title}', { n: number, title: chapter.title })}
-            </h3>
-            <ChevronDownIcon className={`size-4 text-slate-400 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-          </div>
-          {chapter.description && (
-            <p className="text-slate-500 dark:text-slate-400 text-xs m-0 mb-3 leading-relaxed line-clamp-2">{chapter.description}</p>
-          )}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden" aria-hidden="true">
+    <section aria-label={chapter.title} className="flex flex-col">
+      {/* Chapter separator: a divider with a centred pill. */}
+      <div className="flex items-center gap-3 mt-4 mb-1">
+        <span aria-hidden="true" className="h-px flex-1 bg-line" />
+        <div
+          className={`max-w-[17rem] shrink rounded-2xl px-4 py-2 text-center ring-1 ${
+            isCompleted ? 'bg-success-soft ring-success-line' : locked ? 'bg-surface-sunken ring-line' : 'bg-surface ring-brand-line'
+          }`}
+        >
+          <h3 className="m-0 text-sm font-extrabold leading-tight text-ink break-words">
+            {t('Chapter {n}: {title}', { n: number, title: chapter.title })}
+          </h3>
+          <div className="mt-1.5 flex items-center gap-2">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-strong" aria-hidden="true">
               <div
-                className={`h-full rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-indigo-500 to-violet-500'}`}
+                className={`h-full rounded-full ${isCompleted ? 'bg-success' : 'bg-gradient-to-r rtl:bg-gradient-to-l from-brand to-secondary'}`}
                 style={{ width: `${chapter.percent}%` }}
               />
             </div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            <span className="whitespace-nowrap text-[11px] font-bold text-ink-muted">
               {chapter.completedLessonCount}/{chapter.lessonCount} · {statusText}
             </span>
           </div>
         </div>
+        <span aria-hidden="true" className="h-px flex-1 bg-line" />
       </div>
 
-      {expanded && (
-        <div className="mt-4">
-          {loading && <LoadingSpinner />}
-          {error && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-sm p-3" role="alert">
-              <span>{error}</span>
-              <Button size="sm" variant="secondary" onClick={load}>{t('Retry')}</Button>
-            </div>
-          )}
-          {data && lessons.length === 0 && (
-            <p className="text-slate-500 dark:text-slate-400 text-sm m-0">{t('No lessons published in this chapter yet.')}</p>
-          )}
-          {data && lessons.length > 0 && (
-            <div className="flex flex-col gap-2" role="list">
-              {lessons.map((lesson, i) => {
-                const status: LessonStatus = lesson.completed
-                  ? 'completed'
-                  : locked
-                    ? 'locked'
-                    : lesson.current
-                      ? 'current'
-                      : currentIndex >= 0 && i > currentIndex
-                        ? 'locked'
-                        : 'available';
-                const content = (
-                  <>
-                    <span className={statusPill(status)} aria-hidden="true">
-                      <StatusGlyph status={status} />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        {t('Lesson {n}', { n: i + 1 })}
-                      </span>
-                      <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{lesson.title}</span>
-                      {lesson.xpValue > 0 && (
-                        <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('{n} XP', { n: lesson.xpValue })}</span>
-                      )}
-                    </div>
-                    {status === 'completed' && <Pill tone="done">{t('Done')}</Pill>}
-                    {status === 'current' && <Pill tone="current">{t('Current')}</Pill>}
-                    {status !== 'locked' && <ChevronRightIcon className="size-4 text-slate-500 dark:text-slate-400 shrink-0 rtl:rotate-180" />}
-                  </>
-                );
-
-                if (status === 'locked') {
-                  return (
-                    <div
-                      key={lesson.id}
-                      className={`${ROW_BASE} ${ROW_LOCKED}`}
-                      role="listitem"
-                      aria-disabled="true"
-                      title={t('Complete the previous lesson first')}
-                    >
-                      {content}
-                    </div>
-                  );
-                }
-
-                return (
-                  <Link
-                    key={lesson.id}
-                    to={`/lessons/${lesson.id}`}
-                    state={{ courseId } satisfies LessonNavState}
-                    className={`${ROW_BASE} ${status === 'current' ? ROW_CURRENT : ROW_ACTIVE}`}
-                    role="listitem"
-                  >
-                    {content}
-                  </Link>
-                );
-              })}
-
-              {data.quiz && (
-                data.quiz.locked && !data.quiz.completed ? (
-                  <div
-                    className={`${ROW_BASE} ${ROW_LOCKED}`}
-                    role="listitem"
-                    aria-disabled="true"
-                    title={t('Complete every lesson in this chapter to unlock the quiz')}
-                  >
-                    <span className={statusPill('locked')} aria-hidden="true"><LockIcon className="size-4" /></span>
-                    <div className="flex-1 min-w-0">
-                      <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('Chapter quiz · finish all lessons to unlock')}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <Link
-                    to={`/assessments/${data.quiz.assessmentId}`}
-                    className={`${ROW_BASE} ${ROW_ACTIVE}`}
-                    role="listitem"
-                  >
-                    <span className={statusPill(data.quiz.completed ? 'completed' : 'current')} aria-hidden="true">
-                      {data.quiz.completed ? <CheckIcon className="size-5 text-emerald-600 dark:text-emerald-400" /> : <ClipboardIcon className="size-5" />}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="block font-bold text-slate-900 dark:text-white text-sm leading-snug">{data.quiz.title}</span>
-                      <span className="block text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t('Chapter quiz')}</span>
-                    </div>
-                    {data.quiz.completed && <Pill tone="done">{t('Passed')}</Pill>}
-                    <ChevronRightIcon className="size-4 text-slate-500 dark:text-slate-400 shrink-0 rtl:rotate-180" />
-                  </Link>
-                )
-              )}
-            </div>
-          )}
+      {loading && <LoadingSpinner />}
+      {error && (
+        <div className="my-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-danger-soft text-danger-ink text-sm p-3" role="alert">
+          <span>{error}</span>
+          <Button size="sm" variant="secondary" onClick={load}>{t('Retry')}</Button>
         </div>
       )}
-    </div>
+      {!locked && data && items.length === 0 && (
+        <p className="text-ink-muted text-sm text-center m-0 my-3">{t('No lessons published in this chapter yet.')}</p>
+      )}
+      {items.length > 0 && <WindingPath items={items} courseId={courseId} />}
+    </section>
   );
 }
 
-function FinalExamCard({ exam }: { exam: FinalExamSummary }) {
+function FinalExamNode({ exam }: { exam: FinalExamSummary }) {
   const { t } = useI18n();
   const unlocked = exam.unlocked || exam.passed === true;
-  const body = (
-    <div className="flex items-start gap-4">
-      <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-          exam.passed
-            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-            : unlocked
-              ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20'
-              : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
-        }`}
-      >
-        {exam.passed ? <CheckIcon className="size-6 text-white" /> : unlocked ? <ClipboardIcon className="size-5" /> : <LockIcon className="size-5" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="font-bold text-slate-900 dark:text-white text-base m-0 leading-tight">{exam.title}</h3>
-          {exam.passed && <Pill tone="done">{t('Passed')}</Pill>}
-        </div>
-        <p className="text-slate-500 dark:text-slate-400 text-xs m-0 leading-relaxed">
-          {exam.passed
-            ? exam.score != null
-              ? t('Final exam completed and passed (score {score}).', { score: exam.score })
-              : t('Final exam completed and passed.')
-            : unlocked
-              ? t('All chapters complete — the final exam is ready.')
-              : t('Complete every chapter (lessons and quizzes) to unlock the final exam.')}
-        </p>
-      </div>
-    </div>
-  );
+  const tone = exam.passed
+    ? 'bg-success text-white shadow-lg shadow-success/25'
+    : unlocked
+      ? 'bg-gradient-to-br from-brand to-secondary text-white shadow-lg shadow-brand/30 ring-4 ring-brand-soft'
+      : 'bg-surface-muted text-ink-muted ring-1 ring-line';
+  const circle = `${NODE_BASE} size-24 rounded-full ${tone}`;
+  const glyph = exam.passed ? <CheckIcon className="size-10 text-white" /> : unlocked ? <TrophyIcon className="size-10" /> : <LockIcon className="size-8" />;
 
-  return unlocked ? (
-    <Link
-      to={`/assessments/${exam.assessmentId}`}
-      className={`${CARD} block p-4 sm:p-5 no-underline hover:ring-indigo-300 dark:hover:ring-indigo-700 hover:shadow-md transition-all`}
-    >
-      {body}
-    </Link>
-  ) : (
-    <div aria-disabled="true" className={`${CARD} p-4 sm:p-5 opacity-65 cursor-not-allowed`}>{body}</div>
+  return (
+    <div className="mt-6 flex flex-col items-center gap-2 text-center">
+      <div className="flex items-center gap-3 w-full">
+        <span aria-hidden="true" className="h-px flex-1 bg-line" />
+        <span className="text-xs font-extrabold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-ink-muted">{t('Final exam')}</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-line" />
+      </div>
+      {unlocked ? (
+        <Link
+          to={`/assessments/${exam.assessmentId}`}
+          aria-label={exam.title}
+          className={`${circle} no-underline hover:scale-105 active:scale-95 motion-reduce:transition-none`}
+        >
+          <span aria-hidden="true">{glyph}</span>
+        </Link>
+      ) : (
+        <div aria-disabled="true" className={circle}><span aria-hidden="true">{glyph}</span></div>
+      )}
+      <h3 className="m-0 text-base font-extrabold leading-tight text-ink">{exam.title}</h3>
+      <p className="m-0 max-w-[18rem] text-xs leading-relaxed text-ink-muted">
+        {exam.passed
+          ? exam.score != null
+            ? t('Final exam completed and passed (score {score}).', { score: exam.score })
+            : t('Final exam completed and passed.')
+          : unlocked
+            ? t('All chapters complete — the final exam is ready.')
+            : t('Complete every chapter (lessons and quizzes) to unlock the final exam.')}
+      </p>
+    </div>
   );
 }

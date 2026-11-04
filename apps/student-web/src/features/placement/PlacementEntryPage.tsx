@@ -31,10 +31,10 @@ const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-5';
 function InfoRow({ icon, title, desc }: { icon: ReactNode; title: ReactNode; desc: ReactNode }) {
   return (
     <div className={`flex gap-4 items-center p-4 ${CARD}`}>
-      <div className="size-11 bg-indigo-50/80 dark:bg-indigo-950/60 rounded-xl flex items-center justify-center shrink-0">{icon}</div>
+      <div className="size-11 bg-brand-soft/80 rounded-xl flex items-center justify-center shrink-0">{icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="m-0 text-[15px] font-bold leading-snug text-slate-900 dark:text-white">{title}</p>
-        <p className="m-0 mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{desc}</p>
+        <p className="m-0 text-[15px] font-bold leading-snug text-ink">{title}</p>
+        <p className="m-0 mt-0.5 text-xs leading-relaxed text-ink-muted">{desc}</p>
       </div>
     </div>
   );
@@ -159,20 +159,20 @@ export function PlacementEntryPage() {
     const level = formatPlacementLevel(status.result.estimated_level);
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col items-center text-center gap-4 py-2">
             <div className="relative">
-              <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl opacity-25 blur-lg" />
-              <div className="relative size-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 flex flex-col items-center justify-center text-white shadow-xl shadow-indigo-500/25">
+              <div className="absolute -inset-3 bg-gradient-to-r from-brand to-secondary rounded-3xl opacity-25 blur-lg" />
+              <div className="relative size-24 rounded-3xl bg-gradient-to-br from-brand to-secondary flex flex-col items-center justify-center text-white shadow-xl shadow-brand/25">
                 <span className="font-extrabold text-3xl tracking-tight leading-none">{level.code ?? level.label}</span>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-200 mt-1">{t('Level')}</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-on-brand mt-1">{t('Level')}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{t('Your placement level')}</span>
-              {level.code && <span className="text-sm text-slate-500 dark:text-slate-400">{level.label}</span>}
+              <span className="text-xs font-extrabold uppercase tracking-wider text-brand-ink">{t('Your placement level')}</span>
+              {level.code && <span className="text-sm text-ink-muted">{level.label}</span>}
             </div>
             <Link to={`/placement/${status.attemptId}/result`} className="w-full sm:w-auto">
               <Button variant="secondary" size="lg" fullWidth>{t('View full result')}</Button>
@@ -202,11 +202,11 @@ export function PlacementEntryPage() {
     const attemptId = status.attemptId;
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="size-11 rounded-xl bg-success-soft text-success-ink flex items-center justify-center">
               <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
             </div>
             <h2 className={H2}>{t('Your test has been submitted')}</h2>
@@ -226,7 +226,7 @@ export function PlacementEntryPage() {
   if (noActiveTest) {
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         <EmptyState
           title={t('No placement test available')}
           message={t('There is no placement test published right now. Please check back later.')}
@@ -243,11 +243,11 @@ export function PlacementEntryPage() {
     const progress = loadPlacementProgress(attemptId);
     return (
       <div className={SHELL}>
-        <PageHeader eyebrow={t('Level assessment')} title={t('Placement Test')} />
+        <PageHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
         <Card>
           <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="size-11 rounded-xl bg-warning-soft text-warning-ink flex items-center justify-center">
               <ClockIcon className="size-5" />
             </div>
             <h2 className={H2}>{t('You have a test in progress')}</h2>
@@ -289,7 +289,6 @@ export function PlacementEntryPage() {
           <ClipboardIcon className="size-8" />
         </HeroBadge>
         <PageHeader
-          eyebrow={t('Placement Test')}
           title={test?.title ? t(test.title) : t('Placement Test')}
           subtitle={t('Calibrate your AI tutor to find your optimal starting point.')}
         />
@@ -297,20 +296,20 @@ export function PlacementEntryPage() {
       {actionError && <Banner variant="error">{actionError}</Banner>}
 
       {test && (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <InfoRow
-            icon={<ClockIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<ClockIcon className="size-5 text-brand-ink" />}
             title={t('About {n} minutes', { n: test.estimated_minutes })}
             desc={t('The test is timed once you start.')}
           />
           <InfoRow
-            icon={<ClipboardIcon className="size-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<ClipboardIcon className="size-5 text-brand-ink" />}
             title={`${sectionsText(test.total_sections)}${totalQuestions > 0 ? ` · ${questionsText(totalQuestions)}` : ''}`}
             desc={t('Work through each section in order.')}
           />
           <div className="md:col-span-2">
             <InfoRow
-              icon={<LightbulbIcon className="size-5 text-amber-500 dark:text-amber-400" />}
+              icon={<LightbulbIcon className="size-5 text-warning-ink" />}
               title={t('Helpful tip')}
               desc={t("You can skip questions you don't know — your level is calculated by AIM after you finish.")}
             />
@@ -320,13 +319,13 @@ export function PlacementEntryPage() {
 
       {sections.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">{t('Sections')}</h2>
-          <ol className="m-0 p-0 list-none grid gap-2.5 md:grid-cols-2">
+          <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-ink">{t('Sections')}</h2>
+          <ol className="m-0 p-0 list-none grid grid-cols-1 gap-2.5 md:grid-cols-2">
             {sections.map((s, i) => (
               <li key={s.id} className={`flex items-center gap-3 px-4 py-3 ${CARD}`}>
-                <span className="size-8 shrink-0 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-indigo-400 text-sm font-extrabold flex items-center justify-center">{i + 1}</span>
-                <span className="flex-1 min-w-0 text-sm font-semibold text-slate-900 dark:text-white">{t(s.title)}</span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">{questionsText(s.total_questions)}</span>
+                <span className="size-8 shrink-0 rounded-lg bg-brand-soft text-brand-ink text-sm font-extrabold flex items-center justify-center">{i + 1}</span>
+                <span className="flex-1 min-w-0 text-sm font-semibold text-ink">{t(s.title)}</span>
+                <span className="text-xs text-ink-muted shrink-0">{questionsText(s.total_questions)}</span>
               </li>
             ))}
           </ol>

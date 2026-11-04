@@ -34,6 +34,8 @@ import {
 import { StartChatSessionInput, StartChatSessionResult } from './chat-session-start.types';
 import { FocusRecapService } from './focus-recap.service';
 import { LastSessionRecapService } from './last-session-recap.service';
+import { PracticeTopicContextAdapter } from '../context-builder/adapters/practice-topic-context.adapter';
+import { isPracticeContextRef } from '../../practice/practice-context-ref';
 
 // P21-009: same default used by the Voice Teacher audio-submit API
 // (voice-audio-submit.controller.ts) for this codebase's Arabic-speaking
@@ -62,6 +64,7 @@ export class ChatSessionStartService {
     private readonly ttsGateway: TtsGateway | null,
     private readonly focusRecap: FocusRecapService,
     private readonly lastSessionRecap: LastSessionRecapService,
+    @Optional() private readonly practiceTopicContext?: PracticeTopicContextAdapter,
   ) {}
 
   async startSession(input: StartChatSessionInput): Promise<StartChatSessionResult> {
@@ -74,6 +77,12 @@ export class ChatSessionStartService {
 
     if (!contextRef) {
       throw new BadRequestException('Cannot start an AI chat session: contextRef is missing.');
+    }
+
+    // Speaking practice sessions may only be opened for an attempt the Practice API created
+    // (which is where the course-access check happens).
+    if (isPracticeContextRef(contextRef)) {
+      await this.practiceTopicContext?.assertOwned(studentId, contextRef);
     }
 
     // P21-007: resolve to the same session both chat and voice would use for

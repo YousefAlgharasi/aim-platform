@@ -90,8 +90,21 @@ describe('AiChatSessionRepository', () => {
     const repo = new AiChatSessionRepository(db);
     await repo.findActiveByStudentIdWithContextTitle(STUDENT_ID);
     expect(calls[0].sql).toContain('LEFT JOIN lessons');
+    expect(calls[0].sql).toContain('lesson_translations');
     expect(calls[0].sql).toContain("status = 'active'");
-    expect(calls[0].params).toEqual([STUDENT_ID]);
+    expect(calls[0].params).toEqual([STUDENT_ID, 'en']);
+  });
+
+  it('findActiveByStudentIdWithContextTitle() resolves the lesson title in the requested locale', async () => {
+    const calls: { sql: string; params: readonly unknown[] }[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      calls.push({ sql, params });
+      return { rows: [], rowCount: 0 };
+    });
+    const repo = new AiChatSessionRepository(db);
+    await repo.findActiveByStudentIdWithContextTitle(STUDENT_ID, 'ar');
+    expect(calls[0].params).toEqual([STUDENT_ID, 'ar']);
+    expect(calls[0].sql).toContain("l_lt_en.locale = 'en'");
   });
 
   describe('getOrCreateForContext()', () => {

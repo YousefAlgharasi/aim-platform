@@ -2,13 +2,40 @@ import { HttpStatus } from '@nestjs/common';
 import { ChaptersService } from './chapters.service';
 import { DatabaseService } from '../../../database/database.service';
 
+const clientQuery = jest.fn();
 const mockDb = {
   query: jest.fn(),
+  withClient: jest.fn(async (callback: (client: { query: jest.Mock }) => Promise<unknown>) =>
+    callback({ query: clientQuery }),
+  ),
 } as unknown as DatabaseService;
 
 const service = new ChaptersService(mockDb);
 
-beforeEach(() => jest.clearAllMocks());
+const draftRow = {
+  id: 'uuid-1',
+  level_id: 'level-uuid',
+  title: 'Chapter A',
+  slug: null,
+  description: null,
+  sort_order: 0,
+  status: 'draft',
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  locale: 'en',
+  available_locales: ['en'],
+};
+
+function statements(): string[] {
+  return clientQuery.mock.calls.map((c) => c[0] as string);
+}
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  (mockDb.withClient as jest.Mock).mockImplementation(
+    async (callback: (client: { query: jest.Mock }) => Promise<unknown>) => callback({ query: clientQuery }),
+  );
+});
 
 describe('ChaptersService.listChapters', () => {
   it('returns paginated result with no filters', async () => {
@@ -113,29 +140,43 @@ describe('ChaptersService.createChapter', () => {
     ).rejects.toMatchObject({ statusCode: HttpStatus.CONFLICT });
   });
 
-  it('creates chapter in draft status with auto sort_order', async () => {
+  it('creates the chapter and its English translation in one transaction', async () => {
     (mockDb.query as jest.Mock)
-      .mockResolvedValueOnce({ rows: [{ id: 'level-uuid' }] }) // level exists
-      .mockResolvedValueOnce({ rows: [{ max_order: '1' }] }) // nextSortOrder
-      .mockResolvedValueOnce({
-        rows: [
-          {
-            id: 'new-uuid',
-            level_id: 'level-uuid',
-            title: 'Chapter X',
-            slug: null,
-            description: null,
-            sort_order: 2,
-            status: 'draft',
-            created_at: '2026-01-01T00:00:00Z',
-            updated_at: '2026-01-01T00:00:00Z',
-          },
-        ],
-      });
+      .mockResolvedValueOnce({ rows: [{ id: 'level-uuid' }] })
+      .mockResolvedValueOnce({ rows: [{ max_order: '1' }] });
+    clientQuery
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rows: [{ ...draftRow, id: 'new-uuid', title: 'Chapter X', sort_order: 2 }] })
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({});
 
     const result = await service.createChapter({ levelId: 'level-uuid', title: 'Chapter X' });
+
     expect(result.status).toBe('draft');
     expect(result.sortOrder).toBe(2);
+    expect(result.availableLocales).toEqual(['en']);
+    const sql = statements();
+    expect(sql[0]).toBe('BEGIN');
+    expect(sql[1]).toContain('INSERT INTO chapters');
+    expect(sql[2]).toContain('INSERT INTO chapter_translations');
+    expect(sql[3]).toBe('COMMIT');
+  });
+
+  it('rolls back when the English translation cannot be written', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ id: 'level-uuid' }] })
+      .mockResolvedValueOnce({ rows: [{ max_order: '1' }] });
+    clientQuery
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rows: [draftRow] })
+      .mockRejectedValueOnce(new Error('translation insert failed'))
+      .mockResolvedValueOnce({});
+
+    await expect(service.createChapter({ levelId: 'level-uuid', title: 'Chapter X' })).rejects.toThrow(
+      'translation insert failed',
+    );
+    expect(statements()).toContain('ROLLBACK');
+    expect(statements()).not.toContain('COMMIT');
   });
 });
 
@@ -203,5 +244,74 @@ describe('ChaptersService.updateChapter', () => {
     await expect(
       service.updateChapter('uuid-1', { sortOrder: -1 }),
     ).rejects.toMatchObject({ statusCode: HttpStatus.BAD_REQUEST });
+  });
+});
+
+describe('ChaptersService.updateChapter English sync', () => {
+  it('keeps the English translation in sync when the title or description changes', async () => {
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({ rows: [draftRow] });
+    clientQuery
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rows: [{ ...draftRow, title: 'Renamed' }] })
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rows: [{ locale: 'ar' }, { locale: 'en' }] })
+      .mockResolvedValueOnce({});
+
+    const result = await service.updateChapter('uuid-1', { title: 'Renamed' });
+
+    expect(result.title).toBe('Renamed');
+    expect(result.availableLocales).toEqual(['ar', 'en']);
+    const sql = statements();
+    expect(sql[1]).toContain('UPDATE chapters');
+    expect(sql[2]).toContain('INSERT INTO chapter_translations');
+    expect(sql[sql.length - 1]).toBe('COMMIT');
+  });
+
+  it('does not touch translations when only the sort order changes', async () => {
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({ rows: [draftRow] });
+    clientQuery
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({ rows: [{ ...draftRow, sort_order: 4 }] })
+      .mockResolvedValueOnce({ rows: [{ locale: 'en' }] })
+      .mockResolvedValueOnce({});
+
+    await service.updateChapter('uuid-1', { sortOrder: 4 });
+
+    expect(statements().some((q) => q.includes('INSERT INTO chapter_translations'))).toBe(false);
+  });
+});
+
+describe('ChaptersService locale-aware reads', () => {
+  const row = { ...draftRow, locale: 'ar', available_locales: ['ar', 'en'] };
+
+  it('getChapter resolves text with the requested locale in one query', async () => {
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({ rows: [row] });
+
+    const result = await service.getChapter('uuid-1', 'ar');
+
+    const call = (mockDb.query as jest.Mock).mock.calls[0];
+    expect(call[0]).toContain('chapter_translations');
+    expect(call[1]).toEqual(['uuid-1', 'ar']);
+    expect(result.locale).toBe('ar');
+    expect(result.availableLocales).toEqual(['ar', 'en']);
+  });
+
+  it('listChapters passes the locale after the filters and searches translated text', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] })
+      .mockResolvedValueOnce({ rows: [row] });
+
+    await service.listChapters(1, 20, 'level-uuid', 'published', 'alphabet', 'ar');
+
+    expect((mockDb.query as jest.Mock).mock.calls[0][0]).toContain('chapter_translations');
+    expect((mockDb.query as jest.Mock).mock.calls[1][1]).toEqual(['level-uuid', 'published', '%alphabet%', 'ar', 20, 0]);
+  });
+
+  it('listChapters defaults to English', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ total: '0' }] })
+      .mockResolvedValueOnce({ rows: [] });
+    await service.listChapters(1, 20);
+    expect((mockDb.query as jest.Mock).mock.calls[1][1]).toEqual(['en', 20, 0]);
   });
 });

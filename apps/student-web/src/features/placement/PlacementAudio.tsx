@@ -104,7 +104,7 @@ export function QuestionAudio({ load, available = true, cacheKey, prefetch = fal
   }, []);
 
   if (missing) {
-    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t("Audio for this question isn't available yet.")}</p>;
+    return <p className="m-0 text-sm text-ink-muted">{t("Audio for this question isn't available yet.")}</p>;
   }
 
   return (
@@ -117,9 +117,9 @@ export function QuestionAudio({ load, available = true, cacheKey, prefetch = fal
       preload="auto"
       footer={
         error ? (
-          <p className="m-0 text-xs text-red-700 dark:text-red-400" role="alert">
+          <p className="m-0 text-xs text-danger-ink" role="alert">
             {error}{' '}
-            <button type="button" className="cursor-pointer border-0 bg-transparent p-0 py-2 font-semibold text-[#4F46E5] underline dark:text-indigo-400" onClick={() => void fetchClip()}>{t('Retry')}</button>
+            <button type="button" className="cursor-pointer border-0 bg-transparent p-0 py-2 font-semibold text-brand-ink underline " onClick={() => void fetchClip()}>{t('Retry')}</button>
           </p>
         ) : null
       }
@@ -237,7 +237,7 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
   }
 
   if (!supported) {
-    return <p className="m-0 text-sm text-slate-500 dark:text-slate-400">{t('Your browser does not support audio recording. You can skip this question.')}</p>;
+    return <p className="m-0 text-sm text-ink-muted">{t('Your browser does not support audio recording. You can skip this question.')}</p>;
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -246,14 +246,14 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
   return (
     <div className="flex flex-col items-center gap-4 py-4">
       <div className="relative">
-        {recording && <span className="absolute -inset-4 rounded-full bg-[#4F46E5]/10 animate-ping" />}
+        {recording && <span className="absolute -inset-4 rounded-full bg-brand/10 animate-ping" />}
         <button
           type="button"
           onClick={recording ? stop : start}
           disabled={!recording && disabled}
           aria-label={recording ? t('Stop recording') : previewUrl ? t('Record again') : t('Start recording')}
           className={`relative size-24 rounded-full border-0 cursor-pointer flex items-center justify-center shadow-xl transition-all duration-200 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed ${
-            recording ? 'bg-red-500 hover:bg-red-600 shadow-red-200 dark:shadow-red-950' : 'bg-[#4F46E5] hover:bg-[#4338CA] shadow-indigo-200 dark:shadow-indigo-950'
+            recording ? 'bg-danger hover:bg-danger shadow-danger/30' : 'bg-brand hover:bg-brand-hover shadow-brand/30'
           }`}
         >
           {recording ? (
@@ -267,17 +267,17 @@ export function SpeakingRecorder({ disabled, onRecorded }: SpeakingRecorderProps
         </button>
       </div>
       <div className="text-center">
-        <p className={`m-0 text-sm font-medium ${recording ? 'text-red-500 dark:text-red-400' : 'text-[#64748B] dark:text-slate-400'}`}>
+        <p className={`m-0 text-sm font-medium ${recording ? 'text-danger-ink' : 'text-ink-muted'}`}>
           {recording ? t('Recording… tap to stop') : previewUrl ? t('Tap to record again') : t('Tap to start recording')}
         </p>
         {recording && (
-          <p className="m-0 mt-1.5 font-mono text-xs font-semibold tracking-widest text-[#4F46E5] dark:text-indigo-400" aria-live="polite">
+          <p className="m-0 mt-1.5 font-mono text-xs font-semibold tracking-widest text-brand-ink" aria-live="polite">
             {t('Recording {time} / 01:00', { time: `${mm}:${ss}` })}
           </p>
         )}
       </div>
       {previewUrl && !recording && <AudioPlayer src={previewUrl} label={t('Your recording')} />}
-      {error && <p className="m-0 text-xs text-red-600 dark:text-red-400" role="alert">{error}</p>}
+      {error && <p className="m-0 text-xs text-danger-ink" role="alert">{error}</p>}
     </div>
   );
 }

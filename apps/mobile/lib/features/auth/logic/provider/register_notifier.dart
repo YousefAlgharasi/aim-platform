@@ -191,6 +191,7 @@ class RegisterNotifier extends StateNotifier<AppFormState> {
       final result = await _repository.register(
         email: _email,
         password: _password,
+        displayName: _fullName.trim(),
       );
 
       if (result.requiresEmailConfirmation || result.accessToken == null) {

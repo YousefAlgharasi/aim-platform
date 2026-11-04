@@ -11,10 +11,10 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <div
       role="alert"
-      className="rounded-2xl border border-red-100 dark:border-red-900/50 bg-red-50/70 dark:bg-red-950/30 p-6 flex flex-col items-center text-center gap-2"
+      className="rounded-2xl border border-danger-line bg-danger-soft/70 p-6 flex flex-col items-center text-center gap-2"
     >
-      <h3 className="m-0 text-base font-bold text-red-600 dark:text-red-400">{t('Something went wrong')}</h3>
-      <p className="m-0 text-sm text-red-600/80 dark:text-red-300/80 leading-relaxed">{message}</p>
+      <h3 className="m-0 text-base font-bold text-danger-ink">{t('Something went wrong')}</h3>
+      <p className="m-0 text-sm text-danger-ink leading-relaxed">{message}</p>
       {onRetry && (
         <div className="mt-2">
           <Button variant="secondary" onClick={onRetry}>{t('Try again')}</Button>

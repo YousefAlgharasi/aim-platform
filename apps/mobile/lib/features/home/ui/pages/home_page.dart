@@ -1009,38 +1009,7 @@ class _DailyMissionsList extends ConsumerWidget {
       onTap: onStart,
     );
 
-    final mission2 = _MissionItem(
-      iconData: Icons.mic_none_rounded,
-      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
-      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
-      label: l10n.homeMissionPracticeSpeaking,
-      done: false,
-      progress: 0,
-      total: 1,
-      onTap: () => context.push(
-        AppRoutePaths.voiceTeacher,
-        extra: {'contextRef': 'general'},
-      ),
-    );
-
-    final mission3 = _MissionItem(
-      iconData: Icons.edit_rounded,
-      iconColor: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
-      iconBgColor: isDark ? const Color(0xFF1E1B4B).withValues(alpha: 0.6) : const Color(0xFFEEF2FF),
-      label: l10n.homeMissionWriteParagraph,
-      done: false,
-      progress: 0,
-      total: 1,
-      onTap: () => context.push(
-        AppRoutePaths.aiTeacherChat,
-        extra: {
-          'contextRef': 'general',
-          'lessonTitle': l10n.homeMissionWritingPractice,
-        },
-      ),
-    );
-
-    final missions = [mission1, mission2, mission3];
+    final missions = [mission1];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

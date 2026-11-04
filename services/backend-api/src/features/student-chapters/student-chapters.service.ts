@@ -9,6 +9,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { StudentChaptersRepository } from './student-chapters.repository';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 import {
   StudentChapterStatus,
   StudentChapterSummary,
@@ -19,8 +20,12 @@ import {
 export class StudentChaptersService {
   constructor(private readonly repository: StudentChaptersRepository) {}
 
-  async getChapters(studentId: string, levelId: string): Promise<StudentChaptersResponse> {
-    const rows = await this.repository.findChaptersWithProgress(studentId, levelId);
+  async getChapters(
+    studentId: string,
+    levelId: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
+  ): Promise<StudentChaptersResponse> {
+    const rows = await this.repository.findChaptersWithProgress(studentId, levelId, locale);
 
     let everyChapterFullyComplete = rows.length > 0;
 
@@ -51,6 +56,7 @@ export class StudentChaptersService {
         chapterId: row.chapter_id,
         title: row.title,
         description: row.description,
+        locale: row.locale,
         levelCode: row.level_code,
         lessonCount,
         completedLessonCount,

@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Link } from 'react-router-dom';
 import * as ui from './ui';
 import { Card } from '../../components/common/Card';
@@ -22,9 +23,7 @@ export function RecommendationsPage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
-      <h1 className={ui.h1}>{t('Recommendations')}</h1>
-      <p className={ui.intro}>{t('Personalized next steps from the AIM engine, most important first.')}</p>
+      <PageTitleBar title={t('Recommendations')} subtitle={t('Personalized next steps from the AIM engine, most important first.')} />
 
       {recs.length === 0 ? (
         <EmptyState title={t('No recommendations')} message={t('Complete more lessons to get personalized recommendations.')} />
@@ -40,7 +39,7 @@ export function RecommendationsPage() {
                     <span className={ui.badge(ui.tone.neutral)}>#{r.rank}</span>
                   </div>
                 </div>
-                <p className="m-0 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{r.reason}</p>
+                <p className="m-0 text-sm leading-relaxed text-ink-soft">{humanize(r.reason)}</p>
                 <p className={ui.meta}>
                   {t('Generated {date}', { date: formatDate(r.generatedAt) })}
                   {r.expiresAt ? ` · ${t('Expires {date}', { date: formatDate(r.expiresAt) })}` : ''}

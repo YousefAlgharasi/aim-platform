@@ -11,7 +11,7 @@
 //     AuthorizedRole.STUDENT.
 //   - studentId always resolved from the JWT — never from client input.
 
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -19,6 +19,9 @@ import { AuthenticatedUser } from '../../auth/authenticated-user';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { RoleGuard } from '../../auth/authorization/role.guard';
+import { LocaleHeadersInterceptor } from '../../common/locale/locale-headers.interceptor';
+import { LocaleResolverService } from '../../common/locale/locale-resolver.service';
+import { LocaleContext, RequestLocale } from '../../common/locale/request-locale.decorator';
 import { EnrollmentService } from './enrollment.service';
 import { CourseAccessService } from '../course-billing/course-access.service';
 import { CurrentEnrollmentResponse, EnrollResponse } from './enrollment.types';
@@ -28,10 +31,12 @@ import { CurrentEnrollmentResponse, EnrollResponse } from './enrollment.types';
 @UseGuards(SupabaseJwtAuthGuard, RoleGuard)
 @RequireRoles(AuthorizedRole.STUDENT)
 @ApiBearerAuth()
+@UseInterceptors(LocaleHeadersInterceptor)
 export class EnrollmentController {
   constructor(
     private readonly enrollmentService: EnrollmentService,
     private readonly courseAccess: CourseAccessService,
+    private readonly localeResolver: LocaleResolverService,
   ) {}
 
   @Post('courses/:id/enroll')
@@ -49,9 +54,11 @@ export class EnrollmentController {
   async enroll(
     @Param('id') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<EnrollResponse> {
     await this.courseAccess.assertAccess(user.id, courseId);
-    return this.enrollmentService.enroll(user.id, courseId);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.enrollmentService.enroll(user.id, courseId, locale);
   }
 
   @Get('enrollment/current')
@@ -61,7 +68,9 @@ export class EnrollmentController {
   })
   async getCurrent(
     @CurrentUser() user: AuthenticatedUser,
+    @RequestLocale() localeCtx: LocaleContext,
   ): Promise<CurrentEnrollmentResponse> {
-    return this.enrollmentService.getCurrentEnrollment(user.id);
+    const locale = await this.localeResolver.resolve(localeCtx);
+    return this.enrollmentService.getCurrentEnrollment(user.id, locale);
   }
 }

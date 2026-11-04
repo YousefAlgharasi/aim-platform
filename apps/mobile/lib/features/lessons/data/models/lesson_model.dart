@@ -26,7 +26,7 @@ class LessonModel extends Lesson {
       id: json['id'] as String,
       chapterId: json['chapterId'] as String,
       title: json['title'] as String,
-      description: json['description'] as String,
+      description: json['description'] as String? ?? '',
       status: json['status'] as String,
       sortOrder: (json['sortOrder'] as num).toInt(),
       xpValue: (json['xpValue'] as num?)?.toInt() ?? 0,

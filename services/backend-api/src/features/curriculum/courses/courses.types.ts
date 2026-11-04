@@ -22,6 +22,8 @@ export interface CourseRow {
   status: CurriculumContentStatus;
   created_at: string;
   updated_at: string;
+  locale: string;
+  available_locales: string[];
 }
 
 export interface CourseSummary {
@@ -33,6 +35,8 @@ export interface CourseSummary {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  locale: string;
+  availableLocales: string[];
 }
 
 export interface CourseListResponse {

@@ -8,8 +8,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LevelForm } from './level-form';
-import { ChapterForm } from './chapter-form';
-import { LessonForm } from './lesson-form';
+import { ChapterForm, type ChapterFormSubmit } from './chapter-form';
+import { LessonForm, type LessonFormSubmit } from './lesson-form';
+import type { TranslationsLoadResult } from '../hooks/use-translated-fields';
+import { getLocaleMeta, missingContentLocales } from '../config/content-locales';
 import { ContentStatusWorkflow } from './content-status-workflow';
 import type { ContentStatus } from '../api/admin-content-status-api';
 import type { AdminLevelSummary } from '../api/admin-levels-api';
@@ -40,25 +42,17 @@ export type CurriculumTreeActions = {
   readonly transitionLevel: (levelId: string, action: TransitionAction) => Promise<ActionResult>;
 
   readonly fetchChapters: (levelId: string) => Promise<{ data?: AdminChapterSummary[]; error?: string }>;
-  readonly createChapter: (
-    levelId: string,
-    data: { title: string; slug: string | null; description: string | null },
-  ) => Promise<ActionResult>;
-  readonly updateChapter: (
-    chapterId: string,
-    data: { title: string; slug: string | null; description: string | null },
-  ) => Promise<ActionResult>;
+  readonly createChapter: (levelId: string, data: ChapterFormSubmit) => Promise<ActionResult>;
+  readonly updateChapter: (chapterId: string, data: ChapterFormSubmit) => Promise<ActionResult>;
+  readonly loadChapterTranslations?: (chapterId: string) => Promise<TranslationsLoadResult>;
+  readonly removeChapterTranslation?: (chapterId: string, locale: string) => Promise<ActionResult>;
   readonly transitionChapter: (chapterId: string, action: TransitionAction) => Promise<ActionResult>;
 
   readonly fetchLessons: (chapterId: string) => Promise<{ data?: AdminLessonSummary[]; error?: string }>;
-  readonly createLesson: (
-    chapterId: string,
-    data: { title: string; description: string },
-  ) => Promise<ActionResult>;
-  readonly updateLesson: (
-    lessonId: string,
-    data: { title: string; description: string },
-  ) => Promise<ActionResult>;
+  readonly createLesson: (chapterId: string, data: LessonFormSubmit) => Promise<ActionResult>;
+  readonly updateLesson: (lessonId: string, data: LessonFormSubmit) => Promise<ActionResult>;
+  readonly loadLessonTranslations?: (lessonId: string) => Promise<TranslationsLoadResult>;
+  readonly removeLessonTranslation?: (lessonId: string, locale: string) => Promise<ActionResult>;
   readonly transitionLesson: (lessonId: string, action: TransitionAction) => Promise<ActionResult>;
 
   readonly fetchLessonSkills: (lessonId: string) => Promise<{ data?: LessonSkillBadge[]; error?: string }>;
@@ -77,6 +71,20 @@ const STATUS_DOT: Record<string, string> = {
   published: 'var(--color-success-500)',
   archived: 'var(--text-muted)',
 };
+
+function MissingTranslations({ availableLocales }: { readonly availableLocales?: readonly string[] }) {
+  const missing = missingContentLocales(availableLocales);
+  if (missing.length === 0) return null;
+  return (
+    <span className="ctree-missing">
+      {missing.map((code) => (
+        <span key={code} className="ctree-missing-chip" title={`No ${getLocaleMeta(code).label} translation`}>
+          {getLocaleMeta(code).label} missing
+        </span>
+      ))}
+    </span>
+  );
+}
 
 function StatusDot({ status }: { readonly status: string }) {
   return <span className="ctree-dot" style={{ background: STATUS_DOT[status] ?? 'var(--text-muted)' }} />;
@@ -184,6 +192,11 @@ export function CurriculumTree({ courseId, courseTitle, actions }: Props) {
         .ctree-node-toggle svg { transition: transform 0.15s; }
         .ctree-node-toggle--open svg { transform: rotate(90deg); }
         .ctree-node-title { font-weight: 600; font-size: 13px; color: var(--text-primary); flex: 1; }
+        .ctree-missing { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+        .ctree-missing-chip {
+          font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; white-space: nowrap;
+          background: color-mix(in srgb, var(--color-warning-500, #f59e0b) 18%, transparent); color: var(--text-secondary);
+        }
         .ctree-node-badge { font-size: 11px; background: var(--surface-sunken); padding: 1px 6px; border-radius: 4px; color: var(--text-secondary); }
         .ctree-node-actions { display: flex; gap: 4px; }
         .ctree-node-btn {
@@ -258,7 +271,7 @@ function LevelNode({
     return result;
   }
 
-  async function handleCreateChapter(data: { title: string; slug: string | null; description: string | null }) {
+  async function handleCreateChapter(data: ChapterFormSubmit) {
     const result = await actions.createChapter(level.id, data);
     if (!result.error) { setShowCreateChapter(false); await loadChapters(); }
     return result;
@@ -374,7 +387,7 @@ function ChapterNode({
     if (next && lessons === null) loadLessons();
   }
 
-  async function handleUpdate(data: { title: string; slug: string | null; description: string | null }) {
+  async function handleUpdate(data: ChapterFormSubmit) {
     const result = await actions.updateChapter(chapter.id, data);
     if (!result.error) { setMode('view'); onChanged(); }
     return result;
@@ -386,7 +399,7 @@ function ChapterNode({
     return result;
   }
 
-  async function handleCreateLesson(data: { title: string; description: string }) {
+  async function handleCreateLesson(data: LessonFormSubmit) {
     const result = await actions.createLesson(chapter.id, data);
     if (!result.error) { setShowCreateLesson(false); await loadLessons(); }
     return result;
@@ -396,7 +409,14 @@ function ChapterNode({
     return (
       <li className="ctree-node">
         <div className="ctree-node-edit">
-          <ChapterForm mode="edit" initial={chapter} onSubmit={handleUpdate} onCancel={() => setMode('view')} />
+          <ChapterForm
+            mode="edit"
+            initial={chapter}
+            onSubmit={handleUpdate}
+            onCancel={() => setMode('view')}
+            loadTranslations={actions.loadChapterTranslations}
+            onRemoveTranslation={actions.removeChapterTranslation}
+          />
         </div>
       </li>
     );
@@ -434,6 +454,7 @@ function ChapterNode({
         </button>
         <StatusDot status={chapter.status} />
         <span className="ctree-node-title">{chapter.title}</span>
+        <MissingTranslations availableLocales={chapter.availableLocales} />
         <div className="ctree-node-actions">
           <button type="button" className="ctree-node-btn" onClick={() => setMode('status')}>Status</button>
           <button type="button" className="ctree-node-btn" onClick={() => setMode('edit')}>Edit</button>
@@ -499,7 +520,7 @@ function LessonNode({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id]);
 
-  async function handleUpdate(data: { title: string; description: string }) {
+  async function handleUpdate(data: LessonFormSubmit) {
     const result = await actions.updateLesson(lesson.id, data);
     if (!result.error) { setMode('view'); onChanged(); }
     return result;
@@ -515,7 +536,14 @@ function LessonNode({
     return (
       <li className="ctree-node">
         <div className="ctree-node-edit">
-          <LessonForm mode="edit" initial={lesson} onSubmit={handleUpdate} onCancel={() => setMode('view')} />
+          <LessonForm
+            mode="edit"
+            initial={lesson}
+            onSubmit={handleUpdate}
+            onCancel={() => setMode('view')}
+            loadTranslations={actions.loadLessonTranslations}
+            onRemoveTranslation={actions.removeLessonTranslation}
+          />
         </div>
       </li>
     );
@@ -546,6 +574,7 @@ function LessonNode({
         <span style={{ width: 14 }} />
         <StatusDot status={lesson.status} />
         <span className="ctree-node-title">{lesson.title}</span>
+        <MissingTranslations availableLocales={lesson.availableLocales} />
         <div className="ctree-node-actions">
           <Link href={`/admin/content/lessons/${lesson.id}`} className="ctree-node-link">
             <span className="ctree-node-btn">Content</span>

@@ -22,10 +22,62 @@ export class AuthRegisterDto {
   @MinLength(8)
   password!: string;
 
+  @ApiProperty({ required: false, description: 'Full / display name for the new student profile.' })
+  @IsOptional()
+  @IsString()
+  displayName?: string;
+
+  @ApiProperty({ required: false, description: 'Alias for displayName.' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({ required: false, description: 'Alias for displayName.' })
+  @IsOptional()
+  @IsString()
+  fullName?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  preferredLanguage?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
   @ApiProperty({ required: false, description: 'Web origin to redirect to after email confirmation. Must match an allowed CORS origin.' })
   @IsOptional()
   @IsUrl({ require_tld: false })
   redirectUrl?: string;
+}
+
+export class AuthBootstrapDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  displayName?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  preferredLanguage?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
 }
 
 export class AuthRefreshDto {

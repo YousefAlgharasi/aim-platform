@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,6 +25,12 @@ import { SupabaseJwtAuthGuard } from '../../../auth/supabase-jwt-auth.guard';
 import { PermissionGuard } from '../../../auth/authorization/permission.guard';
 import { RequirePermissions } from '../../../auth/authorization/required-permissions.decorator';
 import { CurriculumPermission } from '../curriculum.permissions';
+import {
+  LocaleContext,
+  LocaleHeadersInterceptor,
+  LocaleResolverService,
+  RequestLocale,
+} from '../../../common/locale';
 import { CoursesService } from './courses.service';
 import { CreateCourseInput, UpdateCourseInput } from './courses.types';
 
@@ -32,9 +39,13 @@ import { CreateCourseInput, UpdateCourseInput } from './courses.types';
 @UseGuards(SupabaseJwtAuthGuard, PermissionGuard)
 @ApiBearerAuth()
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(
+    private readonly coursesService: CoursesService,
+    private readonly localeResolver: LocaleResolverService,
+  ) {}
 
   @Get()
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'List courses. Requires curriculum.read permission.' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -51,22 +62,28 @@ export class CoursesController {
     @Query('limit') limit = '20',
     @Query('status') status?: string,
     @Query('q') q?: string,
+    @RequestLocale() localeCtx?: LocaleContext,
   ) {
     return this.coursesService.listCourses(
       parseInt(page, 10) || 1,
       parseInt(limit, 10) || 20,
       status,
       q,
+      this.explicitLocale(localeCtx),
     );
   }
 
   @Get(':id')
+  @UseInterceptors(LocaleHeadersInterceptor)
   @RequirePermissions(CurriculumPermission.CONTENT_READ_PUBLISHED)
   @ApiOperation({ summary: 'Get course by ID. Requires curriculum.read permission.' })
   @ApiOkResponse({ description: 'Course detail.' })
   @ApiNotFoundResponse({ description: 'Course not found.' })
-  async getCourse(@Param('id', ParseUUIDPipe) id: string) {
-    return this.coursesService.getCourse(id);
+  async getCourse(
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() localeCtx?: LocaleContext,
+  ) {
+    return this.coursesService.getCourse(id, this.explicitLocale(localeCtx));
   }
 
   @Post()
@@ -88,5 +105,9 @@ export class CoursesController {
     @Body() body: UpdateCourseInput,
   ) {
     return this.coursesService.updateCourse(id, body);
+  }
+
+  private explicitLocale(localeCtx?: LocaleContext) {
+    return localeCtx ? this.localeResolver.resolveExplicit(localeCtx) : undefined;
   }
 }

@@ -112,6 +112,13 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
+      if (course.locked) {
+        // Above the student's unlocked level: nothing to load (the server
+        // would answer 403 COURSE_LOCKED). Show the empty state, not an error.
+        if (mounted) setState(() => _state = _LoadState.empty);
+        return;
+      }
+
       if (course.needsPayment) {
         if (!mounted) return;
         setState(() {

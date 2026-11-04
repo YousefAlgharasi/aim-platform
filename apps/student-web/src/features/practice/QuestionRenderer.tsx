@@ -18,7 +18,7 @@ interface QuestionRendererProps {
 }
 
 const INPUT_CLS =
-  'w-full rounded-[14px] px-4 py-3 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-white ring-1 ring-[#E2E8F0] dark:ring-slate-700 border-0 outline-none focus:ring-2 focus:ring-[#4F46E5] disabled:opacity-70';
+  'w-full rounded-[14px] px-4 py-3 text-base bg-surface text-ink ring-1 ring-line border-0 outline-none focus:ring-2 focus:ring-focus disabled:opacity-70';
 
 /**
  * Renders a backend-delivered session question (GET /sessions/:id/questions).
@@ -45,11 +45,11 @@ export function QuestionRenderer({
       <div className={`${questionCard} flex flex-col gap-3`}>
         <div>
           {questionNumber != null && questionTotal != null && (
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider block mb-2">
+            <span className="text-brand-ink font-bold text-xs uppercase tracking-wider block mb-2">
               {t('Question {n} of {total}', { n: questionNumber, total: questionTotal })}
             </span>
           )}
-          <p className="text-slate-900 dark:text-white font-bold text-lg leading-snug m-0">{question.stem}</p>
+          <p className="text-ink font-bold text-lg leading-snug m-0">{question.stem}</p>
         </div>
         {isListening && (
           <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label={t('Play recording')} />
@@ -62,18 +62,18 @@ export function QuestionRenderer({
           {options.map(option => {
             const isSelected = selectedAnswer === option.id;
             let cardStyle =
-              'bg-white dark:bg-slate-800/90 ring-1 ring-slate-200/80 dark:ring-slate-700 hover:ring-indigo-200 text-slate-900 dark:text-slate-100';
+              'bg-surface ring-1 ring-line/80 hover:ring-brand-line text-ink';
             if (isSelected && disabled && result === true) {
-              cardStyle = 'bg-emerald-50 dark:bg-emerald-950/60 ring-2 ring-emerald-500 text-emerald-800 dark:text-emerald-300';
+              cardStyle = 'bg-success-soft ring-2 ring-success text-success-ink';
             } else if (isSelected && disabled && result === false) {
-              cardStyle = 'bg-rose-50 dark:bg-rose-950/60 ring-2 ring-rose-500 text-rose-800 dark:text-rose-300';
+              cardStyle = 'bg-danger-soft ring-2 ring-danger text-danger-ink';
             } else if (isSelected) {
-              cardStyle = 'bg-indigo-50/50 dark:bg-indigo-950/60 ring-2 ring-[#4F46E5] text-indigo-700 dark:text-indigo-300';
+              cardStyle = 'bg-brand-soft/50 ring-2 ring-brand-ink text-brand-ink';
             }
             return (
               <label
                 key={option.id}
-                className={`relative w-full p-4 rounded-2xl text-start font-bold text-sm transition-all duration-200 flex items-center justify-between gap-3 focus-within:outline focus-within:outline-2 focus-within:outline-indigo-500 ${cardStyle} ${
+                className={`relative w-full p-4 rounded-2xl text-start font-bold text-sm transition-all duration-200 flex items-center justify-between gap-3 focus-within:outline focus-within:outline-2 focus-within:outline-brand-ink ${cardStyle} ${
                   disabled ? 'cursor-default' : 'cursor-pointer'
                 }`}
               >
@@ -88,7 +88,7 @@ export function QuestionRenderer({
                 />
                 <span>{option.text}</span>
                 {isSelected && disabled && result === true && (
-                  <CheckIcon className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <CheckIcon className="size-5 text-success-ink shrink-0" />
                 )}
               </label>
             );

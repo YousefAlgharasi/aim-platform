@@ -84,11 +84,11 @@ export class PlacementLevelStateService {
     const targetStudentId = profileResult.rows[0]?.id ?? studentId;
 
     // On first placement (no existing row) max_unlocked_cefr_rank is seeded
-    // equal to current_cefr_rank — the P20-011 exception. On a retake
-    // (row already exists), only current_cefr_rank/source/last_computed_at
-    // are refreshed; max_unlocked_cefr_rank is left untouched so a retake
-    // can never strip a ceiling the student already earned via completion
-    // (P20-011 owns all further advancement of that field).
+    // equal to current_cefr_rank — the P20-011 exception. On a later
+    // placement (row already exists, e.g. a "start from scratch" student who
+    // now takes the test, or a retake after the cooldown) the ceiling can only
+    // go UP: GREATEST keeps any ceiling already earned via completion, while a
+    // better placement result raises it.
     await this.db.query(
       `INSERT INTO student_level_state
          (student_id, track_slug, current_cefr_rank, max_unlocked_cefr_rank, source, last_computed_at)
@@ -96,6 +96,7 @@ export class PlacementLevelStateService {
        ON CONFLICT (student_id, track_slug)
        DO UPDATE SET
          current_cefr_rank = EXCLUDED.current_cefr_rank,
+         max_unlocked_cefr_rank = GREATEST(student_level_state.max_unlocked_cefr_rank, EXCLUDED.max_unlocked_cefr_rank),
          source = 'placement',
          last_computed_at = now(),
          updated_at = now()`,

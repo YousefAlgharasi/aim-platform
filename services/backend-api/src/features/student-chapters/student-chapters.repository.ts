@@ -13,11 +13,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { chapterTextSql } from '../../common/locale/course-text.sql';
+import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 
 interface StudentChapterRow {
   readonly chapter_id: string;
   readonly title: string;
   readonly description: string | null;
+  readonly locale: string;
   readonly sort_order: number;
   readonly level_code: string | null;
   readonly lesson_count: string;
@@ -41,7 +44,9 @@ export class StudentChaptersRepository {
   async findChaptersWithProgress(
     studentId: string,
     levelId: string,
+    locale: SupportedLocale = DEFAULT_LOCALE,
   ): Promise<StudentChapterRow[]> {
+    const text = chapterTextSql('ch', '$3');
     const result = await this.db.query<StudentChapterRow>(
       `WITH chapter_lessons AS (
          SELECT ch.id AS chapter_id, les.id AS lesson_id
@@ -51,8 +56,9 @@ export class StudentChaptersRepository {
        )
        SELECT
          ch.id AS chapter_id,
-         ch.title AS title,
-         ch.description AS description,
+         ${text.title} AS title,
+         ${text.description} AS description,
+         ${text.locale} AS locale,
          ch.sort_order AS sort_order,
          lv.code AS level_code,
          COUNT(DISTINCT cl.lesson_id) AS lesson_count,
@@ -72,14 +78,15 @@ export class StudentChaptersRepository {
              )
          ) AS quizzes_passed
        FROM chapters ch
+       ${text.joins}
        JOIN levels lv ON lv.id = ch.level_id
        LEFT JOIN chapter_lessons cl ON cl.chapter_id = ch.id
        LEFT JOIN lesson_progress lp
          ON lp.lesson_id = cl.lesson_id AND lp.student_id = $2
        WHERE ch.level_id = $1 AND ch.status = 'published'
-       GROUP BY ch.id, ch.title, ch.description, ch.sort_order, lv.code
+       GROUP BY ch.id, ch_cht_req.id, ch_cht_en.id, ch.title, ch.description, ch.sort_order, lv.code
        ORDER BY ch.sort_order ASC, ch.created_at ASC`,
-      [levelId, studentId],
+      [levelId, studentId, locale],
     );
     return result.rows;
   }

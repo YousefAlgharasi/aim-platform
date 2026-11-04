@@ -1,3 +1,4 @@
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -31,7 +32,7 @@ function ReviewList({ items }: { items: ReviewScheduleEntry[] }) {
               <span className={ui.itemTitle} title={r.skillId}>{prettifySkillId(r.skillId)}</span>
               <span className={ui.badge(statusTone(r.status))}>{humanize(r.status)}</span>
             </div>
-            <span className="text-[15px] font-bold text-slate-900 dark:text-white">{dueLabel(r.dueAt)}</span>
+            <span className="text-[15px] font-bold text-ink">{dueLabel(r.dueAt)}</span>
             <p className={ui.meta}>
               {t('Every {interval}', { interval: formatInterval(r.intervalDays) })} ·{' '}
               {plural(r.repetitionCount, {
@@ -65,9 +66,7 @@ export function ReviewSchedulePage() {
 
   return (
     <div className={ui.pageStack}>
-      <ui.BackLink to="/progress">{t('Progress')}</ui.BackLink>
-      <h1 className={ui.h1}>{t('Review schedule')}</h1>
-      <p className={ui.intro}>{t('Spaced-repetition reviews scheduled for you to keep skills fresh.')}</p>
+      <PageTitleBar title={t('Review schedule')} subtitle={t('Spaced-repetition reviews scheduled for you to keep skills fresh.')} />
 
       {data.reviewSchedules.length === 0 ? (
         <EmptyState title={t('No reviews scheduled')} message={t('Reviews are scheduled automatically as you practice skills.')} />

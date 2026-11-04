@@ -87,9 +87,14 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthRegisterResult> register({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     try {
-      return await _datasource.register(email: email, password: password);
+      return await _datasource.register(
+        email: email,
+        password: password,
+        displayName: displayName,
+      );
     } on ApiClientException catch (e) {
       throw AppException(code: e.code, message: e.message);
     }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { LocaleModule } from '../../common/locale/locale.module';
 import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { CourseBillingModule } from '../course-billing/course-billing.module';
@@ -10,7 +11,7 @@ import { StudentCoursesRepository } from './student-courses.repository';
 import { StudentCoursesService } from './student-courses.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, CourseBillingModule],
+  imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, CourseBillingModule, LocaleModule],
   controllers: [StudentCoursesController],
   providers: [StudentCoursesRepository, StudentCoursesService],
   exports: [StudentCoursesService],

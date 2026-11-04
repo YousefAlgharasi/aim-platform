@@ -16,7 +16,7 @@ import {
   type SupportTicket,
   type SupportTicketComment,
 } from './supportApi';
-import { PageHeader, BackLink, SectionTitle, Field, StatusPill, labelCls, bodyCls, textareaCls } from '../profile/ui';
+import { PageHeader, SectionTitle, Field, StatusPill, labelCls, bodyCls, textareaCls } from '../profile/ui';
 
 function statusTone(status: SupportTicket['status']): 'success' | 'neutral' | 'indigo' {
   switch (status) {
@@ -83,9 +83,9 @@ export function TicketDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow={t('Support ticket')} title={ticket.subject} back={<BackLink to="/support" label="Back to support" />} />
+      <PageHeader title={ticket.subject} />
 
-      <div className="grid gap-5 lg:grid-cols-3 items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 items-start">
         <div className="lg:col-span-1">
           <Card>
             <div className="flex flex-col gap-3.5">
@@ -136,9 +136,9 @@ export function TicketDetailPage() {
               {sentComments.length > 0 && (
                 <ul className="list-none m-0 p-0 flex flex-col gap-2.5">
                   {sentComments.map(c => (
-                    <li key={c.id} className="rounded-2xl rounded-ee-md bg-indigo-50 dark:bg-indigo-950/30 px-4 py-3 flex flex-col gap-1">
+                    <li key={c.id} className="rounded-2xl rounded-ee-md bg-brand-soft px-4 py-3 flex flex-col gap-1">
                       <span className={`${bodyCls} whitespace-pre-wrap`}>{c.body}</span>
-                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('You')} · {formatDateTime(c.createdAt)}</span>
+                      <span className="text-xs font-semibold text-ink-muted">{t('You')} · {formatDateTime(c.createdAt)}</span>
                     </li>
                   ))}
                 </ul>
