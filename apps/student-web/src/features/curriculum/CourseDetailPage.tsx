@@ -15,7 +15,6 @@ import {
   fetchCurrentEnrollment,
   fetchStudentChapters,
   fetchStudentCourses,
-  needsPayment,
   type CurrentEnrollment,
   type FinalExamSummary,
   type LevelWithChapters,
@@ -54,7 +53,7 @@ export function CourseDetailPage() {
           setNotFound(true);
           return;
         }
-        if (found.locked || needsPayment(found)) {
+        if (found.locked) {
           setLevels([]);
           setFinalExam(null);
           return;
@@ -116,17 +115,6 @@ export function CourseDetailPage() {
 
       {course.locked ? (
         <EmptyState title={t('Course locked')} message={t(COURSE_LOCKED_MESSAGE)} />
-      ) : needsPayment(course) ? (
-        <EmptyState
-          title={t('Get this course to continue')}
-          message={course.access?.status === 'pending'
-            ? t('The course unlocks as soon as an admin confirms your payment.')
-            : course.access?.status === 'failed'
-              ? t("You didn't finish this course in time, so your progress was reset. Pay again to retake it from the start.")
-              : t('This course needs to be purchased before you can open its lessons.')}
-          actionLabel={t('Get this course')}
-          onAction={() => navigate(`/curriculum/${course.courseId}/buy`)}
-        />
       ) : (
         <>
           {course.access?.status === 'active' && (

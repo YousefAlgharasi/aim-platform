@@ -30,6 +30,8 @@ jest.mock('../features/curriculum/curriculumApi', () => ({
   ]),
   fetchCurrentEnrollment: () => Promise.resolve({ found: true, courseId: 'c1', courseTitle: 'التمهيدي', enrolledAt: null }),
   enrollInCourse: (...a: unknown[]) => mockEnroll(...a),
+  fetchCourseLevels: (id: string) => Promise.resolve(id === 'c1' ? [{ id: 'l1' }, { id: 'l2' }] : []),
+  fetchStudentChapters: (levelId: string) => Promise.resolve({ chapters: levelId === 'l1' ? [{ title: 'Greetings' }, { title: 'Numbers' }] : [{ title: 'Colours' }], finalExam: null }),
 }));
 jest.mock('../features/course-billing/CourseBillingBadge', () => ({ CourseBillingBadge: () => null }));
 
@@ -43,6 +45,26 @@ async function setup() {
 const exit = () => act(async () => { await new Promise((r) => setTimeout(r, 200)); });
 
 describe('Course description popover', () => {
+  it('lists the real chapter titles in the info popover and gives each course its own image', async () => {
+    render(<CourseCatalog />);
+    await screen.findByText('3 chapters');
+    fireEvent.click(screen.getByRole('button', { name: 'التمهيدي: course description' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent("What you'll cover");
+    ['Greetings', 'Numbers', 'Colours'].forEach((c) => expect(dialog).toHaveTextContent(c));
+    const srcs = Array.from(document.querySelectorAll('img[aria-hidden]')).map((i) => i.getAttribute('src'));
+    expect(srcs).toHaveLength(3);
+    expect(new Set(srcs).size).toBe(3);
+  });
+
+  it('shows the summed chapter count on the learning path', async () => {
+    render(<CourseCatalog />);
+    expect(await screen.findByText('3 chapters')).toBeInTheDocument(); // c1: 2 + 1 across two levels
+    expect(screen.queryByText(/UNIT/)).not.toBeInTheDocument();
+    expect(screen.getByText('Courses')).toBeInTheDocument();
+    expect(screen.queryByText('Lessons completed')).not.toBeInTheDocument();
+  });
+
   it('keeps the description and the lesson/quiz/exam counts out of the card', async () => {
     await setup();
     expect(screen.queryByText(DESC)).not.toBeInTheDocument();
@@ -118,42 +140,12 @@ describe('Course description popover', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('keeps the card clickable', async () => {
+  it('clicking an open course opens its page, with no popover', async () => {
     await setup();
     fireEvent.click(screen.getByRole('button', { name: 'التمهيدي' }));
     expect(mockNavigate).toHaveBeenCalledWith('/curriculum/c1');
-  });
-
-  it('clicking a not-yet-opened course shows a start popover instead of a dialog', async () => {
-    await setup();
-    fireEvent.click(screen.getByRole('button', { name: 'No Description' }));
-    const pop = await screen.findByRole('dialog', { name: 'Start this course?' });
-    expect(pop).toHaveTextContent("You're currently in التمهيدي. Switching to No Description");
-    expect(document.querySelector('dialog')).toBeNull(); // no modal <dialog>
-    expect(mockNavigate).not.toHaveBeenCalled();
-    expect(mockEnroll).not.toHaveBeenCalled();
-
-    fireEvent.keyDown(document, { key: 'Escape' });
-    await exit();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('Cancel dismisses it; Start course enrolls and opens the course', async () => {
-    mockEnroll.mockResolvedValue(undefined);
-    await setup();
-    const card = screen.getByRole('button', { name: 'No Description' });
-
-    fireEvent.click(card);
-    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
-    await exit();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(mockEnroll).not.toHaveBeenCalled();
-
-    fireEvent.click(card);
-    fireEvent.click(await screen.findByRole('button', { name: 'Start course' }));
-    await act(async () => {});
-    expect(mockEnroll).toHaveBeenCalledWith('c2');
-    expect(mockNavigate).toHaveBeenCalledWith('/curriculum/c2');
   });
 
   it('clicking a locked course shows the unlock message in a popover, not a page banner', async () => {

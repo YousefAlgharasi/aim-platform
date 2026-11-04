@@ -30,6 +30,7 @@ import {
   ActivityWidget,
   ChallengeWidget,
   ContinueWidget,
+  CurrentCourseLessons,
   DeadlineWidget,
   ProgressWidget,
   RecommendationWidget,
@@ -316,6 +317,12 @@ export function DashboardHome() {
               />
             )}
           </section>
+
+          {data.enrollment?.found && data.enrollment.courseId && (
+            <section aria-label={t('Your course lessons')}>
+              <CurrentCourseLessons courseId={data.enrollment.courseId} courseTitle={data.enrollment.courseTitle} />
+            </section>
+          )}
 
           <section aria-label={t('Activity and deadlines')} className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {data.summary?.challenge && (

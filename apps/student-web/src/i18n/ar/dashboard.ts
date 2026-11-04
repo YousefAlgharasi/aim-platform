@@ -101,6 +101,8 @@ export const dashboard: Record<string, string> = {
   'Complete more lessons to get personalized recommendations.': 'أكمل المزيد من الدروس لتحصل على توصيات مخصّصة لك.',
   'Recommended for you': 'موصى به لك',
   'View all': 'عرض الكل',
+  'Your course lessons': 'دروس دورتك',
+  'All chapters': 'كل الفصول',
 
   // Progress
   Progress: 'التقدم',
