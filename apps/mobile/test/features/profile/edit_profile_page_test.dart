@@ -86,6 +86,7 @@ class _StubAuthRepo implements AuthRepository {
 
   @override
   Future<AuthRegisterResult> register({
+    String? displayName,
     required String email,
     required String password,
   }) async =>

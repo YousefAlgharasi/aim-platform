@@ -84,6 +84,7 @@ class _NoOpAuthRepository implements AuthRepository {
 
   @override
   Future<RegisterResult> register({
+    String? displayName,
     required String email,
     required String password,
   }) async =>
@@ -326,6 +327,7 @@ class _ThrowingAuthRepository implements AuthRepository {
 
   @override
   Future<RegisterResult> register({
+    String? displayName,
     required String email,
     required String password,
   }) async =>

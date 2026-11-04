@@ -134,6 +134,7 @@ class _TestAuthRepository implements AuthRepository {
 
   @override
   Future<RegisterResult> register({
+    String? displayName,
     required String email,
     required String password,
   }) async =>
