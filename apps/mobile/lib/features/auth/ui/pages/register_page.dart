@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
+import '../../../../core/localization/language_switcher.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/register_notifier.dart';
@@ -92,7 +93,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 AimSpacing.space40,
               ),
               children: [
-                // Header brand row
+                // Header brand row with language switcher
                 Row(
                   children: [
                     Container(
@@ -118,20 +119,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                     ),
                     const SizedBox(width: AimSpacing.innerGap),
-                    ShaderMask(
-                      shaderCallback: (bounds) =>
-                          AimGradients.gzHero.createShader(
-                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                      ),
-                      child: Text(
-                        l10n.appTitle,
-                        style: AimTextStyles.h2.copyWith(
-                          color: AimColors.neutral0,
-                          fontWeight: AimFontWeights.extrabold,
-                          letterSpacing: -0.5,
+                    Expanded(
+                      child: ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AimGradients.gzHero.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                        ),
+                        child: Text(
+                          l10n.appTitle,
+                          style: AimTextStyles.h2.copyWith(
+                            color: AimColors.neutral0,
+                            fontWeight: AimFontWeights.extrabold,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                       ),
                     ),
+                    const AimLanguageSwitcher(),
                   ],
                 ),
                 const SizedBox(height: AimSpacing.sectionGap),
@@ -892,3 +896,4 @@ class _RegFacebookLogo extends StatelessWidget {
     );
   }
 }
+

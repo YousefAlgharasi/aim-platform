@@ -154,7 +154,7 @@ void main() {
 
     expect(find.byType(TextField), findsNWidgets(2));
     expect(find.text('Google'), findsOneWidget);
-    expect(find.text('Facebook'), findsOneWidget);
+    expect(find.text('Facebook'), findsNothing);
 
     final createOneLink = find.text('Create one');
     await tester.scrollUntilVisible(
@@ -166,7 +166,7 @@ void main() {
     expect(find.byType(TextField), findsNWidgets(2)); // email + password
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Google'), findsOneWidget);
-    expect(find.text('Facebook'), findsOneWidget);
+    expect(find.text('Facebook'), findsNothing);
     expect(find.text('Create one', skipOffstage: false), findsOneWidget);
   });
 
@@ -310,29 +310,6 @@ void main() {
   });
 
   // ── Developer test-mode section ──────────────────────
-
-  testWidgets('Test-mode shortcuts are present outside production',
-      (tester) async {
-    await tester.pumpWidget(_testApp());
-    await tester.pump();
-
-    final testModeHeading = find.text('DEV / TEST ACCOUNTS');
-    await tester.scrollUntilVisible(
-      testModeHeading,
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(testModeHeading, findsOneWidget);
-    expect(find.text('Student'), findsOneWidget);
-    expect(find.text('Parent'), findsOneWidget);
-    expect(find.text('Teacher'), findsOneWidget);
-    expect(find.text('Open Endpoint Tester →'), findsOneWidget);
-    expect(find.text('DEV / TEST ACCOUNTS', skipOffstage: false), findsOneWidget);
-    expect(find.text('Student', skipOffstage: false), findsOneWidget);
-    expect(find.text('Parent', skipOffstage: false), findsOneWidget);
-    expect(find.text('Teacher', skipOffstage: false), findsOneWidget);
-    expect(find.text('Open Endpoint Tester →', skipOffstage: false), findsOneWidget);
-  });
 
   testWidgets('Test-mode shortcuts are absent in production',
       (tester) async {

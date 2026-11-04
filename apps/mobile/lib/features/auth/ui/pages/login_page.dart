@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
-import '../../../../core/config/app_config_provider.dart';
+import '../../../../core/localization/language_switcher.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/login_provider.dart';
@@ -45,21 +45,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     await ref.read(loginProvider.notifier).submit(l10n);
   }
 
-  Future<void> _enterAsTestRole(String role) async {
-    final l10n = AppLocalizations.of(context);
-    _emailFocus.unfocus();
-    _passwordFocus.unfocus();
-    await ref.read(loginProvider.notifier).submitTestLogin(role, l10n);
-  }
-
   void _openRegister() => context.push(AppRoutePaths.register);
-  void _openEndpointTester() => context.push(AppRoutePaths.endpointTester);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final formState = ref.watch(loginProvider);
-    final isTestModeAvailable = !ref.watch(appConfigProvider).isProduction;
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -71,13 +62,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           child: AutofillGroup(
             child: ListView(
               padding: const EdgeInsetsDirectional.fromSTEB(
-                AimSpacing.screenPaddingMobile,
+                AimSpacing.space24,
+                AimSpacing.space24,
+                AimSpacing.space24,
                 AimSpacing.space32,
-                AimSpacing.screenPaddingMobile,
-                AimSpacing.space40,
               ),
               children: [
-                // Header brand row
+                // Header brand row with language switcher
                 Row(
                   children: [
                     Container(
@@ -103,23 +94,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                     const SizedBox(width: AimSpacing.innerGap),
-                    ShaderMask(
-                      shaderCallback: (bounds) =>
-                          AimGradients.gzHero.createShader(
-                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                      ),
-                      child: Text(
-                        l10n.appTitle,
-                        style: AimTextStyles.h2.copyWith(
-                          color: AimColors.neutral0,
-                          fontWeight: AimFontWeights.extrabold,
-                          letterSpacing: -0.5,
+                    Expanded(
+                      child: ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AimGradients.gzHero.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                        ),
+                        child: Text(
+                          l10n.appTitle,
+                          style: AimTextStyles.h2.copyWith(
+                            color: AimColors.neutral0,
+                            fontWeight: AimFontWeights.extrabold,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                       ),
                     ),
+                    const AimLanguageSwitcher(),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.space40),
 
                 Text(
                   l10n.authSignInButton.toUpperCase(),
@@ -130,7 +124,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     letterSpacing: 1.0,
                   ),
                 ),
-                const SizedBox(height: AimSpacing.space4),
+                const SizedBox(height: AimSpacing.space8),
 
                 Text(
                   l10n.authWelcomeBackTitle,
@@ -151,7 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.space32),
 
                 if (formState.errorMessage != null) ...[
                   AIMAlertBanner(
@@ -191,7 +185,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onChanged: _onPasswordChanged,
                   onSubmitted: (_) => _submit(),
                 ),
-                const SizedBox(height: AimSpacing.componentGap),
+                const SizedBox(height: AimSpacing.space12),
 
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
@@ -212,7 +206,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: AimSpacing.space20),
+                const SizedBox(height: AimSpacing.space24),
 
                 SizedBox(
                   width: double.infinity,
@@ -258,7 +252,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: AimSpacing.sectionGap),
+                const SizedBox(height: AimSpacing.space32),
 
                 Row(
                   children: [
@@ -270,7 +264,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space16),
                       child: Text(
                         l10n.authOrContinueWith,
                         style: AimTextStyles.caption.copyWith(
@@ -288,32 +282,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.formFieldGap),
+                const SizedBox(height: AimSpacing.space20),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FigmaSocialButton(
-                        icon: const _GoogleLogo(),
-                        label: 'Google',
-                        onPressed: formState.isSubmitting
-                            ? null
-                            : () => ref
-                                .read(loginProvider.notifier)
-                                .submitGoogleLogin(l10n),
-                      ),
-                    ),
-                    const SizedBox(width: AimSpacing.componentGap),
-                    Expanded(
-                      child: _FigmaSocialButton(
-                        icon: const _FacebookLogo(),
-                        label: 'Facebook',
-                        onPressed: () {},
-                      ),
-                    ),
-                  ],
+                _FigmaSocialButton(
+                  icon: const _GoogleLogo(),
+                  label: 'Google',
+                  onPressed: formState.isSubmitting
+                      ? null
+                      : () => ref
+                          .read(loginProvider.notifier)
+                          .submitGoogleLogin(l10n),
                 ),
-                const SizedBox(height: AimSpacing.space24),
+                const SizedBox(height: AimSpacing.space32),
 
                 Wrap(
                   alignment: WrapAlignment.center,
@@ -337,14 +317,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ],
                 ),
 
-                if (isTestModeAvailable) ...[
-                  const SizedBox(height: AimSpacing.space32),
-                  _TestAccountsCard(
-                    isSubmitting: formState.isSubmitting,
-                    onSelectRole: _enterAsTestRole,
-                    onOpenEndpointTester: _openEndpointTester,
-                  ),
-                ],
               ],
             ),
           ),
@@ -561,115 +533,7 @@ class _FigmaSocialButton extends StatelessWidget {
   }
 }
 
-class _TestAccountsCard extends StatelessWidget {
-  const _TestAccountsCard({
-    required this.isSubmitting,
-    required this.onSelectRole,
-    required this.onOpenEndpointTester,
-  });
 
-  final bool isSubmitting;
-  final ValueChanged<String> onSelectRole;
-  final VoidCallback onOpenEndpointTester;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AimSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: surfaces.surfaceSunken,
-        borderRadius: AimRadius.borderMd,
-        border: Border.all(color: surfaces.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'DEV / TEST ACCOUNTS',
-            style: AimTextStyles.caption.copyWith(
-              fontWeight: AimFontWeights.bold,
-              color: surfaces.textMuted,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.innerGap),
-          Text(
-            'Pre-populated with test accounts across the three primary AIM roles. Tapping any role automatically signs in with that profile.',
-            style: AimTextStyles.bodySm.copyWith(
-              color: surfaces.textSecondary,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          Wrap(
-            spacing: AimSpacing.innerGap,
-            runSpacing: AimSpacing.innerGap,
-            children: [
-              _TestRoleChip(
-                label: 'Student',
-                enabled: !isSubmitting,
-                onTap: () => onSelectRole('student'),
-              ),
-              _TestRoleChip(
-                label: 'Parent',
-                enabled: !isSubmitting,
-                onTap: () => onSelectRole('parent'),
-              ),
-              _TestRoleChip(
-                label: 'Teacher',
-                enabled: !isSubmitting,
-                onTap: () => onSelectRole('teacher'),
-              ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          GestureDetector(
-            onTap: onOpenEndpointTester,
-            child: Text(
-              'Open Endpoint Tester →',
-              style: AimTextStyles.caption.copyWith(
-                fontWeight: AimFontWeights.semibold,
-                color: AimColors.primary500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TestRoleChip extends StatelessWidget {
-  const _TestRoleChip({
-    required this.label,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-
-    return ActionChip(
-      label: Text(label),
-      onPressed: enabled ? onTap : null,
-      backgroundColor: surfaces.surface,
-      labelStyle: AimTextStyles.caption.copyWith(
-        color: AimColors.primary500,
-        fontWeight: AimFontWeights.semibold,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: AimRadius.borderSm,
-        side: BorderSide(color: AimColors.primary500.withValues(alpha: 0.3)),
-      ),
-    );
-  }
-}
 
 class _GoogleLogo extends StatelessWidget {
   const _GoogleLogo();
@@ -744,15 +608,4 @@ class _GooglePainter extends CustomPainter {
   bool shouldRepaint(CustomPainter old) => false;
 }
 
-class _FacebookLogo extends StatelessWidget {
-  const _FacebookLogo();
 
-  @override
-  Widget build(BuildContext context) {
-    return const Icon(
-      Icons.facebook,
-      size: 20,
-      color: Color(0xFF1877F2),
-    );
-  }
-}

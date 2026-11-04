@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/localization/language_switcher.dart';
 import '../../../../core/routing/routing.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../logic/provider/auth_context_provider.dart';
@@ -248,7 +249,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Brand Logo Row
+        // Brand Logo Row with Language Switcher
         Row(
           children: [
             Container(
@@ -273,18 +274,21 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               ),
             ),
             const SizedBox(width: 10),
-            ShaderMask(
-              shaderCallback: (bounds) => AimGradients.ai.createShader(bounds),
-              child: Text(
-                'AIM',
-                style: AimTextStyles.h2.copyWith(
-                  color: AimColors.neutral0,
-                  fontWeight: AimFontWeights.extrabold,
-                  fontSize: 22,
-                  letterSpacing: -0.5,
+            Expanded(
+              child: ShaderMask(
+                shaderCallback: (bounds) => AimGradients.ai.createShader(bounds),
+                child: Text(
+                  'AIM',
+                  style: AimTextStyles.h2.copyWith(
+                    color: AimColors.neutral0,
+                    fontWeight: AimFontWeights.extrabold,
+                    fontSize: 22,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               ),
             ),
+            const AimLanguageSwitcher(),
           ],
         ),
         const SizedBox(height: AimSpacing.space16),
