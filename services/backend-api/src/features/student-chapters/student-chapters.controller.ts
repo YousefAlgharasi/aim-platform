@@ -56,7 +56,7 @@ export class StudentChaptersController {
     if (!levelId) {
       throw new BadRequestException('levelId query parameter is required');
     }
-    await this.courseAccess.assertAccess(user.id, await this.courseAccess.courseIdForLevel(levelId));
+    await this.courseAccess.assertCanView(user.id, await this.courseAccess.courseIdForLevel(levelId));
     const locale = await this.localeResolver.resolve(localeCtx ?? { requested: null, userId: user.id });
     return this.studentChaptersService.getChapters(user.id, levelId, locale);
   }

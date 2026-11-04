@@ -315,6 +315,15 @@ export class CourseAccessService {
     }
   }
 
+  /**
+   * Browsing a course's chapters and lessons: only the unlock-order lock applies, payment is not required.
+   * Progress, completion, assessments and practice still go through [assertAccess].
+   */
+  async assertCanView(studentId: string, courseId: string | null): Promise<void> {
+    if (!courseId) return;
+    await this.assertCourseUnlocked(studentId, courseId);
+  }
+
   /** Throws COURSE_LOCKED (403) / COURSE_PAYMENT_REQUIRED (402) unless the student may use [courseId]. */
   async assertAccess(studentId: string, courseId: string | null): Promise<void> {
     if (!courseId) return;
