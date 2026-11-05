@@ -205,15 +205,19 @@ export class LessonProgressService {
   }
 
   /**
-   * Returns the next unpublished lesson the student should start, derived from
-   * their latest placement result's initial_learning_path. Falls back to the
-   * first published lesson (by course/level/chapter/lesson sort_order) if no
-   * placement data exists or all path-linked lessons are already completed.
+   * The next lesson the student should start. It is always inside the student's own course: their active
+   * enrollment, or else the course that matches their placement level (see findRecommendedCourse). Inside that
+   * course it is the first published lesson they have not finished, in course order, which is also the order the
+   * lesson gate enforces. Only when that course has nothing left (or no course exists) does it fall back to the
+   * placement-skill path and then the first published lesson anywhere.
    */
   async findQuickStartLesson(
     studentId: string,
     locale: SupportedLocale = 'en',
   ): Promise<QuickStartLesson | null> {
+    const inCourse = await this.findNextLessonInCurrentCourse(studentId, locale);
+    if (inCourse) return inCourse;
+
     const text = lessonTextSql('l', '$2');
     // Placement-path derived: top-priority skill from student's latest placement
     // -> lesson_skills -> first published incomplete lesson for that skill.
@@ -318,6 +322,58 @@ export class LessonProgressService {
       lessonTitle: fallback.lesson_title,
       lessonDescription: fallback.lesson_description,
       locale: fallback.lesson_locale,
+      skillName: null,
+    };
+  }
+
+  /** First unfinished published lesson of the student's active enrollment, else of their level's recommended course. */
+  private async findNextLessonInCurrentCourse(studentId: string, locale: SupportedLocale): Promise<QuickStartLesson | null> {
+    const enrolled = await this.db.query<{ course_id: string }>(
+      `SELECT course_id FROM course_enrollments WHERE student_id = $1 AND status = 'active' LIMIT 1`,
+      [studentId],
+    );
+    const courseId = enrolled.rows[0]?.course_id ?? (await this.findRecommendedCourse(studentId, locale))?.courseId;
+    if (!courseId) return null;
+
+    const text = lessonTextSql('l', '$2');
+    const result = await this.db.query<QuickStartLessonRow>(
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
+         LIMIT 1
+       )
+       SELECT
+         l.id AS lesson_id,
+         ${text.title} AS lesson_title,
+         ${text.description} AS lesson_description,
+         ${text.locale} AS lesson_locale,
+         NULL::text AS skill_name
+       FROM lessons l
+       ${text.joins}
+       JOIN chapters c ON c.id = l.chapter_id
+       JOIN levels lv ON lv.id = c.level_id AND lv.status = 'published'
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND (
+         lp.student_id = $1
+         OR lp.student_id IN (SELECT user_id FROM resolved_student)
+         OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+       )
+       WHERE lv.course_id = $3
+         AND l.status = 'published'
+         AND (lp.completed IS NULL OR lp.completed = false)
+       ORDER BY lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
+       LIMIT 1`,
+      [studentId, locale, courseId],
+    );
+    const row = result.rows[0];
+    if (!row) return null;
+    return {
+      lessonId: row.lesson_id,
+      lessonTitle: row.lesson_title,
+      lessonDescription: row.lesson_description,
+      locale: row.lesson_locale,
       skillName: null,
     };
   }

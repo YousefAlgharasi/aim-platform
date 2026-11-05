@@ -83,12 +83,55 @@ export class EngagementRepository {
          SELECT (graded_at AT TIME ZONE 'UTC')::date::text AS active_date
          FROM assessment_results
          WHERE student_id = $1 AND graded_at IS NOT NULL
+         UNION
+         -- Practice Speaking / Write a Paragraph earn XP, so they keep the streak alive too.
+         SELECT (pa.completed_at AT TIME ZONE 'UTC')::date::text AS active_date
+         FROM practice_attempts pa
+         WHERE pa.student_id IN (SELECT u.id FROM users u WHERE u.id = $1 OR u.supabase_auth_uid = $1)
+           AND pa.completed_at IS NOT NULL
        ) sub
        ORDER BY active_date DESC
        LIMIT $2`,
       [studentId, limit],
     );
     return result.rows.map((row) => row.active_date);
+  }
+
+  /** Dates the student covered with a freeze, newest first. */
+  async findFrozenDates(studentId: string, limit: number): Promise<string[]> {
+    const result = await this.db.query<{ frozen_date: string }>(
+      `SELECT frozen_date::text AS frozen_date FROM streak_freezes
+       WHERE student_id = $1 ORDER BY frozen_date DESC LIMIT $2`,
+      [studentId, limit],
+    );
+    return result.rows.map((row) => row.frozen_date);
+  }
+
+  async countFreezesThisMonth(studentId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM streak_freezes
+       WHERE student_id = $1
+         AND (created_at AT TIME ZONE 'UTC') >= date_trunc('month', now() AT TIME ZONE 'UTC')`,
+      [studentId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /**
+   * Record a freeze for [date] only if the monthly allowance is not used up. One statement, so two quick taps
+   * cannot go over the allowance. Returns false when nothing was inserted (allowance used, or date already frozen).
+   */
+  async insertFreezeIfAllowed(studentId: string, date: string, allowance: number): Promise<boolean> {
+    const result = await this.db.query(
+      `INSERT INTO streak_freezes (student_id, frozen_date)
+       SELECT $1::uuid, $2::date
+       WHERE (SELECT COUNT(*) FROM streak_freezes
+              WHERE student_id = $1::uuid
+                AND (created_at AT TIME ZONE 'UTC') >= date_trunc('month', now() AT TIME ZONE 'UTC')) < $3
+       ON CONFLICT (student_id, frozen_date) DO NOTHING`,
+      [studentId, date, allowance],
+    );
+    return (result.rowCount ?? 0) > 0;
   }
 
   async findActiveChallengeTemplates(): Promise<ChallengeTemplateRow[]> {

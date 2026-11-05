@@ -13,9 +13,21 @@ export interface DailyChallengeSummary {
   readonly completed: boolean;
 }
 
+export interface StreakFreezeSummary {
+  /** Freezes a student gets each UTC month. */
+  readonly allowance: number;
+  readonly usedThisMonth: number;
+  readonly remaining: number;
+  /** Yesterday was missed and the streak before it can still be saved. */
+  readonly atRisk: boolean;
+  /** atRisk and at least one freeze remains. */
+  readonly canUseNow: boolean;
+}
+
 export interface EngagementSummaryResponse {
   readonly goal: DailyGoalSummary;
   readonly challenge: DailyChallengeSummary | null;
+  readonly streakFreeze: StreakFreezeSummary;
 }
 
 export interface UpdateDailyGoalInput {

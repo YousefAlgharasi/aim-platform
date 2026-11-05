@@ -5,6 +5,7 @@
 //
 // Endpoints:
 //   GET /student/engagement/summary — Goal, streak, and today's challenge.
+//   POST /student/engagement/streak-freeze — Cover yesterday so the streak survives.
 //   PUT /student/engagement/goal     — Update the student's daily lesson goal.
 //   GET /student/engagement/stats    — Level, XP, badge count, rank, and
 //                                       weekly activity for the Home hero card.
@@ -14,7 +15,7 @@
 //     AuthorizedRole.STUDENT.
 //   - studentId always resolved from the JWT — never from client input.
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -56,6 +57,16 @@ export class EngagementController {
   @ApiOkResponse({ description: 'Engagement stats. studentId always from JWT.' })
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<EngagementStatsResponse> {
     return this.engagementService.getStats(user.id);
+  }
+
+  @Post('streak-freeze')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Use a streak freeze to cover yesterday so the day streak survives (limited per month).",
+  })
+  @ApiOkResponse({ description: 'Fresh engagement summary after the freeze.' })
+  async useStreakFreeze(@CurrentUser() user: AuthenticatedUser): Promise<EngagementSummaryResponse> {
+    return this.engagementService.useStreakFreeze(user.id);
   }
 
   @Put('goal')
