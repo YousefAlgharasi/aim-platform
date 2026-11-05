@@ -27,6 +27,7 @@ export function NotificationCenterPage() {
   const [notifications, setNotifications] = useState<NotificationEvent[]>([]);
   const [fetchedCount, setFetchedCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
@@ -120,8 +121,19 @@ export function NotificationCenterPage() {
   if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={loadFirstPage} />;
 
-  const visible = notifications.filter(n => !n.dismissed_at && n.state !== 'dismissed');
-  const unreadCount = visible.filter(isUnread).length;
+  const live = notifications.filter(n => !n.dismissed_at && n.state !== 'dismissed');
+  const unreadCount = live.filter(isUnread).length;
+  const visible = filter === 'unread' ? live.filter(isUnread) : live;
+  // Group by calendar day: Today / Yesterday / Earlier.
+  const dayKey = (iso: string) => {
+    const d = new Date(iso); const n = new Date();
+    const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diff = Math.round((start(n) - start(d)) / 86_400_000);
+    return diff <= 0 ? 'Today' : diff === 1 ? 'Yesterday' : 'Earlier';
+  };
+  const groups = (['Today', 'Yesterday', 'Earlier'] as const)
+    .map((g) => ({ title: g, items: visible.filter((n) => dayKey(n.created_at) === g) }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -130,19 +142,21 @@ export function NotificationCenterPage() {
         action={<Link to="/notifications/preferences" className={textLinkCls}>{t('Preferences')}</Link>}
       />
 
-      {unreadCount > 0 && (
-        <div className="flex items-center gap-3">
-          <span
-            className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-brand text-white text-xs font-extrabold"
-            aria-label={t('{count} unread', { count: unreadCount })}
-          >
-            {unreadCount}
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2" role="tablist" aria-label={t('Filter notifications')}>
+          {([['all', t('All')], ['unread', t('Unread ({n})', { n: unreadCount })]] as const).map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
+              className={`min-h-10 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${filter === key ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {unreadCount > 0 && (
           <Button variant="secondary" size="sm" onClick={markAllRead} disabled={markingAll}>
             {markingAll ? t('Marking…') : t('Mark all read')}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {actionError && <Banner variant="error">{actionError}</Banner>}
 
@@ -154,8 +168,11 @@ export function NotificationCenterPage() {
           onAction={hasMore ? loadMore : undefined}
         />
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {visible.map(notif => {
+        <div className="flex flex-col gap-6">
+          {groups.map((group) => (
+          <section key={group.title} className="flex flex-col gap-2.5" aria-label={t(group.title)}>
+            <h2 className="m-0 px-1 text-xs font-extrabold uppercase tracking-wider text-ink-muted rtl:normal-case rtl:tracking-normal">{t(group.title)}</h2>
+          {group.items.map(notif => {
             const unread = isUnread(notif);
             const busy = busyIds.has(notif.id);
             const title = textOf(notif.payload?.title) || categoryLabel(notif.category);
@@ -201,6 +218,8 @@ export function NotificationCenterPage() {
               </div>
             );
           })}
+          </section>
+          ))}
         </div>
       )}
 

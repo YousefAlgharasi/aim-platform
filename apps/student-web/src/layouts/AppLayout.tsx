@@ -1,4 +1,3 @@
-import { SearchPalette } from '../features/learner/SearchPalette';
 import { useNeedsOnboarding } from '../features/learner/onboardingState';
 import { OfflineBanner } from '../pwa/OfflineBanner';
 import { isFocusPath } from './focusMode';
@@ -8,12 +7,12 @@ import { useAuth } from '../hooks/useAuth';
 import { usePlacementGate } from '../features/placement/placementApi';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { BottomTabBar } from './BottomTabBar';
+import { ThemeToggleButton } from '../components/common/ThemeToggleButton';
 import { BackButton } from '../components/common/BackButton';
 import { PageChromeProvider, usePageChrome } from '../components/common/PageTitleBar';
 import { MobileDrawer } from './MobileDrawer';
 import { MaintenanceBanner } from '../features/operations/MaintenanceBanner';
-import { useFeatureFlag } from '../features/operations/featureFlags';
-import { useTheme } from '../state/ThemeContext';
 import { navItems } from './navItems';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { useI18n } from '../i18n/I18nContext';
@@ -43,9 +42,7 @@ function writeFlag(key: string) {
  */
 const NO_AUTO_BACK = /^(\/|\/dashboard|\/curriculum|\/curriculum\/[^/]+|\/lessons\/[^/]+)\/?$/;
 
-/** The app bar is only shown on Home. Other pages have no app bar. */
-const TOP_BAR_PATHS = new Set(['/', '/dashboard']);
-const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
+const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/(?!speaking|writing)|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
 
 export function AppLayout() {
   const { t } = useI18n();
@@ -55,19 +52,6 @@ export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   // Reading/exercise screens: collapse the sidebar to its icon rail and narrow the column so the lesson is the focus.
   const focusMode = isFocusPath(pathname);
-  const [searchOpen, setSearchOpen] = useState(false);
-  useEffect(() => {
-    const open = () => setSearchOpen(true);
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen((v) => !v); }
-    };
-    window.addEventListener('aim:open-search', open);
-    window.addEventListener('keydown', onKey);
-    return () => { window.removeEventListener('aim:open-search', open); window.removeEventListener('keydown', onKey); };
-  }, []);
-  const darkModeFlag = useFeatureFlag('dark_mode');
-  const { setDarkModeAllowed } = useTheme();
-  useEffect(() => setDarkModeAllowed(darkModeFlag), [darkModeFlag, setDarkModeAllowed]);
   const mainRef = useRef<HTMLElement>(null);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const section = navItems.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to)));
@@ -125,39 +109,25 @@ export function AppLayout() {
       </a>
       <Sidebar forceCollapsed={focusMode} />
       <MobileDrawer open={menuOpen} onClose={closeMenu} />
-      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <OfflineBanner />
         <MaintenanceBanner />
-        {TOP_BAR_PATHS.has(pathname) && <TopBar />}
+        {showTabBar && <TopBar />}
         <main
           id="main-content"
           ref={mainRef}
           tabIndex={-1}
-          className={`flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 pb-8 transition-[max-width] duration-300 ${focusMode ? 'max-w-3xl' : 'max-w-5xl'}`}
+          className={`flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 outline-none md:pb-8 pb-24 transition-[max-width] duration-300 ${focusMode ? 'max-w-3xl' : 'max-w-5xl'}`}
         >
           <PageChromeProvider value={chrome}>
+            {!showTabBar && <div className="-mt-3 mb-2 flex justify-end"><ThemeToggleButton /></div>}
             {!hasTitleBar && !NO_AUTO_BACK.test(pathname) && <BackButton className="mb-4" />}
             <Outlet />
           </PageChromeProvider>
         </main>
 
-        {/* Floating Action Button (FAB) for Drawer Menu — Bottom Right */}
-        {showTabBar && (
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label={t('Open navigation menu')}
-            className="fixed bottom-6 end-6 z-40 size-14 rounded-full bg-gradient-to-br from-brand to-secondary text-white shadow-xl shadow-brand/35 flex items-center justify-center border-none cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 md:hidden"
-          >
-            <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <line x1="4" y1="7" x2="20" y2="7" />
-              <line x1="4" y1="12" x2="16" y2="12" />
-              <line x1="4" y1="17" x2="20" y2="17" />
-            </svg>
-          </button>
-        )}
+        {showTabBar && <BottomTabBar onMenu={() => setMenuOpen(true)} />}
       </div>
     </div>
   );

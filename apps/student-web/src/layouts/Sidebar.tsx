@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LogOutIcon, SparkleIcon } from '../components/common/Icons';
 import { navSections } from './navItems';
@@ -95,7 +95,7 @@ export function SidebarContent({
             {user?.name?.charAt(0).toUpperCase() || '?'}
           </div>
         ) : (
-          <div className="rounded-2xl p-3.5 mb-5 border flex items-center gap-3 bg-gradient-to-r from-brand-soft to-secondary-soft border-brand-line dark:from-surface dark:to-surface dark:border-line">
+          <Link to="/profile" onClick={onNavigate} aria-label={t('Profile')} className="rounded-2xl p-3.5 mb-5 border flex items-center gap-3 no-underline bg-surface-sunken border-line transition-colors hover:border-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             <div className="size-11 shrink-0 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-base shadow-sm">
               {user?.name?.charAt(0).toUpperCase() || '?'}
             </div>
@@ -103,20 +103,9 @@ export function SidebarContent({
               <p className="font-bold text-sm m-0 truncate text-ink">{user?.name}</p>
               <p className="text-xs m-0 truncate text-ink-muted">{user?.email}</p>
             </div>
-          </div>
+          </Link>
         )}
       </div>
-
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event('aim:open-search'))}
-        title={t('Search')}
-        aria-label={t('Search')}
-        className={`shrink-0 flex items-center rounded-xl border border-line bg-field text-ink-muted cursor-pointer hover:border-brand-line hover:text-ink transition-colors ${collapsed ? 'justify-center h-11' : 'h-11 gap-3 px-3.5 text-sm'}`}
-      >
-        <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        {!collapsed && <><span className="flex-1 text-start">{t('Search')}</span><kbd className="rounded-md bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-ink-muted">Ctrl K</kbd></>}
-      </button>
 
       <nav
         className={`flex-1 min-h-0 overflow-y-auto -mx-2 px-2 flex flex-col [scrollbar-width:thin] ${collapsed ? 'gap-2' : 'gap-5'}`}

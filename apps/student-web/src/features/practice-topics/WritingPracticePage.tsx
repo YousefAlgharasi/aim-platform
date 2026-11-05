@@ -91,12 +91,25 @@ export function WritingPracticePage() {
 
       {!result && (
         <>
-          <div className="flex items-center justify-between text-sm text-ink-muted">
-            <span>{t('{n} words', { n: words })}{topic.minWords ? ` · ${t('at least {n}', { n: topic.minWords })}` : ''}</span>
-            {secondsLeft !== null && <span className="font-bold tabular-nums">{secondsLeft > 0 ? mmss(secondsLeft) : t("Time's up")}</span>}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className={`font-bold tabular-nums ${words >= minWords ? 'text-success-ink' : 'text-ink-muted'}`}>
+                {t('{n} words', { n: words })}{topic.minWords ? ` · ${t('at least {n}', { n: topic.minWords })}` : ''}
+              </span>
+              {secondsLeft !== null && (
+                <span className={`rounded-full px-3 py-1 text-xs font-extrabold tabular-nums ${secondsLeft > 0 && secondsLeft <= 30 ? 'bg-danger-soft text-danger-ink' : 'bg-surface-muted text-ink-soft'}`}>
+                  {secondsLeft > 0 ? mmss(secondsLeft) : t("Time's up")}
+                </span>
+              )}
+            </div>
+            {topic.minWords ? (
+              <div className="h-1.5 overflow-hidden rounded-full bg-surface-strong" role="progressbar" aria-valuemin={0} aria-valuemax={minWords} aria-valuenow={Math.min(words, minWords)} aria-label={t('Words written')}>
+                <div className={`h-full rounded-full transition-[width] duration-300 ${words >= minWords ? 'bg-success' : 'bg-brand'}`} style={{ width: `${Math.min(100, (words / minWords) * 100)}%` }} />
+              </div>
+            ) : null}
           </div>
           <textarea
-            className="w-full min-h-[240px] rounded-2xl bg-surface ring-1 ring-line focus:ring-brand p-4 text-base text-ink outline-none resize-y"
+            className="w-full min-h-[280px] resize-y rounded-2xl border-0 bg-surface p-5 text-base leading-relaxed text-ink shadow-card outline-none ring-1 ring-line transition-shadow placeholder:text-ink-muted focus:ring-2 focus:ring-brand-ink"
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={6000}
@@ -113,9 +126,9 @@ export function WritingPracticePage() {
 
       {result && (
         <section className="flex flex-col gap-4" aria-label={t('Your result')}>
-          <div className="rounded-3xl bg-surface ring-1 ring-line p-6 flex flex-col items-center gap-2 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-3xl bg-surface p-6 text-center shadow-card ring-1 ring-line sm:p-8">
             <p className="m-0 text-xs font-bold uppercase tracking-wider text-ink-muted">{t('Your score')}</p>
-            <p className="m-0 text-5xl font-extrabold text-brand-ink">{result.score}<span className="text-xl text-ink-muted">/100</span></p>
+            <p className={`m-0 text-6xl font-extrabold tracking-tight tabular-nums ${result.score >= 70 ? 'text-success-ink' : result.score >= 40 ? 'text-warning-ink' : 'text-danger-ink'}`}>{result.score}<span className="text-xl text-ink-muted">/100</span></p>
             <div className="w-full max-w-xs h-2.5 rounded-full bg-surface-strong overflow-hidden" role="img" aria-label={`${result.score} / 100`}>
               <div className="h-full bg-brand rounded-full" style={{ width: `${result.score}%` }} />
             </div>
@@ -139,7 +152,7 @@ export function WritingPracticePage() {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="secondary" onClick={() => { setResult(null); setText(''); setSecondsLeft(topic.timeLimitSeconds); }}>{t('Try again')}</Button>
             <Button onClick={() => navigate('/practice/writing')}>{t('More topics')}</Button>
           </div>

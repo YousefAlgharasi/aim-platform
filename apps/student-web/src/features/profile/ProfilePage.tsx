@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
+import { LevelBadge } from '../level/LevelBadge';
 import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -17,15 +18,7 @@ import {
   type ProfileMeResponse,
 } from './profileApi';
 import { validateMaxLength, mapApiFieldErrors } from '../../utils/validation';
-import { PageHeader, SectionTitle, Field, LinkRow, selectCls, pillCls } from './ui';
-
-const QUICK_LINKS = [
-  { to: '/settings', label: 'Account settings' },
-  { to: '/notifications', label: 'Notifications' },
-  { to: '/billing', label: 'Subscription & billing' },
-  { to: '/reports', label: 'My reports' },
-  { to: '/support', label: 'Help & support' },
-];
+import { PageHeader, SectionTitle, Field, selectCls } from './ui';
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -114,38 +107,19 @@ export function ProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('Profile')} />
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 items-start">
-        <div className="lg:col-span-1 flex flex-col gap-5">
-          <Card>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3.5">
-                <div
-                  className="size-14 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-xl shadow-md shrink-0"
-                  aria-hidden="true"
-                >
-                  {initial}
-                </div>
-                <div className="min-w-0">
-                  {displayName && <p className="font-bold text-base m-0 text-ink truncate">{displayName}</p>}
-                  <p className="text-xs m-0 mt-0.5 text-ink-muted break-all">{user.email}</p>
-                </div>
-              </div>
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+        <div className="hero-panel">
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/15 text-2xl font-extrabold ring-1 ring-white/25" aria-hidden="true">{initial}</div>
+            <div className="min-w-0">
+              {displayName && <p className="m-0 truncate text-xl font-extrabold">{displayName}</p>}
+              <p className="m-0 mt-0.5 break-all text-sm text-on-brand">{user.email}</p>
+              <div className="mt-2"><LevelBadge tone="onBrand" /></div>
             </div>
-          </Card>
-
-          <Card>
-            <nav className="flex flex-col gap-1" aria-label={t('Account links')}>
-              <SectionTitle>{t('More')}</SectionTitle>
-              <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
-                {QUICK_LINKS.map(l => (
-                  <li key={l.to}><LinkRow to={l.to}>{t(l.label)}</LinkRow></li>
-                ))}
-              </ul>
-            </nav>
-          </Card>
+          </div>
         </div>
 
-        <div className="lg:col-span-2">
+        <div>
           <Card>
             {studentProfile ? (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>

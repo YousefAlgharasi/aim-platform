@@ -6,7 +6,7 @@ import { DetailSkeleton } from '../../components/common/Skeleton';
 import { getErrorMessage } from '../../api/client';
 import { fetchPlacementGate, setPlacementDecision, type PlacementDecision } from './placementApi';
 import { useI18n } from '../../i18n/I18nContext';
-import { ChoiceRow, PageHeader } from './ui';
+import { PageHeader } from './ui';
 
 function FlagIcon() {
   return (
@@ -37,8 +37,7 @@ export function PlacementGatePage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
-  const [selected, setSelected] = useState<PlacementDecision>('take_placement');
-  const [saving, setSaving] = useState(false);
+    const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const goAfterDecision = useCallback(
@@ -72,8 +71,8 @@ export function PlacementGatePage() {
     setSaving(true);
     setError('');
     try {
-      const result = await setPlacementDecision(selected);
-      goAfterDecision(result?.decision ?? selected);
+      const result = await setPlacementDecision('take_placement');
+      goAfterDecision(result?.decision ?? 'take_placement');
     } catch (err) {
       setError(getErrorMessage(err, t('Could not save your choice. Please try again.')));
       setSaving(false);
@@ -82,57 +81,32 @@ export function PlacementGatePage() {
 
   if (checking) return <DetailSkeleton />;
 
-  const choices: Array<{ value: PlacementDecision; title: string; body: string }> = [
-    {
-      value: 'take_placement',
-      title: t('Take the placement test'),
-      body: t('Answer a short test so we can find your level and start you in the right place.'),
-    },
-    {
-      value: 'start_from_scratch',
-      title: t('Start from scratch'),
-      body: t('Skip the test and begin with the first level. You can take the placement test later.'),
-    },
-  ];
-
   return (
-    <div className="mx-auto w-full max-w-xl flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
       <PageHeader
-        title={t('How would you like to start?')}
-        subtitle={t('Choose how you want to begin learning. This choice is only asked once.')}
+        title={t('Let’s find your level')}
+        subtitle={t('A short test places you at the right level, so you never repeat what you already know.')}
       />
 
       {error && <Banner variant="error">{error}</Banner>}
 
-      <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-3" disabled={saving}>
-        <legend className="sr-only">{t('Choose how to start')}</legend>
-        {choices.map((choice) => {
-          const recommended = choice.value === 'take_placement';
-          return (
-            <div key={choice.value} className={`relative ${recommended ? 'mt-3' : ''}`}>
-              {recommended && (
-                <span className="absolute -top-3 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 z-10 flex items-center gap-1 px-3 py-0.5 rounded-full bg-brand shadow-md shadow-brand/40 text-[11px] font-bold tracking-widest text-white uppercase">
-                  {t('Recommended')}
-                </span>
-              )}
-              <ChoiceRow
-                large
-                name="placement-decision"
-                value={choice.value}
-                selected={selected === choice.value}
-                onChange={() => setSelected(choice.value)}
-                icon={recommended ? <TargetIcon /> : <FlagIcon />}
-                subtitle={choice.body}
-              >
-                {choice.title}
-              </ChoiceRow>
-            </div>
-          );
-        })}
-      </fieldset>
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
+        {[
+          { icon: <TargetIcon />, title: t('Matched to you'), body: t('Your lessons, courses and practice all follow your level.') },
+          { icon: <FlagIcon />, title: t('Skip what you know'), body: t('Levels you already passed are marked as passed, not repeated.') },
+        ].map((r) => (
+          <li key={r.title} className="flex items-center gap-4 rounded-[20px] bg-surface p-4 shadow-card ring-1 ring-line">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink">{r.icon}</span>
+            <span className="min-w-0">
+              <span className="block text-[15px] font-bold text-ink">{r.title}</span>
+              <span className="block text-xs leading-relaxed text-ink-muted">{r.body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
 
       <Button size="lg" onClick={handleContinue} disabled={saving} fullWidth>
-        {saving ? t('Saving…') : t('Continue')}
+        {saving ? t('Saving…') : t('Take the placement test')}
       </Button>
     </div>
   );

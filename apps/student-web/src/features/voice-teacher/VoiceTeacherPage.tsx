@@ -1,4 +1,5 @@
 import { ChatSkeleton } from '../../components/common/Skeleton';
+import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Markdown } from '../../components/common/Markdown';
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,7 +8,6 @@ import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { aiTeacherApi, GENERAL_CONTEXT_REF, lessonContextRef, type FeedbackRating } from '../ai-teacher/aiTeacherApi';
 import { useVoiceRecorder, type RecordingResult } from './useVoiceRecorder';
 import {
@@ -100,9 +100,9 @@ function VoiceSessionStarter() {
 
   if (error) return <ErrorState message={error} onRetry={start} />;
   return (
-    <div className="flex flex-col items-center gap-2">
-      <LoadingSpinner />
-      <p className="m-0 text-sm text-ink-muted">{t('Starting Voice Teacher session…')}</p>
+    <div className="flex flex-col gap-2">
+      <ChatSkeleton />
+      <p className="m-0 text-center text-sm text-ink-muted">{t('Starting Voice Teacher session…')}</p>
     </div>
   );
 }
@@ -343,17 +343,12 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="flex flex-col gap-4 max-w-3xl w-full mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-ink m-0">{t('Voice Teacher')}</h1>
-          <span className="block text-xs text-ink-muted truncate">
-            {navState.lessonTitle || t('Practise speaking with your AI teacher')}
-          </span>
-        </div>
-        <Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>
-          {t('Text chat')}
-        </Link>
-      </div>
+      <PageTitleBar
+        title={t('Voice Teacher')}
+        subtitle={navState.lessonTitle || t('Practise speaking with your AI teacher')}
+        fallback="/practice"
+        action={<Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>{t('Text chat')}</Link>}
+      />
 
       {navState.practice && <PracticeBanner practice={navState.practice} />}
       {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
@@ -364,7 +359,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
       )}
 
       <section
-        className="rounded-3xl bg-gradient-to-b from-brand-soft/60 via-white to-surface-sunken/60 dark:from-surface dark:via-surface dark:to-elevated ring-1 ring-line shadow-sm px-5 py-8 flex flex-col items-center text-center gap-3"
+        className="relative overflow-hidden rounded-3xl bg-surface ring-1 ring-line shadow-card px-5 py-8 flex flex-col items-center text-center gap-3 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-48 before:bg-[radial-gradient(closest-side,rgb(var(--c-brand)/0.18),transparent)] before:content-['']"
         aria-label={t('Voice conversation')}
       >
         <span
@@ -436,7 +431,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
               className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isRecording
                   ? 'bg-danger text-white shadow-danger/30'
-                  : 'bg-gradient-to-br from-brand to-secondary text-white shadow-brand/25'
+                  : 'bg-brand text-white shadow-brand/40 ring-4 ring-brand/20 hover:bg-brand-hover'
               }`}
             >
               {submitting ? (
@@ -497,7 +492,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                     isTeacher
                       ? 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
-                      : 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
+                      : 'bg-brand text-white rounded-ee-none shadow-md shadow-brand/20'
                   }`}
                 >
                   {isTeacher ? <Markdown text={msg.text} /> : msg.text}

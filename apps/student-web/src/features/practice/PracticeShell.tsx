@@ -1,3 +1,4 @@
+import { LevelBadge } from '../level/LevelBadge';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -248,12 +249,25 @@ export function PracticeShell() {
   return (
     <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
       <div className="flex items-center gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xs font-extrabold text-brand-ink uppercase tracking-wider m-0">{t('Practice Session')}</h1>
+        <Link
+          to={lessonId ? `/lessons/${lessonId}` : '/curriculum'}
+          state={{ courseId: navState.courseId }}
+          aria-label={t('Exit practice')}
+          title={t('Exit practice')}
+          className="grid size-10 shrink-0 place-items-center rounded-xl bg-control text-ink-soft no-underline transition-colors hover:bg-danger-soft hover:text-danger-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">✕</span>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <h1 className="m-0 text-xs font-extrabold uppercase tracking-wider text-brand-ink">{t('Practice Session')}</h1>
           {navState.lessonTitle && (
-            <span className="block text-sm font-bold text-ink truncate">{navState.lessonTitle}</span>
+            <span className="block truncate text-sm font-bold text-ink">{navState.lessonTitle}</span>
           )}
         </div>
+        <span className="flex shrink-0 items-center gap-2">
+          <LevelBadge showName={false} />
+          <span className="rounded-full bg-control px-2.5 py-1 text-xs font-extrabold tabular-nums text-ink-soft">{index + 1}/{questions.length}</span>
+        </span>
       </div>
 
       <div
@@ -307,15 +321,17 @@ export function PracticeShell() {
 
         {submitError && <Banner variant="error">{submitError}</Banner>}
 
+        <div className="sticky bottom-3 z-10 -mx-1 rounded-2xl bg-page/85 p-1 backdrop-blur-md">
         {answered ? (
-          <Button variant="primary" fullWidth onClick={handleNext}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleNext}>
             {index + 1 < questions.length ? t('Next question →') : t('Finish practice')}
           </Button>
         ) : (
-          <Button variant="primary" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
             {submitting ? t('Checking…') : t('Check answer')}
           </Button>
         )}
+        </div>
       </div>
     </div>
   );

@@ -92,40 +92,20 @@ export function AssessmentDetailPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex flex-col gap-5">
-      <PageHeader
-        eyebrow={
-          <span className="inline-flex flex-wrap items-center gap-2">
-            <Badge tone={detail.type === 'quiz' ? 'indigo' : 'violet'}>{assessmentTypeLabel(detail.type)}</Badge>
-            {deadline && <Badge tone={statusTone(deadline.status)}>{deadlineStatusLabel(deadline.status)}</Badge>}
-          </span>
-        }
-        title={detail.title}
-        subtitle={detail.description || undefined}
-      />
+    <div className="stagger mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <PageHeader title={t('Assessment')} fallback="/assessments" />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {stat(<ClipboardIcon className="size-5" />, t('Questions'), questionsLabel(totalQuestions))}
-        {stat(<ClockIcon className="size-5" />, t('Time'), detail.timeLimitSeconds ? t('{n} min', { n: formatNumber(Math.round(detail.timeLimitSeconds / 60)) }) : t('No time limit'))}
-        {stat(<TrophyIcon className="size-5" />, t('Attempts'), t('{used}/{max} used', { used: formatNumber(history?.totalAttempts ?? 0), max: formatNumber(detail.maxAttempts) }))}
-      </div>
-
-      {(detail.sections.length > 1 || deadline) && (
-        <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3`}>
-          {detail.sections.length > 1 && (
-            <ul className="m-0 p-0 list-none flex flex-col gap-2">
-              {[...detail.sections].sort((a, b) => a.order - b.order).map((s, i) => (
-                <li key={s.id} className="flex items-center gap-3 text-sm text-ink-soft">
-                  <span className="size-7 shrink-0 rounded-lg bg-brand-soft text-brand-ink text-xs font-extrabold flex items-center justify-center">{i + 1}</span>
-                  <span className="flex-1 min-w-0 font-semibold">{s.title}</span>
-                  <span className="text-xs text-ink-muted shrink-0">{questionsLabel(s.questionCount)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+      <div className="hero-panel">
+        <div className="relative z-10 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-black/20 px-2.5 py-1 text-xs font-extrabold text-white">{assessmentTypeLabel(detail.type)}</span>
+            {deadline && <span className="hero-cta rounded-full px-2.5 py-1 text-xs font-extrabold">{deadlineStatusLabel(deadline.status)}</span>}
+          </div>
+          <h2 className="m-0 text-2xl font-extrabold leading-tight tracking-tight [unicode-bidi:plaintext] sm:text-3xl">{detail.title}</h2>
+          {detail.description && <p className="m-0 text-sm leading-relaxed text-on-brand [unicode-bidi:plaintext]">{detail.description}</p>}
           {deadline && (
-            <p className="m-0 flex items-center gap-2 text-sm font-semibold text-ink-soft">
-              <CalendarIcon className="size-4 text-brand-ink" />
+            <p className="m-0 flex items-center gap-2 text-sm font-semibold text-on-brand">
+              <CalendarIcon className="size-4" />
               <span>
                 {notOpenYet
                   ? t('Opens {date}', { date: formatDateTime(deadline.opensAt) })
@@ -134,19 +114,43 @@ export function AssessmentDetailPage() {
               </span>
             </p>
           )}
+          {startError && <p className="m-0 rounded-xl bg-black/25 px-3 py-2 text-sm text-white" role="alert">{startError}</p>}
+          <div>
+            <Button onClick={handleStart} disabled={starting || deadlineClosed} size="lg" className="hero-cta !ring-0">
+              {starting ? t('Starting…') : (history?.totalAttempts ?? 0) > 0 ? t('Start or continue attempt') : t('Start attempt')}
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
 
-      {startError && <Banner variant="error">{startError}</Banner>}
       {deadlineClosed && <Banner variant="info">{t('This assessment is closed.')}</Banner>}
 
-      <Button variant="primary" size="lg" fullWidth onClick={handleStart} disabled={starting}>
-        {starting ? t('Starting…') : t('Start or continue attempt')}
-      </Button>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {stat(<ClipboardIcon className="size-5" />, t('Questions'), questionsLabel(totalQuestions))}
+        {stat(<ClockIcon className="size-5" />, t('Time'), detail.timeLimitSeconds ? t('{n} min', { n: formatNumber(Math.round(detail.timeLimitSeconds / 60)) }) : t('No time limit'))}
+        {stat(<TrophyIcon className="size-5" />, t('Attempts'), t('{used}/{max} used', { used: formatNumber(history?.totalAttempts ?? 0), max: formatNumber(detail.maxAttempts) }))}
+      </div>
+
+      {detail.sections.length > 1 && (
+        <section className="flex flex-col gap-3" aria-label={t('Sections')}>
+          <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('What is covered')}</h2>
+          <div className={`${CARD} p-4 sm:p-5`}>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              {[...detail.sections].sort((a, b) => a.order - b.order).map((s, i) => (
+                <li key={s.id} className="flex items-center gap-3 text-sm text-ink-soft">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-xs font-extrabold text-brand-ink">{i + 1}</span>
+                  <span className="min-w-0 flex-1 font-semibold [unicode-bidi:plaintext]">{s.title}</span>
+                  <span className="shrink-0 text-xs text-ink-muted">{questionsLabel(s.questionCount)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {history && history.results.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-ink">{t('Past attempts')}</h2>
+          <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Past attempts')}</h2>
           <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
             {history.results.map((attempt) => (
               <Link

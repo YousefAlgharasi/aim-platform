@@ -1,4 +1,4 @@
-import { ListSkeleton } from '../../components/common/Skeleton';
+import { InlineSkeleton, ListSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
@@ -6,7 +6,6 @@ import { t as tr, formatNumber, formatDateTime } from '../../i18n';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -203,7 +202,7 @@ export function ReportsSummaryPage() {
                   </div>
                   {report.description && <p className={subCls}>{report.description}</p>}
 
-                  {state?.running && <LoadingSpinner />}
+                  {state?.running && <InlineSkeleton rows={4} />}
                   {state?.error && <Banner variant="error">{state.error}</Banner>}
                   {run?.status === 'failed' && (
                     <Banner variant="error">{run.errorMessage || t('This report could not be generated.')}</Banner>

@@ -3,6 +3,7 @@ import { CheckIcon, InfoIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
 import type { StudentCourse } from './curriculumApi';
+import type { Relation } from '../level/bands';
 import type { CourseChapterInfo } from './useCourseChapterInfo';
 import { COURSE_ART } from '../../assets/course-art';
 
@@ -22,10 +23,12 @@ interface LearningPathCardProps {
   /** Undefined while loading or when it couldn't be fetched. */
   chapters?: CourseChapterInfo;
   onOpen: (card: HTMLElement) => void;
+  /** How this course's CEFR band compares with the student's level. */
+  relation?: Relation;
 }
 
 /** One large course card: icon, chapters, title, status, progress and an Info popover. */
-export function LearningPathCard({ course, index, isCurrent, chapters, onOpen }: LearningPathCardProps) {
+export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, relation = 'unknown' }: LearningPathCardProps) {
   const { t, plural } = useI18n();
   const palette = PALETTES[index % PALETTES.length];
   const completed = course.status === 'completed';
@@ -39,7 +42,7 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen }:
       className={`relative overflow-hidden flex flex-col justify-between gap-3 rounded-2xl p-4 bg-gradient-to-br ${palette.bg} text-start transition-shadow duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
         course.locked
           ? 'cursor-not-allowed opacity-75 saturate-50'
-          : `cursor-pointer hover:shadow-md ${isCurrent ? 'ring-2 ring-brand-ink' : ''}`
+          : `cursor-pointer hover:shadow-md ${relation === 'passed' && !isCurrent ? 'opacity-90' : ''} ${isCurrent ? 'ring-2 ring-brand-ink' : ''}`
       }`}
       onClick={(e) => onOpen(e.currentTarget)}
       onKeyDown={(e) => {
@@ -61,12 +64,12 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen }:
         </span>
         <div className="min-w-0 flex-1 flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-bold uppercase tracking-wider rtl:normal-case rtl:tracking-normal text-ink-soft">
-            {chapterCount !== undefined && (
+            {!!chapterCount && (
               <span className="normal-case tracking-normal">
                 {plural(chapterCount, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: chapterCount }), other: t('{n} chapters', { n: chapterCount }) })}
               </span>
             )}
-            {course.levelCode && <span className="rounded-full bg-surface/70 px-2 py-0.5 text-brand-ink">{course.levelCode}</span>}
+            {relation === 'unknown' && course.levelCode && <span className="rounded-full bg-surface/70 px-2 py-0.5 text-brand-ink">{course.levelCode}</span>}
             {isCurrent && (
               <span className="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-normal text-white bg-brand px-1.5 py-0.5 rounded-full">{t('Current course')}</span>
             )}

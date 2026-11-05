@@ -236,7 +236,7 @@ export function AttemptScreen() {
 
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
         <span className={EYEBROW}>{t('Question {n}', { n: formatNumber(current + 1) })}</span>
-        <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-ink">{question.prompt}</h2>
+        <h2 className="m-0 text-lg font-bold leading-snug text-ink [unicode-bidi:plaintext] sm:text-xl">{question.prompt}</h2>
 
         {question.type === 'listening_choice' && (
           <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
@@ -283,7 +283,7 @@ export function AttemptScreen() {
         </fieldset>
       )}
 
-      <div className="flex gap-3">
+      <div className="sticky bottom-3 z-10 -mx-1 flex gap-3 rounded-2xl bg-page/85 p-1 backdrop-blur-md">
         <Button variant="secondary" size="lg" className="flex-1" onClick={() => setCurrent((c) => c - 1)} disabled={current === 0}>
           {t('Previous')}
         </Button>

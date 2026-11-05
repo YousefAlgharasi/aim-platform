@@ -1,9 +1,12 @@
 import { LandingPage } from '../features/landing/LandingPage';
 import { VocabularyPage } from '../features/learner/VocabularyPage';
 import { MistakesPage } from '../features/learner/MistakesPage';
+import { LevelProvider } from '../features/level/LevelContext';
+import { PracticeHubPage } from '../features/practice-hub/PracticeHubPage';
+import { ImprovePage } from '../features/improve/ImprovePage';
 import { JourneyPage } from '../features/learner/JourneyPage';
 import { OnboardingPage } from '../features/learner/OnboardingPage';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { AuthGuard } from '../guards/AuthGuard';
 import { PublicLayout } from '../layouts/PublicLayout';
 import { AppLayout } from '../layouts/AppLayout';
@@ -45,9 +48,7 @@ import { PracticeLessonStart } from '../features/practice/PracticeLessonStart';
 import { VoiceTeacherPage } from '../features/voice-teacher/VoiceTeacherPage';
 import { PracticeTopicsPage } from '../features/practice-topics/PracticeTopicsPage';
 import { WritingPracticePage } from '../features/practice-topics/WritingPracticePage';
-import { WeaknessesPage } from '../features/progress/WeaknessesPage';
 import { ReviewSchedulePage } from '../features/progress/ReviewSchedulePage';
-import { RecommendationsPage } from '../features/progress/RecommendationsPage';
 import { AchievementsPage } from '../features/achievements/AchievementsPage';
 import { CertificatesPage } from '../features/certificates/CertificatesPage';
 import { CertificateDetailPage } from '../features/certificates/CertificateDetailPage';
@@ -71,20 +72,22 @@ export function AppRoutes() {
       </Route>
 
       {/* Protected routes */}
-      <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
+      <Route element={<AuthGuard><LevelProvider><AppLayout /></LevelProvider></AuthGuard>}>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/mistakes" element={<MistakesPage />} />
+        <Route path="/practice" element={<PracticeHubPage />} />
+        <Route path="/improve" element={<ImprovePage />} />
         <Route path="/journey" element={<JourneyPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/progress" element={<ProgressSummary />} />
         <Route path="/progress/skills" element={<SkillStatePage />} />
-        <Route path="/progress/weaknesses" element={<WeaknessesPage />} />
+        <Route path="/progress/weaknesses" element={<Navigate to="/improve" replace />} />
         <Route path="/progress/reviews" element={<ReviewSchedulePage />} />
-        <Route path="/progress/recommendations" element={<RecommendationsPage />} />
+        <Route path="/progress/recommendations" element={<Navigate to="/improve" replace />} />
         <Route path="/achievements" element={<AchievementsPage />} />
         <Route path="/certificates" element={<CertificatesPage />} />
         <Route path="/certificates/:certificateId" element={<CertificateDetailPage />} />

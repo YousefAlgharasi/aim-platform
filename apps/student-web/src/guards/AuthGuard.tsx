@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { AppShellSkeleton } from '../components/common/Skeleton';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -12,7 +12,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const location = useLocation();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <AppShellSkeleton />;
   }
 
   if (!user) {

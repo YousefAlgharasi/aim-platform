@@ -5,7 +5,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Banner } from '../../components/common/Banner';
@@ -317,7 +317,7 @@ export function SupportPage() {
       <section className="flex flex-col gap-3">
         <h2 className={h2Cls}>{t('My Tickets')}</h2>
         {loading ? (
-          <LoadingSpinner />
+          <ListSkeleton bare rows={3} />
         ) : error ? (
           <ErrorState message={error} onRetry={loadTickets} />
         ) : tickets.length === 0 ? (

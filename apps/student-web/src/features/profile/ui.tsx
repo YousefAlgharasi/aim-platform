@@ -52,11 +52,12 @@ interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
   action?: ReactNode;
+  fallback?: string;
 }
 
 /** Page heading: back arrow + centered title on one line. */
-export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
-  return <PageTitleBar title={title} subtitle={subtitle} action={action} />;
+export function PageHeader({ title, subtitle, action, fallback }: PageHeaderProps) {
+  return <PageTitleBar title={title} subtitle={subtitle} action={action} fallback={fallback} />;
 }
 
 export function SectionTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {

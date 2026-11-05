@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import { CurrentCourseLessons } from '../features/dashboard/widgets/CurrentCourseLessons';
+import { CurrentCourseLessons, lessonStatuses, nextLesson, useCurrentChapter } from '../features/dashboard/widgets/CurrentCourseLessons';
+
+/** Mirrors how the dashboard uses it: the hook loads, the card renders only when ready. */
+function Harness({ courseId, courseTitle }: { courseId: string; courseTitle: string | null }) {
+  const { state, chapter } = useCurrentChapter(courseId);
+  return state === 'ready' && chapter ? <CurrentCourseLessons courseId={courseId} courseTitle={courseTitle} data={chapter} /> : null;
+}
 
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...rest }: { children: unknown; to: string }) => <a href={String(to)} {...rest}>{children as never}</a>,
@@ -47,10 +53,13 @@ beforeEach(() => { mockCourse = { ...OPEN }; mockLessonsFail = false; });
 
 describe('CurrentCourseLessons', () => {
   it("lists the active chapter's lessons with real completion and lock states", async () => {
-    render(<CurrentCourseLessons courseId="c1" courseTitle="Starter English" />);
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
     expect(await screen.findByText('Eleven to twenty')).toBeInTheDocument();
-    expect(screen.getByText('Starter English · Chapter 2: Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Starter English')).toBeInTheDocument();
+    expect(screen.getByText('Chapter 2: Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Chapter 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /One to ten/ })).toHaveAttribute('href', '/lessons/a');
+    expect(screen.getByText('1/3 lessons')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Eleven to twenty/ })).toHaveAttribute('href', '/lessons/b');
     const locked = screen.getByText('Tens').closest('[role=listitem]');
     expect(locked).toHaveAttribute('aria-disabled', 'true');
@@ -60,21 +69,38 @@ describe('CurrentCourseLessons', () => {
 
   it('shows nothing for a locked course', async () => {
     mockCourse = { ...OPEN, locked: true };
-    const { container } = render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    const { container } = render(<Harness courseId="c1" courseTitle="X" />);
     await new Promise((r) => setTimeout(r, 50));
     expect(container).toBeEmptyDOMElement();
   });
 
   it('still lists the lessons of an unpaid course', async () => {
     mockCourse = { ...OPEN, access: { hasAccess: false, status: 'none' } };
-    render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    render(<Harness courseId="c1" courseTitle="X" />);
     expect(await screen.findByText('Eleven to twenty')).toBeInTheDocument();
   });
 
   it('hides silently when the backend denies the lessons', async () => {
     mockLessonsFail = true;
-    const { container } = render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    const { container } = render(<Harness courseId="c1" courseTitle="X" />);
     await new Promise((r) => setTimeout(r, 50));
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('what is next in the course', () => {
+  const lesson = (id: string, completed: boolean, current: boolean) => ({ id, title: id, completed, current, xpValue: 0, description: '' }) as never;
+
+  it('picks the marked current lesson, locks the ones after it', () => {
+    const l = [lesson('a', true, false), lesson('b', false, true), lesson('c', false, false)];
+    expect(lessonStatuses(l)).toEqual(['completed', 'current', 'locked']);
+    expect(nextLesson(l)?.id).toBe('b');
+  });
+  it('with no current marker, picks the first open unfinished lesson', () => {
+    const l = [lesson('a', true, false), lesson('b', false, false), lesson('c', false, false)];
+    expect(nextLesson(l)?.id).toBe('b');
+  });
+  it('has nothing next when the chapter is finished', () => {
+    expect(nextLesson([lesson('a', true, false)])).toBeNull();
   });
 });

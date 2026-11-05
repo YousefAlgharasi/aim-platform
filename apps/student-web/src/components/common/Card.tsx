@@ -10,7 +10,7 @@ interface CardProps {
 export function Card({ children, className = '', interactive = false }: CardProps) {
   return (
     <div
-      className={`bg-surface rounded-[20px] p-4 sm:p-5 ring-1 ring-line shadow-card transition-[box-shadow,transform] duration-300 ease-out motion-reduce:transition-none ${
+      className={`bg-surface rounded-2xl p-4 sm:p-5 ring-1 ring-line shadow-card transition-[box-shadow,transform] duration-300 ease-out motion-reduce:transition-none ${
         interactive ? 'hover:-translate-y-0.5 hover:shadow-card-hover hover:ring-brand-line' : ''
       } ${className}`}
     >

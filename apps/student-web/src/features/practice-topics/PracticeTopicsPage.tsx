@@ -7,11 +7,15 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { CardGridSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useI18n } from '../../i18n/I18nContext';
+import { MicIcon, PencilIcon } from '../../components/common/Icons';
+import { RelationChip } from '../level/LevelBadge';
+import { useLearnerLevel } from '../level/LevelContext';
+import { bandIndex, bandOf, relationTo } from '../level/bands';
 import {
   isPracticeLocked, practiceTopicsApi, type PracticeKind, type PracticeSessionState, type PracticeTopic,
 } from './practiceTopicsApi';
 
-const badge = 'rounded-full bg-brand-soft text-brand-ink text-xs font-bold px-2.5 py-1';
+const badge = 'rounded-full bg-surface-muted text-ink-soft text-xs font-bold px-2.5 py-1';
 
 /** /practice/speaking and /practice/writing: pick a topic. Everything is gated by the backend. */
 export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
@@ -63,9 +67,20 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
     ? t('Pick a topic and talk with your AI teacher. Earn XP when you finish.')
     : t('Pick a topic and write a paragraph. Your AI teacher marks it and shows how to improve.');
 
+  const { band } = useLearnerLevel();
+  // Topics at the student's level first, then the next levels up, then the ones they have outgrown.
+  const ordered = [...topics].sort((x, y) => {
+    const rank = (tp: PracticeTopic) => {
+      const r = relationTo(bandOf(tp.levelCode), band);
+      return r === 'current' ? 0 : r === 'ahead' ? 1 + Math.max(0, bandIndex(bandOf(tp.levelCode)) - bandIndex(band)) / 10 : r === 'unknown' ? 1.5 : 3;
+    };
+    return rank(x) - rank(y);
+  });
+  const ModeIcon = kind === 'speaking' ? MicIcon : PencilIcon;
+
   return (
-    <div className="flex flex-col gap-5 max-w-3xl w-full mx-auto">
-      <PageTitleBar title={title} subtitle={subtitle} />
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+      <PageTitleBar title={title} subtitle={subtitle} fallback="/practice" />
 
       {loading && <CardGridSkeleton cards={6} bare />}
       {!loading && error && <ErrorState message={error} onRetry={load} />}
@@ -83,27 +98,34 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
       {startError && <Banner variant="error">{startError}</Banner>}
 
       {!loading && !error && !locked && topics.length > 0 && (
-        <ul className="m-0 p-0 list-none grid gap-3 sm:grid-cols-2">
-          {topics.map((topic) => (
-            <li key={topic.id}>
-              <button
-                type="button"
-                onClick={() => open(topic)}
-                disabled={startingId !== null}
-                className="w-full h-full text-start rounded-2xl bg-surface ring-1 ring-line hover:ring-brand p-4 flex flex-col gap-2 cursor-pointer disabled:opacity-60"
-              >
-                <span className="text-base font-extrabold text-ink">{topic.title}</span>
-                {topic.description && <span className="text-sm text-ink-muted leading-relaxed">{topic.description}</span>}
-                <span className="flex flex-wrap gap-2 mt-auto pt-1">
-                  {topic.levelCode && <span className={badge}>{topic.levelCode}</span>}
-                  <span className={badge}>{t('+{xp} XP', { xp: topic.xpReward })}</span>
-                  {topic.timeLimitSeconds && <span className={badge}>{t('{min} min', { min: Math.round(topic.timeLimitSeconds / 60) })}</span>}
-                  {topic.minWords && <span className={badge}>{t('{n} words+', { n: topic.minWords })}</span>}
-                  {startingId === topic.id && <span className={badge}>{t('Starting…')}</span>}
-                </span>
-              </button>
-            </li>
-          ))}
+        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+          {ordered.map((topic) => {
+            const rel = relationTo(bandOf(topic.levelCode), band);
+            return (
+              <li key={topic.id}>
+                <button
+                  type="button"
+                  onClick={() => open(topic)}
+                  disabled={startingId !== null}
+                  className="group flex h-full w-full cursor-pointer flex-col gap-3 rounded-2xl border-0 bg-surface p-4 text-start shadow-card ring-1 ring-line transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none sm:p-5"
+                >
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand-ink" aria-hidden="true"><ModeIcon className="size-5" /></span>
+                    {rel !== 'unknown' && <RelationChip relation={rel} band={bandOf(topic.levelCode)} />}
+                  </span>
+                  <span className="text-base font-extrabold leading-snug tracking-tight text-ink [unicode-bidi:plaintext]">{topic.title}</span>
+                  {topic.description && <span className="text-sm leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{topic.description}</span>}
+                  <span className="mt-auto flex flex-wrap gap-2 pt-1">
+                    {rel === 'unknown' && topic.levelCode && <span className={badge}>{topic.levelCode}</span>}
+                    <span className={badge}>{t('+{xp} XP', { xp: topic.xpReward })}</span>
+                    {topic.timeLimitSeconds && <span className={badge}>{t('{min} min', { min: Math.round(topic.timeLimitSeconds / 60) })}</span>}
+                    {topic.minWords && <span className={badge}>{t('{n} words+', { n: topic.minWords })}</span>}
+                    {startingId === topic.id && <span className={badge}>{t('Starting…')}</span>}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

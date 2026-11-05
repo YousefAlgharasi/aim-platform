@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
@@ -12,6 +12,7 @@ import { mistakesApi, type MistakeCheck, type MistakeItem } from './learnerApi';
 /** Retry the questions you got wrong, one at a time. A drill only: it does not change your level or progress. */
 export function MistakesPage() {
   const { t } = useI18n();
+  const quick = useSearchParams()[0].get('quick') === '1';
   const [items, setItems] = useState<MistakeItem[] | null>(null);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState('');
@@ -23,9 +24,9 @@ export function MistakesPage() {
 
   const load = useCallback(() => {
     setError(''); setItems(null); setIndex(0); setPicked(null); setResult(null); setFixed(0);
-    mistakesApi.list().then((r) => { setItems(r.items); setTotal(r.total); })
+    mistakesApi.list().then((r) => { setItems(quick ? r.items.slice(0, 5) : r.items); setTotal(quick ? Math.min(5, r.total) : r.total); })
       .catch((e) => setError(getErrorMessage(e, t('Could not load your mistakes'))));
-  }, [t]);
+  }, [t, quick]);
   useEffect(() => { load(); }, [load]);
 
   if (error) return <ErrorState message={error} onRetry={load} />;
@@ -33,16 +34,23 @@ export function MistakesPage() {
 
   if (items.length === 0 || index >= items.length) {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-10 text-center">
+      <div className="mx-auto flex w-full max-w-md flex-col items-stretch gap-4 py-6 text-center">
         <PageTitleBar title={t('My mistakes')} />
         {items.length === 0
-          ? <EmptyState title={t('Nothing to fix')} message={t('Questions you get wrong in practice will show up here so you can try them again.')} />
+          ? <>
+              <EmptyState title={t('Nothing to fix')} message={t('Questions you get wrong in practice will show up here so you can try them again.')} />
+              <Link to="/curriculum" className="mx-auto inline-flex h-12 items-center rounded-2xl bg-brand px-6 text-[15px] font-bold text-white no-underline">{t('Keep practicing')}</Link>
+            </>
           : <>
               <div className="pop-in grid size-20 place-items-center rounded-3xl bg-gradient-to-br from-brand to-secondary text-4xl text-white shadow-xl shadow-brand/30">✓</div>
               <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t('Round complete')}</h2>
               <p className="m-0 text-ink-muted">{t('You fixed {fixed} of {total}.', { fixed, total: items.length })}</p>
-              <div className="flex gap-3"><Button onClick={load}>{t('Try the rest')}</Button>
-                <Link to="/curriculum" className="inline-flex h-12 items-center rounded-2xl bg-brand-soft px-6 text-[15px] font-bold text-brand-ink no-underline">{t('Back to courses')}</Link></div>
+              <div className="mx-auto h-2.5 w-full max-w-xs overflow-hidden rounded-full bg-control ring-1 ring-inset ring-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((fixed / items.length) * 100)} aria-label={t('Accuracy')}>
+                <div className="h-full rounded-full bg-success" style={{ width: `${(fixed / items.length) * 100}%` }} />
+              </div>
+              <div className="flex flex-wrap justify-center gap-3"><Button onClick={load}>{t('Try the rest')}</Button>
+                <Link to="/improve" className="inline-flex h-12 items-center rounded-2xl bg-brand-soft px-6 text-[15px] font-bold text-brand-ink no-underline">{t('See weak spots')}</Link>
+                <Link to="/curriculum" className="inline-flex h-12 items-center rounded-2xl bg-control px-6 text-[15px] font-bold text-ink no-underline">{t('Back to courses')}</Link></div>
             </>}
       </div>
     );
@@ -63,7 +71,8 @@ export function MistakesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-      <PageTitleBar title={t('My mistakes')} subtitle={t('{n} to fix', { n: total })} />
+      <PageTitleBar title={quick ? t('5-minute fix session') : t('My mistakes')} subtitle={t('{n} to fix', { n: total })} />
+      <p className="m-0 text-center text-xs font-bold text-ink-muted" aria-live="polite">{t('Question {n} of {total}', { n: index + 1, total: items.length })}</p>
       <div className="h-2.5 overflow-hidden rounded-full bg-control ring-1 ring-inset ring-line" role="progressbar"
         aria-valuemin={0} aria-valuemax={items.length} aria-valuenow={index} aria-label={t('Round progress')}>
         <div className="h-full rounded-full bg-gradient-to-r from-brand to-secondary transition-all duration-300" style={{ width: `${(index / items.length) * 100}%` }} />

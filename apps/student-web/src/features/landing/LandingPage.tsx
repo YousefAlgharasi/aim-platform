@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
 import { buttonClasses } from '../../components/common/buttonStyles';
+import { ThemeToggleButton } from '../../components/common/ThemeToggleButton';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 import { SparkleIcon } from '../../components/common/Icons';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -44,6 +45,7 @@ export function LandingPage() {
           <span className="bg-gradient-to-r from-brand to-secondary bg-clip-text text-2xl font-black tracking-tight text-transparent">AIM</span>
         </span>
         <nav className="flex items-center gap-2" aria-label={t('Account')}>
+          <ThemeToggleButton />
           <LanguageSwitcher />
           <Link to="/login" className={buttonClasses('ghost', 'sm')}>{t('Log in')}</Link>
           <Link to="/register" className={`${buttonClasses('primary', 'sm')} hidden sm:inline-flex`}>{t('Create account')}</Link>

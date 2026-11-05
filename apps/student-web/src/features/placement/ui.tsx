@@ -30,14 +30,17 @@ export function PageHeader({
   title,
   subtitle,
   action,
+  fallback,
 }: {
+  /** Where the back arrow goes when the tab has no earlier page. */
+  fallback?: string;
   /** Extra content under the title (e.g. status badges). */
   eyebrow?: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
   action?: ReactNode;
 }) {
-  return <PageTitleBar title={title} subtitle={subtitle} meta={eyebrow} action={action} />;
+  return <PageTitleBar title={title} subtitle={subtitle} meta={eyebrow} action={action} fallback={fallback} />;
 }
 
 export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; tone?: 'indigo' | 'emerald' }) {

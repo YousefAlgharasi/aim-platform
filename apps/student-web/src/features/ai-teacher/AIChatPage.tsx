@@ -300,7 +300,7 @@ export function AIChatPage() {
               <div
                 className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                   isStudent
-                    ? 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
+                    ? 'bg-brand text-white rounded-ee-none shadow-md shadow-brand/20'
                     : 'bg-surface ring-1 ring-line text-ink rounded-es-none shadow-card'
                 }`}
               >

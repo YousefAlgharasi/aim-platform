@@ -1,4 +1,4 @@
-import { FormSkeleton } from '../../components/common/Skeleton';
+import { FormSkeleton, InlineSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -6,7 +6,6 @@ import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   fetchPreferences,
@@ -261,7 +260,7 @@ export function NotificationPreferencesPage() {
           <form className="flex flex-col gap-4" onSubmit={saveQuietHours} noValidate>
             <SectionTitle>{t('Quiet hours')}</SectionTitle>
             {quietLoading ? (
-              <LoadingSpinner />
+              <InlineSkeleton rows={3} />
             ) : quietLoadError ? (
               <>
                 <Banner variant="error">{quietLoadError}</Banner>
@@ -347,7 +346,7 @@ export function NotificationPreferencesPage() {
           <div className="flex flex-col gap-4">
             <SectionTitle>{t('Reminders')}</SectionTitle>
             {remindersLoading ? (
-              <LoadingSpinner />
+              <InlineSkeleton rows={3} />
             ) : remindersError ? (
               <>
                 <Banner variant="error">{remindersError}</Banner>

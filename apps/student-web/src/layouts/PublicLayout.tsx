@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
+import { ThemeToggleButton } from '../components/common/ThemeToggleButton';
 import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 
 // Auth screens sit in the same 393px rounded "device" shell as design-prototype's MobileShell
@@ -14,7 +15,8 @@ export function PublicLayout() {
   return (
     <div className="min-h-[100dvh] bg-surface-strong dark:bg-elevated flex items-start sm:items-center justify-center p-0 sm:p-4">
       <main ref={mainRef} className="relative w-full sm:max-w-[420px] min-h-[100dvh] sm:min-h-[640px] flex flex-col sm:rounded-[40px] sm:shadow-2xl bg-gradient-to-b from-brand-soft/40 via-white to-surface-sunken/50 dark:from-elevated dark:via-elevated dark:to-elevated">
-        <div className="absolute top-4 end-4 z-10">
+        <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
+          <ThemeToggleButton />
           <LanguageSwitcher />
         </div>
         <div className="flex-1 flex flex-col p-6 sm:p-7 pt-8 sm:pt-10 pb-8 gap-4">

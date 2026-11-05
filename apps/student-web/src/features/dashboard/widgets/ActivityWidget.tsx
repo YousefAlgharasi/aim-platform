@@ -9,6 +9,8 @@ interface ActivityWidgetProps {
   /** Mon–Sun of the current UTC week, from GET /student/engagement/stats. */
   days: WeeklyActivityDay[];
   weeklyDeltaPercent?: number | null;
+  /** The stats request failed: say so instead of showing an empty week. */
+  unavailable?: boolean;
 }
 
 function dayLabel(date: string): string {
@@ -19,8 +21,11 @@ function dayLabel(date: string): string {
     : formatLocaleDate(d, { weekday: 'short', timeZone: 'UTC' });
 }
 
-export function ActivityWidget({ days, weeklyDeltaPercent }: ActivityWidgetProps) {
+export function ActivityWidget({ days, weeklyDeltaPercent, unavailable = false }: ActivityWidgetProps) {
   const { t } = useI18n();
+  if (unavailable) {
+    return <Card><p className="m-0 text-sm text-ink-muted">{t('Could not load {what}.', { what: t('this week') })}</p></Card>;
+  }
   const total = days.reduce((sum, d) => sum + d.xp, 0);
 
   if (days.length === 0 || total === 0) {
@@ -50,7 +55,7 @@ export function ActivityWidget({ days, weeklyDeltaPercent }: ActivityWidgetProps
               <span className="h-4 text-[11px] font-bold text-ink-muted">{d.xp > 0 ? d.xp : ''}</span>
               <div className="flex w-full flex-1 items-end overflow-hidden rounded-lg bg-surface-muted">
                 <div
-                  className="w-full rounded-lg bg-gradient-to-t from-brand to-secondary transition-all duration-300"
+                  className="w-full rounded-lg bg-brand transition-all duration-300"
                   style={{ height: `${Math.round((d.xp / max) * 100)}%` }}
                   role="img"
                   aria-label={t('{day}: {n} XP', { day: dayLabel(d.date), n: d.xp })}

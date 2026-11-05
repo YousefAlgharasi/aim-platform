@@ -43,13 +43,81 @@ function Header() {
   );
 }
 
-/** Dashboard-shaped loading state: grey blocks where the widgets will be. */
+/** Dashboard-shaped loading state: mirrors the real layout (continue panel + goal ring, stat tiles, two columns). */
 export function DashboardSkeleton() {
   return (
-    <Shell className="!gap-6">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2"><SkeletonCard lines={2} /><SkeletonCard lines={2} /></div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2"><SkeletonCard lines={3} /><SkeletonCard lines={3} /></div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
+    <Shell className="!gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <Skeleton className="h-52 w-full rounded-3xl lg:col-span-8" />
+        <div className="flex flex-col items-center gap-4 rounded-3xl bg-surface p-5 ring-1 ring-line shadow-card lg:col-span-4">
+          <Skeleton className="size-[136px] rounded-full" />
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-full" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2 rounded-2xl bg-surface p-4 ring-1 ring-line shadow-card">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-8 w-20" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <div className="flex flex-col gap-5 lg:col-span-7"><SkeletonCard lines={4} /><SkeletonCard lines={3} /></div>
+        <div className="flex flex-col gap-5 lg:col-span-5"><SkeletonCard lines={3} /><SkeletonCard lines={3} /></div>
+      </div>
+    </Shell>
+  );
+}
+
+/** Whole-app placeholder shown while the session is being restored (replaces a bare spinner). */
+export function AppShellSkeleton() {
+  const { t } = useI18n();
+  return (
+    <div role="status" aria-busy="true" aria-label={t('Loading')} className="flex min-h-screen bg-page">
+      <div aria-hidden="true" className="hidden w-64 shrink-0 flex-col gap-3 border-e border-line p-5 lg:flex">
+        <Skeleton className="h-9 w-32" />
+        {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+      </div>
+      <div className="flex-1 p-4 sm:p-6">
+        <div className="mx-auto flex max-w-5xl flex-col gap-5">
+          <Skeleton className="h-40 w-full rounded-3xl" />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2"><SkeletonCard /><SkeletonCard /></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Compact in-card placeholder for a section that loads on its own (no page header, no extra margins). */
+export function InlineSkeleton({ rows = 3 }: { rows?: number }) {
+  const { t } = useI18n();
+  return (
+    <div role="status" aria-busy="true" aria-label={t('Loading')} className="flex flex-col gap-3">
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className={`h-4 ${i === rows - 1 ? 'w-1/2' : 'w-full'}`} />
+      ))}
+    </div>
+  );
+}
+
+/** Weak-spot cards: summary strip followed by cards with a bar and two actions. */
+export function ImproveSkeleton() {
+  return (
+    <Shell>
+      <Header />
+      <Skeleton className="h-40 w-full rounded-3xl" />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-3 rounded-[20px] bg-surface p-5 ring-1 ring-line shadow-card">
+            <div className="flex items-center justify-between"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-6 w-20 rounded-full" /></div>
+            <Skeleton className="h-2.5 w-full rounded-full" />
+            <Skeleton className="h-3 w-3/4" />
+            <div className="flex gap-2"><Skeleton className="h-10 w-28 rounded-xl" /><Skeleton className="h-10 w-28 rounded-xl" /></div>
+          </div>
+        ))}
+      </div>
     </Shell>
   );
 }

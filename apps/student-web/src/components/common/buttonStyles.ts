@@ -1,6 +1,6 @@
 /**
  * Single source of truth for action buttons (<Button>, link-buttons, raw <button>).
- * Primary = brand→secondary (blue→violet) gradient; secondary = tinted brand surface with a
+ * Primary = brand blue with a faint top sheen; secondary = tinted brand surface with a
  * brand outline; ghost = text. Minimum action height is 44px; default 48px; hero CTAs 56px.
  * Icon-only controls (close, toggles, audio) are NOT action buttons and keep their own sizing.
  */
@@ -15,8 +15,8 @@ export const BTN_BASE =
 
 export const BTN_VARIANT: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-r from-brand to-secondary text-white shadow-md shadow-brand/25 ' +
-    'hover:brightness-110 hover:shadow-lg hover:shadow-brand/35 hover:-translate-y-px ' +
+    'bg-gradient-to-b from-brand to-brand-hover text-white shadow-md shadow-brand/25 ring-1 ring-inset ring-white/15 ' +
+    'hover:brightness-110 hover:shadow-lg hover:shadow-brand/35 ' +
     'disabled:bg-none disabled:bg-disabled disabled:text-ink-disabled disabled:shadow-none disabled:brightness-100 disabled:translate-y-0',
   secondary:
     'bg-brand-soft text-brand-ink ring-1 ring-inset ring-brand-line ' +
@@ -27,9 +27,9 @@ export const BTN_VARIANT: Record<ButtonVariant, string> = {
 };
 
 export const BTN_SIZE: Record<ButtonSize, string> = {
-  sm: 'h-11 px-5 text-sm rounded-2xl',
-  md: 'h-12 px-6 text-[15px] rounded-2xl',
-  lg: 'h-14 px-7 text-base rounded-2xl tracking-tight',
+  sm: 'h-11 px-5 text-sm rounded-xl',
+  md: 'h-12 px-6 text-[15px] rounded-xl',
+  lg: 'h-14 px-7 text-base rounded-xl tracking-tight',
 };
 
 export function buttonClasses(

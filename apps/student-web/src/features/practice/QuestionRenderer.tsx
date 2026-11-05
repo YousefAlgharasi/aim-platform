@@ -49,7 +49,7 @@ export function QuestionRenderer({
               {t('Question {n} of {total}', { n: questionNumber, total: questionTotal })}
             </span>
           )}
-          <p className="text-ink font-bold text-lg leading-snug m-0">{question.stem}</p>
+          <p className="text-ink font-bold text-xl leading-snug m-0 [unicode-bidi:plaintext]">{question.stem}</p>
         </div>
         {isListening && (
           <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label={t('Play recording')} />
@@ -59,10 +59,10 @@ export function QuestionRenderer({
       {isOptionBased && (
         <fieldset className="flex flex-col gap-2.5 border-0 p-0 m-0 min-w-0">
           <legend className="sr-only">{t('Select your answer')}</legend>
-          {options.map(option => {
+          {options.map((option, optIndex) => {
             const isSelected = selectedAnswer === option.id;
             let cardStyle =
-              'bg-surface ring-1 ring-line/80 hover:ring-brand-line text-ink';
+              'bg-surface ring-1 ring-line hover:ring-brand-line hover:bg-surface-sunken text-ink';
             if (isSelected && disabled && result === true) {
               cardStyle = 'bg-success-soft ring-2 ring-success text-success-ink';
             } else if (isSelected && disabled && result === false) {
@@ -86,7 +86,12 @@ export function QuestionRenderer({
                   disabled={disabled}
                   className="sr-only"
                 />
-                <span>{option.text}</span>
+                <span className="flex min-w-0 items-center gap-3">
+                  <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${isSelected ? 'bg-white/70 text-current dark:bg-black/30' : 'bg-surface-muted text-ink-soft'}`}>
+                    {String.fromCharCode(65 + optIndex)}
+                  </span>
+                  <span className="min-w-0 [unicode-bidi:plaintext]">{option.text}</span>
+                </span>
                 {isSelected && disabled && result === true && (
                   <CheckIcon className="size-5 text-success-ink shrink-0" />
                 )}

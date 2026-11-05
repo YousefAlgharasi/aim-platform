@@ -6,7 +6,7 @@ import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { useI18n } from '../../i18n/I18nContext';
 import { fetchAttemptResult, type AttemptResult } from './assessmentsApi';
-import { Badge, CARD, H2, PageHeader, ProgressBar } from '../placement/ui';
+import { Badge, CARD, H2, PageHeader } from '../placement/ui';
 
 export function AssessmentResultPage() {
   const { t, formatDateTime, formatNumber } = useI18n();
@@ -34,26 +34,28 @@ export function AssessmentResultPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl flex flex-col gap-5">
-      <PageHeader title={t('Result')} />
+      <PageHeader title={t('Result')} fallback={`/assessments/${assessmentId}`} />
 
-      <div className="bg-gradient-to-b from-brand-soft/60 via-white to-surface-sunken/30 dark:from-surface dark:via-surface dark:to-surface rounded-2xl ring-1 ring-line shadow-sm p-6 flex flex-col items-center text-center gap-3">
-        <div className="relative mb-1">
-          <div className="absolute -inset-3 bg-gradient-to-r from-brand to-secondary rounded-3xl opacity-25 blur-lg" />
-          <div className="relative min-w-24 h-24 px-4 rounded-3xl bg-gradient-to-br from-brand to-secondary flex flex-col items-center justify-center text-white shadow-xl shadow-brand/25">
-            <span className="font-extrabold text-3xl tracking-tight leading-none">{formatNumber(result.score)}/{formatNumber(result.maxScore)}</span>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-on-brand mt-1">{t('Score')}</span>
-          </div>
+      <div className="flex flex-col items-center gap-3 rounded-3xl bg-surface p-6 text-center shadow-card ring-1 ring-line sm:p-8">
+        <div className="relative grid size-36 place-items-center" role="img" aria-label={`${formatNumber(result.score)}/${formatNumber(result.maxScore)}`}>
+          <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-surface-strong" />
+            <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" strokeLinecap="round"
+              className={result.passed ? 'stroke-success' : 'stroke-danger'}
+              strokeDasharray={`${((percent ?? 0) / 100) * 326.7} 326.7`} />
+          </svg>
+          <span className="flex flex-col items-center">
+            <span className="text-3xl font-extrabold tabular-nums tracking-tight text-ink">{formatNumber(result.score)}/{formatNumber(result.maxScore)}</span>
+            {percent !== null && <span className="text-xs font-bold text-ink-muted">{formatNumber(percent)}%</span>}
+          </span>
         </div>
         <Badge tone={result.passed ? 'emerald' : 'red'}>{result.passed ? t('Passed') : t('Not passed')}</Badge>
-        {percent !== null && (
-          <div className="w-full max-w-xs flex flex-col gap-1.5">
-            <ProgressBar value={percent} total={100} label={t('Score')} />
-            <span className="text-xs font-semibold text-ink-muted">{formatNumber(percent)}%</span>
-          </div>
-        )}
         <p className="m-0 text-xs text-ink-muted">{t('Graded {date}', { date: formatDateTime(result.gradedAt) })}</p>
         {result.latePenaltyApplied && (
           <p className="m-0 text-sm font-medium text-warning-ink">{t('A late penalty was applied to this attempt.')}</p>
+        )}
+        {!result.passed && (
+          <Link to="/improve" className="text-sm font-bold text-brand-ink">{t('See what to work on')} →</Link>
         )}
       </div>
 

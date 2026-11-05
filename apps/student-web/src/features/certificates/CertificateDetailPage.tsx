@@ -86,7 +86,7 @@ export function CertificateDetailPage() {
           {t('Certificates')}
         </Link>
 
-      <div className="hero-surface relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-6 text-center text-white shadow-xl shadow-brand/25">
+      <div className="hero-panel text-center">
         <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
         <div className="relative z-10 flex flex-col items-center gap-1.5">
           <span className="flex size-14 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-md" aria-hidden="true">🎓</span>

@@ -56,12 +56,12 @@ export function PracticeBanner({ practice }: { practice: PracticeSessionState })
   }
 
   return (
-    <div className="rounded-2xl bg-surface ring-1 ring-line p-3 flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-surface p-3 shadow-card ring-1 ring-line sm:p-4">
       <div className="flex-1 min-w-0">
         <p className="m-0 text-sm font-extrabold text-ink truncate">{practice.title}</p>
         <p className="m-0 text-xs text-ink-muted">{t('Finish to earn +{xp} XP', { xp: practice.xpReward })}</p>
       </div>
-      {left !== null && <span className="text-sm font-bold tabular-nums text-ink" aria-live="off">{left > 0 ? mmss(left) : t("Time's up")}</span>}
+      {left !== null && <span className="rounded-full bg-surface-muted px-3 py-1 text-sm font-extrabold tabular-nums text-ink" aria-live="off">{left > 0 ? mmss(left) : t("Time's up")}</span>}
       <Button size="sm" onClick={finish} disabled={finishing}>{finishing ? t('Finishing…') : t('Finish')}</Button>
       {error && <div className="w-full"><Banner variant="error">{error}</Banner></div>}
     </div>

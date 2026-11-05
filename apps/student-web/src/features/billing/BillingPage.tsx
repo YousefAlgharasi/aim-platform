@@ -1,13 +1,12 @@
-import { DetailSkeleton } from '../../components/common/Skeleton';
+import { DetailSkeleton, InlineSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -121,7 +120,7 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
+      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} action={<Link to="/billing/payments" className="text-sm font-bold text-brand-ink no-underline hover:underline">{t('My payments')}</Link>} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 
@@ -139,7 +138,7 @@ export function BillingPage() {
               return (
                 <div
                   key={sub.id}
-                  className="rounded-2xl p-5 bg-gradient-to-br from-brand to-secondary text-white shadow-md flex flex-col gap-3"
+                  className="hero-panel flex flex-col gap-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
@@ -342,7 +341,7 @@ export function BillingPage() {
 
       <Modal open={invoiceOpen} onClose={() => setInvoiceOpen(false)} title={t('Invoice')}>
         {invoiceLoading ? (
-          <LoadingSpinner />
+          <InlineSkeleton rows={5} />
         ) : invoiceError ? (
           <Banner variant="error">{invoiceError}</Banner>
         ) : invoiceDetail ? (

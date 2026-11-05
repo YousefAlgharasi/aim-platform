@@ -71,7 +71,7 @@ describe('Course description popover', () => {
     expect(screen.queryByText('10 lessons')).not.toBeInTheDocument();
     expect(screen.queryByText('2 quizzes')).not.toBeInTheDocument();
     expect(screen.queryByText('Final exam')).not.toBeInTheDocument();
-    expect(screen.getAllByText('3 of 10 lessons finished')).toHaveLength(3); // one per card
+    expect(screen.getAllByText('3 of 10 lessons finished')).toHaveLength(4); // one per card, plus the current-course hero
     expect(screen.getAllByText(/30%/).length).toBeGreaterThan(0); // progress untouched
     expect(screen.getByRole('progressbar', { name: 'التمهيدي progress' })).toHaveAttribute('aria-valuenow', '30');
   });

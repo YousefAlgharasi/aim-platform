@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { LevelBadge } from '../level/LevelBadge';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
@@ -87,17 +89,26 @@ export function SettingsPage() {
     }
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t('Settings')} />
+  const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 items-start">
+  return (
+    <div className="stagger mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <PageHeader title={t('Settings')} subtitle={t('Your account and how AIM looks and behaves for you.')} />
+
+      <Link to="/profile" className="flex items-center gap-4 rounded-2xl bg-surface p-4 no-underline shadow-card ring-1 ring-line transition-all hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:p-5">
+        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-extrabold text-white" aria-hidden="true">{initial}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base font-extrabold text-ink">{user?.name}</span>
+          <span className="block truncate text-sm text-ink-muted">{user?.email}</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2"><LevelBadge /><span className="text-sm font-bold text-brand-ink">{t('Edit profile')}</span></span>
+      </Link>
+
+      <section className="flex flex-col gap-3" aria-label={t('Preferences')}>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Preferences')}</h2>
         <Card>
           <div className="flex flex-col gap-3.5">
-            <div className="flex items-center gap-3">
-              <span className="size-9 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center shrink-0 font-extrabold text-sm" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></span>
-              <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>
-            </div>
+            <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>
             {languageStatus && <Banner variant={languageStatus.variant}>{languageStatus.message}</Banner>}
             <LanguageDropdown
               value={language}
@@ -108,42 +119,30 @@ export function SettingsPage() {
             />
           </div>
         </Card>
-
         <Card>
           <div className="flex flex-col gap-3.5">
-            <div className="flex items-center gap-3">
-              <span className="size-9 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center shrink-0" aria-hidden="true"><svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
-              <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
-            </div>
+            <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
             <ThemeSwitch />
             <DisplayPrefs />
           </div>
         </Card>
+      </section>
 
+      <section className="flex flex-col gap-3" aria-label={t('Notifications')}>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Notifications')}</h2>
         <Card>
-          <div className="flex flex-col gap-1">
-            <SectionTitle>{t('Notifications')}</SectionTitle>
-            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
-              <li><LinkRow to="/notifications/preferences">{t('Notification channels, quiet hours & reminders')}</LinkRow></li>
-              <li><LinkRow to="/notifications">{t('Notification inbox')}</LinkRow></li>
-            </ul>
-          </div>
+          <ul className="m-0 flex list-none flex-col divide-y divide-line-subtle p-0 dark:divide-line">
+            <li><LinkRow to="/notifications/preferences">{t('Notification channels, quiet hours & reminders')}</LinkRow></li>
+            <li><LinkRow to="/notifications">{t('Notification inbox')}</LinkRow></li>
+          </ul>
         </Card>
+      </section>
 
-        <Card>
-          <div className="flex flex-col gap-1">
-            <SectionTitle>{t('Account')}</SectionTitle>
-            <ul className="list-none m-0 p-0 flex flex-col divide-y divide-line-subtle dark:divide-line">
-              <li><LinkRow to="/profile">{t('Edit profile')}</LinkRow></li>
-              <li><LinkRow to="/billing">{t('Subscription & billing')}</LinkRow></li>
-              <li><LinkRow to="/support">{t('Help & support')}</LinkRow></li>
-            </ul>
-          </div>
-        </Card>
-
+      <section className="flex flex-col gap-3" aria-label={t('Security')}>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Security')}</h2>
         <Card>
           <div className="flex flex-col gap-3.5">
-            <SectionTitle hint={t("We'll email you a secure link to set a new password.")}>{t('Security')}</SectionTitle>
+            <SectionTitle hint={t("We'll email you a secure link to set a new password.")}>{t('Password')}</SectionTitle>
             {resetStatus && <Banner variant={resetStatus.variant}>{resetStatus.message}</Banner>}
             <div>
               <Button variant="secondary" size="sm" onClick={sendPasswordReset} disabled={sendingReset || !user?.email}>
@@ -152,21 +151,26 @@ export function SettingsPage() {
             </div>
           </div>
         </Card>
+      </section>
 
-        <div className="rounded-2xl p-4 sm:p-5 bg-danger-soft ring-1 ring-danger-line flex flex-col gap-3.5">
-          <h2 className="text-base font-extrabold tracking-tight text-danger-ink m-0">{t('Sign out')}</h2>
-          <div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setConfirmLogout(true)}
-              disabled={loggingOut}
-              className="!text-danger-ink"
-            >
-              <LogOutIcon className="size-4" />
-              {t('Sign out')}
-            </Button>
-          </div>
+      <section className="flex flex-col gap-3" aria-label={t('Billing')}>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Billing')}</h2>
+        <Card>
+          <ul className="m-0 flex list-none flex-col divide-y divide-line-subtle p-0 dark:divide-line">
+            <li><LinkRow to="/billing">{t('Subscription & billing')}</LinkRow></li>
+            <li><LinkRow to="/support">{t('Help & support')}</LinkRow></li>
+          </ul>
+        </Card>
+      </section>
+
+      <div className="flex flex-col gap-3 rounded-2xl bg-danger-soft p-4 ring-1 ring-danger-line sm:p-5">
+        <h2 className="m-0 text-base font-extrabold tracking-tight text-danger-ink">{t('Sign out')}</h2>
+        <p className="m-0 text-sm text-danger-ink">{t("You'll need to sign in again to continue learning.")}</p>
+        <div>
+          <Button variant="secondary" size="sm" onClick={() => setConfirmLogout(true)} disabled={loggingOut} className="!text-danger-ink">
+            <LogOutIcon className="size-4" />
+            {t('Sign out')}
+          </Button>
         </div>
       </div>
 

@@ -73,6 +73,8 @@ describe('ChapterLessonList winding path', () => {
     renderList();
     await screen.findByRole('link', { name: 'Hello' });
     const second = screen.getByRole('region', { name: 'Numbers' });
+    expect(within(second).queryByRole('listitem')).not.toBeInTheDocument(); // folded until opened
+    fireEvent.click(within(second).getByRole('button', { expanded: false }));
     const nodes = within(second).getAllByRole('listitem');
     expect(nodes).toHaveLength(3); // 2 lessons + the chapter quiz
     nodes.forEach((n) => expect(n).toHaveAttribute('aria-disabled', 'true'));
@@ -153,5 +155,16 @@ describe('ChapterLessonList winding path', () => {
     mockFetchLessons.mockResolvedValue({ lessons: [], quiz: null });
     renderList([CH1]);
     expect(await screen.findByText('No lessons published in this chapter yet.')).toBeInTheDocument();
+  });
+
+  it('folds a finished chapter away and loads its lessons only when opened', async () => {
+    const DONE = chapter({ chapterId: 'done', title: 'Basics', status: 'completed', completedLessonCount: 3, percent: 100 });
+    renderList([DONE, CH1]);
+    await screen.findByRole('link', { name: 'Good morning' }); // the open chapter's lessons
+    expect(mockFetchLessons).toHaveBeenCalledTimes(1);
+    expect(mockFetchLessons).toHaveBeenCalledWith('ch1');
+    fireEvent.click(within(screen.getByRole('region', { name: 'Basics' })).getByRole('button', { expanded: false }));
+    await screen.findAllByRole('link', { name: 'Hello' });
+    expect(mockFetchLessons).toHaveBeenCalledWith('done');
   });
 });

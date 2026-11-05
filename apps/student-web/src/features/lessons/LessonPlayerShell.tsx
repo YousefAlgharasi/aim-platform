@@ -1,5 +1,6 @@
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useState } from 'react';
+import { LevelBadge } from '../level/LevelBadge';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
@@ -102,12 +103,13 @@ export function LessonPlayerShell() {
     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
       <BackButton fallback={courseId ? `/curriculum/${courseId}` : '/curriculum'} className="self-start" />
 
-      <div className="hero-surface bg-gradient-to-br from-brand via-brand to-secondary rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
+      <div className="hero-panel">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="text-on-brand text-[11px] font-extrabold uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full">
             {t('Lesson')}
           </span>
+          <LevelBadge tone="onBrand" showName={false} />
           {completed && (
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-white bg-success px-2.5 py-1 rounded-full flex items-center gap-1">
               <CheckIcon className="size-3 text-white" /> {t('Completed')}

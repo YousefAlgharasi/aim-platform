@@ -38,16 +38,7 @@ export const mistakesApi = {
   check: (itemId: string, answerId: string) => apiClient.post<MistakeCheck>('/student/mistakes/check', { itemId, answerId }),
 };
 
-// ── Search & public catalog ──────────────────────────────────────────────────
-export interface SearchResults {
-  courses: Array<{ id: string; title: string; levelCode: string | null }>;
-  lessons: Array<{ id: string; title: string; courseId: string; courseTitle: string }>;
-  words: Array<{ id: string; word: string; meaning: string | null }>;
-}
-export const searchApi = {
-  search: (q: string, locale: string) =>
-    apiClient.get<SearchResults>(`/search?q=${encodeURIComponent(q)}&locale=${encodeURIComponent(locale)}`),
-};
+// ── Public catalog ───────────────────────────────────────────────────────────
 export interface PublicCourse { id: string; title: string; description: string | null; levelCode: string | null; cefrCode: string | null; lessonCount: number }
 export const publicApi = {
   catalog: (locale: string) =>

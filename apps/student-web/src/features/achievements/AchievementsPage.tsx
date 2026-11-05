@@ -80,7 +80,7 @@ export function AchievementsPage() {
         <EmptyState title={t('No achievements yet')} message={t('Achievements will appear here as they become available.')} />
       ) : (
         <>
-          <div className="hero-surface relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-5 text-white shadow-xl shadow-brand/25">
+          <div className="hero-panel">
             <div className="pointer-events-none absolute top-0 end-0 size-36 rounded-full bg-white/10 blur-2xl" />
             <div className="relative z-10 flex items-center gap-4">
               <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-black/20 text-gold-on-brand backdrop-blur-md" aria-hidden="true">
@@ -107,17 +107,15 @@ export function AchievementsPage() {
             </div>
           </div>
 
-          <div className="flex gap-1 rounded-xl bg-surface-strong/50 p-1 dark:bg-surface" role="tablist" aria-label={t('Filter achievements')}>
+          <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t('Filter achievements')}>
             {tabs.map((tb) => (
               <button
                 key={tb.key}
                 type="button"
                 role="tab"
                 aria-selected={tab === tb.key}
-                className={`min-h-10 flex-1 cursor-pointer rounded-lg border-none px-2 py-1.5 text-xs font-bold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
-                  tab === tb.key
-                    ? 'bg-surface-muted text-brand-ink shadow-sm'
-                    : 'bg-transparent text-ink-muted hover:text-ink dark:hover:text-ink-soft'
+                className={`min-h-10 shrink-0 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
+                  tab === tb.key ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'
                 }`}
                 onClick={() => setTab(tb.key)}
               >

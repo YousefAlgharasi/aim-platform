@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nContext';
-import { BackButton } from '../components/common/BackButton';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
 import { fetchEngagementSummary } from '../features/dashboard/dashboardApi';
+import { ThemeToggleButton } from '../components/common/ThemeToggleButton';
+import { LevelBadge } from '../features/level/LevelBadge';
 import { FlameIcon } from '../components/common/Icons';
-
-const ROOT_PATHS = new Set(['/', '/dashboard']);
 
 /** Unread in-app notifications, refreshed on every navigation so the badge clears after the inbox is read. */
 function useUnreadCount(pathname: string): number {
@@ -42,37 +41,34 @@ function useStreakDays(pathname: string): number | null {
 
 export function TopBar() {
   const { pathname } = useLocation();
-  const showBack = !ROOT_PATHS.has(pathname);
 
   const { t, formatNumber } = useI18n();
   const unread = useUnreadCount(pathname);
   const streakDays = useStreakDays(pathname);
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 h-16 shrink-0 border-b rounded-b-3xl shadow-sm bg-surface/80 border-line-subtle dark:bg-elevated/80">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b backdrop-blur-md bg-page/80 border-line-subtle">
       <div className="flex items-center gap-2.5 justify-self-start min-w-0">
-        {showBack && <BackButton />}
-        <div className={`size-8 rounded-xl bg-gradient-to-br from-brand to-secondary items-center justify-center text-white font-black text-xs shadow-md shadow-brand/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
+        <div className={`size-8 rounded-xl bg-gradient-to-br from-brand to-secondary items-center justify-center text-white font-black text-xs shadow-md shadow-brand/20 md:hidden flex`} aria-hidden="true">
           AIM
         </div>
         <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-ink md:hidden">{t('AIM English')}</span>
       </div>
 
-      <div className="justify-self-center">
+      <div className="flex items-center gap-2 justify-self-end ms-auto">
         {streakDays != null && (
-          <span
-            role="img"
-            aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
-            title={t('Day streak')}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-warning-soft text-warning-ink dark:bg-warning/15"
-          >
-            <FlameIcon className="size-[18px] text-gold fill-gold" />
-            <span aria-hidden="true">{formatNumber(streakDays)}</span>
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2 justify-self-end">
+            <span
+              role="img"
+              aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
+              title={t('Day streak')}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-warning-soft text-warning-ink dark:bg-warning/15"
+            >
+              <FlameIcon className="size-[18px] text-gold fill-gold" />
+              <span aria-hidden="true">{formatNumber(streakDays)}</span>
+            </span>
+          )}
+        <LevelBadge />
+        <ThemeToggleButton />
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}

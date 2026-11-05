@@ -42,7 +42,23 @@ function RouteIcon({ className = 'size-5' }: { className?: string }) {
   );
 }
 
-function RetryIcon({ className = 'size-5' }: { className?: string }) {
+export function TargetIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+function ZapNavIcon({ className = 'size-5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+    </svg>
+  );
+}
+
+export function RetryIcon({ className = 'size-5' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" />
@@ -66,44 +82,50 @@ const icon = (C: ComponentType<{ className?: string }>) => <C className="size-5"
 
 export const navSections: NavSection[] = [
   {
-    title: 'Main',
+    title: 'Learn',
     items: [
       { to: '/', label: 'Dashboard', icon: icon(HomeIcon) },
-      { to: '/placement', label: 'Placement Test', icon: icon(ClipboardIcon) },
+      { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
+      { to: '/journey', label: 'My journey', icon: icon(RouteIcon) },
+      { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
+      { to: '/assessments', label: 'Assessments', icon: icon(ClipboardIcon) },
     ],
   },
   {
-    title: 'Learning & Practice',
+    title: 'Practice',
     items: [
-      { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
-      { to: '/assessments', label: 'Assessments', icon: icon(PencilIcon) },
+      { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
       { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
-      { to: '/voice-teacher', label: 'Voice Teacher', icon: icon(MicIcon) },
-      { to: '/practice/speaking', label: 'Practice Speaking', icon: icon(MicIcon) },
-      { to: '/practice/writing', label: 'Write a Paragraph', icon: icon(PencilIcon) },
       { to: '/vocabulary', label: 'My words', icon: icon(LightbulbIcon) },
       { to: '/mistakes', label: 'My mistakes', icon: icon(RetryIcon) },
     ],
   },
   {
-    title: 'Progress & Achievements',
+    title: 'Progress',
     items: [
       { to: '/progress', label: 'Progress', icon: icon(ChartIcon) },
-      { to: '/journey', label: 'My journey', icon: icon(RouteIcon) },
       { to: '/achievements', label: 'Achievements', icon: icon(TrophyIcon) },
       { to: '/certificates', label: 'Certificates', icon: icon(AcademicIcon) },
       { to: '/reports', label: 'Reports', icon: icon(TrendingUpIcon) },
     ],
   },
   {
-    title: 'Account & Settings',
+    title: 'Account',
     items: [
       { to: '/notifications', label: 'Notifications', icon: icon(BellIcon) },
-      { to: '/billing/payments', label: 'My payments', icon: icon(CreditCardIcon) },
+      { to: '/billing', label: 'Billing', icon: icon(CreditCardIcon) },
       { to: '/support', label: 'Support', icon: icon(LifeBuoyIcon) },
       { to: '/settings', label: 'Settings', icon: icon(UserIcon) },
     ],
   },
+];
+
+/** The five destinations on the phone tab bar (everything else lives in the menu). */
+export const tabItems: NavItem[] = [
+  { to: '/', label: 'Dashboard', icon: icon(HomeIcon) },
+  { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
+  { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
+  { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
 ];
 
 /** Flat list (used for page-title lookup). */

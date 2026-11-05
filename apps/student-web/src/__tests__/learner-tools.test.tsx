@@ -6,7 +6,6 @@ jest.mock('react-router-dom', () => ({
 
 import { cleanSelection } from '../features/learner/SelectToSave';
 import { bandOf, summarizeBands } from '../features/learner/JourneyPage';
-import { flatten } from '../features/learner/SearchPalette';
 import { receiptHtml } from '../features/course-billing/printReceipt';
 import { readDisplayPrefs, saveDisplayPrefs } from '../state/displayPrefs';
 import type { StudentCourse } from '../features/curriculum/curriculumApi';
@@ -46,17 +45,6 @@ describe('journey bands', () => {
   });
   it('marks everything done once all lessons are complete', () => {
     expect(summarizeBands([course('A1.1', 5, 5)]).every((b) => b.state === 'done')).toBe(true);
-  });
-});
-
-describe('search palette rows', () => {
-  it('flattens results into grouped rows with the right destinations', () => {
-    const rows = flatten({
-      courses: [{ id: 'c1', title: 'A1.1', levelCode: 'A1' }],
-      lessons: [{ id: 'l1', title: 'Hello', courseId: 'c1', courseTitle: 'A1.1' }],
-      words: [{ id: 'w1', word: 'went', meaning: null }],
-    }, (s) => s);
-    expect(rows.map((r) => r.to)).toEqual(['/curriculum/c1', '/lessons/l1', '/vocabulary']);
   });
 });
 

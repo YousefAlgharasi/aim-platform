@@ -15,7 +15,6 @@ import {
   type ChatSessionListItem,
 } from './aiTeacherApi';
 import { pillLinkClass } from './ui';
-import chatIllustration from './assets/undraw_chat_ai.svg';
 import { useI18n } from '../../i18n/I18nContext';
 
 /** Router state handed to AIChatPage after a session start. */
@@ -40,6 +39,13 @@ function chatState(lessonTitle: string | null): AIChatLocationState {
  * The backend get-or-creates one session per (student, contextRef), so the
  * lesson's chat and voice turns share one conversation.
  */
+const STARTERS = [
+  'Explain a tricky grammar rule to me.',
+  'Let’s practice a short conversation.',
+  'Check my sentence and fix my mistakes.',
+  'Teach me 5 useful new words.',
+];
+
 export function AITeacherEntryPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -60,7 +66,7 @@ export function AITeacherEntryPage() {
   const autoStarted = useRef(false);
 
   const startSession = useCallback(
-    (contextRef: string, title?: string | null) => {
+    (contextRef: string, title?: string | null, starter?: string) => {
       setStarting(true);
       setStartError('');
       aiTeacherApi
@@ -70,7 +76,7 @@ export function AITeacherEntryPage() {
             lessonTitle: title ?? null,
             lastSessionRecap: session.lastSessionRecap,
             focusRecap: session.focusRecap,
-            prefill: askWord ? t('What does “{word}” mean in Arabic, and how do I use it in a sentence?', { word: askWord }) : undefined,
+            prefill: starter ?? (askWord ? t('What does “{word}” mean in Arabic, and how do I use it in a sentence?', { word: askWord }) : undefined),
           };
           navigate(`/ai-teacher/${session.sessionId}`, { replace: !!deepLinkContextRef, state });
         })
@@ -120,74 +126,88 @@ export function AITeacherEntryPage() {
   const recent = sessions.slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="stagger mx-auto flex w-full max-w-4xl flex-col gap-6">
       <PageTitleBar
         title={t('AI Teacher')}
-        action={
-          <Link to="/ai-teacher/history" className={pillLinkClass}>
-            {t('History')}
-          </Link>
-        }
+        subtitle={t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
+        action={<Link to="/ai-teacher/history" className={pillLinkClass}>{t('History')}</Link>}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
-        <div className="hero-surface relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-secondary p-6 sm:p-8 text-white shadow-lg shadow-brand/20 flex flex-col items-center text-center gap-4">
-          <img src={chatIllustration} alt="" aria-hidden="true" className="h-36 sm:h-44 w-auto" />
-          <div className="size-11 rounded-xl bg-white/20 flex items-center justify-center">
-            <SparkleIcon className="size-5 text-white" />
+      <div className="hero-panel">
+        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25"><SparkleIcon className="size-7 text-white" /></span>
+            <div className="min-w-0">
+              <p className="m-0 text-xl font-extrabold leading-snug sm:text-2xl">{t('Ask me anything')}</p>
+              <p className="m-0 mt-0.5 text-sm text-on-brand">{t('Start the conversation with a question or pick a suggestion below.')}</p>
+            </div>
           </div>
-          <p className="text-base sm:text-lg font-semibold leading-relaxed m-0 max-w-md">
-            {t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
-          </p>
-          {startError && (
-            <p className="m-0 rounded-xl bg-danger-soft text-danger-ink ring-1 ring-danger-line px-3 py-2 text-sm" role="alert">
-              {startError}
-            </p>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <button
               type="button"
               onClick={() => startSession(GENERAL_CONTEXT_REF)}
               disabled={starting}
-              className="flex-1 h-14 rounded-2xl bg-white text-brand font-bold border-none cursor-pointer shadow-md hover:bg-white/90 hover:shadow-lg hover:-translate-y-px active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex h-12 cursor-pointer items-center justify-center rounded-2xl border-0 hero-cta px-6 text-[15px] font-bold shadow-lg shadow-black/20 transition-all hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
-              className="flex-1 h-14 rounded-2xl font-bold bg-black/20 ring-1 ring-white/30 text-white no-underline flex items-center justify-center gap-2 hover:bg-white/25 hover:-translate-y-px active:scale-[0.98] transition-all duration-200"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 text-[15px] font-bold text-white no-underline ring-1 ring-white/30 transition-all hover:bg-white/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <MicIcon className="size-4.5 text-white" />
+              <MicIcon className="size-4 text-white" />
               {t('Talk with Voice Teacher')}
             </Link>
           </div>
         </div>
-
-        {recent.length > 0 && (
-          <section>
-            <h2 className="text-lg font-extrabold tracking-tight text-ink mt-0 mb-3">{t('Recent Conversations')}</h2>
-            <div className="flex flex-col gap-3">
-              {recent.map((session) => (
-                <Card key={session.sessionId} className="!p-0">
-                  <Link
-                    to={`/ai-teacher/${session.sessionId}`}
-                    state={chatState(session.contextTitle)}
-                    className="flex items-center justify-between gap-3 p-4 no-underline rounded-2xl hover:bg-surface-sunken dark:hover:bg-surface-muted/40 transition-colors"
-                  >
-                    <span className="flex items-center gap-3 min-w-0">
-                      <span className="size-10 shrink-0 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center">
-                        <SparkleIcon className="size-4.5" />
-                      </span>
-                      <span className="font-semibold text-ink truncate">{sessionLabel(session)}</span>
-                    </span>
-                    <span className="text-xs text-ink-muted shrink-0">{relativeTime(session.updatedAt)}</span>
-                  </Link>
-                </Card>
-              ))}
-            </div>
-          </section>
+        {startError && (
+          <p className="relative z-10 m-0 mt-4 rounded-xl bg-black/25 px-3 py-2 text-sm text-white" role="alert">{startError}</p>
         )}
       </div>
+
+      <section className="flex flex-col gap-3" aria-label={t('Try asking')}>
+        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Try asking')}</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {STARTERS.map((q) => (
+            <button
+              key={q}
+              type="button"
+              disabled={starting}
+              onClick={() => startSession(GENERAL_CONTEXT_REF, null, t(q))}
+              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-0 bg-surface p-4 text-start text-sm font-semibold text-ink shadow-card ring-1 ring-line transition-all hover:-translate-y-0.5 hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink" aria-hidden="true"><SparkleIcon className="size-4" /></span>
+              <span className="min-w-0">{t(q)}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {recent.length > 0 && (
+        <section className="flex flex-col gap-3" aria-label={t('Recent Conversations')}>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="m-0 text-base font-extrabold tracking-tight text-ink">{t('Recent Conversations')}</h2>
+            <Link to="/ai-teacher/history" className="text-xs font-semibold text-brand-ink no-underline hover:underline">{t('View all')}</Link>
+          </div>
+          <div className="flex flex-col gap-2">
+            {recent.map((session) => (
+              <Card key={session.sessionId} className="!p-0">
+                <Link
+                  to={`/ai-teacher/${session.sessionId}`}
+                  state={chatState(session.contextTitle)}
+                  className="flex items-center justify-between gap-3 rounded-2xl p-4 no-underline transition-colors hover:bg-surface-sunken"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink"><SparkleIcon className="size-4" /></span>
+                    <span className="truncate font-semibold text-ink">{sessionLabel(session)}</span>
+                  </span>
+                  <span className="shrink-0 text-xs text-ink-muted">{relativeTime(session.updatedAt)}</span>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
