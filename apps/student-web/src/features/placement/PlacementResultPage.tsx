@@ -1,3 +1,4 @@
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -82,7 +83,7 @@ export function PlacementResultPage() {
     };
   }, [fetchResult]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (pending) {
     return (
       <div className={`${SHELL} max-w-xl`}>

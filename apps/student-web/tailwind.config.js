@@ -89,6 +89,8 @@ module.exports = {
         lg: '0 10px 20px -4px rgb(20 26 44 / 0.10), 0 4px 8px -4px rgb(20 26 44 / 0.05)',
         xl: '0 16px 32px -8px rgb(20 26 44 / 0.12), 0 6px 12px -6px rgb(20 26 44 / 0.06)',
         '2xl': '0 24px 48px -12px rgb(20 26 44 / 0.18)',
+        card: 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
       },
       blur: { xs: '4px' },
       backdropBlur: { xs: '4px' },

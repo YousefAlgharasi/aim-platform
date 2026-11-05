@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { MicIcon, SparkleIcon } from '../../components/common/Icons';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   aiTeacherApi,
@@ -23,6 +23,8 @@ export interface AIChatLocationState {
   lessonTitle?: string | null;
   lastSessionRecap?: string | null;
   focusRecap?: string | null;
+  /** Text to put in the message box when the chat opens (not sent automatically). */
+  prefill?: string;
 }
 
 function chatState(lessonTitle: string | null): AIChatLocationState {
@@ -45,7 +47,10 @@ export function AITeacherEntryPage() {
   const lessonId = searchParams.get('lessonId');
   const explicitContextRef = searchParams.get('contextRef');
   const lessonTitle = searchParams.get('lessonTitle');
-  const deepLinkContextRef = explicitContextRef?.trim() || (lessonId ? lessonContextRef(lessonId) : null);
+  // /ai-teacher?ask=<word> opens the general chat with “What does <word> mean?” ready to send (from “Ask AI” on a saved word).
+  const askWord = searchParams.get('ask')?.trim().slice(0, 60) || null;
+  const deepLinkContextRef =
+    explicitContextRef?.trim() || (lessonId ? lessonContextRef(lessonId) : null) || (askWord ? GENERAL_CONTEXT_REF : null);
 
   const [sessions, setSessions] = useState<ChatSessionListItem[]>([]);
   const [loading, setLoading] = useState(!deepLinkContextRef);
@@ -65,6 +70,7 @@ export function AITeacherEntryPage() {
             lessonTitle: title ?? null,
             lastSessionRecap: session.lastSessionRecap,
             focusRecap: session.focusRecap,
+            prefill: askWord ? t('What does “{word}” mean in Arabic, and how do I use it in a sentence?', { word: askWord }) : undefined,
           };
           navigate(`/ai-teacher/${session.sessionId}`, { replace: !!deepLinkContextRef, state });
         })
@@ -73,7 +79,7 @@ export function AITeacherEntryPage() {
           setStarting(false);
         });
     },
-    [navigate, deepLinkContextRef, t],
+    [navigate, deepLinkContextRef, askWord, t],
   );
 
   const fetchSessions = useCallback(() => {
@@ -105,10 +111,10 @@ export function AITeacherEntryPage() {
         />
       );
     }
-    return <LoadingSpinner />;
+    return <DetailSkeleton />;
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (loadError) return <ErrorState message={loadError} onRetry={fetchSessions} />;
 
   const recent = sessions.slice(0, 5);
@@ -125,7 +131,7 @@ export function AITeacherEntryPage() {
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
-        <div className="rounded-3xl bg-gradient-to-br from-brand to-secondary p-6 sm:p-8 text-white shadow-lg shadow-brand/20 flex flex-col items-center text-center gap-4">
+        <div className="hero-surface relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-secondary p-6 sm:p-8 text-white shadow-lg shadow-brand/20 flex flex-col items-center text-center gap-4">
           <img src={chatIllustration} alt="" aria-hidden="true" className="h-36 sm:h-44 w-auto" />
           <div className="size-11 rounded-xl bg-white/20 flex items-center justify-center">
             <SparkleIcon className="size-5 text-white" />
@@ -143,13 +149,13 @@ export function AITeacherEntryPage() {
               type="button"
               onClick={() => startSession(GENERAL_CONTEXT_REF)}
               disabled={starting}
-              className="flex-1 h-[54px] rounded-[14px] bg-white text-brand font-semibold border-none cursor-pointer hover:bg-white/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 h-14 rounded-2xl bg-white text-brand font-bold border-none cursor-pointer shadow-md hover:bg-white/90 hover:shadow-lg hover:-translate-y-px active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
-              className="flex-1 h-[54px] rounded-[14px] bg-black/20 ring-1 ring-white/30 text-white font-semibold no-underline flex items-center justify-center gap-2 hover:bg-white/25 transition-colors"
+              className="flex-1 h-14 rounded-2xl font-bold bg-black/20 ring-1 ring-white/30 text-white no-underline flex items-center justify-center gap-2 hover:bg-white/25 hover:-translate-y-px active:scale-[0.98] transition-all duration-200"
             >
               <MicIcon className="size-4.5 text-white" />
               {t('Talk with Voice Teacher')}

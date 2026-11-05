@@ -1,8 +1,12 @@
+import { SelectToSave } from '../learner/SelectToSave';
+import { newIdempotencyKey } from '../../api/client';
+import { Markdown } from '../../components/common/Markdown';
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ChatSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   aiTeacherApi,
@@ -44,7 +48,7 @@ export function AIChatPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [sendError, setSendError] = useState('');
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(navState.prefill ?? '');
   const [sending, setSending] = useState(false);
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, FeedbackEntry>>({});
@@ -155,6 +159,8 @@ export function AIChatPage() {
 
     const controller = new AbortController();
     abortRef.current = controller;
+    // One key per user action: a double click or network retry of this send is de-duplicated server-side.
+    const idempotencyKey = newIdempotencyKey();
     let streamed = '';
     let replyText: string | null = null;
 
@@ -168,13 +174,14 @@ export function AIChatPage() {
             if (mountedRef.current) setStreamingText(streamed);
           },
           controller.signal,
+          idempotencyKey,
         );
         replyText = streamed;
       } catch (err) {
         if (!(err instanceof StreamUnauthorizedError)) throw err;
         // 401 before processing: fall back to the non-streaming endpoint,
         // which goes through apiClient's token refresh.
-        const reply = await aiTeacherApi.sendMessage(sessionId, studentMessage);
+        const reply = await aiTeacherApi.sendMessage(sessionId, studentMessage, idempotencyKey);
         replyText = reply.text;
       }
       if (!mountedRef.current) return;
@@ -223,7 +230,7 @@ export function AIChatPage() {
     }
   }
 
-  if (loading && !messages) return <LoadingSpinner />;
+  if (loading && !messages) return <ChatSkeleton />;
   if (loadError && !messages) return <ErrorState message={loadError} onRetry={fetchHistory} />;
   if (!messages) return null;
 
@@ -294,10 +301,10 @@ export function AIChatPage() {
                 className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                   isStudent
                     ? 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
-                    : 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
+                    : 'bg-surface ring-1 ring-line text-ink rounded-es-none shadow-card'
                 }`}
               >
-                {msg.text}
+                {isStudent ? msg.text : <SelectToSave source="chat"><Markdown text={msg.text} /></SelectToSave>}
               </div>
               <span className="text-[11px] font-medium text-ink-muted mt-1 px-1 flex items-center gap-1">
                 {msg.channel === 'voice' && (
@@ -333,7 +340,7 @@ export function AIChatPage() {
         {sending && streamingText !== null && streamingText.length > 0 && (
           <div className="flex flex-col max-w-[88%] sm:max-w-[78%] self-start items-start" aria-busy="true">
             <div className="p-4 rounded-2xl rounded-es-none text-sm leading-relaxed whitespace-pre-wrap break-words bg-surface ring-1 ring-line/80 text-ink shadow-sm">
-              {streamingText}
+              <Markdown text={streamingText} />
             </div>
           </div>
         )}
@@ -368,7 +375,7 @@ export function AIChatPage() {
                 key={prompt}
                 type="button"
                 onClick={() => send(t(prompt))}
-                className="shrink-0 min-h-10 px-4 rounded-full bg-surface ring-1 ring-brand-line dark:ring-line text-brand-ink text-sm font-semibold cursor-pointer border-none hover:bg-brand-soft transition-colors"
+                className={`${buttonClasses('secondary', 'sm')} shrink-0`}
               >
                 {t(prompt)}
               </button>
@@ -392,7 +399,7 @@ export function AIChatPage() {
             onClick={() => send(input)}
             disabled={sending || !input.trim()}
             aria-label={sending ? t('Sending…') : t('Send message')}
-            className="size-10 shrink-0 rounded-xl bg-brand hover:bg-brand-hover text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`${buttonClasses('primary', 'sm')} !px-0 size-11 shrink-0`}
           >
             <SendIcon />
           </button>

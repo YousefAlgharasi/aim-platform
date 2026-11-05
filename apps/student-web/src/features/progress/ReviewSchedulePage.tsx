@@ -2,7 +2,7 @@ import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { useI18n } from '../../i18n/I18nContext';
 import { useAimResults } from './useAimResults';
 import { dueLabel, formatInterval, humanize, prettifySkillId, type ReviewScheduleEntry } from './aimApi';
@@ -57,7 +57,7 @@ export function ReviewSchedulePage() {
   const { t } = useI18n();
   const { data, loading, error, reload } = useAimResults();
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return null;
 

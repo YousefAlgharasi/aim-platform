@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { fetchStudentLessons, type StudentLessonsResponse } from '../lessons/lessonsApi';
 import type { FinalExamSummary, LevelWithChapters, StudentChapter } from './curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
@@ -61,9 +61,9 @@ const NODE_BASE =
 function nodeTone(status: NodeStatus): string {
   switch (status) {
     case 'completed': return 'bg-success text-white shadow-md shadow-success/25';
-    case 'current': return 'bg-gradient-to-br from-brand to-secondary text-white shadow-lg shadow-brand/30 ring-4 ring-brand-soft';
+    case 'current': return 'bg-gradient-to-br from-brand to-secondary text-white shadow-[0_10px_28px_-6px_rgb(71_98_238/0.6)] ring-4 ring-brand-soft';
     case 'available': return 'bg-brand-soft text-brand-ink ring-2 ring-brand-line';
-    default: return 'bg-surface-muted text-ink-muted ring-1 ring-line';
+    default: return 'bg-surface-muted text-ink-muted ring-1 ring-line opacity-60';
   }
 }
 
@@ -400,7 +400,7 @@ function ChapterPath({ courseId, chapter, number, locked }: ChapterPathProps) {
         <span aria-hidden="true" className="h-px flex-1 bg-line" />
       </div>
 
-      {loading && <LoadingSpinner />}
+      {loading && <ListSkeleton rows={4} bare />}
       {error && (
         <div className="my-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-danger-soft text-danger-ink text-sm p-3" role="alert">
           <span>{error}</span>

@@ -44,7 +44,7 @@ export function PracticeFeedback({
   return (
     <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
       <div className="flex flex-col items-center text-center pt-2">
-        <div className="w-22 h-22 rounded-3xl bg-gradient-to-br from-warning to-warning flex items-center justify-center text-white shadow-xl shadow-warning/25 rotate-3 mb-5">
+        <div className="pop-in w-22 h-22 rounded-3xl bg-gradient-to-br from-warning to-warning flex items-center justify-center text-white shadow-xl shadow-warning/25 rotate-3 mb-5">
           <TrophyIcon className="size-11 text-white" />
         </div>
         <span className="text-warning-ink font-extrabold text-xs uppercase tracking-wider bg-warning-soft px-3 py-1 rounded-full mb-2">

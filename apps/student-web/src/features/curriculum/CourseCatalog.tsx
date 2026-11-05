@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Popover } from '../../components/common/Popover';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { CardGridSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -72,7 +72,7 @@ export function CourseCatalog() {
     setTimeout(() => setNotice(course), 0);
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <CardGridSkeleton />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (courses.length === 0) {
     return <EmptyState title={t('No courses available')} message={t('Courses will appear here once they are published.')} />;

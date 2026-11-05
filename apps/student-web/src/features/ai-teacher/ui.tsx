@@ -1,3 +1,4 @@
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 
@@ -30,8 +31,7 @@ export function BackLink({ to, label }: { to: string; label: string }) {
   );
 }
 
-export const pillLinkClass =
-  'inline-flex items-center justify-center gap-1.5 min-h-10 px-3.5 rounded-xl bg-brand-soft text-brand-ink text-sm font-semibold no-underline hover:bg-brand-soft transition-colors';
+export const pillLinkClass = buttonClasses('secondary', 'sm');
 
 export function ThumbButton({
   kind, active, disabled, onClick, label,

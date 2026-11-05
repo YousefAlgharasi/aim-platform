@@ -10,6 +10,7 @@ import { dashboard } from './dashboard';
 import { account } from './account';
 import { billing } from './billing';
 import { practice } from './practice';
+import { learner } from './learner';
 
 export const ar: Record<string, string> = {
   ...common,
@@ -22,4 +23,5 @@ export const ar: Record<string, string> = {
   ...account,
   ...billing,
   ...practice,
+  ...learner,
 };

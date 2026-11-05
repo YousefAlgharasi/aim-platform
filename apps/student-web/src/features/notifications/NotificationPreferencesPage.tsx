@@ -1,3 +1,4 @@
+import { FormSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -206,7 +207,7 @@ export function NotificationPreferencesPage() {
       }));
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <FormSkeleton />;
   if (error) return <ErrorState message={error} onRetry={loadPrefs} />;
 
   return (

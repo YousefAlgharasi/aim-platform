@@ -1,3 +1,8 @@
+import { LandingPage } from '../features/landing/LandingPage';
+import { VocabularyPage } from '../features/learner/VocabularyPage';
+import { MistakesPage } from '../features/learner/MistakesPage';
+import { JourneyPage } from '../features/learner/JourneyPage';
+import { OnboardingPage } from '../features/learner/OnboardingPage';
 import { Routes, Route } from 'react-router-dom';
 import { AuthGuard } from '../guards/AuthGuard';
 import { PublicLayout } from '../layouts/PublicLayout';
@@ -53,6 +58,9 @@ import { ForbiddenPage } from '../components/common/ForbiddenPage';
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Public landing page (full width, outside the phone-width auth layout) */}
+      <Route path="/welcome" element={<LandingPage />} />
+
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
@@ -67,6 +75,10 @@ export function AppRoutes() {
         <Route path="/" element={<DashboardHome />} />
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/mistakes" element={<MistakesPage />} />
+        <Route path="/journey" element={<JourneyPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/progress" element={<ProgressSummary />} />
         <Route path="/progress/skills" element={<SkillStatePage />} />

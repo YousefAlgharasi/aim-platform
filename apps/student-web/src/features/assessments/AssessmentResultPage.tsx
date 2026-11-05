@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { useI18n } from '../../i18n/I18nContext';
 import { fetchAttemptResult, type AttemptResult } from './assessmentsApi';
@@ -26,7 +26,7 @@ export function AssessmentResultPage() {
 
   useEffect(() => { fetchResult(); }, [fetchResult]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchResult} />;
   if (!result) return null;
 

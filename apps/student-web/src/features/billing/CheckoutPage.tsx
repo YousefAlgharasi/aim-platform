@@ -1,3 +1,4 @@
+import { FormSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -183,7 +184,7 @@ export function CheckoutPage() {
     setSearchParams({}, { replace: true });
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <FormSkeleton />;
   if (loadError) return <ErrorState message={loadError} onRetry={loadPlan} />;
 
   // ----- Status view (after a session exists or on return from provider) -----

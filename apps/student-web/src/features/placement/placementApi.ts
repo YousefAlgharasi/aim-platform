@@ -219,7 +219,10 @@ export async function fetchPlacementQuestionAudio(questionId: string): Promise<B
 }
 
 export function completePlacementAttempt(attemptId: string): Promise<PlacementAttemptComplete> {
-  return apiClient.post<PlacementAttemptComplete>(`/placement/attempts/${attemptId}/complete`);
+  // One completion per attempt, so the attempt id is a stable key: any retry/double click is de-duplicated.
+  return apiClient.post<PlacementAttemptComplete>(`/placement/attempts/${attemptId}/complete`, undefined, {
+    idempotencyKey: `placement-complete:${attemptId}`,
+  });
 }
 
 export function fetchPlacementResult(attemptId: string): Promise<PlacementResult> {

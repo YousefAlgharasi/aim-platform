@@ -5,7 +5,7 @@ import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import type { ApiError } from '../../types';
 import type { LessonRouteState } from '../lessons/LessonPlayerShell';
 import { useLessonProgress } from '../lessons/useLessonProgress';
@@ -171,7 +171,7 @@ export function PracticeShell() {
     );
   }
 
-  if (status === 'loading') return <LoadingSpinner />;
+  if (status === 'loading') return <QuestionSkeleton />;
 
   if (status === 'locked') {
     return (
@@ -223,7 +223,7 @@ export function PracticeShell() {
 
   if (status === 'finished') {
     if (summaryError) return <ErrorState message={summaryError} onRetry={loadSummary} />;
-    if (!summary) return <LoadingSpinner />;
+    if (!summary) return <QuestionSkeleton />;
     return (
       <PracticeFeedback
         summary={summary}
@@ -239,7 +239,7 @@ export function PracticeShell() {
     );
   }
 
-  if (!current) return <LoadingSpinner />;
+  if (!current) return <QuestionSkeleton />;
 
   const answered = feedback?.questionId === current.id;
   const canSubmit = (current.options.length > 0 ? draft : draft.trim()).length > 0;
@@ -257,7 +257,7 @@ export function PracticeShell() {
       </div>
 
       <div
-        className="h-2 bg-control rounded-full overflow-hidden"
+        className="h-2.5 bg-control rounded-full overflow-hidden ring-1 ring-inset ring-line"
         role="progressbar"
         aria-valuenow={progressPct}
         aria-valuemin={0}

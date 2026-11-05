@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { CardGridSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useI18n } from '../../i18n/I18nContext';
 import {
@@ -67,7 +67,7 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
     <div className="flex flex-col gap-5 max-w-3xl w-full mx-auto">
       <PageTitleBar title={title} subtitle={subtitle} />
 
-      {loading && <LoadingSpinner />}
+      {loading && <CardGridSkeleton cards={6} bare />}
       {!loading && error && <ErrorState message={error} onRetry={load} />}
       {!loading && locked && (
         <EmptyState

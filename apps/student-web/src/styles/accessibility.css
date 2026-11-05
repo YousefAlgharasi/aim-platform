@@ -47,3 +47,13 @@ textarea:focus-visible,
     border: 1px solid;
   }
 }
+
+/* Reader preferences (Settings → Display). Everything sizes in rem, so scaling the root scales the app. */
+html[data-font-scale='large'] { font-size: 112.5%; }
+html[data-font-scale='xlarge'] { font-size: 125%; }
+html[data-motion='reduce'] *, html[data-motion='reduce'] *::before, html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -117,7 +117,7 @@ export function NotificationCenterPage() {
     if (isUnread(notif)) markRead(notif.id);
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={loadFirstPage} />;
 
   const visible = notifications.filter(n => !n.dismissed_at && n.state !== 'dismissed');

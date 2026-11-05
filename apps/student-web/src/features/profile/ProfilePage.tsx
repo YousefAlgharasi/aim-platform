@@ -6,7 +6,7 @@ import { Card } from '../../components/common/Card';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { FormSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   fetchProfile,
@@ -62,7 +62,7 @@ export function ProfilePage() {
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  if (!user || loading) return <LoadingSpinner />;
+  if (!user || loading) return <FormSkeleton />;
   if (fetchError) return <ErrorState message={fetchError} onRetry={loadProfile} />;
 
   const studentProfile = profile?.studentProfile ?? null;

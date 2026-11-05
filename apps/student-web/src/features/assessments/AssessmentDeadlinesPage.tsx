@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -68,7 +68,7 @@ export function AssessmentDeadlinesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!deadlines) return null;
 

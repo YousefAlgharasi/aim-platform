@@ -81,7 +81,7 @@ export function GoogleSignInButton({
         <span className="flex-1 h-px bg-surface-strong" />
       </div>
       <div className={`relative mt-4 ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
-        <div className="h-[54px] w-full inline-flex items-center justify-center gap-2.5 rounded-[14px] border border-line bg-surface text-ink font-semibold text-[15px]">
+        <div className="h-14 w-full inline-flex items-center justify-center gap-2.5 rounded-2xl border border-line bg-surface text-ink font-semibold text-[15px]">
           <GoogleIcon />
           {t('Continue with Google')}
         </div>

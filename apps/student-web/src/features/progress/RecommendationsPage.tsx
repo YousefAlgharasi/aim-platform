@@ -4,7 +4,7 @@ import * as ui from './ui';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { useI18n } from '../../i18n/I18nContext';
 import { useAimResults } from './useAimResults';
 import { formatDate, humanize, prettifySkillId } from './aimApi';
@@ -14,7 +14,7 @@ export function RecommendationsPage() {
   const { data, loading, error, reload } = useAimResults();
   const { t } = useI18n();
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!data) return null;
 

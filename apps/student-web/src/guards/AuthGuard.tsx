@@ -18,7 +18,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (!user) {
     return (
       <Navigate
-        to={sessionExpired ? '/session-expired' : '/login'}
+        to={sessionExpired ? '/session-expired' : location.pathname === '/' ? '/welcome' : '/login'}
         state={{ returnTo: location.pathname }}
         replace
       />

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { QuestionAudio } from '../placement/PlacementAudio';
@@ -162,7 +162,7 @@ export function AttemptScreen() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton />;
   if (notResumable) {
     return (
       <div className={SHELL}>

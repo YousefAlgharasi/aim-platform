@@ -1,7 +1,8 @@
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { deadlineStatusLabel, fetchAssessments, type AssessmentListItem } from './assessmentsApi';
@@ -26,7 +27,7 @@ export function AssessmentListPage() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchAll} />;
 
   return (
@@ -37,7 +38,7 @@ export function AssessmentListPage() {
         action={
           <Link
             to="/assessments/deadlines"
-            className="shrink-0 inline-flex items-center h-10 px-4 rounded-xl bg-control text-sm font-semibold text-brand-ink hover:bg-surface-strong transition-colors"
+            className={`${buttonClasses('secondary', 'sm')} shrink-0`}
           >
             {t('Deadlines')}
           </Link>

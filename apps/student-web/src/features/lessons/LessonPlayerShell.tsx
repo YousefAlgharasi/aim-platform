@@ -1,8 +1,9 @@
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
@@ -88,7 +89,7 @@ export function LessonPlayerShell() {
   useEffect(() => { load(); }, [load]);
 
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error || !lesson) {
     return <ErrorState message={error || t('Failed to load lesson')} onRetry={load} />;
   }
@@ -101,7 +102,7 @@ export function LessonPlayerShell() {
     <div className="flex flex-col gap-5 max-w-3xl mx-auto w-full">
       <BackButton fallback={courseId ? `/curriculum/${courseId}` : '/curriculum'} className="self-start" />
 
-      <div className="bg-gradient-to-br from-brand via-brand to-secondary rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
+      <div className="hero-surface bg-gradient-to-br from-brand via-brand to-secondary rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-brand/20 relative overflow-hidden">
         <div className="absolute top-0 end-0 w-36 h-36 bg-white/10 rounded-full blur-xl pointer-events-none" />
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="text-on-brand text-[11px] font-extrabold uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full">
@@ -169,7 +170,7 @@ export function LessonPlayerShell() {
         )}
 
         {position.locked ? (
-          <span className="flex items-center justify-center h-[54px] rounded-2xl bg-control text-ink-muted text-sm font-semibold">
+          <span className="flex items-center justify-center h-14 rounded-2xl bg-control text-ink-muted text-sm font-semibold">
             {t('🔒 Practice unlocks after the previous lesson')}
           </span>
         ) : completed ? (
@@ -190,7 +191,7 @@ export function LessonPlayerShell() {
           <Link
             to={`/practice/lesson/${lesson.id}`}
             state={practiceState}
-            className="w-full h-[54px] rounded-2xl bg-gradient-to-r from-brand via-brand to-secondary text-white font-extrabold text-base no-underline shadow-lg shadow-brand/25 flex items-center justify-center gap-2.5 hover:opacity-95 transition-all"
+            className={buttonClasses('primary', 'lg', true)}
           >
             {t('Start practice to complete lesson ⚡')}
           </Link>

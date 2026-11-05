@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   deadlineStatusLabel,
@@ -63,7 +63,7 @@ export function AssessmentDetailPage() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchDetail} />;
   if (!detail) return null;
 

@@ -5,7 +5,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   fetchTicket,
@@ -76,7 +76,7 @@ export function TicketDetailPage() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error || !ticket) return <ErrorState message={error || t('Ticket not found')} onRetry={load} />;
 
   const closed = ticket.status === 'closed';

@@ -1,3 +1,6 @@
+import { SelectToSave } from '../learner/SelectToSave';
+import { Markdown } from '../../components/common/Markdown';
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useI18n } from '../../i18n/I18nContext';
 import { t as tr, plural } from '../../i18n';
 import { AuthAudioPlayer } from './AuthAudioPlayer';
@@ -74,7 +77,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
         </div>
       </div>
 
-      {asset.description && <p className="text-sm leading-relaxed text-ink-soft m-0 whitespace-pre-wrap">{asset.description}</p>}
+      {asset.description && <SelectToSave source="lesson"><Markdown text={asset.description} className="text-sm leading-relaxed text-ink-soft" /></SelectToSave>}
 
       {asset.type === 'image' && (
         asset.url ? (
@@ -99,7 +102,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
 
       {asset.url && asset.type !== 'image' && asset.type !== 'audio' &&
         !(asset.type === 'video' && asset.mimeType?.startsWith('video/')) && (
-          <a href={asset.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center self-start h-10 px-4 rounded-xl bg-brand-soft text-brand-ink text-sm font-bold no-underline hover:bg-brand-soft">
+          <a href={asset.url} target="_blank" rel="noopener noreferrer" className={`${buttonClasses('secondary', 'sm')} self-start`}>
             {t('Open {type} ↗', { type: TYPE_LABEL[asset.type] ? tr(TYPE_LABEL[asset.type]).toLowerCase() : t('resource') })}
           </a>
       )}

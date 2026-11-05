@@ -7,6 +7,9 @@ interface ThemeState {
   isDarkMode: boolean;
   setDarkMode: (value: boolean) => void;
   toggle: () => void;
+  /** false when an admin has switched the `dark_mode` feature flag off for this user. */
+  darkModeAllowed: boolean;
+  setDarkModeAllowed: (value: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeState | null>(null);
@@ -22,21 +25,30 @@ function initialDarkMode(): boolean {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDarkMode, setDarkMode] = useState<boolean>(initialDarkMode);
+  const [preferDark, setDarkMode] = useState<boolean>(initialDarkMode);
+  const [darkModeAllowed, setDarkModeAllowed] = useState(true);
+  // The stored preference is kept as-is; the flag only overrides what is shown.
+  const isDarkMode = preferDark && darkModeAllowed;
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDarkMode ? '#0F172A' : '#4762EE');
+  }, [isDarkMode]);
+
+  useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, String(isDarkMode));
+      localStorage.setItem(STORAGE_KEY, String(preferDark));
     } catch {
       // Theme still applies for this session.
     }
-  }, [isDarkMode]);
+  }, [preferDark]);
 
   const toggle = useCallback(() => setDarkMode((v) => !v), []);
 
-  return <ThemeContext.Provider value={{ isDarkMode, setDarkMode, toggle }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ isDarkMode, setDarkMode, toggle, darkModeAllowed, setDarkModeAllowed }}>{children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme(): ThemeState {

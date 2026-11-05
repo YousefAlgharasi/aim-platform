@@ -12,6 +12,7 @@ import { LogOutIcon } from '../../components/common/Icons';
 import { PageHeader, SectionTitle, LinkRow, subCls } from '../profile/ui';
 import { LanguageDropdown } from './LanguageDropdown';
 import { ThemeSwitch } from './ThemeSwitch';
+import { DisplayPrefs } from './DisplayPrefs';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -115,6 +116,7 @@ export function SettingsPage() {
               <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
             </div>
             <ThemeSwitch />
+            <DisplayPrefs />
           </div>
         </Card>
 

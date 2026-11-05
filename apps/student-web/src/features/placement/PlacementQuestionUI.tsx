@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -273,7 +273,7 @@ export function PlacementQuestionUI() {
     );
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton />;
   if (loadError) {
     return (
       <ErrorState

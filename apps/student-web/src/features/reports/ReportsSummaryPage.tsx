@@ -1,3 +1,4 @@
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
@@ -164,7 +165,7 @@ export function ReportsSummaryPage() {
       .catch(err => update(report.key, { running: false, error: getErrorMessage(err, t('Failed to run report')) }));
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchReports} />;
   if (!reports) return null;
 

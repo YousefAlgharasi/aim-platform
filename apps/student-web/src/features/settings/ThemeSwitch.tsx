@@ -4,8 +4,9 @@ import { useTheme } from '../../state/ThemeContext';
 /** Light/dark switch. The choice is remembered on this device (see ThemeContext). */
 export function ThemeSwitch() {
   const { t } = useI18n();
-  const { isDarkMode, setDarkMode } = useTheme();
+  const { isDarkMode, setDarkMode, darkModeAllowed } = useTheme();
   const label = t('Dark mode');
+  if (!darkModeAllowed) return null;
 
   return (
     <div className="flex items-center justify-between gap-4">

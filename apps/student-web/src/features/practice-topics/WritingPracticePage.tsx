@@ -5,7 +5,7 @@ import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useI18n } from '../../i18n/I18nContext';
 import { countWords, isPracticeLocked, practiceTopicsApi, type PracticeTopic, type WritingResult } from './practiceTopicsApi';
@@ -69,7 +69,7 @@ export function WritingPracticePage() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton />;
   if (locked) {
     return (
       <EmptyState

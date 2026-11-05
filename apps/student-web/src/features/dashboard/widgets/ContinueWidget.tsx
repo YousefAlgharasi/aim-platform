@@ -9,6 +9,7 @@ import type {
   RecommendedCourse,
 } from '../dashboardApi';
 import { InfoPopoverButton } from '../../../components/common/InfoPopoverButton';
+import { formatPlacementLevel } from '../../placement/placementApi';
 import * as ui from './ui';
 
 interface ContinueWidgetProps {
@@ -95,7 +96,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
               <span className={ui.label}>{enrolledCourse ? t('Current course') : t('Recommended course')}</span>
               <span className="truncate text-sm font-bold text-ink">{course.title}</span>
               {!enrolledCourse && recommendedCourse?.estimatedLevel && (
-                <span className="text-xs text-ink-muted">{t('Level: {level}', { level: recommendedCourse.estimatedLevel })}</span>
+                <span className="text-xs text-ink-muted">{t('Level: {level}', { level: (({ label, code }) => (code ? `${label} (${code})` : label))(formatPlacementLevel(recommendedCourse.estimatedLevel)) })}</span>
               )}
             </div>
             <Link to={`/curriculum/${course.id}`} className={`${ui.link} shrink-0`}>{t('Open course')}</Link>

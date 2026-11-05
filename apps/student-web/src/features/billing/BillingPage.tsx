@@ -1,3 +1,4 @@
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -108,7 +109,7 @@ export function BillingPage() {
       .finally(() => setInvoiceLoading(false));
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchBilling} />;
   if (!data) return null;
 

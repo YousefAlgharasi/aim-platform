@@ -4,7 +4,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { CardGridSkeleton } from '../../components/common/Skeleton';
 import { getErrorMessage } from '../../api/client';
 import { t } from '../../i18n';
 import { fetchAchievements, type Achievement } from './achievementsApi';
@@ -57,7 +57,7 @@ export function AchievementsPage() {
     load();
   }, [load]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <CardGridSkeleton />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!items) return null;
 
@@ -80,7 +80,7 @@ export function AchievementsPage() {
         <EmptyState title={t('No achievements yet')} message={t('Achievements will appear here as they become available.')} />
       ) : (
         <>
-          <div className="relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-5 text-white shadow-xl shadow-brand/25">
+          <div className="hero-surface relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-5 text-white shadow-xl shadow-brand/25">
             <div className="pointer-events-none absolute top-0 end-0 size-36 rounded-full bg-white/10 blur-2xl" />
             <div className="relative z-10 flex items-center gap-4">
               <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-black/20 text-gold-on-brand backdrop-blur-md" aria-hidden="true">

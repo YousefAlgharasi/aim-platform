@@ -1,3 +1,4 @@
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
@@ -203,14 +204,26 @@ export function DashboardHome() {
   const goalPct = goal && goalTarget > 0 ? Math.min(100, Math.round((goal.completedToday / goalTarget) * 100)) : 0;
   const goalMet = !!goal && goalTarget > 0 && goal.completedToday >= goalTarget;
 
+  // The single most useful next action: resume what was started, else the suggested first lesson,
+  // else open the current/recommended course. Same sources the Continue card below uses.
+  const courseIdForNext =
+    (data?.enrollment?.found ? data.enrollment.courseId : null) ?? data?.recommendedCourse?.courseId ?? null;
+  const nextStep: { title: string; to: string; cta: string } | null = data?.continueLesson
+    ? { title: data.continueLesson.lessonTitle, to: `/lessons/${data.continueLesson.lessonId}`, cta: t('Resume lesson') }
+    : data?.quickStart
+      ? { title: data.quickStart.lessonTitle, to: `/lessons/${data.quickStart.lessonId}`, cta: t('Start lesson') }
+      : courseIdForNext && courseTitle
+        ? { title: courseTitle, to: `/curriculum/${courseIdForNext}`, cta: t('Open course') }
+        : null;
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="relative overflow-hidden rounded-3xl border border-brand-ink/20 bg-gradient-to-br from-brand via-brand to-secondary p-5 sm:p-6 text-white shadow-xl shadow-brand/25">
+    <div className="stagger flex flex-col gap-6">
+      <div className="hero-surface relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-brand via-brand to-secondary p-5 sm:p-7 text-white shadow-xl shadow-brand/30 dark:shadow-black/40">
         <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-10 -start-10 size-32 rounded-full bg-secondary/30 blur-xl" />
         <div className="relative z-10 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="m-0 text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight">
+            <h1 className="m-0 text-[26px] sm:text-4xl font-extrabold leading-[1.1] tracking-tight">
               {firstName ? t('Welcome back, {name}', { name: firstName }) : t('Welcome back')}
             </h1>
             {data && (stats || courseTitle) && (
@@ -235,6 +248,22 @@ export function DashboardHome() {
             </div>
           )}
         </div>
+        {data && nextStep && (
+          <div className="relative z-10 mt-5 flex flex-col gap-3 rounded-2xl border border-white/15 bg-black/20 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="m-0 text-xs font-bold text-on-brand">{t('Up next')}</p>
+              <p className="m-0 mt-0.5 truncate text-base font-extrabold leading-snug text-white sm:text-lg [unicode-bidi:plaintext]">
+                {nextStep.title}
+              </p>
+            </div>
+            <Link
+              to={nextStep.to}
+              className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-6 text-[15px] font-bold text-brand no-underline shadow-lg shadow-black/20 transition-all duration-200 hover:-translate-y-px hover:shadow-xl active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+            >
+              {nextStep.cta}
+            </Link>
+          </div>
+        )}
         {goal && (
           <div className="relative z-10 mt-4 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3 text-xs font-bold text-on-brand">
@@ -253,21 +282,24 @@ export function DashboardHome() {
               </span>
             </div>
             <div
-              className="h-2 overflow-hidden rounded-full bg-black/20"
+              className="h-2.5 overflow-hidden rounded-full bg-black/25 ring-1 ring-inset ring-white/10"
               role="progressbar"
               aria-label={t('Daily goal progress')}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={goalPct}
             >
-              <div className={`h-full rounded-full bg-white`} style={{ width: `${goalPct}%` }} />
+              <div
+                className="h-full rounded-full bg-white shadow-[0_0_14px_rgb(255_255_255/0.6)] transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                style={{ width: `${goalPct}%` }}
+              />
             </div>
           </div>
         )}
       </div>
 
       {loading ? (
-        <LoadingSpinner />
+        <DashboardSkeleton />
       ) : fatalError ? (
         <ErrorState message={fatalError} onRetry={load} />
       ) : data ? (
@@ -334,8 +366,11 @@ export function DashboardHome() {
         </>
       ) : null}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Quick links')}</h2>
+      <details className="group flex flex-col gap-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-1 py-2 text-base font-extrabold tracking-tight text-ink marker:hidden [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          <span>{t('Quick links')}</span>
+          <svg className="size-5 text-ink-muted transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {quickLinks.map((link) => (
             <Link
@@ -351,7 +386,7 @@ export function DashboardHome() {
             </Link>
           ))}
         </div>
-      </section>
+      </details>
     </div>
   );
 }

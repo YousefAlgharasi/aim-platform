@@ -1,3 +1,6 @@
+import { ChatSkeleton } from '../../components/common/Skeleton';
+import { Markdown } from '../../components/common/Markdown';
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -319,7 +322,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
 
   // ── Render ────────────────────────────────────────────────────────────
 
-  if (loading && !messages) return <LoadingSpinner />;
+  if (loading && !messages) return <ChatSkeleton />;
   if (loadError && !messages) return <ErrorState message={loadError} onRetry={fetchHistory} />;
   if (!messages) return null;
 
@@ -497,7 +500,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                       : 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
                   }`}
                 >
-                  {msg.text}
+                  {isTeacher ? <Markdown text={msg.text} /> : msg.text}
                 </div>
                 <div className="flex items-center gap-2 mt-1 px-1 text-[11px] font-medium text-ink-muted">
                   <span className="inline-flex items-center gap-1">
@@ -507,7 +510,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   {source && key && (
                     <button
                       type="button"
-                      className="min-h-8 px-3 rounded-full bg-brand-soft text-brand-ink text-xs font-semibold border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={buttonClasses('secondary', 'sm')}
                       onClick={() => (playingKey === key ? stopPlayback() : play(source))}
                       disabled={loadingKey === key || isRecording}
                       aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}

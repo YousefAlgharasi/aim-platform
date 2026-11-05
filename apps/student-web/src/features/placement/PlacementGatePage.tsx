@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { getErrorMessage } from '../../api/client';
 import { fetchPlacementGate, setPlacementDecision, type PlacementDecision } from './placementApi';
 import { useI18n } from '../../i18n/I18nContext';
@@ -80,7 +80,7 @@ export function PlacementGatePage() {
     }
   }
 
-  if (checking) return <LoadingSpinner />;
+  if (checking) return <DetailSkeleton />;
 
   const choices: Array<{ value: PlacementDecision; title: string; body: string }> = [
     {

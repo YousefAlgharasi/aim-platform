@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } from './aiTeacherApi';
@@ -38,7 +38,7 @@ export function AIHistoryPage() {
     fetchHistory();
   }, [fetchHistory]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchHistory} />;
 
   return (
