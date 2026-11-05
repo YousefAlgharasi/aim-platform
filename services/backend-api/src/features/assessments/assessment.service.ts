@@ -99,23 +99,39 @@ export class AssessmentService {
    */
   async listForStudent(studentId: string): Promise<AssessmentListItem[]> {
     const assessments = await this.repo.findAllPublished();
-    const items = await Promise.all(
-      assessments.map(async (a) => {
-        if (a.chapter_id) {
-          const unlocked = await isChapterLessonsComplete(this.db, studentId, a.chapter_id);
-          if (!unlocked) return null;
-        }
-        if (a.course_id) {
-          const unlocked = await isCourseChaptersComplete(this.db, studentId, a.course_id);
-          if (!unlocked) return null;
-        }
-        const deadline = await this.repo.findEffectiveDeadline(a.id, studentId);
-        const deadlineStatus = deadline
-          ? this.deriveDeadlineStatus(deadline.opens_at, deadline.closes_at, deadline.extended_closes_at)
-          : null;
-        return { id: a.id, type: a.type, title: a.title, description: a.description, deadlineStatus };
-      }),
-    );
+    // Many assessments share a chapter/course; check each only once per request.
+    const chapterDone = new Map<string, Promise<boolean>>();
+    const courseDone = new Map<string, Promise<boolean>>();
+    const memo = (cache: Map<string, Promise<boolean>>, id: string, compute: () => Promise<boolean>) => {
+      if (!cache.has(id)) cache.set(id, compute());
+      return cache.get(id)!;
+    };
+
+    const visible = (
+      await Promise.all(
+        assessments.map(async (a) => {
+          if (a.chapter_id) {
+            const chapterId = a.chapter_id;
+            if (!(await memo(chapterDone, chapterId, () => isChapterLessonsComplete(this.db, studentId, chapterId)))) return null;
+          }
+          if (a.course_id) {
+            const courseId = a.course_id;
+            if (!(await memo(courseDone, courseId, () => isCourseChaptersComplete(this.db, studentId, courseId)))) return null;
+          }
+          return a;
+        }),
+      )
+    ).filter((a): a is (typeof assessments)[number] => a !== null);
+
+    // One query for every deadline instead of one per assessment.
+    const deadlines = await this.repo.findEffectiveDeadlines(visible.map((a) => a.id), studentId);
+    const items = visible.map((a) => {
+      const deadline = deadlines.get(a.id);
+      const deadlineStatus = deadline
+        ? this.deriveDeadlineStatus(deadline.opens_at, deadline.closes_at, deadline.extended_closes_at)
+        : null;
+      return { id: a.id, type: a.type, title: a.title, description: a.description, deadlineStatus };
+    });
     return items.filter((item): item is AssessmentListItem => item !== null);
   }
 

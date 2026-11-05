@@ -21,7 +21,9 @@
 //   - Computes no mastery/level/weakness/difficulty/recommendation/
 //     review-schedule value (docs/phase-8/no-aim-replacement-rule.md).
 
-import { Body, Controller, HttpStatus, MessageEvent, Param, Post, Sse, UseGuards } from '@nestjs/common';
+import { Idempotent } from '../../../common/idempotency/idempotent.decorator';
+import { IdempotencyInterceptor } from '../../../common/idempotency/idempotency.interceptor';
+import { Body, Controller, HttpStatus, MessageEvent, Param, Post, Sse, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 
@@ -63,6 +65,8 @@ export class AiTeacherStreamMessageController {
   // and wins, while @Sse() still marks the route as an SSE response.
   @Post('sessions/:id/messages/stream')
   @Sse('sessions/:id/messages/stream')
+  @Idempotent({ scope: 'ai.message.stream', mode: 'once' })
+  @UseInterceptors(IdempotencyInterceptor)
   @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @ApiBearerAuth()

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ClientThrottlerGuard } from './client-throttler.guard';
 
 const DEFAULT_TTL_MS = 60_000;
 const DEFAULT_LIMIT = 60;
@@ -20,7 +21,7 @@ const DEFAULT_LIMIT = 60;
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ClientThrottlerGuard,
     },
   ],
 })

@@ -2,6 +2,7 @@
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleUserProfile } from './google.strategy';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OPENAPI_TAGS } from '../openapi/openapi.tags';
 import { AuthenticatedUser } from './authenticated-user';
@@ -47,6 +48,8 @@ export class AuthController {
    * Auth internally with the service-role key — clients never see Supabase
    * credentials or talk to Supabase directly.
    */
+  // Credential endpoints: tighter per-client limit than the global default (brute-force / abuse).
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
@@ -61,6 +64,8 @@ export class AuthController {
    *
    * Authenticates or registers a user using a Google OAuth ID token.
    */
+  // Credential endpoints: tighter per-client limit than the global default (brute-force / abuse).
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('google')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
@@ -119,6 +124,8 @@ export class AuthController {
    * disabled on the Supabase project, also bootstraps the internal profile
    * and returns a usable session immediately.
    */
+  // Credential endpoints: tighter per-client limit than the global default (brute-force / abuse).
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
@@ -148,6 +155,8 @@ export class AuthController {
    * Sends a password reset email via Supabase. Always reports success so
    * the response never reveals whether an account exists for the email.
    */
+  // Credential endpoints: tighter per-client limit than the global default (brute-force / abuse).
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('forgot-password')
   @PublicRoute()
   @HttpCode(HttpStatus.OK)
@@ -162,6 +171,8 @@ export class AuthController {
    *
    * Updates the password for the currently authenticated user (via recovery/session token).
    */
+  // Credential endpoints: tighter per-client limit than the global default (brute-force / abuse).
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('reset-password')
   @UseGuards(SupabaseJwtAuthGuard)
   @HttpCode(HttpStatus.OK)

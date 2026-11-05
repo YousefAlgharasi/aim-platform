@@ -158,8 +158,10 @@ export class AiChatSessionRepository {
               ${text.title} AS context_title
        FROM ai_chat_sessions s
        LEFT JOIN lessons l
-         ON s.context_ref LIKE 'lesson:%'
-        AND l.id = substring(s.context_ref FROM 8)::uuid
+         ON l.id = CASE
+              WHEN s.context_ref ~* '^lesson:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+              THEN substring(s.context_ref FROM 8)::uuid
+            END
        ${text.joins}
        WHERE s.student_id = $1 AND s.status = 'active'
        ORDER BY s.updated_at DESC`,

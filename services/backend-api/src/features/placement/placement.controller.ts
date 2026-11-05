@@ -22,6 +22,8 @@
 //   - No secrets, service-role keys, or privileged config here.
 
 /// <reference types="multer" />
+import { Idempotent } from '../../common/idempotency/idempotent.decorator';
+import { IdempotencyInterceptor } from '../../common/idempotency/idempotency.interceptor';
 import {
   Body,
   Controller,
@@ -368,6 +370,8 @@ export class PlacementController {
    * Scoring triggers separately (P4-046). P4-006 endpoint #6.
    */
   @Post('attempts/:id/complete')
+  @Idempotent({ scope: 'placement.complete' })
+  @UseInterceptors(IdempotencyInterceptor)
   @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)

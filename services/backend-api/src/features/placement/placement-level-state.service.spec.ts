@@ -18,7 +18,7 @@ describe('PlacementLevelStateService.upsertFromPlacement', () => {
     const db = makeMockDb(async (sql, params) => {
       calls.push({ sql, params });
       if (sql.includes('FROM courses')) {
-        return { rows: [{ cefr_rank: 2, track_slug: 'english' }], rowCount: 1 };
+        return { rows: [{ cefr_rank: 7, track_slug: 'english' }], rowCount: 1 };
       }
       if (sql.includes('INSERT INTO student_level_state')) {
         return { rows: [], rowCount: 1 };
@@ -32,7 +32,7 @@ describe('PlacementLevelStateService.upsertFromPlacement', () => {
     const insertCall = calls.find((c) => c.sql.includes('INSERT INTO student_level_state'));
     expect(insertCall).toBeDefined();
     // studentId, trackSlug, cefrRank (used for both current and max via $3)
-    expect(insertCall?.params).toEqual([STUDENT_ID, 'english', 2]);
+    expect(insertCall?.params).toEqual([STUDENT_ID, 'english', 7]);
   });
 
   it('does not overwrite max_unlocked_cefr_rank on conflict (retake safety)', async () => {
@@ -64,13 +64,31 @@ describe('PlacementLevelStateService.upsertFromPlacement', () => {
     await expect(service.upsertFromPlacement(STUDENT_ID, 'not_a_real_level')).resolves.toBeUndefined();
   });
 
+  it.each([
+    ['beginner', 2],
+    ['elementary', 5],
+    ['intermediate', 7],
+    ['upper_intermediate', 12],
+    ['advanced', 14],
+  ])('looks up the course at the bucket rank for %s (rank %i)', async (level, rank) => {
+    let lookupParams: readonly unknown[] = [];
+    const db = makeMockDb(async (sql, params) => {
+      if (sql.includes('FROM courses')) {
+        lookupParams = params;
+        return { rows: [{ cefr_rank: rank, track_slug: 'english' }], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 0 };
+    });
+    await new PlacementLevelStateService(db).upsertFromPlacement(STUDENT_ID, level);
+    expect(lookupParams).toEqual([rank]);
+  });
+
   it('skips the upsert (no throw) when no course exists yet for the mapped CEFR code', async () => {
     const db = makeMockDb(async (sql) => {
       if (sql.includes('FROM courses')) return { rows: [], rowCount: 0 };
       return { rows: [], rowCount: 0 };
     });
     const service = new PlacementLevelStateService(db);
-    // upper_intermediate/advanced map to 'B1', which has no course yet.
-    await expect(service.upsertFromPlacement(STUDENT_ID, 'advanced')).resolves.toBeUndefined();
+        await expect(service.upsertFromPlacement(STUDENT_ID, 'advanced')).resolves.toBeUndefined();
   });
 });

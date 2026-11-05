@@ -62,8 +62,48 @@ describe('LessonProgressService.findRecommendedCourse — locale', () => {
     );
   }
 
-  it('binds the locale to the placement-path query, joins translations and returns the served locale', async () => {
-    const query = jest.fn().mockResolvedValueOnce({
+  const ctxRow = (over: Record<string, unknown> = {}) => ({
+    rows: [{ estimated_level: 'advanced', max_unlocked: 14, source: 'placement', track_slug: 'english', ...over }],
+  });
+
+  it('recommends the course at the placed level (advanced -> rank 14), not the first course', async () => {
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce(ctxRow())
+      .mockResolvedValueOnce({
+        rows: [{ course_id: 'c1-1', course_title: 'Advanced 1', course_description: null, course_locale: 'en', estimated_level: null }],
+      });
+    const result = await makeService(query).findRecommendedCourse('student-1');
+    const [sql, params] = query.mock.calls[1];
+    expect(params).toEqual([14, 'en', 'english']);
+    expect(sql).toContain('co.cefr_rank <= $1');
+    expect(result).toMatchObject({ courseId: 'c1-1', estimatedLevel: 'advanced' });
+  });
+
+  it('start-from-scratch students stay on their ceiling even though the seeded result says beginner', async () => {
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce(ctxRow({ estimated_level: 'beginner', max_unlocked: 1, source: 'scratch' }))
+      .mockResolvedValueOnce({
+        rows: [{ course_id: 's', course_title: 'Starter', course_description: null, course_locale: 'en', estimated_level: null }],
+      });
+    await makeService(query).findRecommendedCourse('student-1');
+    expect(query.mock.calls[1][1]).toEqual([1, 'en', 'english']);
+  });
+
+  it('advances the recommendation with the unlock ceiling after course completion', async () => {
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce(ctxRow({ estimated_level: 'intermediate', max_unlocked: 9 }))
+      .mockResolvedValueOnce({
+        rows: [{ course_id: 'x', course_title: 'X', course_description: null, course_locale: 'en', estimated_level: null }],
+      });
+    await makeService(query).findRecommendedCourse('student-1');
+    expect(query.mock.calls[1][1][0]).toBe(9);
+  });
+
+  it('binds the locale to the level query, joins translations and returns the served locale', async () => {
+    const query = jest.fn().mockResolvedValueOnce(ctxRow()).mockResolvedValueOnce({
       rows: [
         {
           course_id: 'course-1',
@@ -77,8 +117,8 @@ describe('LessonProgressService.findRecommendedCourse — locale', () => {
 
     const result = await makeService(query).findRecommendedCourse('student-1', 'ar');
 
-    const [sql, params] = query.mock.calls[0];
-    expect(params).toEqual(['student-1', 'ar']);
+    const [sql, params] = query.mock.calls[1];
+    expect(params).toEqual([14, 'ar', 'english']);
     expect(sql).toContain('course_translations co_ct_req');
     expect(sql).toContain("co_ct_en.locale = 'en'");
     expect(result).toMatchObject({ courseTitle: 'الإنجليزية', locale: 'ar' });

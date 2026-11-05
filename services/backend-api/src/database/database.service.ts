@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 import { BackendConfigService } from '../config/backend-config.service';
@@ -6,6 +6,7 @@ import { DatabaseHealthCheckResult } from './database.types';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
+  private readonly logger = new Logger(DatabaseService.name);
   private pool: Pool | null = null;
 
   constructor(private readonly backendConfig: BackendConfigService) {}
@@ -66,16 +67,31 @@ export class DatabaseService implements OnModuleDestroy {
     const requiresSsl = rawUrl.includes('sslmode=require') || this.backendConfig.nodeEnv === 'production';
     const connectionString = this.stripSslMode(rawUrl);
 
+    const timeouts = readPoolTimeouts(process.env);
     this.pool = new Pool({
       connectionString,
-      max: 10,
+      max: timeouts.poolMax,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
+      // Server-side limits so a stuck query or an abandoned transaction can never hold a
+      // connection (and, with a pool of 10, the whole API) hostage.
+      statement_timeout: timeouts.statementTimeoutMs,
+      idle_in_transaction_session_timeout: timeouts.idleInTransactionTimeoutMs,
+      // Client-side backstop slightly above the server limit.
+      query_timeout: timeouts.statementTimeoutMs + 5_000,
+      application_name: 'aim-backend-api',
+      keepAlive: true,
       ssl: requiresSsl
         ? {
             rejectUnauthorized: false,
           }
         : undefined,
+    });
+
+    // An error on an idle pooled client (e.g. the database restarted) is emitted on the pool;
+    // without a listener Node treats it as uncaught and the process exits.
+    this.pool.on('error', (error) => {
+      this.logger.error(`Idle database client error: ${error.message}`);
     });
 
     return this.pool;
@@ -106,4 +122,24 @@ export class DatabaseService implements OnModuleDestroy {
 
     return 'DATABASE_HEALTH_CHECK_FAILED';
   }
+}
+
+export interface PoolTimeouts {
+  readonly poolMax: number;
+  readonly statementTimeoutMs: number;
+  readonly idleInTransactionTimeoutMs: number;
+}
+
+function positiveInt(raw: string | undefined, fallback: number): number {
+  const n = raw === undefined ? NaN : parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+/** DB_POOL_MAX / DB_STATEMENT_TIMEOUT_MS / DB_IDLE_IN_TX_TIMEOUT_MS override the defaults (10 / 30s / 60s). */
+export function readPoolTimeouts(env: NodeJS.ProcessEnv): PoolTimeouts {
+  return {
+    poolMax: positiveInt(env.DB_POOL_MAX, 10),
+    statementTimeoutMs: positiveInt(env.DB_STATEMENT_TIMEOUT_MS, 30_000),
+    idleInTransactionTimeoutMs: positiveInt(env.DB_IDLE_IN_TX_TIMEOUT_MS, 60_000),
+  };
 }

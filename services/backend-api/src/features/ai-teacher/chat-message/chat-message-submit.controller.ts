@@ -24,6 +24,8 @@
 //     runs. Errors are returned as safe, generic messages — no internals
 //     are leaked.
 
+import { Idempotent } from '../../../common/idempotency/idempotent.decorator';
+import { IdempotencyInterceptor } from '../../../common/idempotency/idempotency.interceptor';
 import {
   Body,
   Controller,
@@ -32,6 +34,7 @@ import {
   Param,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
@@ -67,6 +70,8 @@ export class ChatMessageSubmitController {
    * always read from the session row — never from the body.
    */
   @Post('sessions/:id/messages')
+  @Idempotent({ scope: 'ai.message' })
+  @UseInterceptors(IdempotencyInterceptor)
   @UseGuards(SupabaseJwtAuthGuard, RoleGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.CREATED)
