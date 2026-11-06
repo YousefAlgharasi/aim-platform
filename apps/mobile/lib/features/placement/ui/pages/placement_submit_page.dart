@@ -249,14 +249,14 @@ class _SubmissionSuccessfulBodyState extends State<_SubmissionSuccessfulBody> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                          color: AimColors.success500.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Center(
                           child: Icon(
                             Icons.check_circle_outline_rounded,
                             size: 18,
-                            color: Color(0xFF10B981),
+                            color: AimColors.success500,
                           ),
                         ),
                       ),
@@ -319,14 +319,14 @@ class _SubmissionSuccessfulBodyState extends State<_SubmissionSuccessfulBody> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                          color: AimColors.warning500.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Center(
                           child: Icon(
                             Icons.error_outline_rounded,
                             size: 18,
-                            color: Color(0xFFF59E0B),
+                            color: AimColors.warning500,
                           ),
                         ),
                       ),
@@ -379,11 +379,11 @@ class _SubmissionSuccessfulBodyState extends State<_SubmissionSuccessfulBody> {
                 colors: isDark
                     ? [
                         AimColors.primary500.withValues(alpha: 0.15),
-                        const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                        AimColors.primary500.withValues(alpha: 0.15),
                       ]
                     : [
-                        const Color(0xFFEEF2FF),
-                        const Color(0xFFF3E8FF),
+                        AimColors.primary50,
+                        AimColors.primary50,
                       ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

@@ -7,6 +7,7 @@ import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../../core/networking/backend_api_paths.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
 class ApiEndpointDef {
   final String category;
@@ -214,7 +215,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).devToolsEndpointTesterTitle),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: AimColors.primary600,
         foregroundColor: Colors.white,
       ),
       body: ListView.builder(
@@ -266,18 +267,18 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
                   ),
                 ),
                 if (endpoint.requiresAuth)
-                  const Icon(Icons.lock, size: 16, color: Colors.grey),
+                  const Icon(Icons.lock, size: 16, color: AimColors.neutral500),
               ],
             ),
             const SizedBox(height: 8),
-            Text(endpoint.name, style: const TextStyle(color: Colors.grey)),
+            Text(endpoint.name, style: const TextStyle(color: AimColors.neutral500)),
             if (endpoint.defaultBody != null) ...[
               const SizedBox(height: 12),
               Text(l10n.devToolsBodyLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
-                color: Colors.grey.shade100,
+                color: AimColors.neutral100,
                 child: Text(endpoint.defaultBody!, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
               ),
             ],
@@ -302,7 +303,7 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
                 ),
                 child: Text(
                   response,
-                  style: const TextStyle(color: Colors.greenAccent, fontFamily: 'monospace', fontSize: 12),
+                  style: const TextStyle(color: AimColors.success500, fontFamily: 'monospace', fontSize: 12),
                 ),
               ),
             ],
@@ -314,11 +315,11 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
 
   Color _getMethodColor(String method) {
     switch (method.toUpperCase()) {
-      case 'GET': return Colors.blue;
-      case 'POST': return Colors.green;
-      case 'PATCH': return Colors.orange;
-      case 'DELETE': return Colors.red;
-      default: return Colors.grey;
+      case 'GET': return AimColors.info500;
+      case 'POST': return AimColors.success500;
+      case 'PATCH': return AimColors.warning500;
+      case 'DELETE': return AimColors.error500;
+      default: return AimColors.neutral500;
     }
   }
 }

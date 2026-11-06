@@ -161,9 +161,10 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
             builder: (context) => Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                gradient: AimGradients.ai,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF653BFF).withValues(alpha: 0.45),
+                    color: AimColors.primary500.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 6),
@@ -171,9 +172,12 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
                 ],
               ),
               child: FloatingActionButton(
-                backgroundColor: const Color(0xFF653BFF),
+                backgroundColor: Colors.transparent,
                 foregroundColor: AimColors.neutral0,
                 elevation: 0,
+                focusElevation: 0,
+                hoverElevation: 0,
+                highlightElevation: 0,
                 tooltip: l10n.shellOpenMenuTooltip,
                 onPressed: () => Scaffold.of(context).openDrawer(),
                 child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
@@ -479,7 +483,7 @@ class _AIMDrawerBrandHeader extends ConsumerWidget {
                   height: 44,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    gradient: AimGradients.gzHero,
+                    gradient: AimGradients.ai,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

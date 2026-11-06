@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
-/// Prototype-aligned AIM Brand Logo Badge widget.
-/// Renders a squircle badge with solid/gradient primary background (#653BFF) and bold white text.
+/// AIM brand badge: a squircle with the official brand gradient
+/// ([AimGradients.ai]) and bold white "AIM" text.
 class AimBrandLogo extends StatelessWidget {
   const AimBrandLogo({
     this.size = 38,
@@ -21,11 +22,11 @@ class AimBrandLogo extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFF653BFF),
+        gradient: AimGradients.ai,
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF653BFF).withValues(alpha: 0.3),
+            color: AimColors.primary500.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),

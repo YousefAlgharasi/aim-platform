@@ -261,7 +261,7 @@ class _ProgressContentState extends State<_ProgressContent> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+              color: AimColors.neutral200.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -337,7 +337,7 @@ class _ProgressContentState extends State<_ProgressContent> {
               val: _averageMasteryPct != null ? '$_averageMasteryPct%' : '--',
               label: l10n.progressAvgMastery,
               icon: Icons.bolt_rounded,
-              color: const Color(0xFF4F46E5),
+              color: AimColors.primary500,
             ),
           ),
           const SizedBox(width: 10),
@@ -346,7 +346,7 @@ class _ProgressContentState extends State<_ProgressContent> {
               val: '${widget.goal?.streakDays ?? 0}',
               label: l10n.progressDayStreak,
               icon: Icons.local_fire_department_rounded,
-              color: const Color(0xFFF59E0B),
+              color: AimColors.warning500,
             ),
           ),
         ],
@@ -514,10 +514,10 @@ class _ProgressContentState extends State<_ProgressContent> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1F2),
+                    color: AimColors.error50,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.flag_rounded, color: Color(0xFFE11D48), size: 16),
+                  child: const Icon(Icons.flag_rounded, color: AimColors.error600, size: 16),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -533,7 +533,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1F2),
+                    color: AimColors.error50,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -541,7 +541,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFFE11D48),
+                      color: AimColors.error600,
                     ),
                   ),
                 ),
@@ -700,7 +700,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF1F2),
+                      color: AimColors.error50,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -708,7 +708,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFFE11D48),
+                        color: AimColors.error600,
                       ),
                     ),
                   ),
@@ -797,7 +797,7 @@ class _ProgressContentState extends State<_ProgressContent> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: s.status == 'due' ? const Color(0xFFFEF2F2) : surfaces.surfaceSunken,
+                  color: s.status == 'due' ? AimColors.error50 : surfaces.surfaceSunken,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -805,7 +805,7 @@ class _ProgressContentState extends State<_ProgressContent> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: s.status == 'due' ? const Color(0xFFEF4444) : surfaces.textSecondary,
+                    color: s.status == 'due' ? AimColors.error500 : surfaces.textSecondary,
                   ),
                 ),
               ),

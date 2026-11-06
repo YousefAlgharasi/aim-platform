@@ -15,6 +15,7 @@ import '../widgets/placement_option_card.dart';
 import '../widgets/placement_page_header.dart';
 import '../widgets/placement_primary_button.dart';
 import '../widgets/placement_progress_bar.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
 
 class PlacementGatePage extends ConsumerStatefulWidget {
@@ -80,8 +81,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
         value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
         child: Scaffold(
           backgroundColor: isDark
-              ? const Color(0xFF0F172A)
-              : const Color(0xFFEEF0F7),
+              ? AimColors.neutral900
+              : AimColors.neutral100,
           body: const Center(
             child: CircularProgressIndicator(color: AimColors.primary500),
           ),
@@ -93,8 +94,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
         backgroundColor: isDark
-            ? const Color(0xFF0F172A)
-            : const Color(0xFFEEF0F7),
+            ? AimColors.neutral900
+            : AimColors.neutral100,
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -105,7 +106,7 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  color: isDark ? AimColors.neutral800 : Colors.white,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -195,12 +196,12 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [
-                          const Color(0xFF1E1B4B),
-                          const Color(0xFF1E293B),
+                          AimColors.primary900,
+                          AimColors.neutral800,
                         ]
                       : [
-                          const Color(0xFFEEF2FF),
-                          const Color(0xFFF5F3FF),
+                          AimColors.primary50,
+                          AimColors.primary50,
                         ],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -253,8 +254,8 @@ class _PlacementGatePageState extends ConsumerState<PlacementGatePage> {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: isDark
-                              ? const Color(0xFFCBD5E1)
-                              : const Color(0xFF334155),
+                              ? AimColors.neutral300
+                              : AimColors.neutral700,
                         ),
                       ),
                     ),
@@ -608,7 +609,7 @@ class _FloatingBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AimColors.neutral800 : Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(

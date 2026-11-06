@@ -396,7 +396,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                 height: 36,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: AimColors.secondary500,
+                  color: AimColors.primary500,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
@@ -447,7 +447,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
                 children: [
                   const Icon(
                     Icons.emoji_events_outlined,
-                    color: Color(0xFFD97706),
+                    color: AimColors.warning600,
                     size: 22,
                   ),
                   const SizedBox(width: 6),
@@ -482,7 +482,7 @@ class _AchievementsPageState extends ConsumerState<AchievementsPage> {
             child: Text(
               l10n?.achievementsLeagueRank ?? 'Gold League #3',
               style: AimTextStyles.caption.copyWith(
-                color: AimColors.secondary600,
+                color: AimColors.primary600,
                 fontWeight: AimFontWeights.bold,
               ),
             ),
@@ -578,7 +578,7 @@ class _TabPill extends StatelessWidget {
           label,
           style: AimTextStyles.caption.copyWith(
             color: isSelected
-                ? AimColors.secondary600
+                ? AimColors.primary600
                 : surfaces.textSecondary,
             fontWeight:
                 isSelected ? AimFontWeights.bold : AimFontWeights.medium,
@@ -639,7 +639,7 @@ class _BadgeCard extends StatelessWidget {
                 child: Icon(
                   badge.icon,
                   color: badge.isUnlocked
-                      ? AimColors.secondary600
+                      ? AimColors.primary600
                       : surfaces.textMuted,
                   size: 24,
                 ),
@@ -684,13 +684,13 @@ class _BadgeCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
+                    color: AimColors.success100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     l10n?.achievementsBadgeUnlocked ?? 'Unlocked',
                     style: AimTextStyles.caption.copyWith(
-                      color: const Color(0xFF166534),
+                      color: AimColors.success700,
                       fontWeight: AimFontWeights.bold,
                       fontSize: 11,
                     ),
@@ -713,7 +713,7 @@ class _BadgeCard extends StatelessWidget {
                       minHeight: 6,
                       backgroundColor: surfaces.surfaceSunken,
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        AimColors.secondary500,
+                        AimColors.primary500,
                       ),
                     ),
                   ),

@@ -47,7 +47,8 @@ const _slides = [
 
 String _title0(AppLocalizations l10n) => l10n.onboardingWalkthroughWelcomeTitle;
 String _body0(AppLocalizations l10n) => l10n.onboardingWalkthroughWelcomeBody;
-String _title1(AppLocalizations l10n) => l10n.onboardingWalkthroughPlacementTitle;
+String _title1(AppLocalizations l10n) =>
+    l10n.onboardingWalkthroughPlacementTitle;
 String _body1(AppLocalizations l10n) => l10n.onboardingWalkthroughPlacementBody;
 String _title2(AppLocalizations l10n) => l10n.onboardingWalkthroughLessonsTitle;
 String _body2(AppLocalizations l10n) => l10n.onboardingWalkthroughLessonsBody;
@@ -137,12 +138,17 @@ class _OnboardingWalkthroughOverlayState
                             padding: const EdgeInsets.all(AimSpacing.space24),
                             child: Icon(
                               slide.icon,
-                              size: isSmallScreen ? AimSizes.iconLg : AimSizes.iconLg * 1.5,
+                              size: isSmallScreen
+                                  ? AimSizes.iconLg
+                                  : AimSizes.iconLg * 1.5,
                               color: AimColors.neutral0,
                             ),
                           ),
                         ),
-                        SizedBox(height: isSmallScreen ? AimSpacing.componentGap : AimSpacing.sectionGap),
+                        SizedBox(
+                            height: isSmallScreen
+                                ? AimSpacing.componentGap
+                                : AimSpacing.sectionGap),
                         Text(
                           slide.titleBuilder(l10n),
                           style: AimTextStyles.h2.copyWith(

@@ -41,7 +41,7 @@ class PlacementPageHeader extends StatelessWidget {
             subtitle,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF94A3B8),
+              color: AimColors.neutral400,
               height: 1.5,
             ),
           ),

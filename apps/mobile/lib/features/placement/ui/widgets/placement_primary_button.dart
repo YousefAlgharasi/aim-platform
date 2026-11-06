@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
 /// Primary button matching PrimaryButton.tsx from Modern Auth Pages (3)-1.
 ///
@@ -61,7 +62,7 @@ class PlacementPrimaryButton extends StatelessWidget {
                   : Text(
                       label,
                       style: AimTextStyles.button.copyWith(
-                        color: const Color(0xFFF8FAFC),
+                        color: AimColors.neutral50,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.2,

@@ -384,9 +384,9 @@ class _LessonDetailContent extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
+                                color: AimColors.primary50,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFC7D2FE)),
+                                border: Border.all(color: AimColors.primary200),
                               ),
                               child: Row(
                                 children: [
@@ -395,7 +395,7 @@ class _LessonDetailContent extends StatelessWidget {
                                     height: 44,
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                        colors: [AimColors.primary500, AimColors.primary600],
                                       ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -413,14 +413,14 @@ class _LessonDetailContent extends StatelessWidget {
                                               style: const TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w800,
-                                                color: Color(0xFF4F46E5),
+                                                color: AimColors.primary500,
                                               ),
                                             ),
                                             const SizedBox(width: 8),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFF4F46E5),
+                                                color: AimColors.primary500,
                                                 borderRadius: BorderRadius.circular(10),
                                               ),
                                               child: Text(
@@ -439,7 +439,7 @@ class _LessonDetailContent extends StatelessWidget {
                                           l10n.lessonsQuizSubtitle,
                                           style: const TextStyle(
                                             fontSize: 11,
-                                            color: Color(0xFF4338CA),
+                                            color: AimColors.primary600,
                                           ),
                                         ),
                                       ],
@@ -472,10 +472,10 @@ class _LessonDetailContent extends StatelessWidget {
                                     width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF3E8FF),
+                                      color: AimColors.primary50,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF9333EA), size: 22),
+                                    child: const Icon(Icons.auto_awesome_rounded, color: AimColors.primary600, size: 22),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -523,12 +523,12 @@ class _LessonDetailContent extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+                  colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                    color: AimColors.primary500.withValues(alpha: 0.35),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -586,14 +586,14 @@ class _LessonHero extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+          colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+            color: AimColors.primary500.withValues(alpha: 0.35),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -610,21 +610,21 @@ class _LessonHero extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: AimColors.success500.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF6EE7B7).withValues(alpha: 0.4)),
+                    border: Border.all(color: AimColors.success100.withValues(alpha: 0.4)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_rounded, color: Color(0xFF6EE7B7), size: 14),
+                      Icon(Icons.check_rounded, color: AimColors.success100, size: 14),
                       SizedBox(width: 4),
                       Text(
                         'Completed',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF6EE7B7),
+                          color: AimColors.success100,
                         ),
                       ),
                     ],

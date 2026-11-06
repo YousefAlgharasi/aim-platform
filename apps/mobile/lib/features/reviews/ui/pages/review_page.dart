@@ -247,7 +247,7 @@ class _ReviewContent extends StatelessWidget {
                         context: context,
                         val: '$dueNowCount',
                         label: l10n?.reviewsStatDueNow ?? 'Due now',
-                        color: const Color(0xFFEF4444),
+                        color: AimColors.error500,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -256,7 +256,7 @@ class _ReviewContent extends StatelessWidget {
                         context: context,
                         val: '$learnedCount',
                         label: l10n?.reviewsStatLearned ?? 'Learned',
-                        color: const Color(0xFF4F46E5),
+                        color: AimColors.primary500,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -265,7 +265,7 @@ class _ReviewContent extends StatelessWidget {
                         context: context,
                         val: '7d',
                         label: l10n?.reviewsStatStreak ?? 'Streak',
-                        color: const Color(0xFFF59E0B),
+                        color: AimColors.warning500,
                       ),
                     ),
                   ],
@@ -309,12 +309,12 @@ class _ReviewContent extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+                  colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                    color: AimColors.primary500.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

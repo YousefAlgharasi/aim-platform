@@ -138,7 +138,7 @@ class _CertificateDetailBody extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(AimRadius.lg),
               border: Border.all(
-                color: const Color(0xFFD97706).withValues(alpha: 0.5),
+                color: AimColors.warning600.withValues(alpha: 0.5),
                 width: 2,
               ),
               boxShadow: [
@@ -159,7 +159,7 @@ class _CertificateDetailBody extends StatelessWidget {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [Color(0xFFFBBF24), Color(0xFFD97706)],
+                      colors: [AimColors.warning500, AimColors.warning600],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -178,7 +178,7 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   l10n.certificateEyebrow,
                   style: AimTextStyles.caption.copyWith(
-                    color: const Color(0xFFB45309),
+                    color: AimColors.warning700,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2.0,
                   ),
@@ -190,21 +190,21 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   'AIM Language Platform',
                   style: AimTextStyles.h2.copyWith(
-                    color: const Color(0xFF1E293B),
+                    color: AimColors.neutral800,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AimSpacing.space16),
 
-                const Divider(color: Color(0xFFE2E8F0)),
+                const Divider(color: AimColors.neutral200),
                 const SizedBox(height: AimSpacing.space16),
 
                 // Student statement
                 Text(
                   l10n.certificateCertifiesThat,
                   style: AimTextStyles.bodySm.copyWith(
-                    color: const Color(0xFF64748B),
+                    color: AimColors.neutral500,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -214,7 +214,7 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   certificate.studentName ?? 'Student',
                   style: AimTextStyles.h2.copyWith(
-                    color: const Color(0xFF0F172A),
+                    color: AimColors.neutral900,
                     fontWeight: FontWeight.w700,
                   ),
                   textAlign: TextAlign.center,
@@ -225,7 +225,7 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   l10n.certificateHasCompleted,
                   style: AimTextStyles.bodySm.copyWith(
-                    color: const Color(0xFF64748B),
+                    color: AimColors.neutral500,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -235,7 +235,7 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   certificate.courseTitle,
                   style: AimTextStyles.h3.copyWith(
-                    color: const Color(0xFF1E293B),
+                    color: AimColors.neutral800,
                     fontStyle: FontStyle.italic,
                   ),
                   textAlign: TextAlign.center,
@@ -246,7 +246,7 @@ class _CertificateDetailBody extends StatelessWidget {
                 Text(
                   l10n.certificatesIssuedOn(formattedDate),
                   style: AimTextStyles.caption.copyWith(
-                    color: const Color(0xFF94A3B8),
+                    color: AimColors.neutral400,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -267,7 +267,7 @@ class _CertificateDetailBody extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.analytics_outlined,
-                        color: Color(0xFF4F46E5),
+                        color: AimColors.primary500,
                         size: 20,
                       ),
                       const SizedBox(width: AimSpacing.space8),
@@ -331,12 +331,12 @@ class _CertificateDetailBody extends StatelessWidget {
                     padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
+                        colors: [AimColors.primary50, AimColors.primary100],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(AimRadius.md),
-                      border: Border.all(color: const Color(0xFFC7D2FE)),
+                      border: Border.all(color: AimColors.primary200),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -347,7 +347,7 @@ class _CertificateDetailBody extends StatelessWidget {
                             Text(
                               l10n.certificateTotalScoreLabel,
                               style: AimTextStyles.caption.copyWith(
-                                color: const Color(0xFF4338CA),
+                                color: AimColors.primary600,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -355,7 +355,7 @@ class _CertificateDetailBody extends StatelessWidget {
                             Text(
                               l10n.certificatePointsOfMax(totalPts, 1000),
                               style: AimTextStyles.h3.copyWith(
-                                color: const Color(0xFF1E1B4B),
+                                color: AimColors.primary900,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -367,7 +367,7 @@ class _CertificateDetailBody extends StatelessWidget {
                             Text(
                               l10n.certificateFinalGradeLabel,
                               style: AimTextStyles.caption.copyWith(
-                                color: const Color(0xFF047857),
+                                color: AimColors.success700,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -375,7 +375,7 @@ class _CertificateDetailBody extends StatelessWidget {
                             Text(
                               '$gradePercent%',
                               style: AimTextStyles.h2.copyWith(
-                                color: const Color(0xFF065F46),
+                                color: AimColors.success700,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

@@ -243,7 +243,7 @@ class _SectionBody extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF312E81) : const Color(0xFFEEF2FF),
+                    color: isDark ? AimColors.primary900 : AimColors.primary50,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(

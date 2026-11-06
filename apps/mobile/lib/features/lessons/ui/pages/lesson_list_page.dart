@@ -263,7 +263,7 @@ class _LessonListHeader extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF4F46E5),
+                    color: AimColors.primary500,
                     letterSpacing: 1.2,
                   ),
                 ),

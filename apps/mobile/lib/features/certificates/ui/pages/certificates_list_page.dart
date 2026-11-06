@@ -133,14 +133,14 @@ class _CertificateCard extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                      colors: [AimColors.warning500, AimColors.warning600],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(AimRadius.lg),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                        color: AimColors.warning500.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -160,7 +160,7 @@ class _CertificateCard extends StatelessWidget {
                       Text(
                         l10n.certificateEyebrow,
                         style: AimTextStyles.caption.copyWith(
-                          color: const Color(0xFFB45309),
+                          color: AimColors.warning700,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
                         ),
@@ -219,9 +219,9 @@ class _CertificateCard extends StatelessWidget {
                     vertical: AimSpacing.space4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5),
+                    color: AimColors.success50,
                     borderRadius: BorderRadius.circular(AimRadius.full),
-                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                    border: Border.all(color: AimColors.success100),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -229,14 +229,14 @@ class _CertificateCard extends StatelessWidget {
                       const Icon(
                         Icons.check_circle_rounded,
                         size: 16,
-                        color: Color(0xFF059669),
+                        color: AimColors.success600,
                       ),
                       const SizedBox(width: AimSpacing.space4),
                       Text(
                         l10n.certificatesGrade(gradePercent),
                         style: AimTextStyles.caption.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF065F46),
+                          color: AimColors.success700,
                         ),
                       ),
                     ],

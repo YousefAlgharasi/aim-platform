@@ -52,7 +52,7 @@ class RecordingStateBar extends StatelessWidget {
             Text(
               duration ?? '0:00',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.red,
+                color: AimColors.error500,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -67,7 +67,7 @@ class RecordingStateBar extends StatelessWidget {
             _ActionButton(
               icon: Icons.stop,
               label: l10n?.voiceTeacherStop ?? (isRtl ? 'إيقاف' : 'Stop'),
-              color: Colors.red,
+              color: AimColors.error500,
               onTap: onStop,
             ),
           ],
@@ -183,7 +183,7 @@ class _PulsingDotState extends State<_PulsingDot>
             height: 10,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.red,
+              color: AimColors.error500,
             ),
           ),
         );

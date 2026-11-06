@@ -486,7 +486,7 @@ class _CoursePathTrail extends StatelessWidget {
               child: CustomPaint(
                 painter: _WavyPathPainter(
                   nodeOffsets: nodeOffsets,
-                  color: const Color(0xFFC7D2FE),
+                  color: AimColors.primary200,
                 ),
               ),
             ),
@@ -594,14 +594,14 @@ class _RoadmapNodeWidget extends StatelessWidget {
         height: nodeSize,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF34D399), Color(0xFF059669)],
+            colors: [AimColors.success500, AimColors.success600],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+              color: AimColors.success500.withValues(alpha: 0.2),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -622,15 +622,15 @@ class _RoadmapNodeWidget extends StatelessWidget {
           height: nodeSize,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+              colors: [AimColors.primary500, AimColors.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFC7D2FE), width: 4),
+            border: Border.all(color: AimColors.primary200, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                color: AimColors.primary500.withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -699,7 +699,7 @@ class _RoadmapNodeWidget extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          gradient: AimGradients.gzHero,
+                          gradient: AimGradients.ai,
                           borderRadius: AimRadius.borderPill,
                           boxShadow: [
                             BoxShadow(
@@ -740,7 +740,7 @@ class _RoadmapNodeWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AimTextStyles.caption.copyWith(
                   color: isDone
-                      ? const Color(0xFF22C55E)
+                      ? AimColors.success500
                       : isCurrent
                           ? AimColors.primary500
                           : surfaces.textMuted,

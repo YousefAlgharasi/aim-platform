@@ -135,7 +135,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF653BFF).withValues(alpha: 0.45),
+              color: AimColors.primary500.withValues(alpha: 0.45),
               blurRadius: 20,
               spreadRadius: 2,
               offset: const Offset(0, 6),
@@ -146,7 +146,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
           onPressed: () {
             Scaffold.of(context).openDrawer();
           },
-          backgroundColor: const Color(0xFF653BFF),
+          backgroundColor: AimColors.primary500,
           shape: const CircleBorder(),
           elevation: 0,
           child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
@@ -314,7 +314,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                       };
                       return CircleAvatar(
                         radius: 17,
-                        backgroundColor: const Color(0xFF6366F1),
+                        backgroundColor: AimColors.primary400,
                         child: Text(
                           initial,
                           style: const TextStyle(
@@ -338,14 +338,14 @@ class _CourseListContentState extends State<_CourseListContent> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFF6366F1)],
+                colors: [AimColors.primary500, AimColors.primary600, AimColors.primary400],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4F46E5).withValues(alpha: 0.25),
+                  color: AimColors.primary500.withValues(alpha: 0.25),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -375,7 +375,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                     ),
                     const Icon(
                       Icons.auto_awesome_rounded,
-                      color: Color(0xFFFDE047),
+                      color: AimColors.warning500,
                       size: 20,
                     ),
                   ],
