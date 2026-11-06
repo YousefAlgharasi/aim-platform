@@ -63,9 +63,7 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
   }
 
   const title = kind === 'speaking' ? t('Practice Speaking') : t('Write a Paragraph');
-  const subtitle = kind === 'speaking'
-    ? t('Pick a topic and talk with your AI teacher. Earn XP when you finish.')
-    : t('Pick a topic and write a paragraph. Your AI teacher marks it and shows how to improve.');
+
 
   const { band } = useLearnerLevel();
   // Topics at the student's level first, then the next levels up, then the ones they have outgrown.
@@ -80,7 +78,7 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <PageTitleBar title={title} subtitle={subtitle} fallback="/practice" />
+      <PageTitleBar title={title} fallback="/practice" />
 
       {loading && <CardGridSkeleton cards={6} bare />}
       {!loading && error && <ErrorState message={error} onRetry={load} />}

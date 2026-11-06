@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FilterPills } from '../../components/common/FilterPills';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Popover } from '../../components/common/Popover';
@@ -18,7 +17,7 @@ import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Banner } from '../../components/common/Banner';
 import { LevelBadge, RelationChip } from '../level/LevelBadge';
 import { useLearnerLevel } from '../level/LevelContext';
-import { BANDS, BAND_NAME, bandOf, relationTo, type Band } from '../level/bands';
+import { BANDS, BAND_NAME, bandOf, relationTo } from '../level/bands';
 import { LearningPathCard } from './LearningPathCard';
 import { useCourseChapterInfo } from './useCourseChapterInfo';
 import { lockedReason } from './lockedReason';
@@ -38,7 +37,6 @@ export function CourseCatalog() {
   // Locked course whose explanation is shown in a popover next to its card (clears itself after a moment).
   const [notice, setNotice] = useState<StudentCourse | null>(null);
   const noticeAnchor = useRef<HTMLElement | null>(null);
-  const [filter, setFilter] = useState<'all' | 'start' | 'more' | Band>('all');
   const { band, hasPlacement, loading: levelLoading } = useLearnerLevel();
 
   useEffect(() => {
@@ -92,10 +90,6 @@ export function CourseCatalog() {
   const firstLevelled = courses.findIndex((c) => bandOf(c.levelCode) !== null);
   const leading = firstLevelled > 0 ? courses.slice(0, firstLevelled).filter((c) => bandOf(c.levelCode) === null) : [];
   const unleveled = courses.filter((c) => bandOf(c.levelCode) === null && !leading.includes(c));
-  const shown = filter === 'all' ? groups : groups.filter((g) => g.band === filter);
-  // Every course has a filter: the beginner course(s), each level, and the extra (writing) courses.
-  const filters: Array<'all' | 'start' | 'more' | Band> = ['all', ...(leading.length > 0 ? ['start' as const] : []), ...groups.map((g) => g.band), ...(unleveled.length > 0 ? ['more' as const] : [])];
-  const filterLabel = (f: 'all' | 'start' | 'more' | Band) => (f === 'all' ? t('All levels') : f === 'start' ? t('Start here') : f === 'more' ? t('More courses') : f);
   const currentCourse = courses.find((c) => c.courseId === currentCourseId) ?? null;
   const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
   const doneLessons = courses.reduce((n, c) => n + c.completedLessonCount, 0);
@@ -104,7 +98,7 @@ export function CourseCatalog() {
 
   return (
     <div className="stagger flex w-full flex-col gap-8">
-      <PageTitleBar title={t('Courses')} subtitle={t('Pick up where you are. Courses follow your level.')} />
+      <PageTitleBar title={t('Courses')} />
 
       <section className="border-t border-line pt-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -138,10 +132,8 @@ export function CourseCatalog() {
         </Banner>
       )}
 
-      <FilterPills id="levels" label={t('Filter by level')} value={filter} onChange={setFilter}
-        options={filters.map((f) => ({ key: f, label: `${filterLabel(f)}${f === band ? ' ★' : ''}` }))} />
 
-      {(filter === 'all' || filter === 'start') && leading.length > 0 && (
+      {leading.length > 0 && (
         <section className="flex flex-col gap-3 border-t border-line pt-6" aria-label={t('Start here')}>
           <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Start here')}</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -152,10 +144,10 @@ export function CourseCatalog() {
         </section>
       )}
 
-      {shown.map(({ band: b, list }) => {
+      {groups.map(({ band: b, list }, groupIndex) => {
         const rel = relationTo(b, band);
         return (
-          <section key={b} className="flex flex-col gap-3" aria-label={`${b} ${t(BAND_NAME[b])}`}>
+          <section key={b} id={groupIndex === 0 ? 'levels' : undefined} className="flex flex-col gap-3" aria-label={`${b} ${t(BAND_NAME[b])}`}>
             <div className="flex flex-wrap items-center gap-3 border-t border-line pt-6">
               <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{b} <span className="font-medium text-ink-muted">{t(BAND_NAME[b])}</span></h2>
               <RelationChip relation={rel} />
@@ -177,7 +169,7 @@ export function CourseCatalog() {
         );
       })}
 
-      {(filter === 'all' || filter === 'more') && unleveled.length > 0 && (
+      {unleveled.length > 0 && (
         <section className="flex flex-col gap-3" aria-label={t('More courses')}>
           <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('More courses')}</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -187,11 +179,6 @@ export function CourseCatalog() {
           </div>
         </section>
       )}
-
-      <p className="m-0 text-center text-sm text-ink-muted">
-        {t('Not sure about your level?')}{' '}
-        <Link to="/placement" className="font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">{t('Take the placement test again')}</Link>
-      </p>
 
       <Popover
         open={!!notice}

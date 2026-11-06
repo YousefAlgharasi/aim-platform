@@ -21,7 +21,7 @@ import {
   type SkillStateEntry,
   type WeaknessRecordEntry,
 } from '../progress/aimApi';
-import { mistakesApi } from '../learner/learnerApi';
+import { mistakesApi, type MistakeItem } from '../learner/learnerApi';
 import * as ui from '../progress/ui';
 
 const OPEN = new Set(['open', 'improving']);
@@ -109,7 +109,7 @@ function Stat({ value, label, tone = '' }: { value: string | number; label: stri
   );
 }
 
-function SpotCard({ spot }: { spot: WeakSpot }) {
+export function SpotCard({ spot, mistakes }: { spot: WeakSpot; mistakes: MistakeItem[] }) {
   const { t, plural } = useI18n();
   const name = prettifySkillId(spot.skillId);
   const pct = spot.skill ? toPercent(spot.skill.masteryScore) : null;
@@ -150,6 +150,23 @@ function SpotCard({ spot }: { spot: WeakSpot }) {
             : t('Your recent answers on this skill were low.')}
         </p>
 
+        {mistakes.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl bg-surface-muted p-3">
+            <p className="m-0 text-xs font-bold text-ink">{t('Questions you missed')}</p>
+            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+              {mistakes.slice(0, 2).map((m) => (
+                <li key={m.itemId} className="text-sm leading-snug text-ink-soft [overflow-wrap:anywhere] [unicode-bidi:plaintext]">
+                  {m.prompt}
+                  {m.yourAnswer && <span className="mt-0.5 block text-xs text-ink-muted">{t('Last time you answered: {answer}', { answer: `\u2068${m.yourAnswer}\u2069` })}</span>}
+                </li>
+              ))}
+            </ul>
+            <Link to={`/mistakes?skill=${encodeURIComponent(spot.skillId)}`} className={ui.link}>
+              {mistakes.length > 2 ? t('See all {n} and fix them', { n: mistakes.length }) : t('Fix them')}
+            </Link>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2">
           {spot.lessonId ? (
             <>
@@ -168,16 +185,23 @@ function SpotCard({ spot }: { spot: WeakSpot }) {
 
 /** Where the student is weak (from lessons, practice and assessments) and how to fix it. */
 export function ImprovePage() {
-  const { t, plural } = useI18n();
+  const { t } = useI18n();
   const { data, loading, error, reload } = useAimResults();
   const [mistakes, setMistakes] = useState<number | null>(null);
+  const [mistakeItems, setMistakeItems] = useState<MistakeItem[]>([]);
   const [cat, setCat] = useState<Category | 'all'>('all');
 
   useEffect(() => {
-    mistakesApi.list().then((r) => setMistakes(r.total)).catch(() => setMistakes(null));
+    mistakesApi.list().then((r) => { setMistakes(r.total); setMistakeItems(r.items); }).catch(() => setMistakes(null));
   }, []);
 
   const spots = useMemo(() => (data ? buildWeakSpots(data) : []), [data]);
+  // The real wrong answers, grouped under the skill they belong to.
+  const mistakesBySkill = useMemo(() => {
+    const by = new Map<string, MistakeItem[]>();
+    for (const m of mistakeItems) for (const id of m.skillIds ?? []) by.set(id, [...(by.get(id) ?? []), m]);
+    return by;
+  }, [mistakeItems]);
 
   if (loading) return <ImproveSkeleton />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
@@ -193,7 +217,7 @@ export function ImprovePage() {
 
   return (
     <div className="stagger flex flex-col gap-6">
-      <PageTitleBar title={t('Improve')} subtitle={t('See where you are losing points in lessons, practice and tests, then fix it.')} />
+      <PageTitleBar title={t('Improve')} />
 
       <FixedCelebration records={data.weaknessRecords} />
 
@@ -251,7 +275,7 @@ export function ImprovePage() {
                 options={(['all', ...cats] as Array<Category | 'all'>).map((c) => ({ key: c, label: c === 'all' ? `${t('All')} (${spots.length})` : `${t(CATEGORY_LABEL[c])} (${counts[c]})` }))} />
             )}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {visible.map((s) => <SpotCard key={s.skillId} spot={s} />)}
+              {visible.map((s) => <SpotCard key={s.skillId} spot={s} mistakes={mistakesBySkill.get(s.skillId) ?? []} />)}
             </div>
           </>
         )}

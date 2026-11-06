@@ -15,6 +15,7 @@ import { PageHeader, SectionTitle, LinkRow, subCls } from '../profile/ui';
 import { LanguageDropdown } from './LanguageDropdown';
 import { ThemeSwitch } from './ThemeSwitch';
 import { DisplayPrefs } from './DisplayPrefs';
+import { DailyGoalSetting } from './DailyGoalSetting';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -93,7 +94,7 @@ export function SettingsPage() {
 
   return (
     <div className="stagger flex w-full flex-col gap-6">
-      <PageHeader title={t('Settings')} subtitle={t('Your account and how AIM looks and behaves for you.')} />
+      <PageHeader title={t('Settings')} />
 
       <Link to="/profile" className="flex items-center gap-4 rounded-2xl bg-surface p-4 no-underline ring-1 ring-line transition-all hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:p-5">
         <span className="grid size-14 shrink-0 place-items-center rounded-full bg-brand text-xl font-semibold text-white" aria-hidden="true">{initial}</span>
@@ -106,6 +107,9 @@ export function SettingsPage() {
 
       <section className="flex flex-col gap-3" aria-label={t('Preferences')}>
         <h2 className="m-0 px-1 text-xl font-semibold tracking-tight text-ink">{t('Preferences')}</h2>
+        <Card>
+          <DailyGoalSetting />
+        </Card>
         <Card>
           <div className="flex flex-col gap-3.5">
             <SectionTitle hint={t('Saved to your profile and used across AIM.')}>{t('Language')}</SectionTitle>

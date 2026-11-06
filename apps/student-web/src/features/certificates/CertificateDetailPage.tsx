@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackButton } from '../../components/common/BackButton';
 import { useParams } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
 import { DetailSkeleton } from '../../components/common/Skeleton';
 import { getErrorMessage } from '../../api/client';
-import { fetchCertificate, formatIssued, overallPercent, totalPoints, type Certificate } from './certificatesApi';
+import { fetchCertificate, formatIssued, overallPercent, type Certificate } from './certificatesApi';
+import { CERT_H, CERT_W, certificateFileName, drawCertificate, loadCertificateFonts } from './certificateImage';
 
 interface BreakdownRow {
   label: string;
@@ -18,12 +18,13 @@ interface BreakdownRow {
 
 /** Port of Flutter certificate_detail_page.dart (GET /certificates/:id). */
 export function CertificateDetailPage() {
-  const { t } = useI18n();
+  const { t, locale, formatNumber } = useI18n();
   const { certificateId = '' } = useParams<{ certificateId: string }>();
   const [cert, setCert] = useState<Certificate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [downloadError, setDownloadError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,13 +42,54 @@ export function CertificateDetailPage() {
     load();
   }, [load]);
 
-  async function copyLink(url: string) {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied('copied');
-    } catch {
-      setCopied('failed');
-    }
+  // Draw the certificate picture (and redraw if the language changes).
+  const pctNow = cert ? overallPercent(cert) : null;
+  useEffect(() => {
+    if (!cert) return undefined;
+    let cancelled = false;
+    void loadCertificateFonts().then(() => {
+      const ctx = canvasRef.current?.getContext('2d');
+      if (cancelled || !ctx) return;
+      drawCertificate(ctx, {
+        studentName: cert.studentName,
+        courseTitle: cert.courseTitle || t('Course'),
+        scorePercent: pctNow,
+        issuedText: formatIssued(cert.issuedAt),
+        reference: cert.id.slice(0, 8).toUpperCase(),
+        rtl: locale === 'ar',
+        formatNumber,
+        labels: {
+          brand: 'AIM English',
+          title: t('Certificate of completion'),
+          presentedTo: t('This certificate is proudly presented to'),
+          forCompleting: t('for successfully completing'),
+          finalScore: t('Final score'),
+          issued: t('Issued'),
+          reference: t('Certificate ID'),
+        },
+      });
+    });
+    return () => { cancelled = true; };
+  }, [cert, pctNow, locale, t, formatNumber]);
+
+  function downloadPng() {
+    setDownloadError('');
+    const canvas = canvasRef.current;
+    if (!canvas || !cert) return;
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setDownloadError(t('Could not create the image. Please try again.'));
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = certificateFileName(cert.courseTitle || t('Course'));
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
   }
 
   if (loading) return <DetailSkeleton />;
@@ -61,38 +103,43 @@ export function CertificateDetailPage() {
   }
   if (!cert) return null;
 
-  const pct = overallPercent(cert);
-  const pts = totalPoints(cert);
+  const pct = pctNow;
   const b = cert.breakdown;
+  // The mark is out of 100. Each part is shown on that same scale, so the parts add up to the mark.
+  // Chapter exams are not part of it.
+  const on100 = (points: number) => Math.round(points) / 10;
   const rows: BreakdownRow[] = b
     ? [
         { label: t('Lesson practice'), points: b.practicePoints, max: b.practiceMaxPoints, percent: b.practiceAccuracyPercent },
         { label: t('Chapter quizzes'), points: b.quizPoints, max: b.quizMaxPoints, percent: b.quizAveragePercent },
-        { label: t('Chapter exams'), points: b.chapterExamPoints, max: b.chapterExamMaxPoints, percent: b.chapterExamAveragePercent },
         { label: t('Final exam'), points: b.finalExamPoints, max: b.finalExamMaxPoints, percent: b.finalExamPercent },
-      ]
+      ].filter((r) => r.max > 0)
     : [];
 
   return (
     <div className="flex flex-col gap-6">
       <BackButton fallback="/certificates" className="self-start" />
 
-      <div className="hero-panel text-center">
-        <div className="relative z-10 flex flex-col items-center gap-1.5">
-          <span className="text-xs font-semibold text-on-brand">{t('Certificate of completion')}</span>
-          {cert.studentName && <span className="text-xs font-medium text-on-brand">{t('Awarded to')}</span>}
-          {cert.studentName && <span className="text-lg font-semibold">{cert.studentName}</span>}
-          <span className="text-xs font-medium text-on-brand">{t('for successfully completing')}</span>
-          <h1 className="m-0 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">{cert.courseTitle || t('Course')}</h1>
-          <span className="text-xs font-medium text-on-brand">{t('Issued {date}', { date: formatIssued(cert.issuedAt) })}</span>
-          {pct != null && (
-            <div className="mt-2 flex flex-col items-center gap-1">
-              <span className="rounded-full bg-white/20 px-4 py-1.5 text-xl font-semibold">{pct}%</span>
-              {pts != null && <span className="text-xs font-medium text-on-brand">{t('{pts} / {max} points', { pts, max: b?.maxPoints ?? 1000 })}</span>}
-            </div>
-          )}
+      <section className="flex flex-col gap-4" aria-label={t('Certificate')}>
+        <canvas
+          ref={canvasRef}
+          width={CERT_W}
+          height={CERT_H}
+          role="img"
+          aria-label={t('Certificate of completion for {course}', { course: cert.courseTitle || t('Course') })}
+          className="block h-auto w-full rounded-2xl bg-white shadow-sm ring-1 ring-line"
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={downloadPng}
+            className="inline-flex h-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-brand px-8 text-base font-semibold text-white transition hover:bg-brand-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-page"
+          >
+            {t('Download certificate (PNG)')}
+          </button>
+          {downloadError && <span role="alert" className="text-sm font-medium text-danger-ink">{downloadError}</span>}
         </div>
-      </div>
+      </section>
 
       {rows.length > 0 && (
         <section className="flex flex-col gap-3">
@@ -106,8 +153,8 @@ export function CertificateDetailPage() {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-bold text-ink">{r.label}</span>
                       <span className="text-xs font-medium text-ink-muted">
-                        {t('{pts} / {max} pts', { pts: Math.round(r.points), max: r.max })}
-                        {r.percent != null ? ` · ${Math.round(r.percent)}%` : ''}
+                        {t('{pts} / {max} pts', { pts: formatNumber(on100(r.points)), max: formatNumber(on100(r.max)) })}
+                        {r.percent != null ? ` · ${formatNumber(Math.round(r.percent))}%` : ''}
                       </span>
                     </div>
                     <div
@@ -124,6 +171,14 @@ export function CertificateDetailPage() {
                 );
               })}
             </ul>
+            {pct != null && (
+              <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
+                <span className="text-base font-semibold text-ink">{t('Your mark')}</span>
+                <span dir="ltr" className="lp-num text-2xl font-semibold text-ink">
+                  {formatNumber(pct)}<span className="text-ink-muted"> / {formatNumber(100)}</span>
+                </span>
+              </div>
+            )}
           </Card>
         </section>
       )}
@@ -147,26 +202,6 @@ export function CertificateDetailPage() {
                 </li>
               ))}
             </ul>
-          </Card>
-        </section>
-      )}
-
-      {cert.verificationUrl && (
-        <section className="flex flex-col gap-3">
-          <h2 className="m-0 px-1 text-xl font-semibold tracking-tight text-ink">{t('Verification')}</h2>
-          <Card>
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-medium text-ink-muted">{t('Anyone can verify this certificate with this link:')}</span>
-              <code dir="ltr" className="block rounded-xl bg-surface-sunken p-3 text-xs text-ink-soft [overflow-wrap:anywhere] ">{cert.verificationUrl}</code>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="sm" variant="secondary" onClick={() => copyLink(cert.verificationUrl!)}>
-                  {t('Copy link')}
-                </Button>
-                <span className="text-xs font-medium text-ink-muted" role="status">
-                  {copied === 'copied' ? t('Link copied.') : copied === 'failed' ? t('Copy failed — select the link to copy it.') : ''}
-                </span>
-              </div>
-            </div>
           </Card>
         </section>
       )}

@@ -24,6 +24,9 @@ export interface StudentCourse {
   percent: number;
   status: StudentProgressStatus;
   locked: boolean;
+  /** The course the student is on now / the one that follows it (sent by the backend). */
+  current?: boolean;
+  next?: boolean;
   /** Backend price quote (absent on older backends: treated as free). */
   price?: CoursePriceQuote;
   /** Backend access decision (absent on older backends: treated as open). */

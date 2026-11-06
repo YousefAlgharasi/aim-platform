@@ -91,7 +91,6 @@ export function AssessmentDeadlinesPage() {
       <PageHeader
         fallback="/assessments"
         title={t('Deadlines')}
-        subtitle={t('Everything that is open, upcoming or past due.')}
       />
       {total === 0 ? (
         <EmptyState title={t('No deadlines')} message={t("You don't have any assessment deadlines right now.")} />

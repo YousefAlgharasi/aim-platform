@@ -129,7 +129,6 @@ export function AITeacherEntryPage() {
     <div className="stagger flex w-full flex-col gap-8">
       <PageTitleBar
         title={t('AI Teacher')}
-        subtitle={t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
         action={<Link to="/ai-teacher/history" className={pillLinkClass}>{t('History')}</Link>}
       />
 

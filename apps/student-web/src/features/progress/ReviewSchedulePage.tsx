@@ -69,7 +69,7 @@ export function ReviewSchedulePage() {
 
   return (
     <div className={`${ui.pageStack} stagger`}>
-      <PageTitleBar title={t('Review schedule')} subtitle={t('Spaced-repetition reviews scheduled for you to keep skills fresh.')} fallback="/progress" />
+      <PageTitleBar title={t('Review schedule')} fallback="/progress" />
 
       {data.reviewSchedules.length === 0 ? (
         <EmptyState title={t('No reviews scheduled')} message={t('Reviews are scheduled automatically as you practice skills.')} />

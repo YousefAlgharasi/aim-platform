@@ -8,8 +8,6 @@ import {
   CreditCardIcon,
   HomeIcon,
   LightbulbIcon,
-  MicIcon,
-  PencilIcon,
   TrendingUpIcon,
   TrophyIcon,
   UserIcon,

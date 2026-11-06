@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
-import { ChatIcon, LightbulbIcon, MicIcon, PencilIcon } from '../../components/common/Icons';
+import { LightbulbIcon, MicIcon, PencilIcon } from '../../components/common/Icons';
 import { RetryIcon, TargetIcon } from '../../layouts/navItems';
 import { mistakesApi, vocabularyApi } from '../learner/learnerApi';
 
@@ -56,7 +56,7 @@ export function PracticeHubPage() {
 
   return (
     <div className="stagger flex flex-col gap-8">
-      <PageTitleBar title={t('Practice')} subtitle={t('Talk, speak, write and review. Pick what fits the time you have.')} />
+      <PageTitleBar title={t('Practice')} />
 
       <section className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -79,13 +79,6 @@ export function PracticeHubPage() {
         </div>
       </section>
 
-      <Group
-        title="Talk with your teacher"
-        modes={[
-          { to: '/ai-teacher', title: 'AI Teacher', body: 'Ask anything, get explanations and corrections in a chat.', icon: <ChatIcon className={ic} />, tone: 'bg-brand-soft text-brand-ink' },
-          { to: '/voice-teacher', title: 'Voice Teacher', body: 'Speak out loud and get a spoken reply.', icon: <MicIcon className={ic} />, tone: 'bg-secondary-soft text-secondary-ink' },
-        ]}
-      />
       <Group
         title="Speak and write"
         modes={[

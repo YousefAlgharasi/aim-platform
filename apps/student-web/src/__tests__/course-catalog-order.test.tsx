@@ -38,9 +38,6 @@ describe('Courses page order', () => {
     const more = screen.getByRole('region', { name: 'More courses' });
     expect(within(more).getByText('Writing 1')).toBeInTheDocument();
     expect(within(more).queryByText('Starter')).not.toBeInTheDocument();
-    // Every course has a filter pill: the beginner course, each level, and the extra courses.
-    expect(screen.getByRole('tab', { name: 'Start here' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'More courses' })).toBeInTheDocument();
     // Start here comes before the first level section.
     const regions = screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'));
     expect(regions.indexOf('Start here')).toBeLessThan(regions.findIndex((l) => l?.startsWith('A1')));

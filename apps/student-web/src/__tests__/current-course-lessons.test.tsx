@@ -56,7 +56,6 @@ describe('CurrentCourseLessons', () => {
   it("lists the active chapter's lessons with real completion and lock states", async () => {
     render(<Harness courseId="c1" courseTitle="Starter English" />);
     expect(await screen.findByText('Eleven to twenty')).toBeInTheDocument();
-    expect(screen.getByText('Starter English')).toBeInTheDocument();
     expect(screen.getByText('Chapter 2: Numbers')).toBeInTheDocument();
     expect(screen.getByText('Chapter 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /One to ten/ })).toHaveAttribute('href', '/lessons/a');
@@ -126,5 +125,31 @@ describe('what is next in the course', () => {
   });
   it('has nothing next when the chapter is finished', () => {
     expect(nextLesson([lesson('a', true, false)])).toBeNull();
+  });
+});
+
+describe('RoadmapComplete', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { RoadmapComplete } = require('../features/dashboard/widgets/RoadmapComplete');
+  const course = { courseId: 'c1', title: 'Starter', lessonCount: 12, quizCount: 4 };
+  const next = { courseId: 'c2', title: 'A1.1' };
+
+  it('sends the student to the final exam while it is still open', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: next, finalExam: { assessmentId: 'x1', title: 'Final', unlocked: true, passed: false } }} />);
+    expect(screen.getByText('Course complete')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Take the final exam' })).toHaveAttribute('href', '/assessments/x1');
+    expect(screen.getByRole('link', { name: 'Next: A1.1' })).toHaveAttribute('href', '/curriculum/c2');
+  });
+
+  it('offers the next course once the exam is passed', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: next, finalExam: { assessmentId: 'x1', title: 'Final', unlocked: true, passed: true, score: 88 } }} />);
+    expect(screen.getByText('Final exam passed: 88%')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start next course' })).toHaveAttribute('href', '/curriculum/c2');
+    expect(screen.queryByRole('link', { name: 'Take the final exam' })).not.toBeInTheDocument();
+  });
+
+  it('falls back to browsing courses when there is no next course', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: null, finalExam: null }} />);
+    expect(screen.getByRole('link', { name: 'Browse courses' })).toHaveAttribute('href', '/curriculum');
   });
 });

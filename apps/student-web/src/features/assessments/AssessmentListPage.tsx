@@ -84,7 +84,6 @@ export function AssessmentListPage() {
     <div className="stagger flex w-full flex-col gap-6">
       <PageHeader
         title={t('Assessments')}
-        subtitle={t('Quizzes and exams assigned to you.')}
         action={<Link to="/assessments/deadlines" className={`${buttonClasses('secondary', 'sm')} shrink-0`}>{t('Deadlines')}</Link>}
       />
 

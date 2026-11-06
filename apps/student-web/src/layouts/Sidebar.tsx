@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LogOutIcon } from '../components/common/Icons';
+import { ThemeToggleButton } from '../components/common/ThemeToggleButton';
+import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
 import { navSections } from './navItems';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -147,6 +149,11 @@ export function SidebarContent({
           </div>
         ))}
       </nav>
+
+      <div className={`shrink-0 mb-2 grid gap-2 ${collapsed ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <ThemeToggleButton variant="pill" showLabel={!collapsed} />
+        <LanguageSwitcher variant="pill" showLabel={!collapsed} />
+      </div>
 
       <button
         type="button"

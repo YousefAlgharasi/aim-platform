@@ -70,7 +70,6 @@ export function AttemptScreen() {
       setExpiresAt(resumed?.expiresAt ?? null);
       const list = await fetchAttemptQuestions(attemptId);
       setQuestions(list);
-      setCurrent(0);
     } catch (err) {
       if (isErrorCode(err, 'ATTEMPT_NOT_RESUMABLE')) setNotResumable(true);
       else setError(assessmentErrorMessage(err, t('Failed to load this attempt')));
@@ -96,7 +95,11 @@ export function AttemptScreen() {
     if (!value.trim()) return;
     setSaveState((s) => ({ ...s, [linkId]: 'saving' }));
     setSaveError('');
-    const p = submitAssessmentAnswer(attemptId, linkId, value)
+    // Saves for one question go out one after another: a quick second tap must never be overwritten
+    // by a slower response to the first one, or the exam would grade a different answer than the one on screen.
+    const previous = pending.current.get(linkId) ?? Promise.resolve(true);
+    const p: Promise<boolean> = previous
+      .then(() => submitAssessmentAnswer(attemptId, linkId, value))
       .then(() => {
         setSaveState((s) => ({ ...s, [linkId]: 'saved' }));
         return true;
