@@ -15,6 +15,9 @@ import {
   EngagementSummaryResponse,
   StreakFreezeSummary,
   WeeklyActivityDay,
+  LeaderboardEntry,
+  LeaderboardPeriod,
+  LeaderboardResponse,
 } from './engagement.types';
 
 const DEFAULT_DAILY_GOAL_LESSONS = 1;
@@ -28,18 +31,50 @@ const dayStr = (offset: number, from = new Date()): string => {
   return d.toISOString().slice(0, 10);
 };
 
+export const GOAL_CHALLENGE_KEY = 'daily_goal';
+
+/** "Yousef Ahmed Al Gharasi" → "Yousef G."; a single name stays as it is. Works for Arabic names too. */
+export function shortName(displayName: string | null | undefined): string {
+  const parts = (displayName ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'Student';
+  if (parts.length === 1) return parts[0];
+  const initial = Array.from(parts[parts.length - 1])[0];
+  return `${parts[0]} ${initial}.`;
+}
+
+interface PracticeChallengeDef {
+  readonly key: string;
+  readonly title: string;
+  readonly description: string;
+  readonly targetCount: number;
+}
+
+/** Always-on daily challenges from Practice. They live in code, not in daily_challenge_templates, so they never replace the lesson one. */
+export const PRACTICE_SPEAKING_CHALLENGE: PracticeChallengeDef = {
+  key: 'practice_speaking',
+  title: 'Speaking practice',
+  description: 'Finish 1 speaking practice today.',
+  targetCount: 1,
+};
+export const PRACTICE_WRITING_CHALLENGE: PracticeChallengeDef = {
+  key: 'practice_writing',
+  title: 'Write a paragraph',
+  description: 'Write and submit 1 paragraph in Practice today.',
+  targetCount: 1,
+};
+
 @Injectable()
 export class EngagementService {
   constructor(private readonly repository: EngagementRepository) {}
 
   async getSummary(studentId: string): Promise<EngagementSummaryResponse> {
-    const [goalRow, completedToday, activeDates, frozenDates, usedThisMonth, templates] = await Promise.all([
+    const [goalRow, completedToday, activeDates, frozenDates, usedThisMonth, practiceToday] = await Promise.all([
       this.repository.findGoal(studentId),
       this.repository.countLessonsCompletedToday(studentId),
       this.repository.findActiveDates(studentId, STREAK_LOOKBACK_DAYS),
       this.repository.findFrozenDates(studentId, STREAK_LOOKBACK_DAYS),
       this.repository.countFreezesThisMonth(studentId),
-      this.repository.findActiveChallengeTemplates(),
+      this.repository.countPracticeCompletedToday(studentId),
     ]);
 
     const streakDays = this.computeStreakDays(activeDates, frozenDates);
@@ -50,9 +85,17 @@ export class EngagementService {
       streakDays,
     };
 
-    const challenge = this.selectChallenge(studentId, templates, completedToday, streakDays);
+    // The lesson challenge IS the student's daily goal (1 lesson to start, changed in Settings).
+    const challenge = this.goalChallenge(goal.targetLessons, completedToday);
 
-    return { goal, challenge, streakFreeze: this.freezeSummary(activeDates, frozenDates, usedThisMonth) };
+    // Three a day: the lesson/streak one, then one speaking and one writing practice.
+    const challenges: DailyChallengeSummary[] = [
+      challenge,
+      this.practiceChallenge(PRACTICE_SPEAKING_CHALLENGE, practiceToday.speaking),
+      this.practiceChallenge(PRACTICE_WRITING_CHALLENGE, practiceToday.writing),
+    ];
+
+    return { goal, challenge, challenges, streakFreeze: this.freezeSummary(activeDates, frozenDates, usedThisMonth) };
   }
 
   /**
@@ -114,6 +157,21 @@ export class EngagementService {
    * lessons.xp_value + student_achievements + xp_levels data — none of it
    * is fabricated, and Flutter never recomputes any of it.
    */
+  /**
+   * Top students by XP for the week (resets Monday, UTC) or all time. Everyone is on the board; names are shortened
+   * to first name + last initial. Ties go to whoever reached the XP first.
+   */
+  async getLeaderboard(studentId: string, period: LeaderboardPeriod, limit: number): Promise<LeaderboardResponse> {
+    const rows = await this.repository.findLeaderboard(studentId, period, limit);
+    const all: LeaderboardEntry[] = rows.map((r) => ({
+      rank: r.rank,
+      name: shortName(r.display_name),
+      xp: r.xp,
+      isYou: r.is_you,
+    }));
+    return { period, entries: all.filter((e) => e.rank <= limit), you: all.find((e) => e.isYou) ?? null };
+  }
+
   async getStats(studentId: string): Promise<EngagementStatsResponse> {
     const [totalXp, xpToday, xpLastWeek, levels, badgeCount, rankPct, weeklyRows] =
       await Promise.all([
@@ -235,44 +293,26 @@ export class EngagementService {
     return streak;
   }
 
-  private selectChallenge(
-    studentId: string,
-    templates: readonly {
-      key: string;
-      title: string;
-      description: string;
-      challenge_type: 'lessons' | 'streak';
-      target_count: number;
-    }[],
-    completedToday: number,
-    streakDays: number,
-  ): DailyChallengeSummary | null {
-    if (templates.length === 0) {
-      return null;
-    }
-
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const index = this.hashToIndex(`${studentId}:${todayKey}`, templates.length);
-    const template = templates[index];
-
-    const progressCount = template.challenge_type === 'streak' ? (streakDays > 0 ? 1 : 0) : completedToday;
-    const completed = progressCount >= template.target_count;
-
+  private goalChallenge(targetLessons: number, completedToday: number): DailyChallengeSummary {
+    const target = Math.max(1, targetLessons);
     return {
-      key: template.key,
-      title: template.title,
-      description: template.description,
-      targetCount: template.target_count,
-      progressCount: Math.min(progressCount, template.target_count),
-      completed,
+      key: GOAL_CHALLENGE_KEY,
+      title: 'Reach your daily goal',
+      description: target === 1 ? 'Complete 1 lesson today.' : `Complete ${target} lessons today.`,
+      targetCount: target,
+      progressCount: Math.min(completedToday, target),
+      completed: completedToday >= target,
     };
   }
 
-  private hashToIndex(value: string, modulus: number): number {
-    let hash = 0;
-    for (let i = 0; i < value.length; i += 1) {
-      hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
-    }
-    return hash % modulus;
+  private practiceChallenge(def: PracticeChallengeDef, doneToday: number): DailyChallengeSummary {
+    return {
+      key: def.key,
+      title: def.title,
+      description: def.description,
+      targetCount: def.targetCount,
+      progressCount: Math.min(doneToday, def.targetCount),
+      completed: doneToday >= def.targetCount,
+    };
   }
 }

@@ -344,4 +344,51 @@ describe('AssessmentGradingService', () => {
       expect(result.outcomes.find((o) => o.assessmentQuestionLinkId === Q_LINK_2)?.isCorrect).toBe(false);
     });
   });
+
+  describe('gradeAttempt — typed (fill in the blank) answers', () => {
+    const TYPED_Q = 'eeeeeeee-0000-0000-0000-0000000000ff';
+    const TYPED_LINK = 'dddddddd-0000-0000-0000-0000000000ff';
+
+    const db = (typed: string | null, stored: unknown[]) =>
+      makeDb({
+        assessment_attempts: { rows: [makeAttemptRow()] },
+        assessment_settings: { rows: [{ pass_threshold: 60, late_penalty_percent: 0 }] },
+        assessment_attempt_answers: {
+          rows: [
+            { assessment_question_link_id: Q_LINK_1, question_id: Q1_ID, response_value: 'A', points: 1 },
+            { assessment_question_link_id: TYPED_LINK, question_id: TYPED_Q, response_value: typed, points: 1 },
+          ],
+        },
+        question_choices: { rows: [{ question_id: Q1_ID, is_correct: true, id: 'A' }] },
+        question_answers: { rows: stored.map((value) => ({ question_id: TYPED_Q, value })) },
+        assessment_deadlines: { rows: [] },
+      });
+
+    it('marks a fill-in answer correct from question_answers, ignoring case', async () => {
+      const result = await new AssessmentGradingService(db('b', ['B']) as any).gradeAttempt(ATTEMPT_ID);
+      expect(result.outcomes.map((o) => o.isCorrect)).toEqual([true, true]);
+      expect(result.score).toBe(2);
+      expect(result.passed).toBe(true);
+    });
+
+    it('accepts any accepted value of a blank object', async () => {
+      const stored = [{ blanks: [{ position: 1, accepted_values: ['name'] }], case_sensitive: false }];
+      const result = await new AssessmentGradingService(db('Name', stored) as any).gradeAttempt(ATTEMPT_ID);
+      expect(result.outcomes[1].isCorrect).toBe(true);
+    });
+
+    it('marks a wrong, partial or blank fill-in answer incorrect, and still counts it in the maximum', async () => {
+      for (const typed of ['hello', 'excuse', '', null]) {
+        const result = await new AssessmentGradingService(db(typed, ['Excuse me']) as any).gradeAttempt(ATTEMPT_ID);
+        expect(result.outcomes[1].isCorrect).toBe(false);
+        expect(result.maxScore).toBe(2);
+        expect(result.score).toBe(1);
+      }
+    });
+
+    it('never marks a typed question correct when it has no stored answer', async () => {
+      const result = await new AssessmentGradingService(db('anything', []) as any).gradeAttempt(ATTEMPT_ID);
+      expect(result.outcomes[1].isCorrect).toBe(false);
+    });
+  });
 });

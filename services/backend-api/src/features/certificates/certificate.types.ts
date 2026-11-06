@@ -19,17 +19,18 @@ export interface CertificateScoreSnapshotEntry {
 }
 
 export interface CertificateScoreBreakdown {
-  readonly practicePoints: number;       // 0 - 200
-  readonly practiceMaxPoints: number;    // 200
+  readonly practicePoints: number;       // 0 - 250 (of 1,000)
+  readonly practiceMaxPoints: number;    // 250 when all three parts are present
   readonly practiceAccuracyPercent?: number;
-  readonly quizPoints: number;           // 0 - 200
-  readonly quizMaxPoints: number;        // 200
+  readonly quizPoints: number;           // 0 - 250
+  readonly quizMaxPoints: number;        // 250
   readonly quizAveragePercent?: number;
-  readonly chapterExamPoints: number;    // 0 - 200
-  readonly chapterExamMaxPoints: number; // 200
+  /** Chapter exams no longer count towards the score: always 0, kept so older apps keep working. */
+  readonly chapterExamPoints: number;
+  readonly chapterExamMaxPoints: number;
   readonly chapterExamAveragePercent?: number;
-  readonly finalExamPoints: number;      // 0 - 400
-  readonly finalExamMaxPoints: number;   // 400
+  readonly finalExamPoints: number;      // 0 - 500
+  readonly finalExamMaxPoints: number;   // 500
   readonly finalExamPercent?: number;
   readonly totalPoints: number;          // 0 - 1000
   readonly maxPoints: number;            // 1000

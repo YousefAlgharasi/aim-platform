@@ -8,6 +8,7 @@ import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
 import { AimModule } from './aim/aim.module';
 import { CurriculumModule } from './curriculum/curriculum.module';
 import { EngagementModule } from './engagement/engagement.module';
+import { SkillTitlesModule } from './skill-titles/skill-titles.module';
 import { LearnerToolsModule } from './learner-tools/learner-tools.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { LessonsModule } from './lessons/lessons.module';
@@ -54,6 +55,7 @@ import { PracticeModule } from './practice/practice.module';
     BillingModule,
     OperationsModule,
     EngagementModule,
+    SkillTitlesModule,
     LearnerToolsModule,
     AchievementsModule,
     StudentCoursesModule,
@@ -85,6 +87,7 @@ import { PracticeModule } from './practice/practice.module';
     BillingModule,
     OperationsModule,
     EngagementModule,
+    SkillTitlesModule,
     AchievementsModule,
     StudentCoursesModule,
     StudentChaptersModule,

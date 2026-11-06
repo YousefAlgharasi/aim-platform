@@ -71,7 +71,7 @@ describe('CertificateService', () => {
     expect(result?.id).toBe('cert-1');
     expect(result?.studentName).toBe('Jane Doe');
     expect(courseCompletion.isCourseComplete).not.toHaveBeenCalled();
-    expect(db.query).toHaveBeenCalledTimes(1);
+    expect(db.query).toHaveBeenCalledTimes(2); // the certificate, then the student's live results
   });
 
   it('issueIfCompleted inserts a snapshot and returns the new certificate when the course just completed', async () => {
@@ -169,3 +169,44 @@ describe('CertificateService locale handling', () => {
     expect(db.query.mock.calls[1][1]).toEqual(['s1', 'ar']);
   });
 });
+
+describe('CertificateService — the mark follows the best attempt, not the frozen snapshot', () => {
+  const issuedAfterFailedExam = {
+    id: 'cert-9', student_id: 'student-1', course_id: 'course-1', course_title: 'Starter', display_name: 'Y', email: 'y@x.com',
+    issued_at: '2026-11-06',
+    score_snapshot: {
+      scoringVersion: 2, practiceAccuracy: 80,
+      assessments: [
+        { assessmentId: 'q1', title: 'Quiz', type: 'quiz', isFinalExam: false, score: 10, maxScore: 10, scorePercent: 100, passed: true },
+        { assessmentId: 'final', title: 'Final', type: 'exam', isFinalExam: true, score: 18, maxScore: 33, scorePercent: 55, passed: false },
+      ],
+    },
+  };
+
+  it('uses a better final-exam attempt taken after the certificate was issued', async () => {
+    const db = createDb([
+      { rows: [issuedAfterFailedExam] },
+      { rows: [{ assessment_id: 'final', title: 'Final', type: 'exam', score: '28.00', max_score: '33.00', passed: true, is_final_exam: true }] },
+    ]);
+    const service = new CertificateService(db as never, createCourseCompletion(true) as never);
+
+    const result = await service.getById('cert-9');
+
+    const final = result?.scoreSnapshot.find((a) => a.assessmentId === 'final');
+    expect(final?.score).toBe(28);
+    expect(final?.passed).toBe(true);
+    expect(result?.breakdown.finalExamPercent).toBe(85);
+  });
+
+  it('keeps the snapshot score when the live results are no better, or cannot be read', async () => {
+    const db = createDb([{ rows: [issuedAfterFailedExam] }]);
+    db.query.mockImplementationOnce(() => Promise.resolve({ rowCount: 1, rows: [issuedAfterFailedExam] }))
+      .mockImplementationOnce(() => Promise.reject(new Error('db down')));
+    const service = new CertificateService(db as never, createCourseCompletion(true) as never);
+
+    const result = await service.getById('cert-9');
+
+    expect(result?.scoreSnapshot.find((a) => a.assessmentId === 'final')?.score).toBe(18);
+  });
+});
+

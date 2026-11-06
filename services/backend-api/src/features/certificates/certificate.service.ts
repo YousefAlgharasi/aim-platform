@@ -365,7 +365,10 @@ export class CertificateService {
       practiceAccuracy = await this.getCoursePracticeAccuracy(row.student_id, row.course_id);
     }
 
-    assessments = bestResultPerAssessment(assessments);
+    // The snapshot is frozen at the moment the certificate was issued, which can be right after a failed first
+    // attempt. Every assessment counts once, at its BEST attempt, so retakes taken since then are included.
+    const live = await this.getCourseAssessmentResults(row.student_id, row.course_id).catch(() => []);
+    assessments = bestResultPerAssessment([...assessments, ...live]);
     const breakdown = computeCourse1000PointBreakdown(assessments, practiceAccuracy);
 
     return {
