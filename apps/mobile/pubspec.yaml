@@ -65,13 +65,18 @@ flutter:
 # platform limitation, not a simplification we chose. icon_background_color
 # matches color exactly so the icon's own translucent badge doesn't sit on
 # top of a second, visibly-different circle.
+# NOTE: android/app/src/main/res/drawable/launch_background.xml and
+# drawable-v21/launch_background.xml are hand-edited after generation (radial
+# gradient instead of the stretched background bitmap, mirroring
+# AimGradients.splash). Re-running `flutter_native_splash:create` overwrites
+# them — restore both files from git afterwards.
 flutter_native_splash:
   background_image: "assets/splash/splash_background.png"
   image: "assets/splash/splash_logo.png"
   android_12:
     image: "assets/splash/splash_logo.png"
-    color: "#5E4BF4"
-    icon_background_color: "#5E4BF4"
+    color: "#4762EE"
+    icon_background_color: "#4762EE"
   android: true
   ios: true
   web: true

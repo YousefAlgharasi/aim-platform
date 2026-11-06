@@ -103,6 +103,7 @@ class AppRouter {
     Listenable? refreshListenable,
     GlobalKey<NavigatorState>? navigatorKey,
     String initialLocation = AppRoutePaths.splash,
+    bool Function()? holdSplash,
   }) {
     return GoRouter(
       navigatorKey: navigatorKey,
@@ -110,6 +111,10 @@ class AppRouter {
       refreshListenable: refreshListenable,
       redirect: (context, state) {
         final requested = state.matchedLocation;
+        // Keep the launch animation on screen for its minimum time.
+        if (requested == AppRoutePaths.splash && (holdSplash?.call() ?? false)) {
+          return null;
+        }
         final resolved = resolveRouteName(
           requested,
           authState: authState(),

@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Native launch screen (stage 1). Edited by hand after
+     `flutter_native_splash:create`: the generated full-screen bitmap stretches
+     on non-9:16 screens, so the backdrop is a resolution-independent radial
+     gradient that mirrors AimGradients.splash. Re-running the generator
+     overwrites this file; restore it from git. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
-        <bitmap android:gravity="fill" android:src="@drawable/background"/>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="0.45"
+                android:gradientRadius="100%"
+                android:startColor="#6B82FB"
+                android:endColor="#3349D6" />
+        </shape>
     </item>
     <item>
         <bitmap android:gravity="center" android:src="@drawable/splash"/>

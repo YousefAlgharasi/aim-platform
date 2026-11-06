@@ -36,6 +36,19 @@ final class AimGradients {
   );
 
   // Gen Z gradients — see docs/design/ui-for-all-system-mobile/README.md.
+  /// Launch-screen backdrop. MUST stay identical to the radial gradient in
+  /// android/app/src/main/res/drawable*/launch_background.xml (center 50%/45%,
+  /// radius = shortest side) so the native splash hands off to the first
+  /// Flutter frame without a visible jump.
+  static const RadialGradient splash = RadialGradient(
+    center: Alignment(0.0, -0.1),
+    radius: 1.0,
+    colors: <Color>[
+      AimColors.primary400,
+      AimColors.primary600,
+    ],
+  );
+
   static const LinearGradient gzHero = LinearGradient(
     begin: begin135,
     end: end135,

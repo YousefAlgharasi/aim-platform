@@ -10,6 +10,7 @@ import '../features/app_update/ui/app_update_gate.dart';
 import '../features/auth/logic/provider/auth_context_provider.dart';
 import '../features/auth/logic/provider/auth_flow_provider.dart';
 import '../features/auth/logic/provider/deep_link_handler.dart';
+import '../features/onboarding/logic/splash_hold_provider.dart';
 
 final _rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -38,6 +39,7 @@ class _AimMobileAppState extends ConsumerState<AimMobileApp> {
     refreshListenable: _refreshNotifier,
     authState: () => ref.read(authFlowProvider),
     authContextState: () => ref.read(authContextProvider),
+    holdSplash: () => ref.read(splashHoldProvider),
   );
 
   @override
@@ -47,6 +49,7 @@ class _AimMobileAppState extends ConsumerState<AimMobileApp> {
     ref.listenManual(authFlowProvider, (_, __) => _refreshNotifier.refresh());
     ref.listenManual(
         authContextProvider, (_, __) => _refreshNotifier.refresh());
+    ref.listenManual(splashHoldProvider, (_, __) => _refreshNotifier.refresh());
   }
 
   @override

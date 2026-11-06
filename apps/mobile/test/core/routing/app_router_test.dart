@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,6 +19,8 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+import 'package:aim_mobile/features/onboarding/ui/pages/splash_page.dart';
+import 'package:aim_mobile/features/onboarding/ui/widgets/splash_stages.dart';
 
 import '../../support/test_router_app.dart';
 
@@ -153,8 +154,8 @@ void main() {
     // First frame: authFlowProvider starts in checking state.
     await tester.pump();
 
-    expect(find.text('AIM'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SplashPage), findsOneWidget);
+    expect(find.byType(SplashStageTwo), findsOneWidget);
   });
 
   testWidgets('falls back to splash when placement question arguments are missing',
@@ -180,7 +181,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('AIM'), findsOneWidget);
+    expect(find.byType(SplashPage), findsOneWidget);
   });
 }
 
