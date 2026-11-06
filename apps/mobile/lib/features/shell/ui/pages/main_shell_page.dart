@@ -185,7 +185,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           // by the drawer's MENU section (see _buildDrawer) opened via the FAB
           // above, per product direction — the bottom tab bar was redundant
           // with the drawer and has been removed.
-          body: IndexedStack(
+          body: _LazyIndexedStack(
             index: selectedIndex,
             children: MainShellPage._screens,
           ),
@@ -208,6 +208,44 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   /// secondary destinations, a theme toggle, and a sign-out footer.
   Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
     return _AIMAppDrawerWithMore(selectedIndex: selectedIndex);
+  }
+}
+
+/// An [IndexedStack] that only builds a tab the first time it is selected.
+///
+/// A plain IndexedStack builds every child immediately, which made all five
+/// tabs (Home, Courses, Review, Progress, Profile) mount and fire their
+/// network loads at launch, competing with Home for bandwidth and CPU on the
+/// first frames. Once a tab has been visited it stays mounted (state, scroll
+/// position and loaded data are preserved), exactly like IndexedStack.
+class _LazyIndexedStack extends StatefulWidget {
+  const _LazyIndexedStack({required this.index, required this.children});
+
+  final int index;
+  final List<Widget> children;
+
+  @override
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
+}
+
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  late final Set<int> _built = {widget.index};
+
+  @override
+  void didUpdateWidget(covariant _LazyIndexedStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _built.add(widget.index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: widget.index,
+      children: [
+        for (var i = 0; i < widget.children.length; i++)
+          _built.contains(i) ? widget.children[i] : const SizedBox.shrink(),
+      ],
+    );
   }
 }
 

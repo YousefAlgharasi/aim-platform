@@ -46,7 +46,13 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
   }) async {
     setLoading();
     try {
-      // Fetch all four data sets in parallel.
+      // Start every request at once. The supplementary calls (engagement,
+      // continue-learning, quick-start, recommended course) used to be
+      // awaited one after another *after* the core four finished, adding
+      // five serial round trips to every home load. They have no data
+      // dependency on each other, so they now run concurrently with the
+      // core calls; a failure in a supplementary call still resolves to
+      // null instead of failing the whole page.
       final skillStatesFuture = _repository.getSkillStates(
         bearerToken: bearerToken,
         studentId: studentId,
@@ -64,32 +70,34 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         studentId: studentId,
       );
 
+      final engagementFuture = _repository
+          .getEngagementSummary(bearerToken: bearerToken)
+          .then<HomeEngagementSummary?>((value) => value)
+          .catchError((_) => null);
+      final engagementStatsFuture = _repository
+          .getEngagementStats(bearerToken: bearerToken)
+          .catchError((_) => null);
+      final continueLearningFuture = _repository
+          .getContinueLearning(bearerToken: bearerToken)
+          .catchError((_) => null);
+      final quickStartFuture = _repository
+          .getQuickStartLesson(bearerToken: bearerToken)
+          .catchError((_) => null);
+      final recommendedCourseFuture = _repository
+          .getRecommendedCourse(bearerToken: bearerToken)
+          .catchError((_) => null);
+
       final results = await Future.wait<Object>([
         skillStatesFuture,
         weaknessFuture,
         scheduleFuture,
         recommendFuture,
       ]);
-
-      // Goal, daily challenge, continue-learning, quick-start lesson, and
-      // recommended course are supplementary — a failure here must not take
-      // down the whole home page.
-      final engagementResult = await _repository
-          .getEngagementSummary(bearerToken: bearerToken)
-          .then<HomeEngagementSummary?>((value) => value)
-          .catchError((_) => null);
-      final engagementStatsResult = await _repository
-          .getEngagementStats(bearerToken: bearerToken)
-          .catchError((_) => null);
-      final continueLearningResult = await _repository
-          .getContinueLearning(bearerToken: bearerToken)
-          .catchError((_) => null);
-      final quickStartResult = await _repository
-          .getQuickStartLesson(bearerToken: bearerToken)
-          .catchError((_) => null);
-      final recommendedCourseResult = await _repository
-          .getRecommendedCourse(bearerToken: bearerToken)
-          .catchError((_) => null);
+      final engagementResult = await engagementFuture;
+      final engagementStatsResult = await engagementStatsFuture;
+      final continueLearningResult = await continueLearningFuture;
+      final quickStartResult = await quickStartFuture;
+      final recommendedCourseResult = await recommendedCourseFuture;
 
       setSuccess(HomeData(
         skillStates: results[0] as List<HomeSkillState>,

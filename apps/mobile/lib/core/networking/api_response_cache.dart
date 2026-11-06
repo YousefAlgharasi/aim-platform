@@ -54,6 +54,18 @@ class ApiResponseCache {
   late DateTime _staleBefore;
   Directory? _directory;
 
+  /// In-memory copy of recently used responses (insertion-ordered, so the
+  /// first key is the least recently used). A hit skips the disk read and the
+  /// wrapper JSON decode entirely — most repeat reads within a session
+  /// (tab switches, back navigation) are served from here.
+  final Map<String, CachedApiResponse> _memory = {};
+  static const int _memoryEntries = 64;
+
+  /// Disk trimming lists the whole directory, so it only runs every few
+  /// writes instead of after every single one.
+  int _writesSinceTrim = 0;
+  static const int _trimEvery = 20;
+
   static const _neverCachedPrefixes = ['/auth/'];
 
   /// Whether responses for [path] may be saved at all.
@@ -93,16 +105,31 @@ class ApiResponseCache {
         _clock().difference(cached.savedAt) < freshFor;
   }
 
+  void _remember(String key, CachedApiResponse value) {
+    _memory.remove(key);
+    _memory[key] = value;
+    if (_memory.length > _memoryEntries) {
+      _memory.remove(_memory.keys.first);
+    }
+  }
+
   Future<CachedApiResponse?> read(String key) async {
+    final inMemory = _memory.remove(key);
+    if (inMemory != null) {
+      _memory[key] = inMemory; // refresh LRU position
+      return inMemory;
+    }
     try {
       final file = await _fileFor(key);
       if (!await file.exists()) return null;
       final decoded = jsonDecode(await file.readAsString());
       if (decoded is! Map<String, dynamic> || decoded['key'] != key) return null;
-      return CachedApiResponse(
+      final value = CachedApiResponse(
         body: decoded['body'] as String,
         savedAt: DateTime.parse(decoded['savedAt'] as String),
       );
+      _remember(key, value);
+      return value;
     } catch (_) {
       return null;
     }
@@ -111,6 +138,8 @@ class ApiResponseCache {
   Future<void> write(String key, String body) async {
     // Timestamp when the response arrived, not when the disk write finishes.
     final savedAt = _clock();
+    // Visible to the very next read immediately, before the disk write ends.
+    _remember(key, CachedApiResponse(body: body, savedAt: savedAt));
     try {
       final file = await _fileFor(key);
       await file.writeAsString(jsonEncode({
@@ -118,7 +147,10 @@ class ApiResponseCache {
         'savedAt': savedAt.toIso8601String(),
         'body': body,
       }));
-      await _trim();
+      if (++_writesSinceTrim >= _trimEvery) {
+        _writesSinceTrim = 0;
+        await _trim();
+      }
     } catch (e) {
       debugPrint('ApiResponseCache write failed: $e');
     }
@@ -126,6 +158,7 @@ class ApiResponseCache {
 
   /// Deletes every saved response (sign-out).
   Future<void> clear() async {
+    _memory.clear();
     try {
       final dir = await _dir();
       if (await dir.exists()) await dir.delete(recursive: true);

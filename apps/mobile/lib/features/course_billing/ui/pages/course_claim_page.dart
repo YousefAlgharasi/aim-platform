@@ -557,6 +557,7 @@ class _WalletLogo extends StatelessWidget {
         url!,
         width: size,
         height: size,
+        cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => const SizedBox(width: size, height: size, child: fallback),
       ),
