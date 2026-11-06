@@ -33,9 +33,9 @@ void main() {
     await tester.pumpWidget(_wrap());
     await tester.pump();
 
-    expect(find.text('Full Name'), findsOneWidget);
-    expect(find.text('Daily goal'), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('FULL NAME'), findsOneWidget);
+    expect(find.text('DAILY GOAL'), findsOneWidget);
+    expect(find.text('THEME'), findsOneWidget);
     expect(find.text('العربية'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Sign Out'), 200,
