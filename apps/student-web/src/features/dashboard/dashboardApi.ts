@@ -33,6 +33,8 @@ export interface StreakFreezeSummary {
 export interface EngagementSummary {
   goal: DailyGoalSummary;
   challenge: DailyChallengeSummary | null;
+  /** Today's three challenges: lessons/streak, speaking practice, writing practice. Absent on older backends: use `challenge`. */
+  challenges?: DailyChallengeSummary[];
   /** Absent on older backends: the freeze UI stays hidden. */
   streakFreeze?: StreakFreezeSummary;
 }
@@ -69,6 +71,28 @@ export function requestStreakFreeze(): Promise<EngagementSummary> {
 
 export function fetchEngagementStats(): Promise<EngagementStats | null> {
   return apiClient.get<EngagementStats | null>('/student/engagement/stats');
+}
+
+export type LeaderboardPeriod = 'week' | 'all';
+
+export interface LeaderboardEntry {
+  rank: number;
+  /** First name and last initial; never the email. */
+  name: string;
+  xp: number;
+  isYou: boolean;
+}
+
+export interface Leaderboard {
+  period: LeaderboardPeriod;
+  entries: LeaderboardEntry[];
+  /** The caller's own place; present even when outside `entries`. Null until they earn XP in the period. */
+  you: LeaderboardEntry | null;
+}
+
+/** Top students by XP, this week (resets Monday) or all time. */
+export function fetchLeaderboard(period: LeaderboardPeriod, limit = 5): Promise<Leaderboard> {
+  return apiClient.get<Leaderboard>(`/student/engagement/leaderboard?period=${period}&limit=${limit}`);
 }
 
 

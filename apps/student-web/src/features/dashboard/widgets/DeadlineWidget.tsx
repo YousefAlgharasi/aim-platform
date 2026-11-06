@@ -8,6 +8,8 @@ import * as ui from './ui';
 interface DeadlineWidgetProps {
   /** Soonest first. Null when the request failed: shown as "unavailable", never as "no deadlines". */
   deadlines: StudentDeadlineItem[] | null;
+  /** Extra classes for the card (the dashboard lets it grow to line up with the other column). */
+  className?: string;
 }
 
 function formatDue(iso: string): string {
@@ -25,10 +27,10 @@ export function dueIn(iso: string, now = Date.now()): { key: 'overdue' | 'today'
 
 const LIVE = new Set(['open', 'active', 'extended', 'late']);
 
-export function DeadlineWidget({ deadlines }: DeadlineWidgetProps) {
+export function DeadlineWidget({ deadlines, className = '' }: DeadlineWidgetProps) {
   const { t } = useI18n();
   return (
-    <section className={ui.panel}>
+    <section className={`${ui.panel} ${className}`}>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className={ui.cardTitle}>{t('Upcoming deadlines')}</h3>

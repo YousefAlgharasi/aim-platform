@@ -77,7 +77,7 @@ export function ProgressSummary() {
 
   return (
     <div className="stagger flex flex-col gap-6">
-      <PageTitleBar title={t('Progress')} subtitle={t('How your skills are growing, and what to do next.')} />
+      <PageTitleBar title={t('Progress')} />
 
       {isEmpty ? (
         <EmptyState title={t('No progress yet')} message={t('Complete lessons and practice to see your skill mastery, weaknesses and review schedule here.')} />

@@ -81,3 +81,77 @@ describe('search', () => {
     expect(d.query).not.toHaveBeenCalled();
   });
 });
+
+describe('MistakesService.list', () => {
+  const row = (over: Record<string, unknown> = {}) => ({
+    id: 'q1', type: 'multiple_choice', stem: 'Pick the short "i" word', listening_script: null,
+    answer_value: 'c2', submitted_at: '2026-11-05T10:00:00Z', skill_ids: ['en.a1.pho.short_vowels'],
+    options: [{ id: 'c1', text: 'bit' }, { id: 'c2', text: 'bat' }], ...over,
+  });
+  const listDb = (rows: any[], n = rows.length) => ({
+    query: jest.fn(async (sql: string) => (sql.includes('count(*)') ? { rows: [{ n: String(n) }] } : { rows })),
+  }) as any;
+
+  it('tells each mistake which skills it trains', async () => {
+    const out = await new MistakesService(listDb([row(), row({ id: 'q2', skill_ids: null })])).list('s');
+    expect(out.items[0].skillIds).toEqual(['en.a1.pho.short_vowels']);
+    expect(out.items[1].skillIds).toEqual([]);
+    expect(out.items[0].yourAnswer).toBe('bat');
+    expect(out.total).toBe(2);
+  });
+
+  it('passes the skill filter as a bound parameter, never inside the SQL text', async () => {
+    const d = listDb([row()]);
+    await new MistakesService(d).list('s', 30, 'en.a1.pho.short_vowels');
+    for (const [sql, params] of d.query.mock.calls as Array<[string, unknown[]]>) {
+      expect(sql).not.toContain('en.a1.pho.short_vowels');
+      expect(params[2]).toBe('en.a1.pho.short_vowels');
+    }
+  });
+
+  it('lists every skill when no filter is given', async () => {
+    const d = listDb([row()]);
+    await new MistakesService(d).list('s');
+    expect((d.query.mock.calls as Array<[string, unknown[]]>).every(([, params]) => params[2] === null)).toBe(true);
+  });
+});
+
+describe('MistakesService — both student ids', () => {
+  const INTERNAL = '11111111-1111-1111-1111-111111111111';
+  const AUTH = '22222222-2222-2222-2222-222222222222';
+  const emptyDb = () => ({ query: jest.fn(async (sql: string) => (sql.includes('count(*)') ? { rows: [{ n: '0' }] } : { rows: [] })) }) as any;
+
+  it('looks for attempts under the sign-in id as well as the internal id (attempts are stored under the sign-in id)', async () => {
+    const d = emptyDb();
+    await new MistakesService(d).list([INTERNAL, AUTH]);
+    for (const [sql, params] of d.query.mock.calls as Array<[string, unknown[]]>) {
+      expect(sql).toContain('student_id = ANY($1::uuid[])');
+      expect(params[0]).toEqual([INTERNAL, AUTH]);
+    }
+  });
+
+  it('ignores blanks and duplicates in the id list', async () => {
+    const d = emptyDb();
+    await new MistakesService(d).list([INTERNAL, '', INTERNAL]);
+    expect((d.query.mock.calls[0] as [string, unknown[]])[1][0]).toEqual([INTERNAL]);
+  });
+
+  it('can check a retry for a question attempted under the sign-in id, and stores the fixed mark on the internal id', async () => {
+    const calls: Array<[string, unknown[]]> = [];
+    const d = { query: jest.fn(async (sql: string, params: unknown[]) => {
+      calls.push([sql, params]);
+      if (sql.includes('FROM lesson_attempts')) return { rows: [{}], rowCount: 1 };
+      if (sql.includes('question_choices')) return { rows: [{ explanation: null, id: 'c1', text: 'went', is_correct: true }], rowCount: 1 };
+      return { rows: [], rowCount: 0 };
+    }) } as any;
+
+    const out = await new MistakesService(d).check([INTERNAL, AUTH], 'q', 'c1');
+
+    expect(out.correct).toBe(true);
+    const attempted = calls.find(([sql]) => sql.includes('FROM lesson_attempts'))!;
+    expect(attempted[1][0]).toEqual([INTERNAL, AUTH]);
+    const resolved = calls.find(([sql]) => sql.includes('INSERT INTO mistake_resolutions'))!;
+    expect(resolved[1][0]).toBe(INTERNAL);
+  });
+});
+

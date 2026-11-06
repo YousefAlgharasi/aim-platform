@@ -3,6 +3,7 @@ import { VocabularyPage } from '../features/learner/VocabularyPage';
 import { MistakesPage } from '../features/learner/MistakesPage';
 import { LevelProvider } from '../features/level/LevelContext';
 import { PracticeHubPage } from '../features/practice-hub/PracticeHubPage';
+import { LeaderboardPage } from '../features/leaderboard/LeaderboardPage';
 import { ImprovePage } from '../features/improve/ImprovePage';
 import { OnboardingPage } from '../features/learner/OnboardingPage';
 import { Navigate, Routes, Route } from 'react-router-dom';
@@ -97,6 +98,7 @@ export function AppRoutes() {
         <Route path="/journey" element={<Navigate to="/curriculum" replace />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/progress" element={<ProgressSummary />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/progress/skills" element={<SkillStatePage />} />
         <Route path="/progress/weaknesses" element={<Navigate to="/improve" replace />} />
         <Route path="/progress/reviews" element={<ReviewSchedulePage />} />

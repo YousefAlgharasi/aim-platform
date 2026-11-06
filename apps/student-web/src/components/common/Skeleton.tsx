@@ -43,34 +43,58 @@ function Header() {
   );
 }
 
-/** Dashboard-shaped loading state: mirrors the real layout (continue panel + goal ring, stat tiles, two columns). */
+/** Dashboard-shaped loading state: mirrors the real layout (roadmap, 2×2 stat tiles, deadlines | word of the day, daily goal, widgets). */
 export function DashboardSkeleton() {
   return (
     <Shell className="!gap-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <div className="flex flex-col gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8 lg:col-span-8">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-12 w-2/3" />
-          <Skeleton className="h-4 w-40" />
-          <div className="mt-6 flex items-end justify-between gap-6"><Skeleton className="h-3 w-64 max-w-[60%]" /><Skeleton className="h-14 w-44 rounded-full" /></div>
-        </div>
-        <div className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line lg:col-span-4">
-          <Skeleton className="size-[136px] rounded-full" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-3 w-full" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-2xl bg-surface p-5 ring-1 ring-line">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-9 w-24" />
+        <div className="contents lg:col-span-7 lg:flex lg:min-w-0 lg:flex-col lg:gap-5">
+          {/* Roadmap: chapter row, then the stops zig-zagging down the road. */}
+          <div className="rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-6">
+            <div className="flex items-start justify-between gap-3 border-b border-line pb-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-2"><Skeleton className="h-5 w-2/3" /><Skeleton className="h-3 w-24" /></div>
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <div className="mt-4 flex flex-col">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className={`flex h-[116px] items-center gap-4 ${i % 2 === 1 ? 'flex-row-reverse' : ''}`}>
+                  <Skeleton className="size-[68px] shrink-0 !rounded-full" />
+                  <div className="flex w-32 flex-col gap-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-3 w-full" /></div>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <div className="flex flex-col gap-5 lg:col-span-7"><SkeletonCard lines={4} /><SkeletonCard lines={3} /></div>
-        <div className="flex flex-col gap-5 lg:col-span-5"><SkeletonCard lines={3} /><SkeletonCard lines={3} /></div>
+          {/* Stat tiles: two by two, like the page. */}
+          <div className="grid grid-cols-2 gap-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-2 rounded-2xl bg-surface p-5 ring-1 ring-line">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-9 w-24" />
+              </div>
+            ))}
+          </div>
+          {/* Top learners: ends the column */}
+          <SkeletonCard lines={5} className="lg:flex-1" />
+        </div>
+        <div className="contents lg:col-span-5 lg:flex lg:min-w-0 lg:flex-col lg:gap-5">
+          {/* Word of the day: first on phones, like the page */}
+          <div className="order-first flex flex-col gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8 lg:order-none">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-10 w-1/2" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-3 w-3/5" />
+            <Skeleton className="mt-4 h-14 w-48 max-w-full !rounded-full" />
+          </div>
+          {/* Daily goal */}
+          <div className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line">
+            <Skeleton className="size-[136px] !rounded-full" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-full" />
+          </div>
+          <SkeletonCard lines={3} />
+          {/* Deadlines: ends the column, level with Top learners */}
+          <SkeletonCard lines={2} className="lg:flex-1" />
+        </div>
       </div>
     </Shell>
   );

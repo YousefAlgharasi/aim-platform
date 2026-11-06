@@ -3,8 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nContext';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
 import { fetchEngagementSummary } from '../features/dashboard/dashboardApi';
-import { ThemeToggleButton } from '../components/common/ThemeToggleButton';
-import { LevelBadge } from '../features/level/LevelBadge';
 import { FlameIcon } from '../components/common/Icons';
 
 /** Unread in-app notifications, refreshed on every navigation so the badge clears after the inbox is read. */
@@ -64,8 +62,6 @@ export function TopBar() {
               <span aria-hidden="true">{formatNumber(streakDays)}</span>
             </span>
           )}
-        <LevelBadge />
-        <ThemeToggleButton />
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}

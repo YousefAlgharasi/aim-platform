@@ -25,6 +25,7 @@ import { formatDate } from '../../i18n';
 import { useLearnerLevel } from '../level/LevelContext';
 import { bandOf, relationTo } from '../level/bands';
 import { BookIcon } from '../../components/common/Icons';
+import { CourseInfoPopover } from './CourseInfoPopover';
 
 /** Route: /curriculum/:subjectId — the param is a course id. */
 export function CourseDetailPage() {
@@ -116,7 +117,15 @@ export function CourseDetailPage() {
             )}
             {isCurrent && <span className="rounded-full bg-ink px-3 py-1 text-xs font-semibold text-ink-inverse">{t('Current course')}</span>}
           </div>
-          <h1 className="lp-display m-0 text-[2rem] font-semibold [unicode-bidi:plaintext] sm:text-[2.75rem]">{course.title}</h1>
+          <div className="flex items-start gap-2">
+            <h1 className="lp-display m-0 text-[2rem] font-semibold [unicode-bidi:plaintext] sm:text-[2.75rem]">{course.title}</h1>
+            {/* Phones and tablets: the description is behind an info icon next to the name. On desktop it stays on the page. */}
+            {course.description && (
+              <span className="mt-2 sm:mt-3 lg:hidden">
+                <CourseInfoPopover course={course} chapterTitles={levels.flatMap((l) => l.chapters.map((c) => c.title)).filter(Boolean)} chapterCount={totalChapters} />
+              </span>
+            )}
+          </div>
           <div className="flex max-w-md flex-col gap-2">
             <div className="flex justify-between gap-3 text-sm text-ink-muted">
               <span>{t('{done} of {total} lessons finished', { done: course.completedLessonCount, total: course.lessonCount })}</span>
@@ -133,7 +142,7 @@ export function CourseDetailPage() {
               course.examCount > 0 ? t('Final exam') : null,
             ].filter(Boolean).join(', ')}
           </p>
-          {course.description && <p dir="auto" className="m-0 line-clamp-3 max-w-2xl text-base leading-relaxed text-ink-muted">{course.description}</p>}
+          {course.description && <p dir="auto" className="m-0 hidden max-w-2xl text-base leading-relaxed text-ink-muted lg:line-clamp-3">{course.description}</p>}
           {!course.locked && !isCurrent && (
             <div className="flex flex-col gap-3">
               {enrollment?.found && enrollment.courseTitle && (

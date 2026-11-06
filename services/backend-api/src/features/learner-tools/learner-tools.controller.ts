@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { RoleGuard } from '../../auth/authorization/role.guard';
 import { ResolveInternalUserIdGuard } from '../../auth/authorization/resolve-internal-user-id.guard';
-import { ResolvedInternalUserId } from '../../auth/current-user.decorator';
+import { CurrentUser, ResolvedInternalUserId } from '../../auth/current-user.decorator';
 import { AuthorizedRole } from '../../auth/authorization/authorized-role';
 import { RequireRoles } from '../../auth/authorization/required-roles.decorator';
 import { VocabularyService } from './vocabulary.service';
@@ -63,13 +63,17 @@ export class LearnerToolsController {
 
   @Get('student/mistakes')
   @ApiOperation({ summary: 'Questions whose latest attempt was wrong (for retry practice).' })
-  listMistakes(@ResolvedInternalUserId() id: string) { return this.mistakes.list(id); }
+  listMistakes(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Query('skill') skill?: string) {
+    // Attempts are stored under the sign-in id, so look under both ids. Optional skill filter: only the
+    // mistakes that train this skill (used by the Improve page).
+    return this.mistakes.list([id, authId], 30, skill?.trim() || undefined);
+  }
 
   @Post('student/mistakes/check')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Check a retry answer. Drill only: records no attempt and no mastery.' })
-  checkMistake(@ResolvedInternalUserId() id: string, @Body() body: { itemId?: unknown; answerId?: unknown }) {
-    return this.mistakes.check(id, body?.itemId, body?.answerId);
+  checkMistake(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { itemId?: unknown; answerId?: unknown }) {
+    return this.mistakes.check([id, authId], body?.itemId, body?.answerId);
   }
 
   @Get('search')

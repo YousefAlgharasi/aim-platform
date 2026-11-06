@@ -120,7 +120,7 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} action={<Link to="/billing/payments" className="text-sm font-bold text-brand-ink no-underline hover:underline">{t('My payments')}</Link>} />
+      <PageHeader title={t('Billing')} action={<Link to="/billing/payments" className="text-sm font-bold text-brand-ink no-underline hover:underline">{t('My payments')}</Link>} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 

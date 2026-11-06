@@ -30,11 +30,14 @@ export const studyPlanApi = {
 // ── Mistakes retry ───────────────────────────────────────────────────────────
 export interface MistakeItem {
   itemId: string; type: string; prompt: string; listeningScript: string | null;
+  /** Skill keys the question trains. Absent on older backends. */
+  skillIds?: string[];
   options: Array<{ id: string; text: string }>; yourAnswer: string | null; answeredAt: string;
 }
 export interface MistakeCheck { correct: boolean; correctChoiceId: string | null; correctText: string | null; explanation: string | null }
 export const mistakesApi = {
-  list: () => apiClient.get<{ total: number; items: MistakeItem[] }>('/student/mistakes'),
+  /** Wrong answers still to fix; pass a skill key to get only that skill's. */
+  list: (skill?: string) => apiClient.get<{ total: number; items: MistakeItem[] }>(`/student/mistakes${skill ? `?skill=${encodeURIComponent(skill)}` : ''}`),
   check: (itemId: string, answerId: string) => apiClient.post<MistakeCheck>('/student/mistakes/check', { itemId, answerId }),
 };
 

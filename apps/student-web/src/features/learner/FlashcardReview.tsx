@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
-import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
 import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { vocabularyApi, type SavedWord } from './learnerApi';
+import { CheckIcon } from '../../components/common/Icons';
+import { CrossIcon, PILL_PRIMARY, PILL_SECONDARY, SessionComplete, SessionProgress } from './sessionUi';
 
 /** One card at a time: see the word, try to recall, flip, then say whether you knew it. */
 export function FlashcardReview({ onDone }: { onDone: () => void }) {
@@ -50,53 +51,65 @@ export function FlashcardReview({ onDone }: { onDone: () => void }) {
 
   if (cards.length === 0 || index >= cards.length || !card) {
     return (
-      <div className="flex flex-col items-start gap-4">
-        <div className="grid size-20 place-items-center rounded-2xl bg-success text-4xl text-white">✓</div>
-        <h1 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Review complete')}</h1>
-        {cards.length > 0 && <p className="m-0 text-ink-muted">{t('You knew {known} of {total}.', { known, total: cards.length })}</p>}
-        <Button onClick={onDone}>{t('Back to My words')}</Button>
-      </div>
+      <SessionComplete
+        title={t('Review complete')}
+        score={known}
+        total={cards.length}
+        summary={cards.length === 0 ? t('No words are due right now.') : known === cards.length ? t('You knew every word. Great memory.') : t('You knew {known} of {total}.', { known, total: cards.length })}
+      >
+        <button type="button" onClick={onDone} className={PILL_PRIMARY}>{t('Back to My words')}</button>
+      </SessionComplete>
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <button type="button" onClick={onDone} className="min-h-10 cursor-pointer rounded-xl border-0 bg-control px-4 text-sm font-bold text-ink-soft hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">{t('Close')}</button>
-        <span className="text-sm font-semibold tabular-nums text-ink-muted">{index + 1} / {cards.length}</span>
+        <button type="button" onClick={onDone} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border-0 bg-transparent px-4 text-sm font-semibold text-ink-soft ring-1 ring-line-strong transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          <CrossIcon className="size-3.5" />{t('Close')}
+        </button>
+        <span className="lp-num text-sm font-semibold text-ink-muted">{index + 1} / {cards.length}</span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-control ring-1 ring-inset ring-line" role="progressbar"
-        aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={index} aria-label={t('Review progress')}>
-        <div className="h-full rounded-full bg-brand transition-all duration-300" style={{ width: `${(index / cards.length) * 100}%` }} />
-      </div>
-      <button type="button" onClick={() => setFlipped((f) => !f)} aria-label={flipped ? t('Show the word') : t('Show the meaning')}
-        className="flex min-h-72 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-0 bg-surface p-8 text-center ring-1 ring-line transition-colors hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+      <SessionProgress done={index} total={cards.length} label={t('Review progress')} text={flipped ? t('Did you know it?') : t('What does this mean?')} />
+
+      <button
+        type="button"
+        onClick={() => setFlipped((f) => !f)}
+        aria-label={flipped ? t('Show the word') : `${card.word}: ${t('Tap to flip')}`}
+        className={`flex min-h-80 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-0 p-8 text-center ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${flipped ? 'bg-brand-soft ring-brand' : 'bg-surface ring-line hover:ring-line-strong'}`}
+      >
         {!flipped ? (
           <>
-            <span className="text-xs font-bold text-ink-muted">{t('What does this mean?')}</span>
-            <span className="text-3xl font-semibold tracking-tight text-ink [unicode-bidi:plaintext]">{card.word}</span>
-            <span className="text-xs text-ink-muted">{t('Tap to flip')}</span>
+            <span className="text-sm font-semibold text-ink-muted">{t('Word')}</span>
+            <span className="lp-display text-[2.5rem] font-semibold leading-tight text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-5xl">{card.word}</span>
+            <span className="mt-2 text-sm text-ink-muted">{t('Tap to flip')}</span>
           </>
         ) : (
           <>
+            <span className="text-sm font-semibold text-brand-ink">{card.word}</span>
             {card.meaning
-              ? <span className="text-2xl font-semibold text-ink [unicode-bidi:plaintext]">{card.meaning}</span>
-              : <span className="text-sm text-ink-muted">{t('No meaning saved.')}</span>}
-            {card.context && <span className="text-sm italic text-ink-soft [unicode-bidi:plaintext]">{card.context}</span>}
+              ? <span className="lp-display text-[2rem] font-semibold leading-snug text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-4xl">{card.meaning}</span>
+              : <span className="text-base text-ink-muted">{t('No meaning saved.')}</span>}
+            {card.context && <span className="max-w-md text-base italic text-ink-soft [unicode-bidi:plaintext]">“{card.context}”</span>}
             {!card.meaning && (
               <Link to={`/ai-teacher?ask=${encodeURIComponent(card.word)}`} onClick={(e) => e.stopPropagation()}
-                className="text-sm font-bold text-brand-ink">{t('Ask AI Teacher')}</Link>
+                className="text-sm font-semibold text-brand-ink underline underline-offset-4">{t('Ask AI Teacher')}</Link>
             )}
           </>
         )}
       </button>
+
       {flipped ? (
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="secondary" size="lg" disabled={busy} onClick={() => void answer(false)}>{t('Not yet')}</Button>
-          <Button size="lg" disabled={busy} onClick={() => void answer(true)}>{t('I knew it')}</Button>
+          <button type="button" disabled={busy} onClick={() => void answer(false)} className={PILL_SECONDARY}>
+            <CrossIcon className="size-3.5" />{t('Not yet')}
+          </button>
+          <button type="button" disabled={busy} onClick={() => void answer(true)} className={PILL_PRIMARY}>
+            <CheckIcon className="size-4" />{t('I knew it')}
+          </button>
         </div>
       ) : (
-        <Button variant="secondary" size="lg" onClick={() => setFlipped(true)}>{t('Show the meaning')}</Button>
+        <button type="button" onClick={() => setFlipped(true)} className={`${PILL_PRIMARY} w-full`}>{t('Show the meaning')}</button>
       )}
       <p className="m-0 hidden text-center text-xs text-ink-muted md:block">{t('Shortcuts: Space flips · 1 not yet · 2 I knew it')}</p>
     </div>

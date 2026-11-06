@@ -35,7 +35,7 @@ export function SkillStatePage() {
 
   return (
     <div className={`${ui.pageStack} stagger`}>
-      <PageTitleBar title={t('Skills')} subtitle={t('Every skill we track for you, with how well you know it.')} fallback="/progress" />
+      <PageTitleBar title={t('Skills')} fallback="/progress" />
 
       {data.skillStates.length === 0 ? (
         <EmptyState title={t('No skill data yet')} message={t('Your skill mastery appears here after you complete lessons, practice or assessments.')} />

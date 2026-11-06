@@ -26,8 +26,30 @@ export interface StreakFreezeSummary {
 
 export interface EngagementSummaryResponse {
   readonly goal: DailyGoalSummary;
+  /** The lesson/streak challenge picked for today. Kept for older clients; newer ones read `challenges`. */
   readonly challenge: DailyChallengeSummary | null;
+  /** Every challenge for today: the lesson/streak one, then Speaking practice and Write a paragraph. */
+  readonly challenges: readonly DailyChallengeSummary[];
   readonly streakFreeze: StreakFreezeSummary;
+}
+
+export type LeaderboardPeriod = 'week' | 'all';
+
+export interface LeaderboardEntry {
+  /** 1 = most XP. Ties go to whoever reached that XP first. */
+  readonly rank: number;
+  /** First name and last initial ("Yousef A."): never the email or the full name. */
+  readonly name: string;
+  readonly xp: number;
+  readonly isYou: boolean;
+}
+
+export interface LeaderboardResponse {
+  readonly period: LeaderboardPeriod;
+  /** The top students, best first. Only students who earned XP in the period are ranked. */
+  readonly entries: readonly LeaderboardEntry[];
+  /** The caller's own place, when ranked (also present when they are outside the top list). */
+  readonly you: LeaderboardEntry | null;
 }
 
 export interface UpdateDailyGoalInput {
