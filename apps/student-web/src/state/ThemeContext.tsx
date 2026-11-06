@@ -16,27 +16,36 @@ function initialDarkMode(): boolean {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored !== null) return stored === 'true';
   } catch {
-    // Storage unavailable — fall through to the system preference.
+    // Storage unavailable — fall through to the default (dark).
   }
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  // No saved choice yet: the product's look is dark. Light stays one tap away in Settings.
+  return true;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDarkMode, setDarkMode] = useState<boolean>(initialDarkMode);
+  const [preferDark, setDarkMode] = useState<boolean>(initialDarkMode);
+  // Dark mode is a core part of the look, so the (seeded-off) `dark_mode` feature flag no longer gates it.
+  const isDarkMode = preferDark;
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDarkMode ? '#0F172A' : '#4762EE');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDarkMode ? '#080A12' : '#4762EE');
+  }, [isDarkMode]);
+
+  useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, String(isDarkMode));
+      localStorage.setItem(STORAGE_KEY, String(preferDark));
     } catch {
       // Theme still applies for this session.
     }
-  }, [isDarkMode]);
+  }, [preferDark]);
 
   const toggle = useCallback(() => setDarkMode((v) => !v), []);
 
-  return <ThemeContext.Provider value={{ isDarkMode, setDarkMode, toggle }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ isDarkMode, setDarkMode, toggle }}>{children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme(): ThemeState {

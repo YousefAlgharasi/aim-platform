@@ -5,7 +5,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Banner } from '../../components/common/Banner';
@@ -190,11 +190,11 @@ export function SupportPage() {
             type="button"
             onClick={() => openPanel(c.key)}
             aria-expanded={panel === c.key}
-            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-surface shadow-sm text-start cursor-pointer border-none transition-all hover:shadow-md ${
+            className={`flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-surface text-start cursor-pointer border-none transition-all ${
               panel === c.key ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
             }`}
           >
-            <span className="size-11 rounded-xl bg-gradient-to-br from-brand to-secondary text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
+            <span className="size-11 rounded-full bg-brand text-white flex items-center justify-center shrink-0" aria-hidden="true">{c.icon}</span>
             <span className="flex flex-col gap-0.5 min-w-0">
               <h2 className={h2Cls}>{c.title}</h2>
               <span className="text-sm text-ink-muted">{c.desc}</span>
@@ -317,7 +317,7 @@ export function SupportPage() {
       <section className="flex flex-col gap-3">
         <h2 className={h2Cls}>{t('My Tickets')}</h2>
         {loading ? (
-          <LoadingSpinner />
+          <ListSkeleton bare rows={3} />
         ) : error ? (
           <ErrorState message={error} onRetry={loadTickets} />
         ) : tickets.length === 0 ? (
@@ -328,7 +328,7 @@ export function SupportPage() {
               <Link
                 key={ticket.id}
                 to={`/support/tickets/${ticket.id}`}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-surface ring-1 ring-line shadow-sm no-underline hover:shadow-md transition-shadow"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-surface ring-1 ring-line no-underline transition-shadow"
               >
                 <span className="flex-1 min-w-0 flex flex-col gap-1.5">
                   <span className="text-sm font-bold text-ink truncate">{ticket.subject}</span>

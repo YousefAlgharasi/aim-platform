@@ -116,6 +116,31 @@ export class AssessmentRepository {
     return res.rows[0] ?? null;
   }
 
+  /**
+   * Batched form of findEffectiveDeadline: one query for many assessments instead of one per
+   * assessment (the student list used to fire N of these on every dashboard load).
+   * Same precedence — a per-student extension beats the global deadline.
+   */
+  async findEffectiveDeadlines(
+    assessmentIds: readonly string[],
+    studentId: string,
+  ): Promise<Map<string, AssessmentDeadlineRow>> {
+    const map = new Map<string, AssessmentDeadlineRow>();
+    if (assessmentIds.length === 0) return map;
+    const res = await this.db.query<AssessmentDeadlineRow>(
+      `SELECT DISTINCT ON (assessment_id)
+              id, assessment_id, student_id, opens_at, closes_at,
+              extended_closes_at, late_window_seconds, late_penalty_percent, is_active
+       FROM assessment_deadlines
+       WHERE assessment_id = ANY($1::uuid[]) AND is_active = TRUE
+         AND (student_id = $2 OR student_id IS NULL)
+       ORDER BY assessment_id, student_id NULLS LAST`,
+      [assessmentIds, studentId],
+    );
+    for (const row of res.rows) map.set(row.assessment_id, row);
+    return map;
+  }
+
   // -----------------------------------------------------------------------
   // Attempts
   // -----------------------------------------------------------------------

@@ -1,6 +1,16 @@
-import { Routes, Route } from 'react-router-dom';
+import { LandingPage } from '../features/landing/LandingPage';
+import { VocabularyPage } from '../features/learner/VocabularyPage';
+import { MistakesPage } from '../features/learner/MistakesPage';
+import { LevelProvider } from '../features/level/LevelContext';
+import { PracticeHubPage } from '../features/practice-hub/PracticeHubPage';
+import { ImprovePage } from '../features/improve/ImprovePage';
+import { OnboardingPage } from '../features/learner/OnboardingPage';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { AuthGuard } from '../guards/AuthGuard';
 import { PublicLayout } from '../layouts/PublicLayout';
+import { SetupGuard } from '../guards/SetupGuard';
+import { StartPage } from '../features/start/StartPage';
+import { PlacementLayout } from '../layouts/PlacementLayout';
 import { AppLayout } from '../layouts/AppLayout';
 
 import { LoginPage } from '../features/auth/LoginPage';
@@ -40,9 +50,7 @@ import { PracticeLessonStart } from '../features/practice/PracticeLessonStart';
 import { VoiceTeacherPage } from '../features/voice-teacher/VoiceTeacherPage';
 import { PracticeTopicsPage } from '../features/practice-topics/PracticeTopicsPage';
 import { WritingPracticePage } from '../features/practice-topics/WritingPracticePage';
-import { WeaknessesPage } from '../features/progress/WeaknessesPage';
 import { ReviewSchedulePage } from '../features/progress/ReviewSchedulePage';
-import { RecommendationsPage } from '../features/progress/RecommendationsPage';
 import { AchievementsPage } from '../features/achievements/AchievementsPage';
 import { CertificatesPage } from '../features/certificates/CertificatesPage';
 import { CertificateDetailPage } from '../features/certificates/CertificateDetailPage';
@@ -53,6 +61,9 @@ import { ForbiddenPage } from '../components/common/ForbiddenPage';
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Public landing page (full width, outside the phone-width auth layout) */}
+      <Route path="/welcome" element={<LandingPage />} />
+
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
@@ -62,24 +73,37 @@ export function AppRoutes() {
         <Route path="/session-expired" element={<SessionExpiredPage />} />
       </Route>
 
-      {/* Protected routes */}
-      <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
-        <Route path="/" element={<DashboardHome />} />
-        <Route path="/dashboard" element={<DashboardHome />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/progress" element={<ProgressSummary />} />
-        <Route path="/progress/skills" element={<SkillStatePage />} />
-        <Route path="/progress/weaknesses" element={<WeaknessesPage />} />
-        <Route path="/progress/reviews" element={<ReviewSchedulePage />} />
-        <Route path="/progress/recommendations" element={<RecommendationsPage />} />
-        <Route path="/achievements" element={<AchievementsPage />} />
-        <Route path="/certificates" element={<CertificatesPage />} />
-        <Route path="/certificates/:certificateId" element={<CertificateDetailPage />} />
+      {/* First-run setup: full screen, outside the app shell */}
+      <Route path="/start" element={<AuthGuard loader="flow"><StartPage /></AuthGuard>} />
+
+      {/* Placement test: full screen, no app menu */}
+      <Route element={<AuthGuard loader="placement"><SetupGuard area="placement"><PlacementLayout /></SetupGuard></AuthGuard>}>
         <Route path="/placement" element={<PlacementEntryPage />} />
         <Route path="/placement/gate" element={<PlacementGatePage />} />
         <Route path="/placement/:id" element={<PlacementQuestionUI />} />
         <Route path="/placement/:id/result" element={<PlacementResultPage />} />
+      </Route>
+
+      {/* Protected routes */}
+      <Route element={<AuthGuard><SetupGuard><LevelProvider><AppLayout /></LevelProvider></SetupGuard></AuthGuard>}>
+        <Route path="/" element={<DashboardHome />} />
+        <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/mistakes" element={<MistakesPage />} />
+        <Route path="/practice" element={<PracticeHubPage />} />
+        <Route path="/improve" element={<ImprovePage />} />
+        <Route path="/journey" element={<Navigate to="/curriculum" replace />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/progress" element={<ProgressSummary />} />
+        <Route path="/progress/skills" element={<SkillStatePage />} />
+        <Route path="/progress/weaknesses" element={<Navigate to="/improve" replace />} />
+        <Route path="/progress/reviews" element={<ReviewSchedulePage />} />
+        <Route path="/progress/recommendations" element={<Navigate to="/improve" replace />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/certificates" element={<CertificatesPage />} />
+        <Route path="/certificates/:certificateId" element={<CertificateDetailPage />} />
         <Route path="/curriculum" element={<CourseCatalog />} />
         <Route path="/curriculum/:subjectId" element={<CourseDetailPage />} />
         <Route path="/lessons/:lessonId" element={<LessonPlayerShell />} />

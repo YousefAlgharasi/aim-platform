@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Card } from '../../components/common/Card';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ListSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { aiTeacherApi, relativeTime, sessionLabel, type ChatSessionListItem } from './aiTeacherApi';
@@ -38,7 +38,7 @@ export function AIHistoryPage() {
     fetchHistory();
   }, [fetchHistory]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchHistory} />;
 
   return (
@@ -64,12 +64,12 @@ export function AIHistoryPage() {
                     state={state}
                     className="flex-1 min-w-0 flex items-center gap-3 p-1 no-underline rounded-xl"
                   >
-                    <span className="size-10 shrink-0 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-strong text-ink">
                       <SparkleIcon className="size-4.5" />
                     </span>
                     <span className="min-w-0 flex flex-col">
-                      <span className="font-semibold text-ink truncate">{sessionLabel(session)}</span>
-                      <span className="text-xs text-ink-muted">
+                      <span className="truncate text-base font-semibold text-ink">{sessionLabel(session)}</span>
+                      <span className="text-sm text-ink-muted">
                         {session.status === 'active' ? t('Active') : t('Closed')} · {relativeTime(session.updatedAt)}
                       </span>
                     </span>

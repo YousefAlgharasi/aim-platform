@@ -95,7 +95,7 @@ function makeRecordingDb(courseRow: { track_slug: string; cefr_rank: number }) {
     // matching course it correctly logs a warning and skips the upsert
     // (verified behavior from P20-006) — which would defeat this test's
     // purpose of proving student_level_state actually gets populated.
-    if (sql.includes('FROM courses') && sql.includes('cefr_code')) {
+    if (sql.includes('FROM courses') && (sql.includes('cefr_code') || sql.includes('cefr_rank = $1'))) {
       return { rows: [courseRow], rowCount: 1 } as unknown as QueryResult<T>;
     }
 

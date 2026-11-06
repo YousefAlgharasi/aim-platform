@@ -1,8 +1,12 @@
+import { SelectToSave } from '../learner/SelectToSave';
+import { newIdempotencyKey } from '../../api/client';
+import { Markdown } from '../../components/common/Markdown';
+import { buttonClasses } from '../../components/common/buttonStyles';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ChatSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import {
   aiTeacherApi,
@@ -44,7 +48,7 @@ export function AIChatPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [sendError, setSendError] = useState('');
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(navState.prefill ?? '');
   const [sending, setSending] = useState(false);
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, FeedbackEntry>>({});
@@ -155,6 +159,8 @@ export function AIChatPage() {
 
     const controller = new AbortController();
     abortRef.current = controller;
+    // One key per user action: a double click or network retry of this send is de-duplicated server-side.
+    const idempotencyKey = newIdempotencyKey();
     let streamed = '';
     let replyText: string | null = null;
 
@@ -168,13 +174,14 @@ export function AIChatPage() {
             if (mountedRef.current) setStreamingText(streamed);
           },
           controller.signal,
+          idempotencyKey,
         );
         replyText = streamed;
       } catch (err) {
         if (!(err instanceof StreamUnauthorizedError)) throw err;
         // 401 before processing: fall back to the non-streaming endpoint,
         // which goes through apiClient's token refresh.
-        const reply = await aiTeacherApi.sendMessage(sessionId, studentMessage);
+        const reply = await aiTeacherApi.sendMessage(sessionId, studentMessage, idempotencyKey);
         replyText = reply.text;
       }
       if (!mountedRef.current) return;
@@ -223,21 +230,21 @@ export function AIChatPage() {
     }
   }
 
-  if (loading && !messages) return <LoadingSpinner />;
+  if (loading && !messages) return <ChatSkeleton />;
   if (loadError && !messages) return <ErrorState message={loadError} onRetry={fetchHistory} />;
   if (!messages) return null;
 
   const isEmpty = messages.length === 0 && !sending;
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] max-w-3xl w-full mx-auto">
-      <div className="flex items-center gap-3 pb-3 border-b border-line-subtle">
-        <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-secondary to-brand flex items-center justify-center text-white shadow-sm">
+    <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] w-full">
+      <div className="flex items-center gap-3 border-b border-line pb-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
           <SparkleIcon className="size-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="font-extrabold text-sm sm:text-base text-ink leading-tight m-0">{t('AI Teacher')}</h1>
-          <span className="block text-xs text-success-ink font-semibold truncate">
+          <h1 className="m-0 text-lg font-semibold leading-tight text-ink">{t('AI Teacher')}</h1>
+          <span className="block truncate text-sm text-success-ink">
             {navState.lessonTitle || t('Always here to help')}
           </span>
         </div>
@@ -270,10 +277,10 @@ export function AIChatPage() {
       <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label={t('Chat messages')}>
         {isEmpty && (
           <div className="flex flex-col items-center text-center gap-2 py-8">
-            <div className="size-14 rounded-2xl bg-gradient-to-br from-secondary to-brand flex items-center justify-center shadow-md shadow-brand/20">
+            <div className="flex size-16 items-center justify-center rounded-full bg-brand">
               <SparkleIcon className="size-6 text-white" />
             </div>
-            <p className="m-0 mt-2 text-lg font-extrabold tracking-tight text-ink">{t('Ask me anything')}</p>
+            <p className="lp-display m-0 mt-2 text-[1.75rem] font-semibold text-ink">{t('Ask me anything')}</p>
             <p className="m-0 text-sm text-ink-muted max-w-xs">
               {t('Start the conversation with a question or pick a suggestion below.')}
             </p>
@@ -291,15 +298,15 @@ export function AIChatPage() {
               aria-label={isStudent ? t('Your message') : t('AI Teacher')}
             >
               <div
-                className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                className={`p-4 rounded-2xl text-base leading-relaxed whitespace-pre-wrap break-words ${
                   isStudent
-                    ? 'bg-gradient-to-r from-brand to-secondary text-white rounded-ee-none shadow-md shadow-brand/15'
-                    : 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
+                    ? 'bg-brand text-white rounded-ee-none'
+                    : 'bg-surface ring-1 ring-line text-ink rounded-es-none'
                 }`}
               >
-                {msg.text}
+                {isStudent ? msg.text : <SelectToSave source="chat"><Markdown text={msg.text} /></SelectToSave>}
               </div>
-              <span className="text-[11px] font-medium text-ink-muted mt-1 px-1 flex items-center gap-1">
+              <span className="mt-1 flex items-center gap-1 px-1 text-xs text-ink-muted">
                 {msg.channel === 'voice' && (
                   <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> {t('Voice')} ·</span>
                 )}
@@ -332,14 +339,14 @@ export function AIChatPage() {
 
         {sending && streamingText !== null && streamingText.length > 0 && (
           <div className="flex flex-col max-w-[88%] sm:max-w-[78%] self-start items-start" aria-busy="true">
-            <div className="p-4 rounded-2xl rounded-es-none text-sm leading-relaxed whitespace-pre-wrap break-words bg-surface ring-1 ring-line/80 text-ink shadow-sm">
-              {streamingText}
+            <div className="p-4 rounded-2xl rounded-es-none text-base leading-relaxed whitespace-pre-wrap break-words bg-surface ring-1 ring-line text-ink">
+              <Markdown text={streamingText} />
             </div>
           </div>
         )}
         {sending && !streamingText && (
           <div
-            className="self-start bg-surface ring-1 ring-line/80 rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5 shadow-sm"
+            className="self-start bg-surface ring-1 ring-line rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5"
             role="status"
           >
             <span className="sr-only">{t('AI Teacher is thinking…')}</span>
@@ -351,7 +358,7 @@ export function AIChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="sticky bottom-4 z-10 flex flex-col gap-2 pt-2 bg-surface-sunken/90 dark:bg-elevated/90 backdrop-blur-md">
+      <div className="sticky bottom-0 z-10 flex flex-col gap-2 bg-page pb-4 pt-2">
         {(sendError || feedbackError) && (
           <div
             className="rounded-xl bg-danger-soft text-danger-ink ring-1 ring-danger-line px-3 py-2 text-sm"
@@ -368,7 +375,7 @@ export function AIChatPage() {
                 key={prompt}
                 type="button"
                 onClick={() => send(t(prompt))}
-                className="shrink-0 min-h-10 px-4 rounded-full bg-surface ring-1 ring-brand-line dark:ring-line text-brand-ink text-sm font-semibold cursor-pointer border-none hover:bg-brand-soft transition-colors"
+                className={`${buttonClasses('secondary', 'sm')} shrink-0`}
               >
                 {t(prompt)}
               </button>
@@ -376,9 +383,9 @@ export function AIChatPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2 bg-control rounded-2xl p-2 ps-4 border border-line/60">
+        <div className="flex items-end gap-2 rounded-2xl bg-surface p-2 ps-4 ring-1 ring-line-strong focus-within:ring-2 focus-within:ring-brand">
           <textarea
-            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-sm text-ink placeholder-ink-muted"
+            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-base text-ink placeholder-ink-muted"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -392,7 +399,7 @@ export function AIChatPage() {
             onClick={() => send(input)}
             disabled={sending || !input.trim()}
             aria-label={sending ? t('Sending…') : t('Send message')}
-            className="size-10 shrink-0 rounded-xl bg-brand hover:bg-brand-hover text-white flex items-center justify-center border-none cursor-pointer transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className={`${buttonClasses('primary', 'sm')} !px-0 size-11 shrink-0`}
           >
             <SendIcon />
           </button>

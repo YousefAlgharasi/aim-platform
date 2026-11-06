@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -14,7 +13,9 @@ import {
   fetchPlacementQuestionAudio,
   fetchPlacementQuestions,
   fetchPlacementSections,
+  isPlacementLive,
   loadPlacementProgress,
+  markPlacementLive,
   savePlacementProgress,
   submitPlacementAnswer,
   submitPlacementSpeakingAnswer,
@@ -23,11 +24,9 @@ import {
   type PlacementSection,
 } from './placementApi';
 import { QuestionAudio, SpeakingRecorder } from './PlacementAudio';
-import { ClockIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
-import { BODY, CARD, ChoiceRow, EYEBROW, H2, PageHeader, ProgressBar, TEXTAREA, TimerPill } from './ui';
-
-const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
+import { TEXTAREA } from './ui';
+import { ED_BODY, ED_BTN, ED_H2, ED_SHELL, EdChoiceRow, EdHeader, EdProgress, EdStat, EdTimer } from './ed';
 
 type Phase = 'section' | 'questions' | 'review';
 
@@ -64,6 +63,11 @@ export function PlacementQuestionUI() {
   const navigate = useNavigate();
   const location = useLocation();
   const stateExpiresAt = (location.state as { expiresAt?: string | null } | null)?.expiresAt ?? null;
+
+  // Interrupted attempt (tab/app was closed): go through the intro, which restarts from question 1.
+  useEffect(() => {
+    if (attemptId && !isPlacementLive(attemptId)) navigate('/placement', { replace: true });
+  }, [attemptId, navigate]);
 
   const initialProgress = useRef<PlacementProgress | null>(loadPlacementProgress(attemptId));
   const [expiresAt] = useState<string | null>(stateExpiresAt ?? initialProgress.current?.expiresAt ?? null);
@@ -236,11 +240,11 @@ export function PlacementQuestionUI() {
 
   // ---------------------------------------------------------------------------
 
-  const timer = remaining !== null && <TimerPill warning={remaining <= 300}>{formatRemaining(remaining)}</TimerPill>;
+  const timer = remaining !== null && <EdTimer warning={remaining <= 300}>{formatRemaining(remaining)}</EdTimer>;
 
   if (inactive) {
     return (
-      <div className={SHELL}>
+      <div className={ED_SHELL}>
         <EmptyState
           title={t('This attempt is no longer active')}
           message={t('It may have been submitted or replaced by a newer attempt.')}
@@ -253,27 +257,20 @@ export function PlacementQuestionUI() {
 
   if (expired) {
     return (
-      <div className={SHELL}>
-        <PageHeader title={t("Time's up")} />
+      <div className={ED_SHELL}>
+        <EdHeader
+          title={t("Time's up")}
+          subtitle={t('The time limit for this placement test has been reached. Your answers so far have been saved — finish now to see your level.')}
+        />
         {submitError && <Banner variant="error">{submitError}</Banner>}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-warning-soft text-warning-ink flex items-center justify-center">
-              <ClockIcon className="size-5" />
-            </div>
-            <p className={BODY}>
-              {t('The time limit for this placement test has been reached. Your answers so far have been saved — finish now to see your level.')}
-            </p>
-            <Button size="lg" onClick={handleComplete} disabled={completing}>
-              {completing ? t('Finishing…') : t('See my result')}
-            </Button>
-          </div>
-        </Card>
+        <Button size="lg" className={ED_BTN} onClick={handleComplete} disabled={completing} fullWidth>
+          {completing ? t('Finishing…') : t('See my result')}
+        </Button>
       </div>
     );
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton narrow />;
   if (loadError) {
     return (
       <ErrorState
@@ -284,7 +281,7 @@ export function PlacementQuestionUI() {
   }
   if (!sections || sections.length === 0) {
     return (
-      <div className={SHELL}>
+      <div className={ED_SHELL}>
         <EmptyState
           title={t('No sections found')}
           message={t('This placement test has no sections yet.')}
@@ -305,59 +302,43 @@ export function PlacementQuestionUI() {
 
   const progressValue = phase === 'review' ? sections.length : sectionIndex;
   const header = (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+        <span className="text-sm font-medium text-ink-muted">
           {phase === 'review'
             ? t('All sections complete')
             : t('Section {current} of {total}', { current: sectionIndex + 1, total: sections.length })}
         </span>
         {timer}
       </div>
-      <ProgressBar value={progressValue} total={sections.length} label={t('Section progress')} />
+      <EdProgress value={progressValue} total={sections.length} label={t('Section progress')} />
     </div>
   );
 
   // ---- Review / submit -------------------------------------------------------
   if (phase === 'review') {
     return (
-      <div className={SHELL}>
+      <div className={ED_SHELL}>
         {header}
         {submitError && <Banner variant="error">{submitError}</Banner>}
-        <Card>
-          <div className="flex flex-col items-center text-center gap-4 py-2">
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-brand to-secondary opacity-20 blur-lg" />
-              <div className="relative size-20 rounded-3xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center shadow-xl shadow-brand/25 rotate-3">
-                <svg className="size-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
-              </div>
-            </div>
-            <h2 className={H2}>{t('Ready to submit?')}</h2>
-            <div className="grid grid-cols-2 gap-3 w-full max-w-sm text-start">
-              <div className="rounded-2xl ring-1 ring-line/80 bg-surface/80 p-4">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">{t('Answered')}</span>
-                <span className="block mt-0.5 text-xl font-extrabold text-success-ink">{answered}</span>
-              </div>
-              <div className="rounded-2xl ring-1 ring-line/80 bg-surface/80 p-4">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">{t('Skipped')}</span>
-                <span className="block mt-0.5 text-xl font-extrabold text-warning-ink">{skipped}</span>
-              </div>
-            </div>
-            <p className={`${BODY} max-w-sm`}>
-              {skipped > 0
-                ? t('You answered {answered} and skipped {skipped}. Once submitted, AIM will calculate your level.', {
-                    answered: countText(answered),
-                    skipped,
-                  })
-                : t('You answered {answered}. Once submitted, AIM will calculate your level.', {
-                    answered: countText(answered),
-                  })}
-            </p>
-            <Button size="lg" onClick={handleComplete} disabled={completing} fullWidth>
-              {completing ? t('Submitting…') : t('Submit placement test')}
-            </Button>
-          </div>
-        </Card>
+        <h1 className="lp-display m-0 text-[2.25rem] font-semibold text-ink sm:text-[2.75rem] rtl:text-4xl">{t('Ready to submit?')}</h1>
+        <div className="grid grid-cols-2 gap-x-8">
+          <EdStat value={answered} label={t('Answered')} />
+          <EdStat value={skipped} label={t('Skipped')} />
+        </div>
+        <p className={`${ED_BODY} max-w-md`}>
+          {skipped > 0
+            ? t('You answered {answered} and skipped {skipped}. Once submitted, AIM will calculate your level.', {
+                answered: countText(answered),
+                skipped,
+              })
+            : t('You answered {answered}. Once submitted, AIM will calculate your level.', {
+                answered: countText(answered),
+              })}
+        </p>
+        <Button size="lg" className={ED_BTN} onClick={handleComplete} disabled={completing} fullWidth>
+          {completing ? t('Submitting…') : t('Submit placement test')}
+        </Button>
       </div>
     );
   }
@@ -366,28 +347,23 @@ export function PlacementQuestionUI() {
   if (phase === 'section' || !questions) {
     const section = sections[sectionIndex];
     return (
-      <div className={SHELL}>
+      <div className={ED_SHELL}>
         {header}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <span className={EYEBROW}>{t('Section {n}', { n: sectionIndex + 1 })}</span>
-            <h2 className={H2}>{t(section.title)}</h2>
-            <p className={BODY}>
-              {t('{count}. The timer keeps running between sections.', { count: countText(section.total_questions) })}
-            </p>
-            <Button size="lg" onClick={() => loadQuestions(0)}>{t('Start section')}</Button>
-          </div>
-        </Card>
-        <Link to="/placement" className="text-center text-sm font-semibold text-brand-ink hover:underline">
-          {t('Exit — you can continue later')}
-        </Link>
+        <section className="border-t border-line pt-8">
+          <p className="lp-num m-0 text-[clamp(4rem,16vw,7rem)] font-semibold leading-none text-brand-ink">{sectionIndex + 1}</p>
+          <h1 className="lp-display m-0 mt-4 text-[2.25rem] font-semibold text-ink sm:text-[2.75rem] rtl:text-4xl">{t(section.title)}</h1>
+          <p className={`${ED_BODY} mt-3`}>
+            {t('{count}. The timer keeps running between sections.', { count: countText(section.total_questions) })}
+          </p>
+        </section>
+        <Button size="lg" className={ED_BTN} onClick={() => loadQuestions(0)} fullWidth>{t('Start section')}</Button>
       </div>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <div className={SHELL}>
+      <div className={ED_SHELL}>
         {header}
         <EmptyState
           title={t('No questions in this section')}
@@ -417,22 +393,22 @@ export function PlacementQuestionUI() {
       : [];
 
   return (
-    <div className={SHELL}>
+    <div className={ED_SHELL}>
       {header}
 
       {submitError && <Banner variant="error">{submitError}</Banner>}
 
-      <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
-        <p className={`m-0 ${EYEBROW} !font-semibold !text-xs`}>
-          {t(sections[sectionIndex].title)} · {t('Question {current} of {total}', { current: questionIndex + 1, total: questions.length })}
+      <section className="flex flex-col gap-5 border-t border-line pt-8">
+        <p className="m-0 text-sm text-ink-muted">
+          <span className="font-semibold text-ink">{t(sections[sectionIndex].title)}</span>
+          {'  '}
+          {t('Question {current} of {total}', { current: questionIndex + 1, total: questions.length })}
         </p>
-        <h2
-          className={`m-0 text-base sm:text-lg leading-snug text-ink ${
-            question.type === 'reading' ? 'font-normal italic text-ink-muted' : 'font-medium'
-          }`}
+        <h1
+          className={`${ED_H2} text-[1.65rem] sm:text-[2rem] ${question.type === 'reading' ? '!font-normal italic text-ink-muted' : ''}`}
         >
           {question.text}
-        </h2>
+        </h1>
 
         {question.type === 'listening_choice' && (
           <QuestionAudio
@@ -463,15 +439,15 @@ export function PlacementQuestionUI() {
         )}
 
         {!isKnownType && (
-          <p className={BODY}>{t("This question type ({type}) can't be answered here. Please skip it.", { type: question.type })}</p>
+          <p className={ED_BODY}>{t("This question type ({type}) can't be answered here. Please skip it.", { type: question.type })}</p>
         )}
-      </div>
+      </section>
 
       {choiceOptions.length > 0 && (
-        <fieldset className="m-0 p-0 border-0 min-w-0 flex flex-col gap-2.5" disabled={submitting}>
+        <fieldset className="m-0 -mt-2 flex min-w-0 flex-col divide-y divide-line border-0 border-y border-line p-0" disabled={submitting}>
           <legend className="sr-only">{t('Select your answer')}</legend>
           {choiceOptions.map((option) => (
-            <ChoiceRow
+            <EdChoiceRow
               key={option.id}
               name={`answer-${question.id}`}
               value={option.id}
@@ -480,14 +456,14 @@ export function PlacementQuestionUI() {
               keyLabel={isChoice && option.text !== option.id ? option.id : undefined}
             >
               {option.text}
-            </ChoiceRow>
+            </EdChoiceRow>
           ))}
         </fieldset>
       )}
 
-      <div className="flex gap-3 pt-1">
-        <Button variant="secondary" size="lg" className="flex-1" onClick={handleSkip} disabled={submitting}>{t('Skip')}</Button>
-        <Button size="lg" className="flex-[2]" onClick={handleSubmit} disabled={!canSubmit}>
+      <div className="flex gap-3">
+        <Button variant="secondary" size="lg" className={`${ED_BTN} flex-1`} onClick={handleSkip} disabled={submitting}>{t('Skip')}</Button>
+        <Button size="lg" className={`${ED_BTN} flex-[2]`} onClick={handleSubmit} disabled={!canSubmit}>
           {submitting
             ? isSpeaking ? t('Uploading…') : t('Submitting…')
             : questionIndex === questions.length - 1 ? t('Submit & finish section') : t('Submit answer')}

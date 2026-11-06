@@ -21,9 +21,20 @@ export interface DailyChallengeSummary {
   completed: boolean;
 }
 
+export interface StreakFreezeSummary {
+  allowance: number;
+  usedThisMonth: number;
+  remaining: number;
+  /** Yesterday was missed and the streak before it can still be saved. */
+  atRisk: boolean;
+  canUseNow: boolean;
+}
+
 export interface EngagementSummary {
   goal: DailyGoalSummary;
   challenge: DailyChallengeSummary | null;
+  /** Absent on older backends: the freeze UI stays hidden. */
+  streakFreeze?: StreakFreezeSummary;
 }
 
 export interface WeeklyActivityDay {
@@ -49,6 +60,11 @@ export interface EngagementStats {
 
 export function fetchEngagementSummary(): Promise<EngagementSummary | null> {
   return apiClient.get<EngagementSummary | null>('/student/engagement/summary');
+}
+
+/** Cover yesterday so the streak survives (limited per month). Returns the fresh summary. */
+export function requestStreakFreeze(): Promise<EngagementSummary> {
+  return apiClient.post<EngagementSummary>('/student/engagement/streak-freeze');
 }
 
 export function fetchEngagementStats(): Promise<EngagementStats | null> {
@@ -109,7 +125,8 @@ export function fetchCurrentEnrollment(): Promise<CurrentEnrollment | null> {
 
 // ── Deadlines (services/backend-api/src/features/assessments/assessment.service.ts) ──
 
-export type DeadlineStatus = 'upcoming' | 'active' | 'late' | 'missed' | 'closed';
+/** The API groups deadlines into upcoming/active/late/missed/closed, but each item's own status is the raw one. */
+export type DeadlineStatus = 'upcoming' | 'open' | 'extended' | 'active' | 'late' | 'missed' | 'closed' | 'expired';
 
 export interface StudentDeadlineItem {
   assessmentId: string;

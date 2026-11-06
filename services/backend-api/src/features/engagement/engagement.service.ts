@@ -6,32 +6,43 @@
 // All progress figures are derived server-side from lesson_progress; the
 // client never submits or computes streak/goal/challenge progress itself.
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { EngagementRepository } from './engagement.repository';
 import {
   DailyChallengeSummary,
   DailyGoalSummary,
   EngagementStatsResponse,
   EngagementSummaryResponse,
+  StreakFreezeSummary,
   WeeklyActivityDay,
 } from './engagement.types';
 
 const DEFAULT_DAILY_GOAL_LESSONS = 1;
 const STREAK_LOOKBACK_DAYS = 60;
+/** Freezes each student gets per UTC month. */
+export const STREAK_FREEZES_PER_MONTH = 2;
+
+const dayStr = (offset: number, from = new Date()): string => {
+  const d = new Date(from);
+  d.setUTCDate(d.getUTCDate() + offset);
+  return d.toISOString().slice(0, 10);
+};
 
 @Injectable()
 export class EngagementService {
   constructor(private readonly repository: EngagementRepository) {}
 
   async getSummary(studentId: string): Promise<EngagementSummaryResponse> {
-    const [goalRow, completedToday, activeDates, templates] = await Promise.all([
+    const [goalRow, completedToday, activeDates, frozenDates, usedThisMonth, templates] = await Promise.all([
       this.repository.findGoal(studentId),
       this.repository.countLessonsCompletedToday(studentId),
       this.repository.findActiveDates(studentId, STREAK_LOOKBACK_DAYS),
+      this.repository.findFrozenDates(studentId, STREAK_LOOKBACK_DAYS),
+      this.repository.countFreezesThisMonth(studentId),
       this.repository.findActiveChallengeTemplates(),
     ]);
 
-    const streakDays = this.computeStreakDays(activeDates);
+    const streakDays = this.computeStreakDays(activeDates, frozenDates);
 
     const goal: DailyGoalSummary = {
       targetLessons: goalRow?.daily_goal_lessons ?? DEFAULT_DAILY_GOAL_LESSONS,
@@ -41,21 +52,59 @@ export class EngagementService {
 
     const challenge = this.selectChallenge(studentId, templates, completedToday, streakDays);
 
-    return { goal, challenge };
+    return { goal, challenge, streakFreeze: this.freezeSummary(activeDates, frozenDates, usedThisMonth) };
+  }
+
+  /**
+   * Cover yesterday with a freeze so the streak survives. Only allowed when yesterday was missed, the day before
+   * it was part of the streak, and this month's allowance is not used up. Returns the fresh summary.
+   */
+  async useStreakFreeze(studentId: string): Promise<EngagementSummaryResponse> {
+    const [activeDates, frozenDates, usedThisMonth] = await Promise.all([
+      this.repository.findActiveDates(studentId, STREAK_LOOKBACK_DAYS),
+      this.repository.findFrozenDates(studentId, STREAK_LOOKBACK_DAYS),
+      this.repository.countFreezesThisMonth(studentId),
+    ]);
+    const info = this.freezeSummary(activeDates, frozenDates, usedThisMonth);
+    if (!info.atRisk) {
+      throw new BadRequestException({ code: 'STREAK_FREEZE_NOT_NEEDED', message: 'Your streak is not at risk right now.' });
+    }
+    if (!info.canUseNow) {
+      throw new ConflictException({ code: 'STREAK_FREEZE_ALLOWANCE_USED', message: 'You have used all your streak freezes this month.' });
+    }
+    const inserted = await this.repository.insertFreezeIfAllowed(studentId, dayStr(-1), STREAK_FREEZES_PER_MONTH);
+    if (!inserted) {
+      // Lost a race with another tap/tab: allowance gone or the day is already frozen. The summary below is the truth.
+      const fresh = await this.getSummary(studentId);
+      if (fresh.streakFreeze.atRisk) {
+        throw new ConflictException({ code: 'STREAK_FREEZE_ALLOWANCE_USED', message: 'You have used all your streak freezes this month.' });
+      }
+      return fresh;
+    }
+    return this.getSummary(studentId);
+  }
+
+  private freezeSummary(activeDates: readonly string[], frozenDates: readonly string[], usedThisMonth: number): StreakFreezeSummary {
+    const covered = new Set([...activeDates, ...frozenDates]);
+    const remaining = Math.max(0, STREAK_FREEZES_PER_MONTH - usedThisMonth);
+    // Yesterday was missed, but the day before it was part of a streak: that streak can still be saved.
+    const atRisk = !covered.has(dayStr(-1)) && covered.has(dayStr(-2));
+    return { allowance: STREAK_FREEZES_PER_MONTH, usedThisMonth, remaining, atRisk, canUseNow: atRisk && remaining > 0 };
   }
 
   async updateGoal(studentId: string, dailyGoalLessons: number): Promise<DailyGoalSummary> {
     const safeTarget = Math.min(Math.max(Math.round(dailyGoalLessons), 1), 20);
     const goalRow = await this.repository.upsertGoal(studentId, safeTarget);
-    const [completedToday, activeDates] = await Promise.all([
+    const [completedToday, activeDates, frozenDates] = await Promise.all([
       this.repository.countLessonsCompletedToday(studentId),
       this.repository.findActiveDates(studentId, STREAK_LOOKBACK_DAYS),
+      this.repository.findFrozenDates(studentId, STREAK_LOOKBACK_DAYS),
     ]);
 
     return {
       targetLessons: goalRow.daily_goal_lessons,
       completedToday,
-      streakDays: this.computeStreakDays(activeDates),
+      streakDays: this.computeStreakDays(activeDates, frozenDates),
     };
   }
 
@@ -153,31 +202,33 @@ export class EngagementService {
     };
   }
 
-  private computeStreakDays(activeDatesDesc: readonly string[]): number {
-    if (activeDatesDesc.length === 0) {
+  /**
+   * Consecutive days ending today (or yesterday, if today is not done yet). A frozen day keeps the chain
+   * unbroken but does not add to the count.
+   */
+  private computeStreakDays(activeDatesDesc: readonly string[], frozenDates: readonly string[] = []): number {
+    const active = new Set(activeDatesDesc);
+    const chain = new Set([...activeDatesDesc, ...frozenDates]);
+    if (active.size === 0) {
       return 0;
     }
 
-    const activeDateSet = new Set(activeDatesDesc);
-    const today = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
-
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
-
+    const todayStr = dayStr(0);
+    const yesterdayStr = dayStr(-1);
     let cursorDate: Date;
-    if (activeDateSet.has(todayStr)) {
+    if (chain.has(todayStr)) {
       cursorDate = new Date(todayStr);
-    } else if (activeDateSet.has(yesterdayStr)) {
+    } else if (chain.has(yesterdayStr)) {
       cursorDate = new Date(yesterdayStr);
     } else {
       return 0;
     }
 
     let streak = 0;
-    while (activeDateSet.has(cursorDate.toISOString().slice(0, 10))) {
-      streak += 1;
+    for (;;) {
+      const key = cursorDate.toISOString().slice(0, 10);
+      if (!chain.has(key)) break;
+      if (active.has(key)) streak += 1;
       cursorDate.setUTCDate(cursorDate.getUTCDate() - 1);
     }
 

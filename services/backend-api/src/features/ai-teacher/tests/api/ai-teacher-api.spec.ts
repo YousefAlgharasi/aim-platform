@@ -493,13 +493,13 @@ describe('ChatSessionListReadController (P8-074)', () => {
   it('resolves studentId exclusively from the JWT user — no route/query param', async () => {
     const { controller, service } = makeController();
     await controller.listSessions(makeUser({ id: 'jwt-student' }).id);
-    expect(service.listSessions).toHaveBeenCalledWith({ studentId: 'jwt-student' });
+    expect(service.listSessions).toHaveBeenCalledWith(expect.objectContaining({ studentId: 'jwt-student' }));
   });
 
   it('cross-student listing is structurally impossible — no studentId input surface', () => {
     // Verify the method signature does not accept any studentId parameter.
     const { controller } = makeController();
-    expect(controller.listSessions.length).toBe(1); // only `user` param
+    expect(controller.listSessions.length).toBe(2); // studentId (from JWT) + optional locale context
   });
 
   it('returns the service result directly', async () => {

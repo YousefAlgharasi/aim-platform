@@ -23,7 +23,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
-import { LEVEL_TO_CEFR } from './placement-initial-learning-path.service';
+import { PLACEMENT_BUCKET_TO_CEFR_RANK } from './placement-result-read.service';
 
 interface MatchedCourseRow {
   readonly cefr_rank: number;
@@ -45,8 +45,12 @@ export class PlacementLevelStateService {
    * a human needs to add that course/track data first.
    */
   async upsertFromPlacement(studentId: string, estimatedLevel: string): Promise<void> {
-    const cefrCode = LEVEL_TO_CEFR[estimatedLevel];
-    if (!cefrCode) {
+    // Use the exact starting-course rank for the placement bucket (the same
+    // map the result page uses). LEVEL_TO_CEFR is a coarse A1/A2/B1 set for
+    // initial_learning_path and caps at B1, which silently demoted
+    // upper_intermediate/advanced students to rank 7.
+    const targetRank = PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel];
+    if (targetRank === undefined) {
       this.logger.warn('placement_level_state_unmapped_estimated_level', {
         studentId,
         estimatedLevel,
@@ -54,22 +58,21 @@ export class PlacementLevelStateService {
       return;
     }
 
-    // track_slug is read from the matched course row, not hardcoded — only
-    // one track ('english') exists today, but this must not assume that.
+    // track_slug is read from the matched course row, not hardcoded.
     const courseResult = await this.db.query<MatchedCourseRow>(
       `SELECT cefr_rank, track_slug
        FROM courses
-       WHERE cefr_code = $1 AND cefr_rank IS NOT NULL
-       ORDER BY cefr_rank ASC
+       WHERE cefr_rank = $1 AND status = 'published'
+       ORDER BY (track_slug = 'english') DESC, track_slug
        LIMIT 1`,
-      [cefrCode],
+      [targetRank],
     );
 
     if ((courseResult.rowCount ?? 0) === 0) {
       this.logger.warn('placement_level_state_no_matching_course', {
         studentId,
         estimatedLevel,
-        cefrCode,
+        targetRank,
       });
       return;
     }

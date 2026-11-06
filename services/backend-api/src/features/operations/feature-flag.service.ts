@@ -134,6 +134,26 @@ export class FeatureFlagService {
     }
   }
 
+  /**
+   * Every defined flag evaluated for one user, as `{ flagKey: boolean }`. Served to the student
+   * web so admin toggles / rollout changes take effect without a deploy. Keys that are not
+   * defined are simply absent; clients treat absent as "feature on".
+   */
+  async evaluateAll(userId: string): Promise<Record<string, boolean>> {
+    const flags = await this.opsRepo.findAllFeatureFlags();
+    const out: Record<string, boolean> = {};
+    for (const flag of flags) {
+      if (!flag.enabled || flag.rolloutPercentage <= 0) {
+        out[flag.flagKey] = false;
+      } else if (flag.rolloutPercentage >= 100) {
+        out[flag.flagKey] = true;
+      } else {
+        out[flag.flagKey] = this.hashString(`${flag.flagKey}:${userId}`) % 100 < flag.rolloutPercentage;
+      }
+    }
+    return out;
+  }
+
   private hashString(value: string): number {
     let hash = 0;
     for (let i = 0; i < value.length; i++) {

@@ -5,25 +5,30 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   /** Trailing control inside the field, e.g. a show/hide-password toggle. */
   rightSlot?: ReactNode;
+  /** 'editorial' = the landing/auth look: 48px, 1px outline, ink focus. Default keeps the app's field. */
+  variant?: 'default' | 'editorial';
 }
 
 // Matches design-prototype/src/components/Input.tsx (InputField): 54px slate-100 field,
 // 14px radius, indigo focus border. The label stays visible above the field (a placeholder-only
 // label vanishes once the user types, and the prototype's pale placeholder fails text contrast);
 // `placeholder` is optional hint text, not the field's name.
-export function Input({ label, error, id, rightSlot, className = '', placeholder, ...props }: InputProps) {
+export function Input({ label, error, id, rightSlot, className = '', placeholder, variant = 'editorial', ...props }: InputProps) {
+  const editorial = variant === 'editorial';
   const inputId = id || label.toLowerCase().replace(/\s+/g, '-');
   const errorId = error ? `${inputId}-error` : undefined;
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
-      <label htmlFor={inputId} className="text-[13px] font-semibold text-ink-soft">
+      <label htmlFor={inputId} className={editorial ? 'text-sm font-medium text-ink' : 'text-[13px] font-semibold text-ink-soft'}>
         {label}
       </label>
       <div
-        className={`h-[54px] bg-field border-[1.5px] ${
-          error ? 'border-danger' : 'border-line-strong dark:border-line'
-        } focus-within:border-brand-ink focus-within:ring-2 focus-within:ring-brand-ink/25 rounded-[14px] flex items-center px-4 gap-2 transition-colors duration-150 ${className}`}
+        className={`${
+          editorial
+            ? `h-[52px] bg-transparent border ${error ? 'border-danger' : 'border-line-strong'} focus-within:border-ink focus-within:ring-2 focus-within:ring-brand/30 rounded-xl`
+            : `h-[54px] bg-field border-[1.5px] ${error ? 'border-danger' : 'border-line-strong dark:border-line'} focus-within:border-brand-ink focus-within:ring-2 focus-within:ring-brand-ink/25 rounded-[14px]`
+        } flex items-center px-4 gap-2 transition-colors duration-150 ${className}`}
       >
         <input
           id={inputId}

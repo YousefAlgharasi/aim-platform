@@ -1,3 +1,4 @@
+import { FormSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -183,14 +184,14 @@ export function CheckoutPage() {
     setSearchParams({}, { replace: true });
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <FormSkeleton />;
   if (loadError) return <ErrorState message={loadError} onRetry={loadPlan} />;
 
   // ----- Status view (after a session exists or on return from provider) -----
   if (sessionId || result === 'success') {
     const state = status?.status ?? 'pending';
     return (
-      <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
+      <div className="flex flex-col gap-6 w-full">
         <PageHeader title={t('Checkout')} />
         <Card>
           <div className="flex flex-col gap-4 items-stretch">
@@ -204,7 +205,6 @@ export function CheckoutPage() {
               </>
             ) : state === 'completed' ? (
               <>
-                <div className="size-14 rounded-2xl mx-auto bg-success-soft text-success-ink flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✓</div>
                 <h2 className={`${h2Cls} text-center`}>{t('Payment successful')}</h2>
                 <p className={`${subCls} text-center`}>
                   {plan ? t("You're now subscribed to {plan}.", { plan: plan.name }) : t('Your subscription is active.')}
@@ -213,7 +213,6 @@ export function CheckoutPage() {
               </>
             ) : state === 'failed' || state === 'expired' ? (
               <>
-                <div className="size-14 rounded-2xl mx-auto bg-danger-soft text-danger-ink flex items-center justify-center text-2xl font-extrabold" aria-hidden="true">✕</div>
                 <h2 className={`${h2Cls} text-center`}>{state === 'expired' ? t('Checkout expired') : t('Payment failed')}</h2>
                 <p className={`${subCls} text-center`}>{t('No charge was completed. You can try again.')}</p>
                 <Button variant="primary" size="lg" fullWidth onClick={startOver}>{t('Try again')}</Button>
@@ -257,7 +256,7 @@ export function CheckoutPage() {
 
   // ----- Start view -----
   return (
-    <div className="flex flex-col gap-5 max-w-xl mx-auto w-full">
+    <div className="flex flex-col gap-5 w-full">
       <PageHeader title={t('Checkout')} />
 
       {result === 'cancel' && <Banner variant="info">{t('Payment was cancelled. You have not been charged.')}</Banner>}

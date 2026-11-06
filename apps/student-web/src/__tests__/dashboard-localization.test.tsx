@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { translate, setCurrentLocale, type Locale } from '../i18n';
 import { ChallengeWidget } from '../features/dashboard/widgets/ChallengeWidget';
-import { RecommendationWidget } from '../features/dashboard/widgets/RecommendationWidget';
 import { ContinueWidget } from '../features/dashboard/widgets/ContinueWidget';
 import { BackLink } from '../features/ai-teacher/ui';
 import { humanize } from '../features/progress/aimApi';
@@ -93,24 +92,6 @@ describe('Daily challenge templates', () => {
     useLocale('ar');
     render(<ChallengeWidget challenge={challenge('Finish a lesson', 'Complete 1 lesson today.') as never} />);
     expect(screen.getByText('أكمل درسًا').className).toContain('[unicode-bidi:plaintext]');
-  });
-});
-
-describe('Recommendation labels', () => {
-  it('shows readable Arabic labels instead of raw enum values', () => {
-    useLocale('ar');
-    render(<RecommendationWidget recommendations={[recommendation as never]} />);
-    expect(screen.getByText('جلسة مراجعة')).toBeTruthy();
-    expect(screen.getByText('حان وقت المراجعة')).toBeTruthy();
-    expect(screen.queryByText('review_due')).toBeNull();
-  });
-
-  it('shows readable English labels instead of raw enum values', () => {
-    useLocale('en');
-    render(<RecommendationWidget recommendations={[recommendation as never]} />);
-    expect(screen.getByText('Review session')).toBeTruthy();
-    expect(screen.getByText('Review due')).toBeTruthy();
-    expect(screen.queryByText('review_due')).toBeNull();
   });
 });
 

@@ -28,6 +28,7 @@
 //     (see CurrentLessonContextAdapter) and is never a path that starts or
 //     unlocks a lesson — this check is the only gate on that.
 
+import { PLACEMENT_BUCKET_TO_CEFR_RANK } from '../placement/placement-result-read.service';
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { SupportedLocale } from '../../common/locale/locale.constants';
@@ -204,15 +205,19 @@ export class LessonProgressService {
   }
 
   /**
-   * Returns the next unpublished lesson the student should start, derived from
-   * their latest placement result's initial_learning_path. Falls back to the
-   * first published lesson (by course/level/chapter/lesson sort_order) if no
-   * placement data exists or all path-linked lessons are already completed.
+   * The next lesson the student should start. It is always inside the student's own course: their active
+   * enrollment, or else the course that matches their placement level (see findRecommendedCourse). Inside that
+   * course it is the first published lesson they have not finished, in course order, which is also the order the
+   * lesson gate enforces. Only when that course has nothing left (or no course exists) does it fall back to the
+   * placement-skill path and then the first published lesson anywhere.
    */
   async findQuickStartLesson(
     studentId: string,
     locale: SupportedLocale = 'en',
   ): Promise<QuickStartLesson | null> {
+    const inCourse = await this.findNextLessonInCurrentCourse(studentId, locale);
+    if (inCourse) return inCourse;
+
     const text = lessonTextSql('l', '$2');
     // Placement-path derived: top-priority skill from student's latest placement
     // -> lesson_skills -> first published incomplete lesson for that skill.
@@ -321,70 +326,143 @@ export class LessonProgressService {
     };
   }
 
-  /**
-   * Returns the course most strongly recommended for this student based on
-   * their latest placement result's initial_learning_path. Falls back to the
-   * first published course by sort_order when no placement data exists.
-   */
-  async findRecommendedCourse(studentId: string, locale: SupportedLocale = 'en'): Promise<RecommendedCourse | null> {
-    const text = courseTextSql('co', '$2');
-    const pathResult = await this.db.query<RecommendedCourseRow>(
+  /** First unfinished published lesson of the student's active enrollment, else of their level's recommended course. */
+  private async findNextLessonInCurrentCourse(studentId: string, locale: SupportedLocale): Promise<QuickStartLesson | null> {
+    const enrolled = await this.db.query<{ course_id: string }>(
+      `SELECT course_id FROM course_enrollments WHERE student_id = $1 AND status = 'active' LIMIT 1`,
+      [studentId],
+    );
+    const courseId = enrolled.rows[0]?.course_id ?? (await this.findRecommendedCourse(studentId, locale))?.courseId;
+    if (!courseId) return null;
+
+    const text = lessonTextSql('l', '$2');
+    const result = await this.db.query<QuickStartLessonRow>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
          FROM users u
          LEFT JOIN student_profiles sp ON sp.user_id = u.id
          WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
          LIMIT 1
-       ),
-       latest_result AS (
-         SELECT pr.id AS placement_result_id
-         FROM placement_results pr
-         WHERE pr.student_id = $1
-            OR pr.student_id IN (SELECT user_id FROM resolved_student)
-            OR pr.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
-            OR pr.student_id IN (SELECT profile_id FROM resolved_student)
-         ORDER BY pr.created_at DESC
+       )
+       SELECT
+         l.id AS lesson_id,
+         ${text.title} AS lesson_title,
+         ${text.description} AS lesson_description,
+         ${text.locale} AS lesson_locale,
+         NULL::text AS skill_name
+       FROM lessons l
+       ${text.joins}
+       JOIN chapters c ON c.id = l.chapter_id
+       JOIN levels lv ON lv.id = c.level_id AND lv.status = 'published'
+       LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND (
+         lp.student_id = $1
+         OR lp.student_id IN (SELECT user_id FROM resolved_student)
+         OR lp.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+         OR lp.student_id IN (SELECT profile_id FROM resolved_student)
+       )
+       WHERE lv.course_id = $3
+         AND l.status = 'published'
+         AND (lp.completed IS NULL OR lp.completed = false)
+       ORDER BY lv.sort_order ASC, c.sort_order ASC, l.sort_order ASC
+       LIMIT 1`,
+      [studentId, locale, courseId],
+    );
+    const row = result.rows[0];
+    if (!row) return null;
+    return {
+      lessonId: row.lesson_id,
+      lessonTitle: row.lesson_title,
+      lessonDescription: row.lesson_description,
+      locale: row.lesson_locale,
+      skillName: null,
+    };
+  }
+
+  /**
+   * Returns the course to recommend on the dashboard. Driven by the student's
+   * placement level, not by the first course in the catalogue:
+   *   target rank = max(placement bucket start rank, student_level_state
+   *   max_unlocked_cefr_rank) — i.e. the placed starting course, advancing as
+   *   the student completes courses. "Start from scratch" students stay on
+   *   their ceiling. With no placement/level state at all, the first course.
+   * If the target rank has no published course, the closest lower one is used.
+   */
+  async findRecommendedCourse(studentId: string, locale: SupportedLocale = 'en'): Promise<RecommendedCourse | null> {
+    const ctx = await this.db.query<{ estimated_level: string | null; max_unlocked: number | null; source: string | null; track_slug: string | null }>(
+      `WITH resolved_student AS (
+         SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 OR u.supabase_auth_uid = $1 OR sp.id = $1
          LIMIT 1
-       ),
-       path_courses AS (
-         SELECT
+       )
+       SELECT
+         (SELECT pr.estimated_level FROM placement_results pr
+           WHERE pr.student_id = $1
+              OR pr.student_id IN (SELECT user_id FROM resolved_student)
+              OR pr.student_id IN (SELECT supabase_auth_uid FROM resolved_student)
+              OR pr.student_id IN (SELECT profile_id FROM resolved_student)
+           ORDER BY pr.created_at DESC LIMIT 1) AS estimated_level,
+         sls.max_unlocked_cefr_rank AS max_unlocked,
+         sls.source AS source,
+         sls.track_slug AS track_slug
+       FROM (SELECT 1) one
+       LEFT JOIN LATERAL (
+         SELECT s.max_unlocked_cefr_rank, s.source, s.track_slug
+         FROM student_level_state s
+         WHERE s.student_id = $1
+            OR s.student_id IN (SELECT profile_id FROM resolved_student)
+         ORDER BY (s.track_slug = 'english') DESC, s.max_unlocked_cefr_rank DESC
+         LIMIT 1
+       ) sls ON true`,
+      [studentId],
+    );
+    const row = ctx.rows[0];
+    const estimatedLevel = row?.estimated_level ?? null;
+    const ceiling = row?.max_unlocked ?? null;
+    const bucketRank = estimatedLevel ? PLACEMENT_BUCKET_TO_CEFR_RANK[estimatedLevel] : undefined;
+
+    let targetRank: number | null = null;
+    if (row?.source === 'scratch') {
+      targetRank = ceiling ?? 1;
+    } else if (bucketRank !== undefined || ceiling !== null) {
+      targetRank = Math.max(bucketRank ?? 1, ceiling ?? 1);
+    }
+
+    const text = courseTextSql('co', '$2');
+    if (targetRank !== null) {
+      const trackSlug = row?.track_slug ?? 'english';
+      const levelResult = await this.db.query<RecommendedCourseRow>(
+        `SELECT
            co.id   AS course_id,
            ${text.title} AS course_title,
            ${text.description} AS course_description,
            ${text.locale} AS course_locale,
-           MIN(ilp.priority) AS min_priority,
-           MIN(ilp.estimated_level) AS estimated_level
-         FROM initial_learning_path ilp
-         JOIN latest_result lr ON lr.placement_result_id = ilp.placement_result_id
-         JOIN lesson_skills ls ON ls.skill_id = ilp.skill_id
-         JOIN lessons l ON l.id = ls.lesson_id AND l.status = 'published'
-         JOIN chapters c ON c.id = l.chapter_id
-         JOIN levels lv ON lv.id = c.level_id
-         JOIN courses co ON co.id = lv.course_id AND co.status = 'published'
+           NULL::text AS estimated_level
+         FROM courses co
          ${text.joins}
-         WHERE ilp.skill_id IS NOT NULL
-         GROUP BY co.id, co_ct_req.id, co_ct_en.id, co.title, co.description
-       )
-       SELECT course_id, course_title, course_description, course_locale, estimated_level
-       FROM path_courses
-       ORDER BY min_priority ASC
-       LIMIT 1`,
-      [studentId, locale],
-    );
-
-    if (pathResult.rows.length > 0) {
-      const row = pathResult.rows[0];
-      return {
-        courseId: row.course_id,
-        courseTitle: row.course_title,
-        courseDescription: row.course_description,
-        locale: row.course_locale,
-        estimatedLevel: row.estimated_level,
-      };
+         WHERE co.status = 'published'
+           AND co.track_slug = $3
+           AND co.cefr_rank IS NOT NULL
+           AND co.cefr_rank <= $1
+         ORDER BY co.cefr_rank DESC
+         LIMIT 1`,
+        [targetRank, locale, trackSlug],
+      );
+      const hit = levelResult.rows[0];
+      if (hit) {
+        return {
+          courseId: hit.course_id,
+          courseTitle: hit.course_title,
+          courseDescription: hit.course_description,
+          locale: hit.course_locale,
+          estimatedLevel,
+        };
+      }
     }
 
-    // Fallback: lowest sort_order published course. Not filtered by
-    // student — takes no query parameters.
+    // No placement/level state (or no matching course): lowest sort_order
+    // published course. Not filtered by student.
     const fallbackText = courseTextSql('co', '$1');
     const fallbackResult = await this.db.query<RecommendedCourseRow>(
       `SELECT

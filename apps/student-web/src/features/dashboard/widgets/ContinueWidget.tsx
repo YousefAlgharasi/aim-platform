@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../../i18n/I18nContext';
-import { Card } from '../../../components/common/Card';
 import { EmptyState } from '../../../components/common/EmptyState';
 import type {
   ContinueLearningLesson,
@@ -9,6 +8,7 @@ import type {
   RecommendedCourse,
 } from '../dashboardApi';
 import { InfoPopoverButton } from '../../../components/common/InfoPopoverButton';
+import { formatPlacementLevel } from '../../placement/placementApi';
 import * as ui from './ui';
 
 interface ContinueWidgetProps {
@@ -31,7 +31,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
 
   if (!continueLesson && !quickStart && !course) {
     return (
-      <Card>
+      <section className={ui.panel}>
         <EmptyState
           title={t('Find your starting point')}
           message={t('Take the placement test so we can recommend a course and your first lesson.')}
@@ -40,19 +40,19 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
           <Link to="/placement" className={ui.primaryLink}>{t('Take the placement test')}</Link>
           <Link to="/curriculum" className={ui.link}>{t('Browse courses')}</Link>
         </div>
-      </Card>
+      </section>
     );
   }
 
   const pct = continueLesson ? Math.min(100, Math.max(0, Math.round(continueLesson.percent))) : 0;
 
   return (
-    <Card>
+    <section className={ui.panel}>
       <div className="flex flex-col gap-3">
         {continueLesson ? (
           <>
             <span className={ui.eyebrow}>{t('Continue learning')}</span>
-            <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{continueLesson.lessonTitle}</span>
+            <span className="text-2xl font-semibold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{continueLesson.lessonTitle}</span>
             <div
               className={ui.barTrack}
               role="progressbar"
@@ -74,7 +74,7 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
               {t('Start here')}{quickStart.skillName ? <> · <bdi>{quickStart.skillName}</bdi></> : null}
             </span>
             <div className="flex items-start gap-1.5">
-              <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
+              <span className="text-2xl font-semibold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{quickStart.lessonTitle}</span>
               {quickStart.lessonDescription && (
                 <InfoPopoverButton
                   title={t('About this lesson')}
@@ -90,18 +90,18 @@ export function ContinueWidget({ continueLesson, quickStart, recommendedCourse, 
         ) : null}
 
         {course && (
-          <div className="mt-1 flex items-center justify-between gap-3 border-t border-line-subtle pt-3 dark:border-line">
+          <div className="mt-1 flex items-center justify-between gap-3 border-t border-line pt-3">
             <div className="flex min-w-0 flex-col gap-0.5">
               <span className={ui.label}>{enrolledCourse ? t('Current course') : t('Recommended course')}</span>
-              <span className="truncate text-sm font-bold text-ink">{course.title}</span>
+              <span className="truncate text-base font-medium text-ink">{course.title}</span>
               {!enrolledCourse && recommendedCourse?.estimatedLevel && (
-                <span className="text-xs text-ink-muted">{t('Level: {level}', { level: recommendedCourse.estimatedLevel })}</span>
+                <span className="text-xs text-ink-muted">{t('Level: {level}', { level: (({ label, code }) => (code ? `${label} (${code})` : label))(formatPlacementLevel(recommendedCourse.estimatedLevel)) })}</span>
               )}
             </div>
             <Link to={`/curriculum/${course.id}`} className={`${ui.link} shrink-0`}>{t('Open course')}</Link>
           </div>
         )}
       </div>
-    </Card>
+    </section>
   );
 }

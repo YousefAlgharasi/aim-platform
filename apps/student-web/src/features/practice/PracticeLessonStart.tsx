@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { startPracticeSession } from './practiceApi';
 import { useI18n } from '../../i18n/I18nContext';
@@ -40,5 +40,5 @@ export function PracticeLessonStart() {
   }, [lessonId, start]);
 
   if (error) return <ErrorState message={error} onRetry={start} />;
-  return <LoadingSpinner />;
+  return <QuestionSkeleton />;
 }

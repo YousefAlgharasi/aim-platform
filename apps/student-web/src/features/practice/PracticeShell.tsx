@@ -1,3 +1,4 @@
+import { LevelBadge } from '../level/LevelBadge';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
@@ -5,7 +6,7 @@ import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import type { ApiError } from '../../types';
 import type { LessonRouteState } from '../lessons/LessonPlayerShell';
 import { useLessonProgress } from '../lessons/useLessonProgress';
@@ -160,7 +161,7 @@ export function PracticeShell() {
 
   if (!lessonId) {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('Choose a lesson to practice')}
           message={t('Practice sessions are started from a lesson. Open a lesson and select “Start practice”.')}
@@ -171,11 +172,11 @@ export function PracticeShell() {
     );
   }
 
-  if (status === 'loading') return <LoadingSpinner />;
+  if (status === 'loading') return <QuestionSkeleton />;
 
   if (status === 'locked') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('Practice locked')}
           message={errorMessage || t('This lesson is locked for you right now. Finish the earlier lessons first.')}
@@ -187,7 +188,7 @@ export function PracticeShell() {
 
   if (status === 'expired') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('This practice session has ended')}
           message={t('The session is no longer active. Start a new one to keep practicing.')}
@@ -203,7 +204,7 @@ export function PracticeShell() {
 
   if (status === 'empty') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('No practice questions yet')}
           message={t("This lesson doesn't have any published practice questions yet. Try the AI tutor to work through it instead.")}
@@ -223,7 +224,7 @@ export function PracticeShell() {
 
   if (status === 'finished') {
     if (summaryError) return <ErrorState message={summaryError} onRetry={loadSummary} />;
-    if (!summary) return <LoadingSpinner />;
+    if (!summary) return <QuestionSkeleton />;
     return (
       <PracticeFeedback
         summary={summary}
@@ -239,25 +240,38 @@ export function PracticeShell() {
     );
   }
 
-  if (!current) return <LoadingSpinner />;
+  if (!current) return <QuestionSkeleton />;
 
   const answered = feedback?.questionId === current.id;
   const canSubmit = (current.options.length > 0 ? draft : draft.trim()).length > 0;
   const progressPct = Math.round(((index + (answered ? 1 : 0)) / questions.length) * 100);
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-center gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xs font-extrabold text-brand-ink uppercase tracking-wider m-0">{t('Practice Session')}</h1>
+        <Link
+          to={lessonId ? `/lessons/${lessonId}` : '/curriculum'}
+          state={{ courseId: navState.courseId }}
+          aria-label={t('Exit practice')}
+          title={t('Exit practice')}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-ink-soft no-underline ring-1 ring-line-strong transition-colors hover:bg-danger-soft hover:text-danger-ink hover:ring-danger-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">✕</span>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <h1 className="m-0 text-sm font-medium text-ink-muted">{t('Practice Session')}</h1>
           {navState.lessonTitle && (
-            <span className="block text-sm font-bold text-ink truncate">{navState.lessonTitle}</span>
+            <span className="block truncate text-lg font-semibold text-ink">{navState.lessonTitle}</span>
           )}
         </div>
+        <span className="flex shrink-0 items-center gap-2">
+          <LevelBadge showName={false} />
+          <span className="lp-num text-base font-semibold text-ink">{index + 1}<span className="text-ink-muted">/{questions.length}</span></span>
+        </span>
       </div>
 
       <div
-        className="h-2 bg-control rounded-full overflow-hidden"
+        className="h-2 overflow-hidden rounded-full bg-ink/10"
         role="progressbar"
         aria-valuenow={progressPct}
         aria-valuemin={0}
@@ -265,7 +279,7 @@ export function PracticeShell() {
         aria-label={t('Practice progress')}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-brand to-secondary transition-all duration-500"
+          className="h-full rounded-full bg-brand transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -290,14 +304,14 @@ export function PracticeShell() {
             }`}
             role="status"
           >
-            <p className="font-extrabold text-base m-0">
+            <p className="m-0 text-lg font-semibold">
               {feedback.isCorrect === true
                 ? t('✓ Correct!')
                 : feedback.isCorrect === false
                   ? t('✗ Not quite')
                   : t('Answer recorded')}
             </p>
-            <p className="text-sm m-0 mt-1 opacity-90">
+            <p className="m-0 mt-1 text-base opacity-90">
               {feedback.isCorrect === false
                 ? t('Keep going — AIM uses this to tailor your next practice.')
                 : t('Your answer was saved.')}
@@ -307,15 +321,17 @@ export function PracticeShell() {
 
         {submitError && <Banner variant="error">{submitError}</Banner>}
 
+        <div className="sticky bottom-3 z-10 -mx-1 rounded-2xl bg-page/85 p-1 backdrop-blur-md">
         {answered ? (
-          <Button variant="primary" fullWidth onClick={handleNext}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleNext}>
             {index + 1 < questions.length ? t('Next question →') : t('Finish practice')}
           </Button>
         ) : (
-          <Button variant="primary" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
             {submitting ? t('Checking…') : t('Check answer')}
           </Button>
         )}
+        </div>
       </div>
     </div>
   );

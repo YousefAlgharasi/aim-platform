@@ -8,6 +8,9 @@ describe('EngagementService', () => {
       upsertGoal: jest.fn(),
       countLessonsCompletedToday: jest.fn().mockResolvedValue(0),
       findActiveDates: jest.fn().mockResolvedValue([]),
+      findFrozenDates: jest.fn().mockResolvedValue([]),
+      countFreezesThisMonth: jest.fn().mockResolvedValue(0),
+      insertFreezeIfAllowed: jest.fn().mockResolvedValue(true),
       findActiveChallengeTemplates: jest.fn().mockResolvedValue([]),
       findXpLevels: jest.fn().mockResolvedValue([
         { level: 1, min_xp: 0 },
@@ -36,6 +39,7 @@ describe('EngagementService', () => {
         completedToday: 0,
         streakDays: 0,
       });
+      expect(summary.streakFreeze).toMatchObject({ allowance: 2, remaining: 2, atRisk: false, canUseNow: false });
       expect(summary.challenge).toBeNull();
     });
 
@@ -250,6 +254,54 @@ describe('EngagementService', () => {
       const result = await service.updateGoal('student-1', 99);
 
       expect(result.targetLessons).toBe(20);
+    });
+  });
+
+  describe('streak freezes', () => {
+    const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+
+    it('keeps the streak alive across a frozen day without counting it', async () => {
+      // active 3, 2 days ago... yesterday frozen, today not yet done
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2), day(-3), day(-4)]),
+        findFrozenDates: jest.fn().mockResolvedValue([day(-1)]),
+      });
+      const summary = await new EngagementService(repository).getSummary('s');
+      expect(summary.goal.streakDays).toBe(3);
+      expect(summary.streakFreeze.atRisk).toBe(false);
+    });
+
+    it('is at risk when yesterday was missed but the day before was active', async () => {
+      const repository = makeRepository({ findActiveDates: jest.fn().mockResolvedValue([day(-2), day(-3)]) });
+      const summary = await new EngagementService(repository).getSummary('s');
+      expect(summary.goal.streakDays).toBe(0);
+      expect(summary.streakFreeze).toMatchObject({ atRisk: true, canUseNow: true, remaining: 2 });
+    });
+
+    it('cannot be used once the monthly allowance is spent', async () => {
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2)]),
+        countFreezesThisMonth: jest.fn().mockResolvedValue(2),
+      });
+      const service = new EngagementService(repository);
+      expect((await service.getSummary('s')).streakFreeze).toMatchObject({ atRisk: true, canUseNow: false, remaining: 0 });
+      await expect(service.useStreakFreeze('s')).rejects.toMatchObject({ status: 409 });
+      expect(repository.insertFreezeIfAllowed).not.toHaveBeenCalled();
+    });
+
+    it('refuses when the streak is not at risk', async () => {
+      const repository = makeRepository({ findActiveDates: jest.fn().mockResolvedValue([day(0), day(-1)]) });
+      await expect(new EngagementService(repository).useStreakFreeze('s')).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('freezes yesterday when allowed', async () => {
+      const insert = jest.fn().mockResolvedValue(true);
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2)]),
+        insertFreezeIfAllowed: insert,
+      });
+      await new EngagementService(repository).useStreakFreeze('s');
+      expect(insert).toHaveBeenCalledWith('s', day(-1), 2);
     });
   });
 });

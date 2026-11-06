@@ -22,6 +22,8 @@ export interface RequestOptions {
   token?: string;
   /** Accept header; JSON by default. */
   accept?: string;
+  /** Sent as `Idempotency-Key` so the server can de-duplicate retries / double clicks of this action. */
+  idempotencyKey?: string;
 }
 
 /** Stored TTS audio is MP3 (about 8x smaller than WAV); endpoints that only have WAV still answer with WAV. */
@@ -146,6 +148,7 @@ class ApiClient {
     const useAuth = options.auth !== false;
     const token = options.token ?? (useAuth ? this.accessToken : null);
     if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
 
     let response: Response;
     try {
@@ -234,4 +237,11 @@ export function getErrorMessage(err: unknown, fallback = 'Something went wrong. 
   // otherwise use the (already localized) caller fallback.
   if (getLocale() === 'ar' && translated === message && !ARABIC_RE.test(message)) return localizedFallback;
   return translated;
+}
+
+/** A fresh opaque key for one user action (reuse the same value when retrying that action). */
+export function newIdempotencyKey(): string {
+  const c = (globalThis as { crypto?: Crypto }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `k-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }
