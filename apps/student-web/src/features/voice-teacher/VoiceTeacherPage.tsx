@@ -342,7 +342,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
   const waveActive = isRecording || isSpeaking;
 
   return (
-    <div className="flex flex-col gap-4 max-w-3xl w-full mx-auto">
+    <div className="flex flex-col gap-4 w-full">
       <PageTitleBar
         title={t('Voice Teacher')}
         subtitle={navState.lessonTitle || t('Practise speaking with your AI teacher')}
@@ -359,17 +359,17 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
       )}
 
       <section
-        className="relative overflow-hidden rounded-3xl bg-surface ring-1 ring-line shadow-card px-5 py-8 flex flex-col items-center text-center gap-3 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-48 before:bg-[radial-gradient(closest-side,rgb(var(--c-brand)/0.18),transparent)] before:content-['']"
+        className="relative overflow-hidden rounded-2xl bg-surface px-5 py-8 ring-1 ring-line flex flex-col items-center text-center gap-3 sm:px-8"
         aria-label={t('Voice conversation')}
       >
         <span
-          className="text-brand-ink font-extrabold text-xs uppercase tracking-wider bg-brand-soft px-3 py-1 rounded-full"
+          className="rounded-full px-3 py-1 text-sm font-medium text-ink-muted ring-1 ring-line-strong"
           role="status"
           aria-live="polite"
         >
           {t('Status: {status}', { status: status.label })}
         </span>
-        <p className="m-0 text-ink font-extrabold text-xl sm:text-2xl tracking-tight leading-snug">
+        <p className="lp-display m-0 text-[1.75rem] font-semibold leading-snug text-ink sm:text-[2.25rem]">
           {status.heading}
         </p>
 
@@ -428,10 +428,10 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
               disabled={submitting || micBlocked || recorder.status === 'requesting'}
               aria-pressed={isRecording}
               aria-label={isRecording ? t('Stop recording and send') : t('Start recording')}
-              className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center shadow-xl relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isRecording
-                  ? 'bg-danger text-white shadow-danger/30'
-                  : 'bg-brand text-white shadow-brand/40 ring-4 ring-brand/20 hover:bg-brand-hover'
+                  ? 'bg-danger text-white'
+                  : 'bg-brand text-white ring-8 ring-brand/15 hover:bg-brand-hover'
               }`}
             >
               {submitting ? (
@@ -444,7 +444,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
             </button>
           </div>
 
-          <p className={`text-sm font-bold mt-5 mb-0 ${isRecording ? 'text-danger-ink' : 'text-ink-muted'}`}>
+          <p className={`mb-0 mt-5 text-base font-semibold ${isRecording ? 'text-danger-ink' : 'text-ink-muted'}`}>
             {recorder.status === 'requesting'
               ? t('Waiting for microphone permission…')
               : isRecording
@@ -454,7 +454,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                   : t('Tap to speak')}
           </p>
           {isRecording && (
-            <span className="text-brand-ink font-mono text-xs font-bold mt-1 tracking-widest">
+            <span className="lp-num mt-1 text-sm font-semibold tracking-widest text-ink">
               {formatSeconds(recorder.elapsedMs)} / {formatSeconds(MAX_RECORDING_MS)}
             </span>
           )}
@@ -489,15 +489,15 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
                 className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}
               >
                 <div
-                  className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                  className={`p-4 rounded-2xl text-base leading-relaxed whitespace-pre-wrap break-words ${
                     isTeacher
-                      ? 'bg-surface ring-1 ring-line/80 text-ink rounded-es-none shadow-sm'
-                      : 'bg-brand text-white rounded-ee-none shadow-md shadow-brand/20'
+                      ? 'bg-surface ring-1 ring-line text-ink rounded-es-none'
+                      : 'bg-brand text-white rounded-ee-none'
                   }`}
                 >
                   {isTeacher ? <Markdown text={msg.text} /> : msg.text}
                 </div>
-                <div className="flex items-center gap-2 mt-1 px-1 text-[11px] font-medium text-ink-muted">
+                <div className="mt-1 flex items-center gap-2 px-1 text-xs text-ink-muted">
                   <span className="inline-flex items-center gap-1">
                     {msg.channel === 'voice' && <MicIcon className="size-3" />}
                     {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}

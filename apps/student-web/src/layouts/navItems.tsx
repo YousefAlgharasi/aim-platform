@@ -34,14 +34,6 @@ function LifeBuoyIcon({ className = 'size-5' }: { className?: string }) {
   );
 }
 
-function RouteIcon({ className = 'size-5' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="6" cy="19" r="2" /><circle cx="18" cy="5" r="2" /><path d="M8 19h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6" />
-    </svg>
-  );
-}
-
 export function TargetIcon({ className = 'size-5' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -86,7 +78,6 @@ export const navSections: NavSection[] = [
     items: [
       { to: '/', label: 'Dashboard', icon: icon(HomeIcon) },
       { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
-      { to: '/journey', label: 'My journey', icon: icon(RouteIcon) },
       { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
       { to: '/assessments', label: 'Assessments', icon: icon(ClipboardIcon) },
     ],

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { FilterPills } from '../../components/common/FilterPills';
 import { FixedCelebration } from './FixedCelebration';
 import { WeeklyRecap } from './WeeklyRecap';
 import { Link } from 'react-router-dom';
@@ -101,8 +102,8 @@ const secondary =
 
 function Stat({ value, label, tone = '' }: { value: string | number; label: string; tone?: string }) {
   return (
-    <div className="flex flex-col gap-0.5 rounded-2xl bg-white/10 p-3 backdrop-blur-sm">
-      <span className={`text-2xl font-extrabold tracking-tight tabular-nums ${tone}`}>{value}</span>
+    <div className="flex flex-col gap-0.5 rounded-2xl bg-white/10 p-3">
+      <span className={`text-2xl font-semibold tracking-tight tabular-nums ${tone}`}>{value}</span>
       <span className="text-xs font-semibold text-on-brand">{label}</span>
     </div>
   );
@@ -117,7 +118,7 @@ function SpotCard({ spot }: { spot: WeakSpot }) {
     <Card>
       <div className="flex h-full flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h3 className="m-0 text-base font-extrabold tracking-tight text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{name}</h3>
+          <h3 className="m-0 text-xl font-semibold tracking-tight text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{name}</h3>
           <span className={ui.badge(sevTone[spot.severity])}>{t(sevLabel[spot.severity])}</span>
         </div>
 
@@ -197,23 +198,22 @@ export function ImprovePage() {
       <FixedCelebration records={data.weaknessRecords} />
 
       <div className="hero-panel">
-        <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
         <div className="relative z-10 flex flex-col gap-4">
           {top ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="m-0 text-xs font-bold text-on-brand">{t('Start with this')}</p>
-                <p className="m-0 mt-0.5 text-xl font-extrabold leading-snug [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-2xl">{prettifySkillId(top.skillId)}</p>
+                <p className="m-0 mt-0.5 text-xl font-semibold leading-snug [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-2xl">{prettifySkillId(top.skillId)}</p>
               </div>
               <Link
                 to={topLesson ? `/practice/lesson/${encodeURIComponent(topLesson)}` : '/curriculum'}
-                className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline shadow-lg shadow-black/20 transition-all duration-200 hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+                className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
               >
                 {topLesson ? t('Practice now') : t('Find a lesson')}
               </Link>
             </div>
           ) : (
-            <p className="m-0 text-lg font-extrabold">{t('No weak spots right now. Keep learning to stay sharp.')}</p>
+            <p className="m-0 text-lg font-semibold">{t('No weak spots right now. Keep learning to stay sharp.')}</p>
           )}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Stat value={spots.length} label={t('To work on')} />
@@ -227,9 +227,8 @@ export function ImprovePage() {
       {((mistakes ?? 0) > 0 || dueReviews.length > 0) && (
         <Card interactive>
           <Link to="/mistakes?quick=1" className="flex items-center gap-4 no-underline">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-warning-soft text-xl text-warning-ink" aria-hidden="true">⚡</span>
             <span className="min-w-0 flex-1">
-              <span className="block text-base font-extrabold text-ink">{t('5-minute fix session')}</span>
+              <span className="block text-base font-semibold text-ink">{t('5-minute fix session')}</span>
               <span className="block text-sm text-ink-muted">
                 {(mistakes ?? 0) > 0
                   ? t('Up to 5 questions you got wrong, picked for you. The fastest way to turn a mistake into a point.')
@@ -248,14 +247,8 @@ export function ImprovePage() {
         ) : (
           <>
             {cats.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t('Filter by skill type')}>
-                {(['all', ...cats] as Array<Category | 'all'>).map((c) => (
-                  <button key={c} type="button" role="tab" aria-selected={cat === c} onClick={() => setCat(c)}
-                    className={`min-h-10 shrink-0 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${cat === c ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'}`}>
-                    {c === 'all' ? `${t('All')} (${spots.length})` : `${t(CATEGORY_LABEL[c])} (${counts[c]})`}
-                  </button>
-                ))}
-              </div>
+              <FilterPills label={t('Filter by skill type')} value={cat} onChange={setCat}
+                options={(['all', ...cats] as Array<Category | 'all'>).map((c) => ({ key: c, label: c === 'all' ? `${t('All')} (${spots.length})` : `${t(CATEGORY_LABEL[c])} (${counts[c]})` }))} />
             )}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {visible.map((s) => <SpotCard key={s.skillId} spot={s} />)}

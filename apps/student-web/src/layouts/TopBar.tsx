@@ -47,12 +47,9 @@ export function TopBar() {
   const streakDays = useStreakDays(pathname);
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b backdrop-blur-md bg-page/80 border-line-subtle">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b backdrop-blur-md bg-page/90 border-line">
       <div className="flex items-center gap-2.5 justify-self-start min-w-0">
-        <div className={`size-8 rounded-xl bg-gradient-to-br from-brand to-secondary items-center justify-center text-white font-black text-xs shadow-md shadow-brand/20 md:hidden flex`} aria-hidden="true">
-          AIM
-        </div>
-        <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-ink md:hidden">{t('AIM English')}</span>
+        <span className="text-xl font-bold leading-none tracking-tight text-ink rtl:tracking-normal md:hidden">AIM</span>
       </div>
 
       <div className="flex items-center gap-2 justify-self-end ms-auto">
@@ -61,9 +58,9 @@ export function TopBar() {
               role="img"
               aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
               title={t('Day streak')}
-              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-warning-soft text-warning-ink dark:bg-warning/15"
+              className="inline-flex items-center gap-1.5 h-9 px-2 text-sm font-semibold text-ink lp-num"
             >
-              <FlameIcon className="size-[18px] text-gold fill-gold" />
+              <FlameIcon className="size-[18px] text-ink" />
               <span aria-hidden="true">{formatNumber(streakDays)}</span>
             </span>
           )}
@@ -72,7 +69,7 @@ export function TopBar() {
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
-          className="relative size-9 rounded-xl flex items-center justify-center no-underline transition-colors bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink"
+          className="relative size-10 rounded-full flex items-center justify-center no-underline transition-colors text-ink-soft hover:bg-surface-strong hover:text-ink"
         >
           <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />

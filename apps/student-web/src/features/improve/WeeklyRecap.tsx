@@ -25,7 +25,7 @@ export function WeeklyRecap({ records }: { records: WeaknessRecordEntry[] }) {
   useEffect(() => { fetchEngagementStats().then(setStats).catch(() => setStats(null)); }, []);
   const f = weekFacts(stats, records);
   const cell = (value: string, label: string) => (
-    <div className="flex flex-col gap-0.5"><span className="text-2xl font-extrabold tracking-tight tabular-nums text-ink">{value}</span><span className="text-xs font-semibold text-ink-muted">{label}</span></div>
+    <div className="flex flex-col gap-0.5"><span className="text-2xl font-semibold tracking-tight tabular-nums text-ink">{value}</span><span className="text-xs font-semibold text-ink-muted">{label}</span></div>
   );
   return (
     <section className="flex flex-col gap-3" aria-label={t('Your week')}>

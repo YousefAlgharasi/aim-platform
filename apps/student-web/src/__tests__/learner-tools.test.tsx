@@ -5,7 +5,6 @@ jest.mock('react-router-dom', () => ({
 }));
 
 import { cleanSelection } from '../features/learner/SelectToSave';
-import { bandOf, summarizeBands } from '../features/learner/JourneyPage';
 import { receiptHtml } from '../features/course-billing/printReceipt';
 import { readDisplayPrefs, saveDisplayPrefs } from '../state/displayPrefs';
 import type { StudentCourse } from '../features/curriculum/curriculumApi';
@@ -21,30 +20,6 @@ describe('cleanSelection', () => {
     expect(cleanSelection('12345')).toBeNull();
     expect(cleanSelection('one two three four five')).toBeNull();
     expect(cleanSelection('x'.repeat(61))).toBeNull();
-  });
-});
-
-const course = (levelCode: string | null, lessons: number, done: number): StudentCourse => ({
-  courseId: levelCode ?? 'x', title: 't', description: null, levelCode, lessonCount: lessons, completedLessonCount: done,
-  quizCount: 0, examCount: 0, percent: 0, status: 'not_started', locked: false,
-});
-
-describe('journey bands', () => {
-  it('maps level codes to CEFR bands', () => {
-    expect(bandOf('B1.2')).toBe('B1');
-    expect(bandOf('B1+')).toBe('B1');
-    expect(bandOf('C2')).toBe('C2');
-    expect(bandOf('Writing 1')).toBeNull();
-    expect(bandOf(null)).toBeNull();
-  });
-  it('marks finished bands done, the first unfinished band current, the rest next', () => {
-    const bands = summarizeBands([course('A1.1', 10, 10), course('A1.2', 10, 10), course('A2.1', 10, 4), course('B1.1', 10, 0), course('Writing 1', 5, 0)]);
-    expect(bands.map((b) => [b.band, b.state])).toEqual([['A1', 'done'], ['A2', 'current'], ['B1', 'next']]);
-    expect(bands[0].percent).toBe(100);
-    expect(bands[1].percent).toBe(40);
-  });
-  it('marks everything done once all lessons are complete', () => {
-    expect(summarizeBands([course('A1.1', 5, 5)]).every((b) => b.state === 'done')).toBe(true);
   });
 });
 

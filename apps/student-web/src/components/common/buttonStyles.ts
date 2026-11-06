@@ -1,7 +1,6 @@
 /**
  * Single source of truth for action buttons (<Button>, link-buttons, raw <button>).
- * Primary = brand blue with a faint top sheen; secondary = tinted brand surface with a
- * brand outline; ghost = text. Minimum action height is 44px; default 48px; hero CTAs 56px.
+ * Primary = flat brand blue pill; secondary = outlined pill; ghost = text. Minimum action height is 44px; default 48px; hero CTAs 56px.
  * Icon-only controls (close, toggles, audio) are NOT action buttons and keep their own sizing.
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
@@ -15,21 +14,20 @@ export const BTN_BASE =
 
 export const BTN_VARIANT: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-b from-brand to-brand-hover text-white shadow-md shadow-brand/25 ring-1 ring-inset ring-white/15 ' +
-    'hover:brightness-110 hover:shadow-lg hover:shadow-brand/35 ' +
-    'disabled:bg-none disabled:bg-disabled disabled:text-ink-disabled disabled:shadow-none disabled:brightness-100 disabled:translate-y-0',
+    'bg-brand text-white hover:bg-brand-hover active:bg-brand-active ' +
+    'disabled:bg-disabled disabled:text-ink-disabled',
   secondary:
-    'bg-brand-soft text-brand-ink ring-1 ring-inset ring-brand-line ' +
-    'hover:bg-brand-soft-hover hover:ring-brand hover:shadow-md hover:-translate-y-px ' +
-    'disabled:bg-disabled disabled:text-ink-disabled disabled:ring-0 disabled:shadow-none disabled:translate-y-0',
+    'bg-transparent text-ink ring-1 ring-inset ring-line-strong ' +
+    'hover:bg-surface-strong ' +
+    'disabled:bg-disabled disabled:text-ink-disabled disabled:ring-0',
   ghost:
-    'bg-transparent text-brand-ink hover:bg-brand-soft disabled:text-ink-disabled',
+    'bg-transparent text-ink-soft hover:bg-surface-strong hover:text-ink disabled:text-ink-disabled',
 };
 
 export const BTN_SIZE: Record<ButtonSize, string> = {
-  sm: 'h-11 px-5 text-sm rounded-xl',
-  md: 'h-12 px-6 text-[15px] rounded-xl',
-  lg: 'h-14 px-7 text-base rounded-xl tracking-tight',
+  sm: 'h-11 px-5 text-sm rounded-full',
+  md: 'h-12 px-6 text-[15px] rounded-full',
+  lg: 'h-14 px-7 text-base rounded-full',
 };
 
 export function buttonClasses(

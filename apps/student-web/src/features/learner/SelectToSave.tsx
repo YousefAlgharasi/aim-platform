@@ -62,7 +62,7 @@ export function SelectToSave({ children, source, className }: { children: ReactN
         <div
           role="region"
           aria-label={t('Save selected word')}
-          className="fixed inset-x-3 bottom-20 z-50 mx-auto flex max-w-md items-center gap-2 rounded-2xl bg-elevated p-2 ps-4 shadow-2xl ring-1 ring-line md:bottom-6"
+          className="fixed inset-x-3 bottom-20 z-50 mx-auto flex max-w-md items-center gap-2 rounded-2xl bg-elevated p-2 ps-4 ring-1 ring-line md:bottom-6"
         >
           <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink [unicode-bidi:plaintext]">“{selected.word}”</span>
           {state === 'saved' || state === 'error' ? (
@@ -73,7 +73,7 @@ export function SelectToSave({ children, source, className }: { children: ReactN
                 type="button"
                 onClick={() => void save()}
                 disabled={state === 'saving'}
-                className="h-10 shrink-0 rounded-xl border-0 bg-gradient-to-r from-brand to-secondary px-4 text-sm font-bold text-white cursor-pointer disabled:opacity-60"
+                className="h-10 shrink-0 rounded-xl border-0 bg-brand px-4 text-sm font-bold text-white cursor-pointer disabled:opacity-60"
               >
                 {t('Save word')}
               </button>

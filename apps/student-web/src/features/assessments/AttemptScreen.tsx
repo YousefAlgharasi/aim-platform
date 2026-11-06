@@ -19,7 +19,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
 import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
 
-const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
+const SHELL = 'w-full flex flex-col gap-4';
 const LINK_BTN = 'border-0 bg-transparent p-0 font-semibold text-brand-ink underline cursor-pointer';
 
 type SaveState = 'saving' | 'saved' | 'error';
@@ -198,7 +198,7 @@ export function AttemptScreen() {
     <div className={SHELL}>
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+          <span className="text-xs font-semibold text-ink-muted">
             {t('Question {current} of {total} · {answered} answered', { current: formatNumber(current + 1), total: formatNumber(questions.length), answered: formatNumber(answeredCount) })}
           </span>
           {remaining !== null && <TimerPill warning={remaining <= 60}>{formatRemaining(remaining)}</TimerPill>}
@@ -219,10 +219,10 @@ export function AttemptScreen() {
               type="button"
               className={`size-10 rounded-xl text-xs font-bold cursor-pointer transition-all duration-150 ${
                 isCurrent
-                  ? 'bg-brand text-white border-0 shadow-md'
+                  ? 'bg-brand text-white border-0'
                   : answered
                     ? 'bg-success-soft text-success-ink ring-1 ring-success-line border-0'
-                    : 'bg-surface text-ink-muted dark:text-ink-soft ring-1 ring-line border-0 hover:ring-brand-line'
+                    : 'bg-surface text-ink-muted dark:text-ink-soft ring-1 ring-line border-0 hover:ring-line-strong'
               }`}
               onClick={() => setCurrent(i)}
               aria-current={isCurrent ? 'step' : undefined}

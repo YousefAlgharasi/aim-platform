@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LogOutIcon, SparkleIcon } from '../components/common/Icons';
+import { LogOutIcon } from '../components/common/Icons';
 import { navSections } from './navItems';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -64,13 +64,10 @@ export function SidebarContent({
     <div className={`flex flex-col h-full min-h-0 pb-4 gap-4 ${collapsed ? 'p-3' : 'p-5'}`}>
       <div className="shrink-0">
         <div className={`flex mb-6 ${collapsed ? 'flex-col items-center gap-3' : 'items-center gap-2'}`}>
-          <div className="size-9 shrink-0 rounded-xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white shadow-md shadow-brand/20">
-            <SparkleIcon className="size-[18px] text-white" />
-          </div>
           {!collapsed && (
-            <span className="font-black text-2xl tracking-tight bg-gradient-to-r from-brand to-secondary bg-clip-text text-transparent">
+            <Link to="/" onClick={onNavigate} aria-label="AIM" className="font-bold text-[22px] leading-none tracking-tight text-ink no-underline rtl:tracking-normal">
               AIM
-            </span>
+            </Link>
           )}
           {onToggle && (
             <button
@@ -79,7 +76,7 @@ export function SidebarContent({
               aria-label={collapsed ? t('Expand sidebar') : t('Collapse sidebar')}
               aria-expanded={!collapsed}
               title={collapsed ? t('Expand sidebar') : t('Collapse sidebar')}
-              className={`${collapsed ? '' : 'ms-auto'} size-10 shrink-0 rounded-xl flex items-center justify-center border-none cursor-pointer bg-transparent text-ink-muted hover:text-brand-ink hover:bg-brand-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus`}
+              className={`${collapsed ? '' : 'ms-auto'} size-10 shrink-0 rounded-full flex items-center justify-center border-none cursor-pointer bg-transparent text-ink-muted hover:text-ink hover:bg-surface-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus`}
             >
               <CollapseIcon collapsed={collapsed} />
             </button>
@@ -88,15 +85,15 @@ export function SidebarContent({
 
         {collapsed ? (
           <div
-            className="mx-auto mb-3 size-11 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-base shadow-sm"
+            className="mx-auto mb-3 size-11 rounded-full bg-ink flex items-center justify-center text-ink-inverse font-semibold text-base"
             title={user?.name ?? undefined}
             aria-hidden="true"
           >
             {user?.name?.charAt(0).toUpperCase() || '?'}
           </div>
         ) : (
-          <Link to="/profile" onClick={onNavigate} aria-label={t('Profile')} className="rounded-2xl p-3.5 mb-5 border flex items-center gap-3 no-underline bg-surface-sunken border-line transition-colors hover:border-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            <div className="size-11 shrink-0 rounded-2xl bg-gradient-to-br from-brand to-secondary flex items-center justify-center text-white font-extrabold text-base shadow-sm">
+          <Link to="/profile" onClick={onNavigate} aria-label={t('Profile')} className="mb-5 flex items-center gap-3 border-y border-line py-3.5 no-underline transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <div className="size-11 shrink-0 rounded-full bg-ink flex items-center justify-center text-ink-inverse font-semibold text-base">
               {user?.name?.charAt(0).toUpperCase() || '?'}
             </div>
             <div className="min-w-0 flex-1">
@@ -120,7 +117,7 @@ export function SidebarContent({
           >
             <h2
               id={`nav-section-${idx}`}
-              className={collapsed ? 'sr-only' : 'm-0 mb-1.5 px-3.5 text-[11px] font-extrabold uppercase tracking-wider text-ink-muted'}
+              className={collapsed ? 'sr-only' : 'm-0 mb-1.5 px-3.5 text-xs font-medium text-ink-muted'}
             >
               {t(section.title)}
             </h2>
@@ -134,10 +131,10 @@ export function SidebarContent({
                     title={collapsed ? t(label) : undefined}
                     aria-label={collapsed ? t(label) : undefined}
                     className={({ isActive }) =>
-                      `relative flex items-center rounded-xl ${collapsed ? 'justify-center h-11' : 'gap-3.5 px-3.5 py-2.5'} font-semibold text-sm no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
+                      `relative flex items-center rounded-lg ${collapsed ? 'justify-center h-11' : 'gap-3.5 px-3.5 py-2.5'} font-medium text-[15px] no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                         isActive
-                          ? 'bg-brand-soft text-brand-ink before:absolute before:start-0 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-brand-ink'
-                          : 'text-ink-soft hover:text-ink hover:bg-surface-muted'
+                          ? 'bg-surface-strong font-semibold text-ink before:absolute before:start-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-ink'
+                          : 'text-ink-muted hover:text-ink hover:bg-surface-muted'
                       }`
                     }
                   >
@@ -156,7 +153,7 @@ export function SidebarContent({
         onClick={() => void handleLogout()}
         title={collapsed ? t('Log out') : undefined}
         aria-label={t('Log out')}
-        className="shrink-0 flex items-center justify-center gap-2 w-full h-12 rounded-2xl text-sm font-bold text-danger-ink bg-transparent border border-danger-line hover:bg-danger-soft cursor-pointer transition-colors"
+        className="shrink-0 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-transparent h-11 text-sm font-semibold text-ink-soft ring-1 ring-line-strong transition-colors hover:bg-danger-soft hover:text-danger-ink hover:ring-danger-line"
       >
         <LogOutIcon className={collapsed ? 'size-5' : 'size-4'} aria-hidden="true" />
         {!collapsed && t('Log out')}
@@ -168,10 +165,18 @@ export function SidebarContent({
 export function Sidebar({ forceCollapsed = false }: { forceCollapsed?: boolean }) {
   const { t } = useI18n();
   const [collapsedPref, setCollapsed] = useState(readCollapsed);
-  // Focus screens override the saved preference without changing it.
-  const collapsed = collapsedPref || forceCollapsed;
+  // Focus screens (lessons, practice) start collapsed without changing the saved preference, but can still be opened.
+  const [focusExpanded, setFocusExpanded] = useState(false);
+  useEffect(() => {
+    if (!forceCollapsed) setFocusExpanded(false);
+  }, [forceCollapsed]);
+  const collapsed = forceCollapsed ? !focusExpanded : collapsedPref;
 
   function toggle() {
+    if (forceCollapsed) {
+      setFocusExpanded((v) => !v);
+      return;
+    }
     setCollapsed((c) => {
       writeCollapsed(!c);
       return !c;
@@ -181,11 +186,11 @@ export function Sidebar({ forceCollapsed = false }: { forceCollapsed?: boolean }
   return (
     <aside
       aria-label={t('Sidebar')}
-      className={`hidden md:block shrink-0 sticky top-0 h-screen overflow-hidden bg-surface dark:bg-elevated border-e border-line-subtle transition-[width] duration-300 ease-in-out motion-reduce:transition-none ${
+      className={`hidden md:block shrink-0 sticky top-0 h-screen overflow-hidden bg-page border-e border-line transition-[width] duration-300 ease-in-out motion-reduce:transition-none ${
         collapsed ? 'w-[76px]' : 'w-64'
       }`}
     >
-      <SidebarContent collapsed={collapsed} onToggle={forceCollapsed ? undefined : toggle} />
+      <SidebarContent collapsed={collapsed} onToggle={toggle} />
     </aside>
   );
 }

@@ -50,9 +50,9 @@ export function FlashcardReview({ onDone }: { onDone: () => void }) {
 
   if (cards.length === 0 || index >= cards.length || !card) {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-10 text-center">
-        <div className="grid size-20 place-items-center rounded-3xl bg-success text-4xl text-white shadow-xl shadow-success/30">✓</div>
-        <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t('Review complete')}</h1>
+      <div className="flex flex-col items-start gap-4">
+        <div className="grid size-20 place-items-center rounded-2xl bg-success text-4xl text-white">✓</div>
+        <h1 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Review complete')}</h1>
         {cards.length > 0 && <p className="m-0 text-ink-muted">{t('You knew {known} of {total}.', { known, total: cards.length })}</p>}
         <Button onClick={onDone}>{t('Back to My words')}</Button>
       </div>
@@ -60,27 +60,27 @@ export function FlashcardReview({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <button type="button" onClick={onDone} className="min-h-10 cursor-pointer rounded-xl border-0 bg-control px-4 text-sm font-bold text-ink-soft hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">{t('Close')}</button>
-        <span className="text-sm font-extrabold tabular-nums text-ink-muted">{index + 1} / {cards.length}</span>
+        <span className="text-sm font-semibold tabular-nums text-ink-muted">{index + 1} / {cards.length}</span>
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-control ring-1 ring-inset ring-line" role="progressbar"
         aria-valuemin={0} aria-valuemax={cards.length} aria-valuenow={index} aria-label={t('Review progress')}>
-        <div className="h-full rounded-full bg-gradient-to-r from-brand to-secondary transition-all duration-300" style={{ width: `${(index / cards.length) * 100}%` }} />
+        <div className="h-full rounded-full bg-brand transition-all duration-300" style={{ width: `${(index / cards.length) * 100}%` }} />
       </div>
       <button type="button" onClick={() => setFlipped((f) => !f)} aria-label={flipped ? t('Show the word') : t('Show the meaning')}
-        className="flex min-h-72 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border-0 bg-surface p-8 text-center shadow-card ring-1 ring-line transition-colors hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        className="flex min-h-72 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-0 bg-surface p-8 text-center ring-1 ring-line transition-colors hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         {!flipped ? (
           <>
             <span className="text-xs font-bold text-ink-muted">{t('What does this mean?')}</span>
-            <span className="text-3xl font-extrabold tracking-tight text-ink [unicode-bidi:plaintext]">{card.word}</span>
+            <span className="text-3xl font-semibold tracking-tight text-ink [unicode-bidi:plaintext]">{card.word}</span>
             <span className="text-xs text-ink-muted">{t('Tap to flip')}</span>
           </>
         ) : (
           <>
             {card.meaning
-              ? <span className="text-2xl font-extrabold text-ink [unicode-bidi:plaintext]">{card.meaning}</span>
+              ? <span className="text-2xl font-semibold text-ink [unicode-bidi:plaintext]">{card.meaning}</span>
               : <span className="text-sm text-ink-muted">{t('No meaning saved.')}</span>}
             {card.context && <span className="text-sm italic text-ink-soft [unicode-bidi:plaintext]">{card.context}</span>}
             {!card.meaning && (

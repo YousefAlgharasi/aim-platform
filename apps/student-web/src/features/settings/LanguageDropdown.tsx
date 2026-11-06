@@ -65,7 +65,7 @@ export function LanguageDropdown({ value, onChange, onSave, disabled, loading }:
       </button>
 
       {isOpen && (
-        <div className="absolute top-full start-0 end-0 mt-2 z-50 rounded-lg border border-line bg-surface shadow-lg">
+        <div className="absolute top-full start-0 end-0 mt-2 z-50 rounded-lg border border-line bg-surface">
           <ul className="list-none m-0 p-2 flex flex-col gap-1" role="listbox">
             {LANGUAGE_OPTIONS.map(option => (
               <li key={option.value}>

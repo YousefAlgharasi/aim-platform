@@ -227,7 +227,7 @@ export function NotificationPreferencesPage() {
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {NOTIFICATION_CATEGORIES.map(category => (
                   <div key={category} className="rounded-2xl bg-surface-sunken p-3.5 flex flex-col gap-1">
-                    <span className="text-sm font-extrabold text-ink">{categoryLabel(category)}</span>
+                    <span className="text-sm font-semibold text-ink">{categoryLabel(category)}</span>
                     {NOTIFICATION_CHANNELS.map(channel => {
                       const enabled = isEnabled(channel, category);
                       const saving = savingPrefs.has(prefKey(channel, category));
@@ -244,7 +244,7 @@ export function NotificationPreferencesPage() {
                             disabled={saving}
                             className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${enabled ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'}`}
                           >
-                            <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
+                            <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white transition-transform ${enabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
                           </button>
                         </div>
                       );
@@ -280,7 +280,7 @@ export function NotificationPreferencesPage() {
                     aria-label={t('Enable quiet hours')}
                     className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors ${quietEnabled ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'}`}
                   >
-                    <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${quietEnabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
+                    <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white transition-transform ${quietEnabled ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

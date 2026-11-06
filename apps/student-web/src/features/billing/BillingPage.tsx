@@ -141,8 +141,8 @@ export function BillingPage() {
                   className="hero-panel flex flex-col gap-3"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/20">
+                    <h3 className="text-lg font-semibold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/20">
                       {keyLabel(sub.status)}
                     </span>
                   </div>
@@ -199,12 +199,7 @@ export function BillingPage() {
             <ul className="list-none m-0 p-0 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {activeEntitlements.map(e => (
                 <li key={e.id} className="flex items-center gap-2.5 text-sm text-ink-soft">
-                  <span
-                    className={`size-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${e.granted ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'}`}
-                    aria-hidden="true"
-                  >
-                    {e.granted ? '✓' : '✕'}
-                  </span>
+                  {e.granted ? <svg className="size-4 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg> : <svg className="size-4 shrink-0 text-danger-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>}
                   <span className="flex-1 min-w-0">{keyLabel(e.featureKey)}</span>
                   {e.usageLimit !== null && (
                     <span className="text-xs font-semibold text-ink-muted">{e.usageCount} / {e.usageLimit}</span>
@@ -229,17 +224,17 @@ export function BillingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-2xl p-5 bg-surface shadow-sm flex flex-col gap-3.5 ${
+                  className={`rounded-2xl p-5 bg-surface flex flex-col gap-3.5 ${
                     isCurrent ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-base font-extrabold tracking-tight text-ink m-0">{plan.name}</h3>
+                    <h3 className="text-xl font-semibold tracking-tight text-ink m-0">{plan.name}</h3>
                     {isCurrent && <span className={pillCls}>{t('Current')}</span>}
                   </div>
                   {price ? (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold tracking-tight text-brand-ink">{formatMoney(price.amount, price.currency)}</span>
+                      <span className="text-3xl font-semibold tracking-tight text-brand-ink">{formatMoney(price.amount, price.currency)}</span>
                       <span className="text-sm text-ink-muted">
                         {price.billingInterval === 'one_time' ? ` ${intervalLabel('one_time')}` : `/${intervalLabel(price.billingInterval)}`}
                       </span>
@@ -252,7 +247,7 @@ export function BillingPage() {
                     <ul className="list-none m-0 p-0 flex flex-col gap-2 flex-1">
                       {features.map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-sm text-ink-soft">
-                          <span className="size-5 rounded-full bg-success-soft text-success-ink flex items-center justify-center text-xs font-extrabold shrink-0" aria-hidden="true">✓</span>
+                          <svg className="size-4 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg>
                           {f}
                         </li>
                       ))}
@@ -293,7 +288,7 @@ export function BillingPage() {
                 >
                   <span>{fmtDate(inv.paidAt ?? inv.periodEnd ?? inv.createdAt)}</span>
                   <span className="flex items-center gap-3">
-                    <span className="font-extrabold">{formatMoney(inv.total, inv.currency)}</span>
+                    <span className="font-semibold">{formatMoney(inv.total, inv.currency)}</span>
                     <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{keyLabel(inv.status)}</StatusPill>
                     <ChevronIcon className="size-4 text-ink-faint" />
                   </span>

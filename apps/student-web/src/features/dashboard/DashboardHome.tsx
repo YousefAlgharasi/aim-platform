@@ -32,10 +32,10 @@ import {
 import {
   ActivityWidget,
   ChallengeWidget,
-  ContinueWidget,
   CurrentCourseLessons,
   DeadlineWidget,
   ImproveWidget,
+  RoadmapEmpty,
 } from './widgets';
 import { GoalRing, StatTile, Unavailable } from './parts';
 import { nextLesson, useCurrentChapter } from './widgets/CurrentCourseLessons';
@@ -169,9 +169,9 @@ export function DashboardHome() {
 
   return (
     <div className="stagger flex flex-col gap-5">
-      <header className="flex flex-col gap-0.5 px-1">
-        <h1 className="m-0 text-2xl font-bold leading-tight tracking-tight text-ink sm:text-3xl">{greeting}</h1>
-        <p className="m-0 text-sm text-ink-muted">{formatDate(new Date(), { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+      <header className="flex flex-col gap-1">
+        <h1 className="lp-display m-0 text-[2rem] font-semibold text-ink sm:text-[2.75rem]">{greeting}</h1>
+        <p className="m-0 text-base text-ink-muted">{formatDate(new Date(), { weekday: 'long', month: 'long', day: 'numeric' })}</p>
       </header>
 
       {loading ? (
@@ -213,25 +213,25 @@ export function DashboardHome() {
           )}
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-            <section aria-label={t('Continue learning')} className="hero-panel lg:col-span-8">
-              <div className="relative z-10 flex h-full flex-col justify-between gap-6">
+            <section aria-label={t('Continue learning')} className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8 lg:col-span-8">
+              <div className="flex h-full flex-col justify-between gap-8">
                 {next ? (
                   <>
                     <div className="min-w-0">
-                      <p className="m-0 text-xs font-bold uppercase tracking-wider text-on-brand rtl:normal-case rtl:tracking-normal">{next.eyebrow}</p>
-                      <p className="m-0 mt-2 text-2xl font-extrabold leading-tight tracking-tight [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-3xl">{next.title}</p>
-                      {courseTitle && next.title !== courseTitle && <p className="m-0 mt-1 text-sm text-on-brand [unicode-bidi:plaintext]">{courseTitle}</p>}
+                      <p className="m-0 text-sm font-medium text-white dark:text-ink-inverse/70">{next.eyebrow}</p>
+                      <p className="lp-display m-0 mt-2 text-[2rem] font-semibold [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-[2.75rem]">{next.title}</p>
+                      {courseTitle && next.title !== courseTitle && <p className="m-0 mt-2 text-base text-white dark:text-ink-inverse/70 [unicode-bidi:plaintext]">{courseTitle}</p>}
                     </div>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                       {next.percent !== null ? (
                         <div className="flex-1 sm:max-w-xs">
-                          <div className="mb-1.5 flex justify-between text-xs font-bold text-on-brand"><span>{t('Lesson progress')}</span><span className="text-white">{next.percent}%</span></div>
-                          <div className="h-2 overflow-hidden rounded-full bg-black/25" role="progressbar" aria-label={t('Lesson progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={next.percent}>
-                            <div className="h-full rounded-full bg-white transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${next.percent}%` }} />
+                          <div className="mb-2 flex justify-between text-sm text-white dark:text-ink-inverse/70"><span>{t('Lesson progress')}</span><span className="lp-num font-semibold">{next.percent}%</span></div>
+                          <div className="h-2 overflow-hidden rounded-full bg-white/30 dark:bg-ink-inverse/10" role="progressbar" aria-label={t('Lesson progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={next.percent}>
+                            <div className="h-full rounded-full bg-white dark:bg-brand transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${next.percent}%` }} />
                           </div>
                         </div>
                       ) : <span />}
-                      <Link to={next.to} className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-7 text-[15px] font-bold no-underline shadow-lg shadow-black/20 transition-all hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                      <Link to={next.to} className="inline-flex h-14 shrink-0 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-brand no-underline transition hover:bg-white/90 dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand dark:focus-visible:ring-ink-inverse dark:focus-visible:ring-offset-white">
                         {next.cta}
                       </Link>
                     </div>
@@ -239,25 +239,25 @@ export function DashboardHome() {
                 ) : (
                   <>
                     <div>
-                      <p className="m-0 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{t('Find your starting point')}</p>
-                      <p className="m-0 mt-2 text-sm text-on-brand">{t('Take the placement test so we can recommend a course and your first lesson.')}</p>
+                      <p className="lp-display m-0 text-[2rem] font-semibold sm:text-[2.75rem]">{t('Find your starting point')}</p>
+                      <p className="m-0 mt-3 max-w-md text-base leading-relaxed text-white dark:text-ink-inverse/70">{t('Take the placement test so we can recommend a course and your first lesson.')}</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                      <Link to="/placement" className="inline-flex h-12 items-center justify-center rounded-2xl hero-cta px-7 text-[15px] font-bold no-underline shadow-lg shadow-black/20">{t('Take the placement test')}</Link>
-                      <Link to="/curriculum" className="inline-flex h-12 items-center justify-center rounded-2xl bg-white/10 px-6 text-[15px] font-bold text-white no-underline ring-1 ring-white/30">{t('Browse courses')}</Link>
+                      <Link to="/placement" className="inline-flex h-14 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-brand no-underline transition hover:bg-white/90 dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90">{t('Take the placement test')}</Link>
+                      <Link to="/curriculum" className="inline-flex h-14 items-center justify-center rounded-full px-7 text-base font-semibold text-white no-underline ring-1 ring-white/50 transition hover:bg-white/10 dark:text-ink-inverse dark:ring-ink-inverse/30 dark:hover:bg-ink-inverse/5">{t('Browse courses')}</Link>
                     </div>
                   </>
                 )}
               </div>
             </section>
 
-            <section aria-label={t('Today')} className="flex flex-col items-center gap-4 rounded-3xl bg-surface p-5 shadow-card ring-1 ring-line lg:col-span-4">
+            <section aria-label={t('Today')} className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-6 lg:col-span-4">
               {goal ? (
                 <>
                   <GoalRing done={goal.completedToday} target={goalTarget} met={goalMet} label={t('Daily goal progress')} />
                   <div className="text-center">
-                    <p className="m-0 text-base font-extrabold text-ink">{goalMet ? t('Goal met today') : t('{done}/{total} today', { done: goal.completedToday, total: goalTarget })}</p>
-                    <p className="m-0 mt-0.5 text-xs text-ink-muted">
+                    <p className="m-0 text-lg font-semibold text-ink">{goalMet ? t('Goal met today') : t('{done}/{total} today', { done: goal.completedToday, total: goalTarget })}</p>
+                    <p className="m-0 mt-0.5 text-sm text-ink-muted">
                       {t('Daily goal: {lessons}', {
                         lessons: plural(goalTarget, {
                           one: t('{n} lesson', { n: goalTarget }),
@@ -268,9 +268,9 @@ export function DashboardHome() {
                       })}
                     </p>
                   </div>
-                  <div className="flex w-full items-center justify-between gap-2 border-t border-line-subtle pt-3 text-sm">
-                    <span className="inline-flex items-center gap-1.5 font-extrabold text-ink">
-                      <FlameIcon className="size-5 text-gold fill-gold" />
+                  <div className="flex w-full items-center justify-between gap-2 border-t border-line pt-3 text-sm">
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
+                      <FlameIcon className="size-5 text-ink" />
                       {plural(goal.streakDays, {
                         one: t('{n} Day', { n: goal.streakDays }),
                         two: t('{n} Days [two]', { n: goal.streakDays }),
@@ -278,7 +278,7 @@ export function DashboardHome() {
                         other: t('{n} Days', { n: goal.streakDays }),
                       })}
                     </span>
-                    {freeze && <span className="text-xs font-semibold text-ink-muted" title={t('Streak freezes left this month')}>❄ {t('{n} freezes left', { n: freeze.remaining })}</span>}
+                    {freeze && <span className="text-sm text-ink-muted" title={t('Streak freezes left this month')}>❄ {t('{n} freezes left', { n: freeze.remaining })}</span>}
                   </div>
                 </>
               ) : (
@@ -309,23 +309,19 @@ export function DashboardHome() {
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
             <div className="flex min-w-0 flex-col gap-5 lg:col-span-7">
-              {activeCourseId ? (
-                current.state === 'ready' && current.chapter ? (
-                  <CurrentCourseLessons courseId={activeCourseId} courseTitle={data.enrollment?.courseTitle ?? null} data={current.chapter} />
-                ) : current.state === 'loading' ? (
-                  <div className="h-56 animate-pulse rounded-3xl bg-surface-muted" role="status" aria-label={t('Loading')} />
-                ) : null
+              {activeCourseId && current.state === 'ready' && current.chapter ? (
+                <CurrentCourseLessons courseId={activeCourseId} courseTitle={data.enrollment?.courseTitle ?? null} data={current.chapter} />
+              ) : activeCourseId && current.state === 'loading' ? (
+                <div className="h-56 animate-pulse rounded-2xl bg-surface-muted" role="status" aria-label={t('Loading')} />
               ) : (
-                <section aria-label={t('Learning')}>
-                  <ContinueWidget continueLesson={data.continueLesson} quickStart={data.quickStart} recommendedCourse={data.recommendedCourse} enrollment={data.enrollment} />
-                </section>
+                <RoadmapEmpty courseId={courseId} courseTitle={courseTitle} unavailable={!!activeCourseId} />
               )}
-              <ActivityWidget days={stats?.weeklyActivity ?? []} weeklyDeltaPercent={stats?.weeklyDeltaPercent} unavailable={!stats} />
+              <DeadlineWidget deadlines={data.deadlines} />
             </div>
             <aside className="flex min-w-0 flex-col gap-5 lg:col-span-5" aria-label={t('Activity and deadlines')}>
               {data.summary?.challenge && <ChallengeWidget challenge={data.summary.challenge} courseId={courseId} />}
+              <ActivityWidget days={stats?.weeklyActivity ?? []} weeklyDeltaPercent={stats?.weeklyDeltaPercent} unavailable={!stats} />
               <ImproveWidget spots={data.weakSpots} />
-              <DeadlineWidget deadlines={data.deadlines} />
             </aside>
           </div>
         </>

@@ -35,6 +35,6 @@ export function CourseBillingBadge({ price, access }: { price?: CoursePriceQuote
   }
 
   return (
-    <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${tone}`}>{label}</span>
+    <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${tone}`}>{label}</span>
   );
 }

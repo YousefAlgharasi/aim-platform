@@ -54,7 +54,7 @@ function SectionView({ section }: { section: ReportSection }) {
   const columns = Array.from(new Set(rows.flatMap(r => Object.keys(r ?? {}))));
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-extrabold tracking-tight text-ink m-0">{section.title}</h3>
+      <h3 className="text-sm font-semibold tracking-tight text-ink m-0">{section.title}</h3>
       {rows.length === 0 ? (
         <p className={subCls}>{t('No data for this section yet.')}</p>
       ) : (
@@ -78,7 +78,7 @@ function SectionView({ section }: { section: ReportSection }) {
               <thead>
                 <tr className="bg-surface-sunken">
                   {columns.map(c => (
-                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-wider text-ink-muted whitespace-nowrap">
+                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold text-ink-muted whitespace-nowrap">
                       {humanize(c)}
                     </th>
                   ))}

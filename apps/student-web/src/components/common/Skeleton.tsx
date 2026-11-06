@@ -14,7 +14,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 /** Card-shaped placeholder that mirrors the dashboard widgets so the layout does not jump when data arrives. */
 export function SkeletonCard({ lines = 3, className = '' }: { lines?: number; className?: string }) {
   return (
-    <div className={`bg-surface rounded-[20px] p-5 ring-1 ring-line shadow-card flex flex-col gap-3 ${className}`}>
+    <div className={`bg-surface rounded-[20px] p-5 ring-1 ring-line flex flex-col gap-3 ${className}`}>
       <Skeleton className="h-3 w-24" />
       <Skeleton className="h-6 w-2/3" />
       {Array.from({ length: lines }).map((_, i) => (
@@ -48,8 +48,13 @@ export function DashboardSkeleton() {
   return (
     <Shell className="!gap-5">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <Skeleton className="h-52 w-full rounded-3xl lg:col-span-8" />
-        <div className="flex flex-col items-center gap-4 rounded-3xl bg-surface p-5 ring-1 ring-line shadow-card lg:col-span-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line sm:p-8 lg:col-span-8">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-12 w-2/3" />
+          <Skeleton className="h-4 w-40" />
+          <div className="mt-6 flex items-end justify-between gap-6"><Skeleton className="h-3 w-64 max-w-[60%]" /><Skeleton className="h-14 w-44 rounded-full" /></div>
+        </div>
+        <div className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-6 ring-1 ring-line lg:col-span-4">
           <Skeleton className="size-[136px] rounded-full" />
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-3 w-full" />
@@ -57,9 +62,9 @@ export function DashboardSkeleton() {
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-2xl bg-surface p-4 ring-1 ring-line shadow-card">
+          <div key={i} className="flex flex-col gap-2 rounded-2xl bg-surface p-5 ring-1 ring-line">
             <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-9 w-24" />
           </div>
         ))}
       </div>
@@ -82,7 +87,7 @@ export function AppShellSkeleton() {
       </div>
       <div className="flex-1 p-4 sm:p-6">
         <div className="mx-auto flex max-w-5xl flex-col gap-5">
-          <Skeleton className="h-40 w-full rounded-3xl" />
+          <Skeleton className="h-40 w-full rounded-2xl" />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2"><SkeletonCard /><SkeletonCard /></div>
         </div>
       </div>
@@ -107,10 +112,10 @@ export function ImproveSkeleton() {
   return (
     <Shell>
       <Header />
-      <Skeleton className="h-40 w-full rounded-3xl" />
+      <Skeleton className="h-40 w-full rounded-2xl" />
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-3 rounded-[20px] bg-surface p-5 ring-1 ring-line shadow-card">
+          <div key={i} className="flex flex-col gap-3 rounded-[20px] bg-surface p-5 ring-1 ring-line">
             <div className="flex items-center justify-between"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-6 w-20 rounded-full" /></div>
             <Skeleton className="h-2.5 w-full rounded-full" />
             <Skeleton className="h-3 w-3/4" />
@@ -129,7 +134,7 @@ export function ListSkeleton({ rows = 5, bare = false }: { rows?: number; bare?:
       {!bare && <Header />}
       <div className="flex flex-col gap-3">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 rounded-[20px] bg-surface p-4 ring-1 ring-line shadow-card">
+          <div key={i} className="flex items-center gap-4 rounded-[20px] bg-surface p-4 ring-1 ring-line">
             <Skeleton className="size-11 shrink-0 rounded-2xl" />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Skeleton className="h-4 w-1/2" />
@@ -150,7 +155,7 @@ export function CardGridSkeleton({ cards = 6, bare = false }: { cards?: number; 
       {!bare && <Header />}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: cards }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-3 rounded-[20px] bg-surface p-4 ring-1 ring-line shadow-card">
+          <div key={i} className="flex flex-col gap-3 rounded-[20px] bg-surface p-4 ring-1 ring-line">
             <Skeleton className="h-28 w-full rounded-2xl" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-full" />
@@ -166,7 +171,7 @@ export function CardGridSkeleton({ cards = 6, bare = false }: { cards?: number; 
 export function DetailSkeleton() {
   return (
     <Shell>
-      <Skeleton className="h-44 w-full rounded-3xl" />
+      <Skeleton className="h-44 w-full rounded-2xl" />
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <SkeletonCard lines={2} /><SkeletonCard lines={2} /><SkeletonCard lines={2} />
       </div>
@@ -180,7 +185,7 @@ export function FormSkeleton({ fields = 4 }: { fields?: number }) {
   return (
     <Shell>
       <Header />
-      <div className="flex flex-col gap-5 rounded-[20px] bg-surface p-5 ring-1 ring-line shadow-card">
+      <div className="flex flex-col gap-5 rounded-[20px] bg-surface p-5 ring-1 ring-line">
         {Array.from({ length: fields }).map((_, i) => (
           <div key={i} className="flex flex-col gap-2">
             <Skeleton className="h-3 w-28" />
@@ -194,11 +199,12 @@ export function FormSkeleton({ fields = 4 }: { fields?: number }) {
 }
 
 /** Practice / placement / exam question screen: progress bar, prompt, answer options. */
-export function QuestionSkeleton() {
+/** `narrow` is for the placement test's own reading column; everywhere else it fills the page column. */
+export function QuestionSkeleton({ narrow = false }: { narrow?: boolean }) {
   return (
-    <Shell className="mx-auto w-full max-w-2xl">
+    <Shell className={narrow ? 'mx-auto w-full max-w-2xl' : 'w-full'}>
       <Skeleton className="h-2.5 w-full rounded-full" />
-      <div className="flex flex-col gap-4 rounded-3xl bg-surface p-5 ring-1 ring-line shadow-card sm:p-6">
+      <div className="flex flex-col gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-6">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-6 w-4/5" />
         <Skeleton className="h-6 w-2/3" />
@@ -214,7 +220,7 @@ export function QuestionSkeleton() {
 /** AI / voice teacher conversation: alternating message bubbles and the input bar. */
 export function ChatSkeleton() {
   return (
-    <Shell className="mx-auto w-full max-w-3xl">
+    <Shell className="w-full">
       <Skeleton className="h-16 w-full rounded-2xl" />
       <div className="flex flex-col gap-4">
         <Skeleton className="h-20 w-3/4 rounded-2xl rounded-es-none" />
@@ -223,5 +229,87 @@ export function ChatSkeleton() {
       </div>
       <Skeleton className="mt-2 h-14 w-full rounded-2xl" />
     </Shell>
+  );
+}
+
+// ── Pre-dashboard flow (/start and the placement test) ──────────────────────
+// These mirror the real full-screen pages (no sidebar), so nothing jumps when the content arrives.
+
+/** /start: step list on the left, the question and its ruled options on the right. */
+export function StartCardSkeleton() {
+  return (
+    <div aria-hidden="true" className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
+      <div className="lg:col-span-4">
+        <div className="hidden flex-col gap-2 lg:flex"><Skeleton className="h-5 w-40" /><Skeleton className="h-3 w-32" /></div>
+        <div className="flex flex-col gap-3 lg:hidden"><Skeleton className="h-4 w-32" /><Skeleton className="h-0.5 w-full" /></div>
+        <div className="mt-8 hidden flex-col gap-5 border-y border-line py-5 lg:flex">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4"><Skeleton className="size-8 shrink-0 rounded-full" /><Skeleton className="h-4 w-28" /></div>
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-col gap-8 lg:col-span-7 lg:col-start-6">
+        <div className="flex flex-col gap-3"><Skeleton className="h-10 w-4/5" /><Skeleton className="h-4 w-3/5" /></div>
+        <div className="flex flex-col divide-y divide-line border-y border-line">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-4 py-4"><Skeleton className="size-6 shrink-0 rounded-full" /><div className="flex flex-1 flex-col gap-2"><Skeleton className="h-5 w-1/2" /><Skeleton className="h-3 w-3/4" /></div></div>
+          ))}
+        </div>
+        <Skeleton className="h-14 w-full rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+function FlowHeaderSkeleton() {
+  return (
+    <div aria-hidden="true" className="border-b border-line">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
+        <Skeleton className="h-6 w-14" />
+        <div className="flex gap-1.5"><Skeleton className="size-11 rounded-xl" /><Skeleton className="h-11 w-14 rounded-xl" /></div>
+      </div>
+    </div>
+  );
+}
+
+/** Full-screen loader for /start (and while the app checks whether setup is finished). */
+export function FlowPageSkeleton() {
+  const { t } = useI18n();
+  return (
+    <div role="status" aria-busy="true" aria-label={t('Loading')} className="flex min-h-screen flex-col bg-page">
+      <FlowHeaderSkeleton />
+      <div className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 sm:py-14 lg:py-20"><StartCardSkeleton /></div>
+    </div>
+  );
+}
+
+/** The placement intro: title, ruled facts, numbered sections, start button. */
+export function PlacementIntroSkeleton() {
+  const { t } = useI18n();
+  return (
+    <div role="status" aria-busy="true" aria-label={t('Loading')} className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+      <div aria-hidden="true" className="flex flex-col gap-3"><Skeleton className="h-11 w-3/4" /><Skeleton className="h-4 w-4/5" /></div>
+      <div aria-hidden="true" className="flex flex-col divide-y divide-line border-y border-line">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2 py-4"><Skeleton className="h-5 w-1/3" /><Skeleton className="h-3 w-3/5" /></div>
+        ))}
+      </div>
+      <div aria-hidden="true" className="flex flex-col divide-y divide-line">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-3.5"><Skeleton className="h-5 w-5" /><Skeleton className="h-5 flex-1" /><Skeleton className="h-3 w-16" /></div>
+        ))}
+      </div>
+      <Skeleton className="h-14 w-full rounded-full" />
+    </div>
+  );
+}
+
+/** Full-screen loader for the placement area while the guard checks the account. */
+export function PlacementPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-page">
+      <FlowHeaderSkeleton />
+      <div className="px-5 py-10 sm:px-8 sm:py-14"><PlacementIntroSkeleton /></div>
+    </div>
   );
 }

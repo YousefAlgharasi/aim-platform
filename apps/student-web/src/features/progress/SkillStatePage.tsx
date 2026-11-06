@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FilterPills } from '../../components/common/FilterPills';
 import { Link } from 'react-router-dom';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Card } from '../../components/common/Card';
@@ -41,15 +42,9 @@ export function SkillStatePage() {
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t('Filter by skill type')}>
-              {(['all', ...cats] as Array<Category | 'all'>).map((c) => (
-                <button key={c} type="button" role="tab" aria-selected={cat === c} onClick={() => setCat(c)}
-                  className={`min-h-10 shrink-0 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${cat === c ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'}`}>
-                  {c === 'all' ? t('All') : t(CATEGORY_LABEL[c])}
-                </button>
-              ))}
-            </div>
-            <button type="button" onClick={() => setWeakFirst((v) => !v)} className="min-h-10 cursor-pointer rounded-xl border-0 bg-control px-4 text-sm font-bold text-ink-soft hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <FilterPills label={t('Filter by skill type')} value={cat} onChange={setCat}
+              options={(['all', ...cats] as Array<Category | 'all'>).map((c) => ({ key: c, label: c === 'all' ? t('All') : t(CATEGORY_LABEL[c]) }))} />
+            <button type="button" onClick={() => setWeakFirst((v) => !v)} className="min-h-11 cursor-pointer rounded-full border-0 bg-transparent px-5 text-sm font-semibold text-ink-soft ring-1 ring-line-strong hover:bg-surface-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               {weakFirst ? t('Weakest first') : t('Strongest first')}
             </button>
           </div>
@@ -65,7 +60,7 @@ export function SkillStatePage() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="m-0 text-base font-extrabold leading-snug text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]" title={s.skillId}>{name}</p>
+                        <p className="m-0 text-base font-semibold leading-snug text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]" title={s.skillId}>{name}</p>
                         <p className="m-0 mt-0.5 text-xs text-ink-muted">{t(CATEGORY_LABEL[categoryOf(s.skillId)])}</p>
                       </div>
                       <span className={ui.badge(tier === 'strong' ? ui.tone.success : tier === 'developing' ? ui.tone.primary : ui.tone.error)}>{t(tierLabel[tier])}</span>
@@ -74,7 +69,7 @@ export function SkillStatePage() {
                       <div className={`${ui.barTrack} flex-1`} role="progressbar" aria-label={t('{name} mastery', { name })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
                         <div className={tier === 'needsWork' ? ui.barFillWeak : ui.barFill} style={{ width: `${Math.max(pct, 3)}%` }} />
                       </div>
-                      <span className="w-12 text-end text-sm font-extrabold tabular-nums text-ink">{pct}%</span>
+                      <span className="w-12 text-end text-sm font-semibold tabular-nums text-ink">{pct}%</span>
                     </div>
                     <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-ink-muted">
                       <span><span aria-hidden="true" className={s.masteryTrend === 'improving' ? 'text-success-ink' : s.masteryTrend === 'declining' ? 'text-danger-ink' : ''}>{TREND_MARK[s.masteryTrend] ?? ''}</span> {trendLabel(s.masteryTrend)}</span>

@@ -18,7 +18,7 @@ interface QuestionRendererProps {
 }
 
 const INPUT_CLS =
-  'w-full rounded-[14px] px-4 py-3 text-base bg-surface text-ink ring-1 ring-line border-0 outline-none focus:ring-2 focus:ring-focus disabled:opacity-70';
+  'w-full rounded-xl px-4 py-3 text-base bg-transparent text-ink ring-1 ring-line-strong border-0 outline-none focus:ring-2 focus:ring-brand disabled:opacity-70';
 
 /**
  * Renders a backend-delivered session question (GET /sessions/:id/questions).
@@ -45,11 +45,11 @@ export function QuestionRenderer({
       <div className={`${questionCard} flex flex-col gap-3`}>
         <div>
           {questionNumber != null && questionTotal != null && (
-            <span className="text-brand-ink font-bold text-xs uppercase tracking-wider block mb-2">
+            <span className="mb-2 block text-sm text-ink-muted">
               {t('Question {n} of {total}', { n: questionNumber, total: questionTotal })}
             </span>
           )}
-          <p className="text-ink font-bold text-xl leading-snug m-0 [unicode-bidi:plaintext]">{question.stem}</p>
+          <p className="m-0 text-2xl font-semibold leading-snug text-ink [unicode-bidi:plaintext]">{question.stem}</p>
         </div>
         {isListening && (
           <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label={t('Play recording')} />
@@ -62,18 +62,18 @@ export function QuestionRenderer({
           {options.map((option, optIndex) => {
             const isSelected = selectedAnswer === option.id;
             let cardStyle =
-              'bg-surface ring-1 ring-line hover:ring-brand-line hover:bg-surface-sunken text-ink';
+              'bg-surface ring-1 ring-line hover:bg-surface-muted hover:ring-line-strong text-ink';
             if (isSelected && disabled && result === true) {
               cardStyle = 'bg-success-soft ring-2 ring-success text-success-ink';
             } else if (isSelected && disabled && result === false) {
               cardStyle = 'bg-danger-soft ring-2 ring-danger text-danger-ink';
             } else if (isSelected) {
-              cardStyle = 'bg-brand-soft/50 ring-2 ring-brand-ink text-brand-ink';
+              cardStyle = 'bg-surface ring-2 ring-brand text-ink';
             }
             return (
               <label
                 key={option.id}
-                className={`relative w-full p-4 rounded-2xl text-start font-bold text-sm transition-all duration-200 flex items-center justify-between gap-3 focus-within:outline focus-within:outline-2 focus-within:outline-brand-ink ${cardStyle} ${
+                className={`relative w-full p-4 rounded-2xl text-start font-medium text-base transition-colors duration-200 flex items-center justify-between gap-3 focus-within:outline focus-within:outline-2 focus-within:outline-brand ${cardStyle} ${
                   disabled ? 'cursor-default' : 'cursor-pointer'
                 }`}
               >
@@ -87,7 +87,7 @@ export function QuestionRenderer({
                   className="sr-only"
                 />
                 <span className="flex min-w-0 items-center gap-3">
-                  <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${isSelected ? 'bg-white/70 text-current dark:bg-black/30' : 'bg-surface-muted text-ink-soft'}`}>
+                  <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${isSelected ? (disabled ? 'bg-white/70 text-current dark:bg-black/30' : 'bg-brand text-white') : 'bg-surface-strong text-ink-soft'}`}>
                     {String.fromCharCode(65 + optIndex)}
                   </span>
                   <span className="min-w-0 [unicode-bidi:plaintext]">{option.text}</span>

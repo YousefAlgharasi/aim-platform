@@ -15,7 +15,7 @@ import {
   isPracticeLocked, practiceTopicsApi, type PracticeKind, type PracticeSessionState, type PracticeTopic,
 } from './practiceTopicsApi';
 
-const badge = 'rounded-full bg-surface-muted text-ink-soft text-xs font-bold px-2.5 py-1';
+const badge = 'rounded-full text-ink text-sm font-medium px-3 py-1 ring-1 ring-line-strong';
 
 /** /practice/speaking and /practice/writing: pick a topic. Everything is gated by the backend. */
 export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
@@ -79,7 +79,7 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
   const ModeIcon = kind === 'speaking' ? MicIcon : PencilIcon;
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <PageTitleBar title={title} subtitle={subtitle} fallback="/practice" />
 
       {loading && <CardGridSkeleton cards={6} bare />}
@@ -107,14 +107,14 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
                   type="button"
                   onClick={() => open(topic)}
                   disabled={startingId !== null}
-                  className="group flex h-full w-full cursor-pointer flex-col gap-3 rounded-2xl border-0 bg-surface p-4 text-start shadow-card ring-1 ring-line transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none sm:p-5"
+                  className="group flex h-full w-full cursor-pointer flex-col gap-3 rounded-2xl border-0 bg-surface p-5 text-start ring-1 ring-line transition-colors duration-200 hover:bg-surface-muted hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none"
                 >
                   <span className="flex items-start justify-between gap-3">
-                    <span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand-ink" aria-hidden="true"><ModeIcon className="size-5" /></span>
+                    <span className="grid size-11 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true"><ModeIcon className="size-5" /></span>
                     {rel !== 'unknown' && <RelationChip relation={rel} band={bandOf(topic.levelCode)} />}
                   </span>
-                  <span className="text-base font-extrabold leading-snug tracking-tight text-ink [unicode-bidi:plaintext]">{topic.title}</span>
-                  {topic.description && <span className="text-sm leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{topic.description}</span>}
+                  <span className="text-xl font-semibold leading-snug tracking-tight text-ink [unicode-bidi:plaintext]">{topic.title}</span>
+                  {topic.description && <span className="text-base leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{topic.description}</span>}
                   <span className="mt-auto flex flex-wrap gap-2 pt-1">
                     {rel === 'unknown' && topic.levelCode && <span className={badge}>{topic.levelCode}</span>}
                     <span className={badge}>{t('+{xp} XP', { xp: topic.xpReward })}</span>

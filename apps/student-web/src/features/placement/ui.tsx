@@ -10,15 +10,15 @@ import { t } from '../../i18n';
  */
 
 export const CARD =
-  'bg-surface rounded-2xl ring-1 ring-line shadow-sm';
+  'bg-surface rounded-2xl ring-1 ring-line';
 
-export const EYEBROW = 'text-brand-ink text-xs font-extrabold uppercase tracking-wider';
+export const EYEBROW = 'text-ink-muted text-sm font-medium';
 
-export const H1 = 'm-0 text-2xl sm:text-3xl font-extrabold tracking-tight text-ink leading-tight';
+export const H1 = 'm-0 text-2xl sm:text-3xl font-semibold tracking-tight text-ink leading-tight';
 
-export const H2 = 'm-0 text-lg font-extrabold tracking-tight text-ink';
+export const H2 = 'm-0 text-xl font-semibold tracking-tight text-ink';
 
-export const BODY = 'm-0 text-sm leading-relaxed text-ink-muted';
+export const BODY = 'm-0 text-base leading-relaxed text-ink-muted';
 
 export const TEXTAREA =
   'w-full bg-control border-1.5 border-line focus:border-focus focus:outline-none focus-visible:ring-2 focus-visible:ring-focus/30 rounded-xl p-3.5 text-sm text-ink resize-y leading-relaxed font-sans placeholder:text-ink-muted disabled:opacity-60';
@@ -44,14 +44,9 @@ export function PageHeader({
 }
 
 export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; tone?: 'indigo' | 'emerald' }) {
-  const glow = tone === 'emerald' ? 'from-success to-accent' : 'from-brand to-secondary';
-  const face = tone === 'emerald' ? 'from-success to-accent shadow-success/25' : 'from-brand to-secondary shadow-brand/25';
   return (
-    <div className="relative size-16 shrink-0" aria-hidden="true">
-      <div className={`absolute -inset-2 bg-gradient-to-r ${glow} rounded-3xl opacity-20 blur-md`} />
-      <div className={`relative size-16 rounded-2xl bg-gradient-to-br ${face} flex items-center justify-center text-white shadow-lg`}>
-        {children}
-      </div>
+    <div className={`relative flex size-16 shrink-0 items-center justify-center rounded-full text-white ${tone === 'emerald' ? 'bg-success' : 'bg-brand'}`} aria-hidden="true">
+      {children}
     </div>
   );
 }
@@ -59,7 +54,7 @@ export function HeroBadge({ children, tone = 'indigo' }: { children: ReactNode; 
 export function ProgressBar({ value, total, label }: { value: number; total: number; label?: string }) {
   const pct = total > 0 ? Math.min(100, Math.max(0, (value / total) * 100)) : 0;
   return (
-    <div className="h-1.5 bg-surface-strong rounded-full overflow-hidden">
+    <div className="h-2 bg-ink/10 rounded-full overflow-hidden">
       <div
         className="h-full bg-brand rounded-full transition-all duration-400 ease-out"
         style={{ width: `${pct}%` }}
@@ -77,10 +72,10 @@ export function TimerPill({ children, warning = false }: { children: ReactNode; 
   return (
     <span
       aria-live="off"
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono font-semibold text-xs ${
+      className={`lp-num inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ring-1 ${
         warning
-          ? 'bg-danger-soft text-danger-ink'
-          : 'bg-brand-soft text-brand-ink'
+          ? 'text-danger-ink ring-danger-line'
+          : 'text-ink ring-line-strong'
       }`}
     >
       <svg className="size-3.5" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -118,10 +113,8 @@ export function ChoiceRow({
 }) {
   const shape = large ? 'gap-4 px-4 py-4 rounded-2xl' : 'gap-3 p-3.5 rounded-xl';
   const state = selected
-    ? large
-      ? 'bg-brand-soft ring-2 ring-brand-ink shadow-lg shadow-brand/15'
-      : 'bg-brand-soft ring-[1.5px] ring-brand-ink'
-    : 'bg-surface ring-1 ring-line hover:ring-brand-line hover:shadow-sm';
+    ? 'bg-surface ring-2 ring-brand'
+    : 'bg-surface ring-1 ring-line hover:bg-surface-muted hover:ring-line-strong';
   return (
     <label
       className={`relative flex items-center cursor-pointer transition-all duration-200 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-70 ${shape} ${state}`}
@@ -129,8 +122,8 @@ export function ChoiceRow({
       <input type="radio" name={name} value={value} checked={selected} onChange={onChange} disabled={disabled} className="sr-only" />
       {icon && (
         <span
-          className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-            selected ? 'bg-brand-soft text-brand-ink' : 'bg-surface-muted text-ink-muted'
+          className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+            selected ? 'bg-brand-soft text-brand-ink' : 'bg-surface-strong text-ink-muted'
           }`}
         >
           {icon}
@@ -138,8 +131,8 @@ export function ChoiceRow({
       )}
       {keyLabel && (
         <span
-          className={`size-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold ${
-            selected ? 'bg-brand text-white' : 'bg-surface-muted text-ink-muted dark:text-ink-soft'
+          className={`size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold ${
+            selected ? 'bg-brand text-white' : 'bg-surface-strong text-ink-muted dark:text-ink-soft'
           }`}
         >
           {keyLabel}
@@ -147,8 +140,8 @@ export function ChoiceRow({
       )}
       <span className="flex-1 min-w-0 flex flex-col">
         <span
-          className={`${large ? 'text-[15px] font-bold' : 'text-sm'} leading-snug ${
-            selected ? 'text-brand-ink font-semibold' : 'text-ink'
+          className={`${large ? 'text-base font-semibold' : 'text-base'} leading-snug ${
+            selected ? 'text-ink font-semibold' : 'text-ink'
           }`}
         >
           {children}
@@ -161,7 +154,7 @@ export function ChoiceRow({
       </span>
       {large ? (
         selected ? (
-          <span className="size-6 rounded-full bg-brand flex items-center justify-center shrink-0 shadow-md">
+          <span className="size-6 rounded-full bg-brand flex items-center justify-center shrink-0">
             <CheckIcon className="size-3 text-white" />
           </span>
         ) : (
@@ -193,7 +186,7 @@ const TONES: Record<BadgeTone, string> = {
 
 export function Badge({ tone = 'slate', children }: { tone?: BadgeTone; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${TONES[tone]}`}>
+    <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ${TONES[tone]}`}>
       {children}
     </span>
   );

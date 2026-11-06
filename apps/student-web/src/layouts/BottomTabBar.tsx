@@ -5,15 +5,15 @@ import { tabItems } from './navItems';
 /** Phone navigation: the four places students use most, plus "Menu" for everything else. */
 export function BottomTabBar({ onMenu }: { onMenu: () => void }) {
   const { t } = useI18n();
-  const base = 'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 border-0 bg-transparent px-1 text-[11px] font-bold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
+  const base = 'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 border-0 bg-transparent px-1 text-[11px] font-semibold no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
   return (
-    <nav aria-label={t('Main navigation')} className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden dark:bg-elevated/90">
+    <nav aria-label={t('Main navigation')} className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-page/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
       {tabItems.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
           end={item.to === '/'}
-          className={({ isActive }) => `${base} ${isActive ? 'text-brand-ink' : 'text-ink-muted'}`}
+          className={({ isActive }) => `${base} ${isActive ? 'text-ink' : 'text-ink-muted'}`}
         >
           <span aria-hidden="true">{item.icon}</span>
           <span className="max-w-full truncate">{t(item.label)}</span>

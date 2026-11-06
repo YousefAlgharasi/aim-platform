@@ -5,7 +5,6 @@ import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { ChatIcon, LightbulbIcon, MicIcon, PencilIcon } from '../../components/common/Icons';
 import { RetryIcon, TargetIcon } from '../../layouts/navItems';
 import { mistakesApi, vocabularyApi } from '../learner/learnerApi';
-import { LevelBadge } from '../level/LevelBadge';
 
 interface Mode { to: string; title: string; body: string; icon: ReactNode; meta?: string; tone: string }
 
@@ -14,17 +13,17 @@ function ModeCard({ mode }: { mode: Mode }) {
   return (
     <Link
       to={mode.to}
-      className="group flex h-full flex-col gap-3 rounded-2xl bg-surface p-4 no-underline shadow-card ring-1 ring-line transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none sm:p-5"
+      className="group flex h-full flex-col gap-3 rounded-2xl bg-surface p-5 no-underline ring-1 ring-line transition-colors duration-200 hover:bg-surface-muted hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none"
     >
       <span className="flex items-start justify-between gap-3">
-        <span className={`grid size-12 place-items-center rounded-2xl ${mode.tone}`} aria-hidden="true">{mode.icon}</span>
-        {mode.meta && <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-extrabold text-brand-ink">{mode.meta}</span>}
+        <span className="grid size-12 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true">{mode.icon}</span>
+        {mode.meta && <span className="lp-num rounded-full px-3 py-1 text-sm font-semibold text-ink ring-1 ring-line-strong">{mode.meta}</span>}
       </span>
       <span className="flex-1">
-        <span className="block text-base font-extrabold tracking-tight text-ink">{t(mode.title)}</span>
-        <span className="mt-1 block text-sm leading-relaxed text-ink-muted">{t(mode.body)}</span>
+        <span className="block text-xl font-semibold tracking-tight text-ink">{t(mode.title)}</span>
+        <span className="mt-1 block text-base leading-relaxed text-ink-muted">{t(mode.body)}</span>
       </span>
-      <span className="text-sm font-bold text-brand-ink">{t('Open')} <span aria-hidden="true" className="inline-block rtl:-scale-x-100 transition-transform group-hover:translate-x-0.5">→</span></span>
+      <span className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-4 group-hover:decoration-ink">{t('Open')}</span>
     </Link>
   );
 }
@@ -33,7 +32,7 @@ function Group({ title, modes }: { title: string; modes: Mode[] }) {
   const { t } = useI18n();
   return (
     <section className="flex flex-col gap-3" aria-label={t(title)}>
-      <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t(title)}</h2>
+      <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t(title)}</h2>
       <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${modes.length >= 3 ? 'lg:grid-cols-3' : ''}`}>
         {modes.map((m) => <ModeCard key={m.to} mode={m} />)}
       </div>
@@ -56,30 +55,29 @@ export function PracticeHubPage() {
   const ic = 'size-6';
 
   return (
-    <div className="stagger flex flex-col gap-6">
+    <div className="stagger flex flex-col gap-8">
       <PageTitleBar title={t('Practice')} subtitle={t('Talk, speak, write and review. Pick what fits the time you have.')} />
 
-      <div className="hero-panel">
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><LevelBadge tone="onBrand" /></div>
-            <p className="m-0 mt-2 text-xl font-extrabold leading-snug sm:text-2xl">
+            <p className="lp-display m-0 text-[1.75rem] font-semibold sm:text-[2.25rem]">
               {waiting > 0 ? t('Your 5-minute plan is ready') : t('You are all caught up')}
             </p>
-            <p className="m-0 mt-1 text-sm text-on-brand">
+            <p className="m-0 mt-2 text-base text-white dark:text-ink-inverse/70">
               {waiting > 0
-                ? [mistakes ? t('{n} mistakes to retry', { n: mistakes }) : '', due ? t('{n} words due', { n: due }) : ''].filter(Boolean).join(' · ')
+                ? [mistakes ? t('{n} mistakes to retry', { n: mistakes }) : '', due ? t('{n} words due', { n: due }) : ''].filter(Boolean).join(', ')
                 : t('Try a conversation or a new topic to keep your streak going.')}
             </p>
           </div>
           <Link
             to={mistakes ? '/mistakes?quick=1' : due ? '/vocabulary' : '/ai-teacher'}
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline shadow-lg shadow-black/20 transition-all hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="inline-flex h-14 shrink-0 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-brand no-underline transition hover:bg-white/90 active:scale-[0.98] dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand dark:focus-visible:ring-ink-inverse dark:focus-visible:ring-offset-white"
           >
             {waiting > 0 ? t('Start now') : t('Chat with AI Teacher')}
           </Link>
         </div>
-      </div>
+      </section>
 
       <Group
         title="Talk with your teacher"

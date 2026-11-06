@@ -1,18 +1,20 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { AppShellSkeleton } from '../components/common/Skeleton';
+import { AppShellSkeleton, FlowPageSkeleton, PlacementPageSkeleton } from '../components/common/Skeleton';
 
 interface AuthGuardProps {
   children: ReactNode;
+  /** Which loader to show while the session loads: the app shell (default) or a full-screen flow page. */
+  loader?: 'app' | 'flow' | 'placement';
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
+export function AuthGuard({ children, loader = 'app' }: AuthGuardProps) {
   const { user, loading, sessionExpired } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return <AppShellSkeleton />;
+    return loader === 'flow' ? <FlowPageSkeleton /> : loader === 'placement' ? <PlacementPageSkeleton /> : <AppShellSkeleton />;
   }
 
   if (!user) {

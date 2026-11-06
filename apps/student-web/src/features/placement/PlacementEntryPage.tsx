@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { DetailSkeleton } from '../../components/common/Skeleton';
+import { PlacementIntroSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -16,37 +15,26 @@ import {
   fetchPlacementSections,
   formatPlacementLevel,
   loadPlacementProgress,
+  markPlacementLive,
   savePlacementProgress,
+  setPlacementDecision,
   startPlacementAttempt,
   type PlacementLatestStatus,
   type PlacementSection,
   type PlacementTest,
 } from './placementApi';
-import { ClockIcon, ClipboardIcon, LightbulbIcon, TrophyIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
-import { BODY, CARD, H2, HeroBadge, PageHeader } from './ui';
-
-const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-5';
-
-function InfoRow({ icon, title, desc }: { icon: ReactNode; title: ReactNode; desc: ReactNode }) {
-  return (
-    <div className={`flex gap-4 items-center p-4 ${CARD}`}>
-      <div className="size-11 bg-brand-soft/80 rounded-xl flex items-center justify-center shrink-0">{icon}</div>
-      <div className="flex-1 min-w-0">
-        <p className="m-0 text-[15px] font-bold leading-snug text-ink">{title}</p>
-        <p className="m-0 mt-0.5 text-xs leading-relaxed text-ink-muted">{desc}</p>
-      </div>
-    </div>
-  );
-}
+import { useAuth } from '../../hooks/useAuth';
+import { cacheSetupDone } from '../start/setupStatus';
+import { ED_BODY, ED_BTN, ED_SHELL, EdHeader, edRow } from './ed';
 
 function RestartModalBody({ text, confirmLabel, busy, onConfirm, onCancel }: { text: string; confirmLabel: string; busy: boolean; onConfirm: () => void; onCancel: () => void }) {
   const { t } = useI18n();
   return (
     <div className="flex flex-col gap-3">
-      <p className={BODY}>{text}</p>
-      <Button onClick={onConfirm} disabled={busy} fullWidth>{confirmLabel}</Button>
-      <Button variant="secondary" onClick={onCancel} fullWidth>{t('Cancel')}</Button>
+      <p className={ED_BODY}>{text}</p>
+      <Button onClick={onConfirm} disabled={busy} fullWidth className={ED_BTN}>{confirmLabel}</Button>
+      <Button variant="secondary" onClick={onCancel} fullWidth className={ED_BTN}>{t('Cancel')}</Button>
     </div>
   );
 }
@@ -58,6 +46,7 @@ function RestartModalBody({ text, confirmLabel, busy, onConfirm, onCancel }: { t
 export function PlacementEntryPage() {
   const { t, plural } = useI18n();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [status, setStatus] = useState<PlacementLatestStatus | null>(null);
   const [test, setTest] = useState<PlacementTest | null>(null);
   const [sections, setSections] = useState<PlacementSection[]>([]);
@@ -98,6 +87,15 @@ export function PlacementEntryPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // An unfinished attempt (interrupted, e.g. app/tab closed) always starts again from question 1, once.
+  const [autoTried, setAutoTried] = useState(false);
+  const abandoned = status?.status === 'active' && !!status.attemptId && !autoTried;
+  useEffect(() => {
+    if (!abandoned) return;
+    setAutoTried(true);
+    void handleStart();
+  }, [abandoned]);
+
   async function handleStart() {
     setConfirmRestart(false);
     setBusy(true);
@@ -111,6 +109,7 @@ export function PlacementEntryPage() {
         answered: 0,
         skipped: 0,
       });
+      markPlacementLive(attempt.id);
       navigate(`/placement/${attempt.id}`, { state: { expiresAt: attempt.expires_at } });
     } catch (err) {
       setActionError(getErrorMessage(err, t('Failed to start the placement test')));
@@ -134,7 +133,14 @@ export function PlacementEntryPage() {
     navigate(`/placement/${attemptId}/result`);
   }
 
-  if (loading) return <DetailSkeleton />;
+  // No test is published: do not trap the student; treat it as "start from zero".
+  async function skipUnavailableTest() {
+    try { await setPlacementDecision('start_from_scratch'); } catch { /* the guard re-checks anyway */ }
+    if (user) cacheSetupDone(user.id);
+    navigate('/dashboard', { replace: true });
+  }
+
+  if (loading || abandoned) return <PlacementIntroSkeleton />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!status) return null;
 
@@ -154,36 +160,28 @@ export function PlacementEntryPage() {
     });
   const totalQuestions = sections.reduce((sum, s) => sum + (s.total_questions ?? 0), 0);
 
-  // ---- Completed: compact result + retake -----------------------------------
+  // ---- Completed: the level is the headline, retake sits quietly under it ---------
   if (status.status === 'completed' && status.result && status.attemptId) {
     const level = formatPlacementLevel(status.result.estimated_level);
     return (
-      <div className={SHELL}>
-        <PageHeader title={t('Placement Test')} />
+      <div className={ED_SHELL}>
+        <EdHeader title={t('Placement Test')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
-        <Card>
-          <div className="flex flex-col items-center text-center gap-4 py-2">
-            <div className="relative">
-              <div className="absolute -inset-3 bg-gradient-to-r from-brand to-secondary rounded-3xl opacity-25 blur-lg" />
-              <div className="relative size-24 rounded-3xl bg-gradient-to-br from-brand to-secondary flex flex-col items-center justify-center text-white shadow-xl shadow-brand/25">
-                <span className="font-extrabold text-3xl tracking-tight leading-none">{level.code ?? level.label}</span>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-on-brand mt-1">{t('Level')}</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-brand-ink">{t('Your placement level')}</span>
-              {level.code && <span className="text-sm text-ink-muted">{level.label}</span>}
-            </div>
-            <Link to={`/placement/${status.attemptId}/result`} className="w-full sm:w-auto">
-              <Button variant="secondary" size="lg" fullWidth>{t('View full result')}</Button>
-            </Link>
-          </div>
-        </Card>
-        {test && (
-          <Button variant="ghost" size="lg" onClick={() => setConfirmRestart(true)} disabled={busy} fullWidth>
-            {busy ? t('Starting…') : t('Retake placement test')}
-          </Button>
-        )}
+        <section className="border-t border-line pt-6">
+          <p className="m-0 text-sm text-ink-muted">{t('Your placement level')}</p>
+          <p className="lp-display lp-num m-0 mt-1 text-[clamp(4.5rem,18vw,8rem)] font-semibold leading-none text-ink">{level.code ?? level.label}</p>
+          {level.code && <p className="m-0 mt-3 text-xl font-medium text-ink-soft">{level.label}</p>}
+        </section>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link to={`/placement/${status.attemptId}/result`} className="sm:flex-1">
+            <Button size="lg" fullWidth className={ED_BTN}>{t('View full result')}</Button>
+          </Link>
+          {test && (
+            <Button variant="secondary" size="lg" className={`${ED_BTN} sm:flex-1`} onClick={() => setConfirmRestart(true)} disabled={busy}>
+              {busy ? t('Starting…') : t('Retake placement test')}
+            </Button>
+          )}
+        </div>
         <Modal open={confirmRestart} onClose={() => setConfirmRestart(false)} title={t('Retake placement test?')}>
           <RestartModalBody
             text={t('A new attempt will start now. Your new result will replace your current placement level.')}
@@ -201,73 +199,54 @@ export function PlacementEntryPage() {
   if (status.status === 'submitted' && status.attemptId) {
     const attemptId = status.attemptId;
     return (
-      <div className={SHELL}>
-        <PageHeader title={t('Placement Test')} />
+      <div className={ED_SHELL}>
+        <EdHeader title={t('Your test has been submitted')} subtitle={t('Your answers are in. Finish scoring to see your placement level.')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-success-soft text-success-ink flex items-center justify-center">
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
-            </div>
-            <h2 className={H2}>{t('Your test has been submitted')}</h2>
-            <p className={BODY}>{t('Your answers are in. Finish scoring to see your placement level.')}</p>
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <Button size="lg" onClick={() => handleFinishSubmitted(attemptId)} disabled={busy}>
-                {busy ? t('Finishing…') : t('See my result')}
-              </Button>
-              <Button size="lg" variant="secondary" onClick={load} disabled={busy}>{t('Check again')}</Button>
-            </div>
-          </div>
-        </Card>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button size="lg" className={`${ED_BTN} sm:flex-1`} onClick={() => handleFinishSubmitted(attemptId)} disabled={busy}>
+            {busy ? t('Finishing…') : t('See my result')}
+          </Button>
+          <Button size="lg" variant="secondary" className={`${ED_BTN} sm:flex-1`} onClick={load} disabled={busy}>{t('Check again')}</Button>
+        </div>
       </div>
     );
   }
 
   if (noActiveTest) {
     return (
-      <div className={SHELL}>
-        <PageHeader title={t('Placement Test')} />
+      <div className={ED_SHELL}>
+        <EdHeader title={t('Placement Test')} />
         <EmptyState
           title={t('No placement test available')}
           message={t('There is no placement test published right now. Please check back later.')}
-          actionLabel={t('Go to dashboard')}
-          onAction={() => navigate('/dashboard')}
+          actionLabel={t('Continue without the test')}
+          onAction={() => void skipUnavailableTest()}
         />
       </div>
     );
   }
 
-  // ---- Active: resume or start over -----------------------------------------
+  // ---- Active: only reached if the automatic restart failed -----------------
   if (status.status === 'active' && status.attemptId) {
     const attemptId = status.attemptId;
     const progress = loadPlacementProgress(attemptId);
     return (
-      <div className={SHELL}>
-        <PageHeader title={t('Placement Test')} />
+      <div className={ED_SHELL}>
+        <EdHeader title={t('You have a test in progress')} subtitle={t('Your last attempt was interrupted. Start again from the beginning.')} />
         {actionError && <Banner variant="error">{actionError}</Banner>}
-        <Card>
-          <div className="flex flex-col gap-3">
-            <div className="size-11 rounded-xl bg-warning-soft text-warning-ink flex items-center justify-center">
-              <ClockIcon className="size-5" />
-            </div>
-            <h2 className={H2}>{t('You have a test in progress')}</h2>
-            <p className={BODY}>
-              {t('Continue where you left off, or start a new attempt. Starting over discards the current attempt.')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <Button
-                size="lg"
-                onClick={() => navigate(`/placement/${attemptId}`, { state: { expiresAt: progress?.expiresAt ?? null } })}
-                disabled={busy}
-              >
-                {t('Continue test')}
-              </Button>
-              <Button size="lg" variant="secondary" onClick={() => setConfirmRestart(true)} disabled={busy}>
-                {busy ? t('Starting…') : t('Start over')}
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            size="lg"
+            className={`${ED_BTN} sm:flex-1`}
+            onClick={() => { markPlacementLive(attemptId); navigate(`/placement/${attemptId}`, { state: { expiresAt: progress?.expiresAt ?? null } }); }}
+            disabled={busy}
+          >
+            {t('Continue test')}
+          </Button>
+          <Button size="lg" variant="secondary" className={`${ED_BTN} sm:flex-1`} onClick={() => setConfirmRestart(true)} disabled={busy}>
+            {busy ? t('Starting…') : t('Start from the beginning')}
+          </Button>
+        </div>
         <Modal open={confirmRestart} onClose={() => setConfirmRestart(false)} title={t('Start over?')}>
           <RestartModalBody
             text={t('Your current attempt will be discarded and a new timed attempt will begin.')}
@@ -283,57 +262,43 @@ export function PlacementEntryPage() {
 
   // ---- Not taken -------------------------------------------------------------
   return (
-    <div className={SHELL}>
-      <div className="flex flex-col gap-4">
-        <HeroBadge>
-          <ClipboardIcon className="size-8" />
-        </HeroBadge>
-        <PageHeader
-          title={test?.title ? t(test.title) : t('Placement Test')}
-          subtitle={t('Calibrate your AI tutor to find your optimal starting point.')}
-        />
-      </div>
+    <div className={ED_SHELL}>
+      <EdHeader
+        title={test?.title ? t(test.title) : t('Placement Test')}
+        subtitle={t('Calibrate your AI tutor to find your optimal starting point.')}
+      />
       {actionError && <Banner variant="error">{actionError}</Banner>}
 
       {test && (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <InfoRow
-            icon={<ClockIcon className="size-5 text-brand-ink" />}
-            title={t('About {n} minutes', { n: test.estimated_minutes })}
-            desc={t('The test is timed once you start.')}
-          />
-          <InfoRow
-            icon={<ClipboardIcon className="size-5 text-brand-ink" />}
-            title={`${sectionsText(test.total_sections)}${totalQuestions > 0 ? ` · ${questionsText(totalQuestions)}` : ''}`}
-            desc={t('Work through each section in order.')}
-          />
-          <div className="md:col-span-2">
-            <InfoRow
-              icon={<LightbulbIcon className="size-5 text-warning-ink" />}
-              title={t('Helpful tip')}
-              desc={t("You can skip questions you don't know — your level is calculated by AIM after you finish.")}
-            />
-          </div>
-        </div>
+        <dl className="m-0 border-y border-line">
+          {[
+            [t('About {n} minutes', { n: test.estimated_minutes }), t('The test is timed once you start.')],
+            [`${sectionsText(test.total_sections)}${totalQuestions > 0 ? `, ${questionsText(totalQuestions)}` : ''}`, t('Work through each section in order.')],
+            [t('Helpful tip'), t("You can skip questions you don't know — your level is calculated by AIM after you finish.")],
+          ].map(([title, desc], i) => (
+            <div key={i} className={`py-4 ${edRow(i)}`}>
+              <dt className="text-lg font-semibold text-ink">{title}</dt>
+              <dd className="m-0 mt-0.5 text-[15px] leading-relaxed text-ink-muted">{desc}</dd>
+            </div>
+          ))}
+        </dl>
       )}
 
       {sections.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="m-0 px-1 text-xs font-bold uppercase tracking-wider text-ink">{t('Sections')}</h2>
-          <ol className="m-0 p-0 list-none grid grid-cols-1 gap-2.5 md:grid-cols-2">
+        <section aria-label={t('Sections')}>
+          <ol className="m-0 list-none p-0">
             {sections.map((s, i) => (
-              <li key={s.id} className={`flex items-center gap-3 px-4 py-3 ${CARD}`}>
-                <span className="size-8 shrink-0 rounded-lg bg-brand-soft text-brand-ink text-sm font-extrabold flex items-center justify-center">{i + 1}</span>
-                <span className="flex-1 min-w-0 text-sm font-semibold text-ink">{t(s.title)}</span>
-                <span className="text-xs text-ink-muted shrink-0">{questionsText(s.total_questions)}</span>
+              <li key={s.id} className={`flex items-baseline gap-4 py-3 ${edRow(i)}`}>
+                <span className="lp-num w-6 shrink-0 text-lg font-semibold text-brand-ink">{i + 1}</span>
+                <span className="min-w-0 flex-1 text-lg font-medium text-ink">{t(s.title)}</span>
+                <span className="lp-num shrink-0 text-sm text-ink-muted">{questionsText(s.total_questions)}</span>
               </li>
             ))}
           </ol>
         </section>
       )}
 
-      <Button size="lg" onClick={handleStart} disabled={busy || !test} fullWidth>
-        <TrophyIcon className="size-5" />
+      <Button size="lg" className={ED_BTN} onClick={handleStart} disabled={busy || !test} fullWidth>
         {busy ? t('Starting…') : t('Start placement test')}
       </Button>
     </div>

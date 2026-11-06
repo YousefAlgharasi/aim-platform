@@ -126,47 +126,44 @@ export function AITeacherEntryPage() {
   const recent = sessions.slice(0, 5);
 
   return (
-    <div className="stagger mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="stagger flex w-full flex-col gap-8">
       <PageTitleBar
         title={t('AI Teacher')}
         subtitle={t('Ask questions, get explanations, and receive personalized help from your AI teacher.')}
         action={<Link to="/ai-teacher/history" className={pillLinkClass}>{t('History')}</Link>}
       />
 
-      <div className="hero-panel">
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25"><SparkleIcon className="size-7 text-white" /></span>
-            <div className="min-w-0">
-              <p className="m-0 text-xl font-extrabold leading-snug sm:text-2xl">{t('Ask me anything')}</p>
-              <p className="m-0 mt-0.5 text-sm text-on-brand">{t('Start the conversation with a question or pick a suggestion below.')}</p>
-            </div>
+      <section className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="lp-display m-0 text-[1.75rem] font-semibold sm:text-[2.25rem]">{t('Ask me anything')}</p>
+            <p className="m-0 mt-2 max-w-md text-base text-white dark:text-ink-inverse/70">{t('Start the conversation with a question or pick a suggestion below.')}</p>
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => startSession(GENERAL_CONTEXT_REF)}
               disabled={starting}
-              className="inline-flex h-12 cursor-pointer items-center justify-center rounded-2xl border-0 hero-cta px-6 text-[15px] font-bold shadow-lg shadow-black/20 transition-all hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-14 cursor-pointer items-center justify-center rounded-full border-0 bg-white px-8 text-base font-semibold text-brand transition hover:bg-white/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand disabled:cursor-not-allowed disabled:opacity-60 dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90 dark:focus-visible:ring-ink-inverse dark:focus-visible:ring-offset-white"
             >
               {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 text-[15px] font-bold text-white no-underline ring-1 ring-white/30 transition-all hover:bg-white/20 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold text-white no-underline ring-1 ring-white/50 transition hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:text-ink-inverse dark:ring-ink-inverse/30 dark:hover:bg-ink-inverse/5"
             >
-              <MicIcon className="size-4 text-white" />
+              <MicIcon className="size-5" />
               {t('Talk with Voice Teacher')}
             </Link>
           </div>
         </div>
         {startError && (
-          <p className="relative z-10 m-0 mt-4 rounded-xl bg-black/25 px-3 py-2 text-sm text-white" role="alert">{startError}</p>
+          <p className="m-0 mt-4 rounded-xl bg-black/25 px-3 py-2 text-sm text-white dark:bg-danger-soft dark:text-danger-ink" role="alert">{startError}</p>
         )}
-      </div>
+      </section>
 
       <section className="flex flex-col gap-3" aria-label={t('Try asking')}>
-        <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('Try asking')}</h2>
+        <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Try asking')}</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {STARTERS.map((q) => (
             <button
@@ -174,9 +171,9 @@ export function AITeacherEntryPage() {
               type="button"
               disabled={starting}
               onClick={() => startSession(GENERAL_CONTEXT_REF, null, t(q))}
-              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-0 bg-surface p-4 text-start text-sm font-semibold text-ink shadow-card ring-1 ring-line transition-all hover:-translate-y-0.5 hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none"
+              className="flex min-h-16 cursor-pointer items-center gap-4 rounded-2xl border-0 bg-surface p-4 text-start text-base font-medium text-ink ring-1 ring-line transition-colors hover:bg-surface-muted hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60 motion-reduce:transition-none"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink" aria-hidden="true"><SparkleIcon className="size-4" /></span>
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true"><SparkleIcon className="size-4" /></span>
               <span className="min-w-0">{t(q)}</span>
             </button>
           ))}
@@ -185,9 +182,9 @@ export function AITeacherEntryPage() {
 
       {recent.length > 0 && (
         <section className="flex flex-col gap-3" aria-label={t('Recent Conversations')}>
-          <div className="flex items-center justify-between px-1">
-            <h2 className="m-0 text-base font-extrabold tracking-tight text-ink">{t('Recent Conversations')}</h2>
-            <Link to="/ai-teacher/history" className="text-xs font-semibold text-brand-ink no-underline hover:underline">{t('View all')}</Link>
+          <div className="flex items-center justify-between">
+            <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Recent Conversations')}</h2>
+            <Link to="/ai-teacher/history" className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">{t('View all')}</Link>
           </div>
           <div className="flex flex-col gap-2">
             {recent.map((session) => (
@@ -198,10 +195,10 @@ export function AITeacherEntryPage() {
                   className="flex items-center justify-between gap-3 rounded-2xl p-4 no-underline transition-colors hover:bg-surface-sunken"
                 >
                   <span className="flex min-w-0 items-center gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink"><SparkleIcon className="size-4" /></span>
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-strong text-ink"><SparkleIcon className="size-4" /></span>
                     <span className="truncate font-semibold text-ink">{sessionLabel(session)}</span>
                   </span>
-                  <span className="shrink-0 text-xs text-ink-muted">{relativeTime(session.updatedAt)}</span>
+                  <span className="shrink-0 text-sm text-ink-muted">{relativeTime(session.updatedAt)}</span>
                 </Link>
               </Card>
             ))}

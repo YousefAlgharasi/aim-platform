@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { FilterPills } from '../../components/common/FilterPills';
 import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { Popover } from '../../components/common/Popover';
@@ -20,11 +21,12 @@ import { useLearnerLevel } from '../level/LevelContext';
 import { BANDS, BAND_NAME, bandOf, relationTo, type Band } from '../level/bands';
 import { LearningPathCard } from './LearningPathCard';
 import { useCourseChapterInfo } from './useCourseChapterInfo';
+import { lockedReason } from './lockedReason';
 
 /** How long the locked-course popover stays before it fades out. */
 const NOTICE_MS = 3000;
 
-export const COURSE_LOCKED_MESSAGE = 'Finish your current level to unlock this course.';
+export { COURSE_LOCKED_MESSAGE } from './lockedReason';
 
 export function CourseCatalog() {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ export function CourseCatalog() {
   // Locked course whose explanation is shown in a popover next to its card (clears itself after a moment).
   const [notice, setNotice] = useState<StudentCourse | null>(null);
   const noticeAnchor = useRef<HTMLElement | null>(null);
-  const [filter, setFilter] = useState<'all' | Band>('all');
+  const [filter, setFilter] = useState<'all' | 'start' | 'more' | Band>('all');
   const { band, hasPlacement, loading: levelLoading } = useLearnerLevel();
 
   useEffect(() => {
@@ -85,8 +87,15 @@ export function CourseCatalog() {
   }
 
   const groups = BANDS.map((band) => ({ band, list: courses.filter((c) => bandOf(c.levelCode) === band) })).filter((g) => g.list.length > 0);
-  const unleveled = courses.filter((c) => bandOf(c.levelCode) === null);
+  // The API lists courses in learning-path order. Courses with no CEFR level that come before the first levelled one
+  // (the beginner "Starter") are where the path begins, so they lead the page instead of sinking into "More courses".
+  const firstLevelled = courses.findIndex((c) => bandOf(c.levelCode) !== null);
+  const leading = firstLevelled > 0 ? courses.slice(0, firstLevelled).filter((c) => bandOf(c.levelCode) === null) : [];
+  const unleveled = courses.filter((c) => bandOf(c.levelCode) === null && !leading.includes(c));
   const shown = filter === 'all' ? groups : groups.filter((g) => g.band === filter);
+  // Every course has a filter: the beginner course(s), each level, and the extra (writing) courses.
+  const filters: Array<'all' | 'start' | 'more' | Band> = ['all', ...(leading.length > 0 ? ['start' as const] : []), ...groups.map((g) => g.band), ...(unleveled.length > 0 ? ['more' as const] : [])];
+  const filterLabel = (f: 'all' | 'start' | 'more' | Band) => (f === 'all' ? t('All levels') : f === 'start' ? t('Start here') : f === 'more' ? t('More courses') : f);
   const currentCourse = courses.find((c) => c.courseId === currentCourseId) ?? null;
   const totalLessons = courses.reduce((n, c) => n + c.lessonCount, 0);
   const doneLessons = courses.reduce((n, c) => n + c.completedLessonCount, 0);
@@ -94,58 +103,61 @@ export function CourseCatalog() {
   let cardIndex = 0;
 
   return (
-    <div className="stagger mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div className="stagger flex w-full flex-col gap-8">
       <PageTitleBar title={t('Courses')} subtitle={t('Pick up where you are. Courses follow your level.')} />
 
-      <div className="hero-panel">
-        <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="border-t border-line pt-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><LevelBadge tone="onBrand" /><span className="text-xs font-bold text-on-brand">{t('{pct}% of the whole path', { pct: overall })}</span></div>
-            <p className="m-0 mt-2 text-xl font-extrabold leading-snug [unicode-bidi:plaintext] sm:text-2xl">
-              {currentCourse ? currentCourse.title : band ? t('Choose a {level} course to begin', { level: band }) : t('Find your level to get started')}
+            <div className="flex flex-wrap items-center gap-3"><LevelBadge /><span className="lp-num text-sm text-ink-muted">{t('{pct}% of the whole path', { pct: overall })}</span></div>
+            <p className="lp-display m-0 mt-3 text-[1.75rem] font-semibold [unicode-bidi:plaintext] sm:text-[2.25rem]">
+              {currentCourse
+                ? <Link to={`/curriculum/${currentCourse.courseId}`} className="text-ink no-underline hover:underline">{currentCourse.title}</Link>
+                : band ? t('Choose a {level} course to begin', { level: band }) : t('Find your level to get started')}
             </p>
-            {currentCourse && <p className="m-0 mt-1 text-sm text-on-brand">{t('{done} of {total} lessons finished', { done: currentCourse.completedLessonCount, total: currentCourse.lessonCount })}</p>}
+            {currentCourse && <p className="m-0 mt-2 text-base text-ink-muted">{t('{done} of {total} lessons finished', { done: currentCourse.completedLessonCount, total: currentCourse.lessonCount })}</p>}
           </div>
-          <Link
-            to={currentCourse ? `/curriculum/${currentCourse.courseId}` : band ? '#levels' : '/placement'}
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline shadow-lg shadow-black/20 transition-all hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            {currentCourse ? t('Continue') : band ? t('Browse levels') : t('Take the placement test')}
-          </Link>
+          {/* With a current course, its card right below is the way in. Without one, this is the way to start. */}
+          {!currentCourse && (
+            <Link
+              to={band ? '#levels' : '/placement'}
+              className="inline-flex h-14 shrink-0 items-center justify-center rounded-full bg-brand px-8 text-base font-semibold text-white no-underline transition hover:bg-brand-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
+            >
+              {band ? t('Browse levels') : t('Take the placement test')}
+            </Link>
+          )}
         </div>
-      </div>
+      </section>
 
       {!hasPlacement && !levelLoading && (
         <Banner variant="info">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>{t('Take the placement test so courses are matched to your real level.')}</span>
-            <Link to="/placement" className="text-sm font-bold text-brand-ink">{t('Take the placement test')}</Link>
+            <Link to="/placement" className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-4">{t('Take the placement test')}</Link>
           </div>
         </Banner>
       )}
 
-      <div id="levels" className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t('Filter by level')}>
-        {(['all', ...groups.map((g) => g.band)] as Array<'all' | Band>).map((f) => (
-          <button
-            key={f}
-            type="button"
-            role="tab"
-            aria-selected={filter === f}
-            onClick={() => setFilter(f)}
-            className={`min-h-10 shrink-0 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${filter === f ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'}`}
-          >
-            {f === 'all' ? t('All levels') : f}{f !== 'all' && f === band ? ' ★' : ''}
-          </button>
-        ))}
-      </div>
+      <FilterPills id="levels" label={t('Filter by level')} value={filter} onChange={setFilter}
+        options={filters.map((f) => ({ key: f, label: `${filterLabel(f)}${f === band ? ' ★' : ''}` }))} />
+
+      {(filter === 'all' || filter === 'start') && leading.length > 0 && (
+        <section className="flex flex-col gap-3 border-t border-line pt-6" aria-label={t('Start here')}>
+          <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Start here')}</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {leading.map((course) => (
+              <LearningPathCard key={course.courseId} course={course} index={cardIndex++} isCurrent={course.courseId === currentCourseId} chapters={chapterInfo[course.courseId]} onOpen={(card) => handleOpen(course, card)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {shown.map(({ band: b, list }) => {
         const rel = relationTo(b, band);
         return (
           <section key={b} className="flex flex-col gap-3" aria-label={`${b} ${t(BAND_NAME[b])}`}>
-            <div className="flex flex-wrap items-center gap-2 px-1">
-              <h2 className="m-0 text-base font-extrabold tracking-tight text-ink">{b} · {t(BAND_NAME[b])}</h2>
+            <div className="flex flex-wrap items-center gap-3 border-t border-line pt-6">
+              <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{b} <span className="font-medium text-ink-muted">{t(BAND_NAME[b])}</span></h2>
               <RelationChip relation={rel} />
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -165,9 +177,9 @@ export function CourseCatalog() {
         );
       })}
 
-      {filter === 'all' && unleveled.length > 0 && (
+      {(filter === 'all' || filter === 'more') && unleveled.length > 0 && (
         <section className="flex flex-col gap-3" aria-label={t('More courses')}>
-          <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t('More courses')}</h2>
+          <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('More courses')}</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {unleveled.map((course) => (
               <LearningPathCard key={course.courseId} course={course} index={cardIndex++} isCurrent={course.courseId === currentCourseId} chapters={chapterInfo[course.courseId]} onOpen={(card) => handleOpen(course, card)} />
@@ -175,6 +187,11 @@ export function CourseCatalog() {
           </div>
         </section>
       )}
+
+      <p className="m-0 text-center text-sm text-ink-muted">
+        {t('Not sure about your level?')}{' '}
+        <Link to="/placement" className="font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">{t('Take the placement test again')}</Link>
+      </p>
 
       <Popover
         open={!!notice}
@@ -185,7 +202,7 @@ export function CourseCatalog() {
       >
         <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-muted m-0">
           <LockIcon className="size-4 mt-0.5 shrink-0" />
-          <span>{t(COURSE_LOCKED_MESSAGE)}</span>
+          <span>{notice ? lockedReason(notice, courses, t) : ''}</span>
         </p>
       </Popover>
     </div>

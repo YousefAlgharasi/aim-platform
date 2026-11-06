@@ -11,31 +11,29 @@ export function GoalRing({ done, target, met, label, size = 136 }: { done: numbe
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size }} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct * 100)}>
       <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
-        <circle cx="60" cy="60" r={r} fill="none" strokeWidth="10" className="stroke-surface-strong" />
-        <circle cx="60" cy="60" r={r} fill="none" strokeWidth="10" strokeLinecap="round" className={`transition-[stroke-dasharray] duration-700 motion-reduce:transition-none ${met ? 'stroke-success' : 'stroke-brand'}`} strokeDasharray={`${pct * c} ${c}`} />
+        <circle cx="60" cy="60" r={r} fill="none" strokeWidth="6" className="stroke-line-strong" />
+        <circle cx="60" cy="60" r={r} fill="none" strokeWidth="6" strokeLinecap="round" className={`transition-[stroke-dasharray] duration-700 motion-reduce:transition-none ${met ? 'stroke-success' : 'stroke-brand'}`} strokeDasharray={`${pct * c} ${c}`} />
       </svg>
-      <span className="text-3xl font-extrabold tabular-nums tracking-tight text-ink">{done}<span className="text-lg text-ink-muted">/{target}</span></span>
+      <span className="lp-num text-4xl font-semibold tracking-tight text-ink rtl:tracking-normal">{done}<span className="text-lg text-ink-muted">/{target}</span></span>
     </div>
   );
 }
 
-/** One number with a label, optional progress bar, hint and link. */
+/** One number with a label, optional progress line, hint and link. A plain figure under a hairline, not a card. */
 export function StatTile({ label, value, hint, hintTone = 'text-ink-muted', bar, to }: { label: string; value: string; hint?: string; hintTone?: string; bar?: number; to?: string }) {
   const body = (
-    <Card className="h-full" interactive={!!to}>
-      <div className="flex h-full flex-col gap-1">
-        <span className="text-xs font-semibold text-ink-muted">{label}</span>
-        <span className="text-3xl font-extrabold leading-none tracking-tight tabular-nums text-ink">{value}</span>
-        {bar != null && (
-          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-strong" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={bar}>
-            <div className="h-full rounded-full bg-brand transition-[width] duration-500" style={{ width: `${bar}%` }} />
-          </div>
-        )}
-        {hint && <span className={`text-xs font-semibold ${hintTone}`}>{hint}</span>}
-      </div>
-    </Card>
+    <div className={`flex h-full flex-col gap-1.5 rounded-2xl bg-surface p-5 ring-1 ring-line transition-colors ${to ? 'hover:bg-surface-muted' : ''}`}>
+      <span className="text-sm text-ink-muted">{label}</span>
+      <span className="lp-num text-4xl font-semibold leading-none tracking-tight text-ink rtl:tracking-normal">{value}</span>
+      {bar != null && (
+        <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={bar}>
+          <div className="h-full rounded-full bg-brand transition-[width] duration-500" style={{ width: `${bar}%` }} />
+        </div>
+      )}
+      {hint && <span className={`text-sm ${to ? 'underline decoration-line-strong underline-offset-4' : ''} ${hintTone}`}>{hint}</span>}
+    </div>
   );
-  return to ? <Link to={to} className="block rounded-2xl no-underline">{body}</Link> : body;
+  return to ? <Link to={to} className="block rounded-2xl no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">{body}</Link> : body;
 }
 
 /** Shown instead of zeros/"none" when a request failed, so a failure is never mistaken for real data. */

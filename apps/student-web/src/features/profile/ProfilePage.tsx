@@ -107,12 +107,12 @@ export function ProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader title={t('Profile')} />
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+      <div className="flex w-full flex-col gap-5">
         <div className="hero-panel">
           <div className="relative z-10 flex items-center gap-4">
-            <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/15 text-2xl font-extrabold ring-1 ring-white/25" aria-hidden="true">{initial}</div>
+            <div className="grid size-16 shrink-0 place-items-center rounded-full bg-white/15 text-2xl font-semibold ring-1 ring-white/25" aria-hidden="true">{initial}</div>
             <div className="min-w-0">
-              {displayName && <p className="m-0 truncate text-xl font-extrabold">{displayName}</p>}
+              {displayName && <p className="m-0 truncate text-xl font-semibold">{displayName}</p>}
               <p className="m-0 mt-0.5 break-all text-sm text-on-brand">{user.email}</p>
               <div className="mt-2"><LevelBadge tone="onBrand" /></div>
             </div>

@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { studyPlanApi, type PlanGoal } from './learnerApi';
-import { markOnboardingDone } from './onboardingState';
 
 const GOALS: Array<{ id: PlanGoal; label: string; hint: string }> = [
   { id: 'work', label: 'For work', hint: 'Emails, meetings and interviews' },
@@ -17,10 +15,9 @@ const GOALS: Array<{ id: PlanGoal; label: string; hint: string }> = [
 ];
 const MINUTES = [10, 20, 30, 45];
 
-/** Three quick questions that set the daily goal and reminder. Skippable; changeable later in Settings. */
+/** Edit the daily goal and reminder (first-time setup lives in features/start/StartPage). */
 export function OnboardingPage() {
   const { t } = useI18n();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState<PlanGoal | null>(null);
@@ -31,7 +28,6 @@ export function OnboardingPage() {
   const [error, setError] = useState('');
 
   function finish() {
-    markOnboardingDone(user?.id);
     navigate('/', { replace: true });
   }
 
@@ -53,7 +49,7 @@ export function OnboardingPage() {
       selected ? 'bg-brand-soft ring-brand text-brand-ink' : 'bg-surface ring-line text-ink hover:ring-brand-line'}`;
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-5 py-4">
+    <div className="flex w-full flex-col gap-5 py-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step + 1} aria-label={t('Step {n} of 3', { n: step + 1 })}>
           {[0, 1, 2].map((i) => <span key={i} className={`h-1.5 w-10 rounded-full ${i <= step ? 'bg-gradient-to-r from-brand to-secondary' : 'bg-surface-strong'}`} />)}

@@ -77,8 +77,8 @@ export function ReviewSchedulePage() {
         <>
           <div className="grid grid-cols-3 gap-3">
             {[[dueNow.length, t('Due now'), dueNow.length > 0 ? 'text-warning-ink' : 'text-ink'], [later.length, t('Upcoming'), 'text-ink'], [done.length, t('Completed'), 'text-success-ink']].map(([n, label, tone]) => (
-              <div key={String(label)} className="rounded-2xl bg-surface p-4 text-center shadow-card ring-1 ring-line">
-                <span className={`block text-3xl font-extrabold tabular-nums tracking-tight ${tone}`}>{n}</span>
+              <div key={String(label)} className="rounded-2xl bg-surface p-4 text-center ring-1 ring-line">
+                <span className={`block text-3xl font-semibold tabular-nums tracking-tight ${tone}`}>{n}</span>
                 <span className="text-xs font-semibold text-ink-muted">{label}</span>
               </div>
             ))}

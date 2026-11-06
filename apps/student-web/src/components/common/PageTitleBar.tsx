@@ -15,6 +15,9 @@ interface PageChrome {
 }
 const PageChromeContext = createContext<PageChrome | null>(null);
 
+/** Pages inside a locked flow (the placement test) provide `true` so no back arrow is shown. */
+export const HideBackContext = createContext(false);
+
 /** Provider for the layout. A module-level component, so its identity is stable across renders. */
 export function PageChromeProvider({ value, children }: { value: PageChrome; children: ReactNode }) {
   return <PageChromeContext.Provider value={value}>{children}</PageChromeContext.Provider>;
@@ -51,13 +54,14 @@ interface PageTitleBarProps {
 export function PageTitleBar({ title, subtitle, meta, action, fallback, titleAs: Title = 'h1' }: PageTitleBarProps) {
   const chrome = useContext(PageChromeContext);
   useEffect(() => chrome?.register(), [chrome]);
-  const topLevel = isTopLevel();
+  const hideBack = useContext(HideBackContext);
+  const topLevel = isTopLevel() || hideBack;
 
   return (
     <header className="flex flex-col gap-1.5">
       <div className="flex items-center gap-3">
         {!topLevel && <BackButton fallback={fallback} className="shrink-0" />}
-        <Title className="m-0 min-w-0 flex-1 text-2xl sm:text-3xl font-bold tracking-tight leading-tight text-ink">{title}</Title>
+        <Title className="lp-display m-0 min-w-0 flex-1 text-[2rem] font-semibold text-ink sm:text-[2.5rem]">{title}</Title>
         {action && <div className="shrink-0">{action}</div>}
       </div>
       {meta && <div className="flex">{meta}</div>}

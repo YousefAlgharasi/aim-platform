@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { FilterPills } from '../../components/common/FilterPills';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
@@ -143,14 +144,8 @@ export function NotificationCenterPage() {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2" role="tablist" aria-label={t('Filter notifications')}>
-          {([['all', t('All')], ['unread', t('Unread ({n})', { n: unreadCount })]] as const).map(([key, label]) => (
-            <button key={key} type="button" role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
-              className={`min-h-10 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${filter === key ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <FilterPills label={t('Filter notifications')} value={filter} onChange={setFilter}
+          options={[{ key: 'all', label: t('All') }, { key: 'unread', label: t('Unread ({n})', { n: unreadCount }) }] as const} />
         {unreadCount > 0 && (
           <Button variant="secondary" size="sm" onClick={markAllRead} disabled={markingAll}>
             {markingAll ? t('Marking…') : t('Mark all read')}
@@ -171,7 +166,7 @@ export function NotificationCenterPage() {
         <div className="flex flex-col gap-6">
           {groups.map((group) => (
           <section key={group.title} className="flex flex-col gap-2.5" aria-label={t(group.title)}>
-            <h2 className="m-0 px-1 text-xs font-extrabold uppercase tracking-wider text-ink-muted rtl:normal-case rtl:tracking-normal">{t(group.title)}</h2>
+            <h2 className="m-0 px-1 text-xs font-semibold text-ink-muted">{t(group.title)}</h2>
           {group.items.map(notif => {
             const unread = isUnread(notif);
             const busy = busyIds.has(notif.id);
@@ -181,7 +176,7 @@ export function NotificationCenterPage() {
             return (
               <div
                 key={notif.id}
-                className={`flex items-start gap-3 p-4 rounded-2xl ring-1 shadow-sm cursor-pointer transition-colors ${
+                className={`flex items-start gap-3 p-4 rounded-2xl ring-1 cursor-pointer transition-colors ${
                   unread
                     ? 'bg-brand-soft/70 ring-brand-line'
                     : 'bg-surface ring-line hover:bg-surface-sunken dark:hover:bg-surface-muted/60'
@@ -198,7 +193,7 @@ export function NotificationCenterPage() {
                   aria-hidden="true"
                 />
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <span className={`text-sm text-ink ${unread ? 'font-extrabold' : 'font-semibold'}`}>{title}</span>
+                  <span className={`text-sm text-ink ${unread ? 'font-semibold' : 'font-semibold'}`}>{title}</span>
                   {body && (
                     <span className={`text-sm text-ink-muted leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>{body}</span>
                   )}
@@ -208,7 +203,7 @@ export function NotificationCenterPage() {
                 </div>
                 <button
                   type="button"
-                  className="size-10 -m-2 shrink-0 rounded-xl flex items-center justify-center border-none bg-transparent text-ink-muted hover:text-ink-soft hover:bg-surface-muted cursor-pointer text-xl disabled:opacity-50"
+                  className="size-10 -m-2 shrink-0 rounded-full flex items-center justify-center border-none bg-transparent text-ink-muted hover:text-ink-soft hover:bg-surface-muted cursor-pointer text-xl disabled:opacity-50"
                   onClick={e => { e.stopPropagation(); dismiss(notif.id); }}
                   disabled={busy}
                   aria-label={t('Dismiss {title}', { title })}

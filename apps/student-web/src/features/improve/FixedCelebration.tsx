@@ -39,16 +39,15 @@ export function FixedCelebration({ records }: { records: WeaknessRecordEntry[] }
   if (fresh.length === 0) return null;
   const names = fresh.slice(0, 3).map((r) => prettifySkillId(r.skillId)).join(', ');
   return (
-    <div role="status" className="rise-in relative overflow-hidden rounded-3xl bg-success-soft p-5 text-success-ink ring-1 ring-success-line">
+    <div role="status" className="rise-in relative overflow-hidden rounded-2xl bg-success-soft p-5 text-success-ink ring-1 ring-success-line">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 motion-reduce:hidden">
         {Array.from({ length: 14 }).map((_, i) => (
           <span key={i} className={`absolute top-0 size-2 rounded-sm ${CONFETTI[i % CONFETTI.length]} animate-[confetti-fall_1.8s_ease-in_forwards]`} style={{ insetInlineStart: `${(i * 7 + 3) % 100}%`, animationDelay: `${(i % 5) * 0.12}s` }} />
         ))}
       </div>
       <div className="relative flex items-start gap-3">
-        <span className="text-3xl" aria-hidden="true">🎉</span>
         <div className="min-w-0 flex-1">
-          <p className="m-0 text-lg font-extrabold">{t('You fixed a weak spot!')}</p>
+          <p className="m-0 text-lg font-semibold">{t('You fixed a weak spot!')}</p>
           <p className="m-0 mt-0.5 text-sm [unicode-bidi:plaintext]">{names}</p>
         </div>
         <button type="button" onClick={() => setFresh([])} className="min-h-10 shrink-0 cursor-pointer rounded-xl border-0 bg-white/60 px-3 text-sm font-bold text-success-ink hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">{t('Nice!')}</button>

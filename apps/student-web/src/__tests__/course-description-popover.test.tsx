@@ -45,16 +45,14 @@ async function setup() {
 const exit = () => act(async () => { await new Promise((r) => setTimeout(r, 200)); });
 
 describe('Course description popover', () => {
-  it('lists the real chapter titles in the info popover and gives each course its own image', async () => {
+  it('lists the real chapter titles in the info popover, with no decorative pictures on the cards', async () => {
     render(<CourseCatalog />);
     await screen.findByText('3 chapters');
     fireEvent.click(screen.getByRole('button', { name: 'التمهيدي: course description' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent("What you'll cover");
     ['Greetings', 'Numbers', 'Colours'].forEach((c) => expect(dialog).toHaveTextContent(c));
-    const srcs = Array.from(document.querySelectorAll('img[aria-hidden]')).map((i) => i.getAttribute('src'));
-    expect(srcs).toHaveLength(3);
-    expect(new Set(srcs).size).toBe(3);
+    expect(document.querySelectorAll('img')).toHaveLength(0);
   });
 
   it('shows the summed chapter count on the learning path', async () => {
@@ -152,8 +150,8 @@ describe('Course description popover', () => {
     await setup();
     fireEvent.click(screen.getByRole('button', { name: 'Locked One (locked)' }));
     const pop = await screen.findByRole('dialog', { name: 'Locked' });
-    expect(pop).toHaveTextContent('Finish your current level to unlock this course.');
-    expect(screen.getAllByText('Finish your current level to unlock this course.')).toHaveLength(1);
+    expect(pop).toHaveTextContent('Finish No Description to unlock this course.');
+    expect(screen.getAllByText('Finish No Description to unlock this course.')).toHaveLength(1);
     expect(mockNavigate).not.toHaveBeenCalled();
     fireEvent.keyDown(document, { key: 'Escape' });
     await exit();

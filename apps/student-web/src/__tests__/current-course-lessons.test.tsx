@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { CurrentCourseLessons, lessonStatuses, nextLesson, useCurrentChapter } from '../features/dashboard/widgets/CurrentCourseLessons';
 
 /** Mirrors how the dashboard uses it: the hook loads, the card renders only when ready. */
@@ -21,6 +21,7 @@ jest.mock('../i18n/I18nContext', () => ({
 
 let mockCourse: Record<string, unknown>;
 let mockLessonsFail = false;
+let mockQuiz: Record<string, unknown> | null = null;
 jest.mock('../features/curriculum/curriculumApi', () => ({
   ...jest.requireActual('../features/curriculum/curriculumApi'),
   fetchStudentCourses: () => Promise.resolve([mockCourse]),
@@ -44,12 +45,12 @@ jest.mock('../features/lessons/lessonsApi', () => ({
             { id: 'b', title: 'Eleven to twenty', completed: false, current: true, xpValue: 10, description: '' },
             { id: 'c', title: 'Tens', completed: false, current: false, xpValue: 10, description: '' },
           ],
-          quiz: chapterId ? null : null,
+          quiz: chapterId ? mockQuiz : null,
         }),
 }));
 
 const OPEN = { courseId: 'c1', locked: false, access: undefined };
-beforeEach(() => { mockCourse = { ...OPEN }; mockLessonsFail = false; });
+beforeEach(() => { mockCourse = { ...OPEN }; mockLessonsFail = false; mockQuiz = null; });
 
 describe('CurrentCourseLessons', () => {
   it("lists the active chapter's lessons with real completion and lock states", async () => {
@@ -65,6 +66,29 @@ describe('CurrentCourseLessons', () => {
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     expect(screen.queryByRole('link', { name: /Tens/ })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'All chapters' })).toHaveAttribute('href', '/curriculum/c1');
+  });
+
+  it('ends the roadmap with the chapter quiz, locked until every lesson is done', async () => {
+    mockQuiz = { assessmentId: 'q1', title: 'Numbers quiz', completed: false, locked: true };
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    expect(await screen.findByText('Numbers quiz')).toBeInTheDocument();
+    expect(screen.getByText('Chapter quiz')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Numbers quiz/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Numbers quiz').closest('[role=listitem]')).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('opens the chapter quiz as the next step once it is unlocked', async () => {
+    mockQuiz = { assessmentId: 'q1', title: 'Numbers quiz', completed: false, locked: false };
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    expect(await screen.findByRole('link', { name: /Numbers quiz/ })).toHaveAttribute('href', '/assessments/q1');
+  });
+
+  it('tapping a locked lesson explains what to finish first', async () => {
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    const locked = (await screen.findByText('Tens')).closest('button') as HTMLElement;
+    expect(locked).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(locked);
+    expect(screen.getByRole('status')).toHaveTextContent('Finish Lesson 2 first');
   });
 
   it('shows nothing for a locked course', async () => {

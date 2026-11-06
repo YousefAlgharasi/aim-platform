@@ -161,7 +161,7 @@ export function PracticeShell() {
 
   if (!lessonId) {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('Choose a lesson to practice')}
           message={t('Practice sessions are started from a lesson. Open a lesson and select “Start practice”.')}
@@ -176,7 +176,7 @@ export function PracticeShell() {
 
   if (status === 'locked') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('Practice locked')}
           message={errorMessage || t('This lesson is locked for you right now. Finish the earlier lessons first.')}
@@ -188,7 +188,7 @@ export function PracticeShell() {
 
   if (status === 'expired') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('This practice session has ended')}
           message={t('The session is no longer active. Start a new one to keep practicing.')}
@@ -204,7 +204,7 @@ export function PracticeShell() {
 
   if (status === 'empty') {
     return (
-      <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+      <div className="flex w-full flex-col gap-6">
         <EmptyState
           title={t('No practice questions yet')}
           message={t("This lesson doesn't have any published practice questions yet. Try the AI tutor to work through it instead.")}
@@ -247,31 +247,31 @@ export function PracticeShell() {
   const progressPct = Math.round(((index + (answered ? 1 : 0)) / questions.length) * 100);
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-center gap-3">
         <Link
           to={lessonId ? `/lessons/${lessonId}` : '/curriculum'}
           state={{ courseId: navState.courseId }}
           aria-label={t('Exit practice')}
           title={t('Exit practice')}
-          className="grid size-10 shrink-0 place-items-center rounded-xl bg-control text-ink-soft no-underline transition-colors hover:bg-danger-soft hover:text-danger-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          className="grid size-11 shrink-0 place-items-center rounded-full text-ink-soft no-underline ring-1 ring-line-strong transition-colors hover:bg-danger-soft hover:text-danger-ink hover:ring-danger-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           <span aria-hidden="true" className="text-lg leading-none">✕</span>
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="m-0 text-xs font-extrabold uppercase tracking-wider text-brand-ink">{t('Practice Session')}</h1>
+          <h1 className="m-0 text-sm font-medium text-ink-muted">{t('Practice Session')}</h1>
           {navState.lessonTitle && (
-            <span className="block truncate text-sm font-bold text-ink">{navState.lessonTitle}</span>
+            <span className="block truncate text-lg font-semibold text-ink">{navState.lessonTitle}</span>
           )}
         </div>
         <span className="flex shrink-0 items-center gap-2">
           <LevelBadge showName={false} />
-          <span className="rounded-full bg-control px-2.5 py-1 text-xs font-extrabold tabular-nums text-ink-soft">{index + 1}/{questions.length}</span>
+          <span className="lp-num text-base font-semibold text-ink">{index + 1}<span className="text-ink-muted">/{questions.length}</span></span>
         </span>
       </div>
 
       <div
-        className="h-2.5 bg-control rounded-full overflow-hidden ring-1 ring-inset ring-line"
+        className="h-2 overflow-hidden rounded-full bg-ink/10"
         role="progressbar"
         aria-valuenow={progressPct}
         aria-valuemin={0}
@@ -279,7 +279,7 @@ export function PracticeShell() {
         aria-label={t('Practice progress')}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r rtl:bg-gradient-to-l from-brand to-secondary transition-all duration-500"
+          className="h-full rounded-full bg-brand transition-all duration-500"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -304,14 +304,14 @@ export function PracticeShell() {
             }`}
             role="status"
           >
-            <p className="font-extrabold text-base m-0">
+            <p className="m-0 text-lg font-semibold">
               {feedback.isCorrect === true
                 ? t('✓ Correct!')
                 : feedback.isCorrect === false
                   ? t('✗ Not quite')
                   : t('Answer recorded')}
             </p>
-            <p className="text-sm m-0 mt-1 opacity-90">
+            <p className="m-0 mt-1 text-base opacity-90">
               {feedback.isCorrect === false
                 ? t('Keep going — AIM uses this to tailor your next practice.')
                 : t('Your answer was saved.')}

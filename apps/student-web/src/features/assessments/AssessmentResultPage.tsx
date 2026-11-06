@@ -33,10 +33,10 @@ export function AssessmentResultPage() {
   const percent = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : null;
 
   return (
-    <div className="mx-auto w-full max-w-2xl flex flex-col gap-5">
+    <div className="w-full flex flex-col gap-5">
       <PageHeader title={t('Result')} fallback={`/assessments/${assessmentId}`} />
 
-      <div className="flex flex-col items-center gap-3 rounded-3xl bg-surface p-6 text-center shadow-card ring-1 ring-line sm:p-8">
+      <div className="flex flex-col items-center gap-3 rounded-2xl bg-surface p-6 text-center ring-1 ring-line sm:p-8">
         <div className="relative grid size-36 place-items-center" role="img" aria-label={`${formatNumber(result.score)}/${formatNumber(result.maxScore)}`}>
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
             <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-surface-strong" />
@@ -45,7 +45,7 @@ export function AssessmentResultPage() {
               strokeDasharray={`${((percent ?? 0) / 100) * 326.7} 326.7`} />
           </svg>
           <span className="flex flex-col items-center">
-            <span className="text-3xl font-extrabold tabular-nums tracking-tight text-ink">{formatNumber(result.score)}/{formatNumber(result.maxScore)}</span>
+            <span className="text-3xl font-semibold tabular-nums tracking-tight text-ink">{formatNumber(result.score)}/{formatNumber(result.maxScore)}</span>
             {percent !== null && <span className="text-xs font-bold text-ink-muted">{formatNumber(percent)}%</span>}
           </span>
         </div>

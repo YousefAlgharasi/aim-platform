@@ -8,7 +8,7 @@ import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ChapterLessonList } from './ChapterLessonList';
-import { COURSE_LOCKED_MESSAGE } from './CourseCatalog';
+import { lockedReason } from './lockedReason';
 import {
   enrollInCourse,
   fetchCourseLevels,
@@ -36,6 +36,7 @@ export function CourseDetailPage() {
   const [enrollment, setEnrollment] = useState<CurrentEnrollment | null>(null);
   const [levels, setLevels] = useState<LevelWithChapters[]>([]);
   const [finalExam, setFinalExam] = useState<FinalExamSummary | null>(null);
+  const [allCourses, setAllCourses] = useState<StudentCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
@@ -48,6 +49,7 @@ export function CourseDetailPage() {
     setNotFound(false);
     Promise.all([fetchStudentCourses(), fetchCurrentEnrollment().catch(() => null)])
       .then(async ([courses, current]) => {
+        setAllCourses(courses);
         const found = courses.find(c => c.courseId === courseId) ?? null;
         setCourse(found);
         setEnrollment(current);
@@ -101,49 +103,53 @@ export function CourseDetailPage() {
   const relation = relationTo(courseBand, level);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="hero-panel">
-        <div className="pointer-events-none absolute top-0 end-0 size-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative z-10 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link to="/curriculum" className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-black/20 px-3 text-xs font-bold text-white no-underline hover:bg-black/30"><BookIcon className="size-4" />{t('Courses')}</Link>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/20 px-2.5 py-1 text-xs font-extrabold text-white">
-              {courseBand ?? course.levelCode}
-              {relation !== 'unknown' && <span className="font-bold opacity-90">· {t(relation === 'passed' ? 'Passed level' : relation === 'current' ? 'Your level' : 'Ahead of you')}</span>}
+    <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
+      <section className="border-t border-line pt-6 lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/curriculum" className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-ink-soft no-underline hover:text-ink"><BookIcon className="size-4" />{t('Courses')}</Link>
+            {(courseBand ?? course.levelCode) && (
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-ink ring-1 ring-line-strong">
+                {courseBand ?? course.levelCode}
+              {relation !== 'unknown' && <span className="font-medium text-ink-muted">{t(relation === 'passed' ? 'Passed level' : relation === 'current' ? 'Your level' : 'Ahead of you')}</span>}
             </span>
-            {isCurrent && <span className="hero-cta rounded-full px-2.5 py-1 text-xs font-extrabold">{t('Current course')}</span>}
+            )}
+            {isCurrent && <span className="rounded-full bg-ink px-3 py-1 text-xs font-semibold text-ink-inverse">{t('Current course')}</span>}
           </div>
-          <h1 className="m-0 text-2xl font-extrabold leading-tight tracking-tight [unicode-bidi:plaintext] sm:text-3xl">{course.title}</h1>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between gap-3 text-xs font-bold text-on-brand">
+          <h1 className="lp-display m-0 text-[2rem] font-semibold [unicode-bidi:plaintext] sm:text-[2.75rem]">{course.title}</h1>
+          <div className="flex max-w-md flex-col gap-2">
+            <div className="flex justify-between gap-3 text-sm text-ink-muted">
               <span>{t('{done} of {total} lessons finished', { done: course.completedLessonCount, total: course.lessonCount })}</span>
-              <span className="font-extrabold text-white">{course.percent}%</span>
+              <span className="lp-num font-semibold text-ink">{course.percent}%</span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-black/25 ring-1 ring-inset ring-white/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={course.percent} aria-label={t('{title} progress', { title: course.title })}>
-              <div className="h-full rounded-full bg-white transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${course.percent}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={course.percent} aria-label={t('{title} progress', { title: course.title })}>
+              <div className="h-full rounded-full bg-brand transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${course.percent}%` }} />
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs font-semibold text-on-brand">
-            {totalChapters > 0 && <span className="rounded-full bg-black/20 px-2.5 py-1">{plural(totalChapters, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: totalChapters }), other: t('{n} chapters', { n: totalChapters }) })}</span>}
-            {course.quizCount > 0 && <span className="rounded-full bg-black/20 px-2.5 py-1">{plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) })}</span>}
-            {course.examCount > 0 && <span className="rounded-full bg-black/20 px-2.5 py-1">{t('Final exam')}</span>}
-          </div>
-          {course.description && <p dir="auto" className="m-0 line-clamp-3 text-sm leading-relaxed text-on-brand">{course.description}</p>}
+          <p className="m-0 text-sm text-ink-muted">
+            {[
+              totalChapters > 0 ? plural(totalChapters, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: totalChapters }), other: t('{n} chapters', { n: totalChapters }) }) : null,
+              course.quizCount > 0 ? plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) }) : null,
+              course.examCount > 0 ? t('Final exam') : null,
+            ].filter(Boolean).join(', ')}
+          </p>
+          {course.description && <p dir="auto" className="m-0 line-clamp-3 max-w-2xl text-base leading-relaxed text-ink-muted">{course.description}</p>}
           {!course.locked && !isCurrent && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {enrollment?.found && enrollment.courseTitle && (
-                <p className="m-0 text-xs text-on-brand">{t("You're currently in {current}. Start this course to make it your active course.", { current: enrollment.courseTitle })}</p>
+                <p className="m-0 text-sm text-ink-muted">{t("You're currently in {current}. Start this course to make it your active course.", { current: enrollment.courseTitle })}</p>
               )}
               <div>
-                <Button onClick={handleEnroll} disabled={enrolling} size="lg" className="hero-cta !ring-0">
+                <Button onClick={handleEnroll} disabled={enrolling} size="lg">
                   {enrolling ? t('Starting…') : t('Start course')}
                 </Button>
               </div>
             </div>
           )}
         </div>
-      </div>
+      </section>
 
+      <div className="flex min-w-0 flex-col gap-4 lg:col-span-7">
       {!course.locked && relation === 'passed' && (
         <Banner variant="success">{t('You already passed this level. Revisit it any time to review, or move on to your level.')}</Banner>
       )}
@@ -152,7 +158,7 @@ export function CourseDetailPage() {
       )}
 
       {course.locked ? (
-        <EmptyState title={t('Course locked')} message={t(COURSE_LOCKED_MESSAGE)} />
+        <EmptyState title={t('Course locked')} message={lockedReason(course, allCourses, t)} />
       ) : (
         <>
           {course.access?.status === 'active' && (
@@ -179,6 +185,7 @@ export function CourseDetailPage() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function MyPaymentsPage() {
   if (error) return <ErrorState message={error} onRetry={load} />;
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl">
+    <div className="flex flex-col gap-5">
       <PageTitleBar title={t('My payments')} />
       {items.length === 0 ? (
         <EmptyState title={t('My payments')} message={t("You haven't made any course payments yet.")} />
@@ -47,7 +47,7 @@ export function MyPaymentsPage() {
           {items.map((p) => (
             <div key={p.id} className="bg-surface rounded-2xl p-4 ring-1 ring-line flex flex-col gap-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-extrabold text-ink">{p.courseTitle}</span>
+                <span className="font-semibold text-ink">{p.courseTitle}</span>
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${STATUS[p.status].tone}`}>{t(STATUS[p.status].label)}</span>
               </div>
               <span className="font-bold text-ink">{formatMoney(p.amount, p.currency)}</span>

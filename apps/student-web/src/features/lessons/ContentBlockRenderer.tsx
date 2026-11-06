@@ -23,17 +23,6 @@ const TYPE_LABEL: Record<string, string> = {
   external_reference: 'Reference',
 };
 
-const TYPE_ICON: Record<string, string> = {
-  text: '📝',
-  image: '🖼️',
-  audio: '🎧',
-  video: '▶️',
-  document: '📄',
-  vocabulary: '📖',
-  exercise: '✅',
-  external_reference: '🔗',
-};
-
 function typeLabel(type: string): string {
   const key = TYPE_LABEL[type];
   return key ? tr(key) : type;
@@ -68,12 +57,11 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
   const hasScript = typeof script === 'string' && script.trim().length > 0;
 
   return (
-    <article className="bg-surface rounded-2xl p-4 sm:p-5 ring-1 ring-line shadow-sm flex flex-col gap-3" aria-label={t('Step {n}: {title}', { n: stepNumber, title: asset.title })}>
+    <article className="bg-surface rounded-2xl p-5 ring-1 ring-line flex flex-col gap-3 sm:p-6" aria-label={t('Step {n}: {title}', { n: stepNumber, title: asset.title })}>
       <div className="flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl bg-brand-soft flex items-center justify-center text-lg shrink-0" aria-hidden="true">{TYPE_ICON[asset.type] ?? '📎'}</span>
         <div className="min-w-0">
-          <span className="block text-[11px] font-extrabold uppercase tracking-wider text-brand-ink">{t('Step {n} · {meta}', { n: stepNumber, meta: meta.join(' · ') })}</span>
-          <h3 className="font-bold text-ink text-base leading-snug m-0">{asset.title}</h3>
+          <span className="block text-sm text-ink-muted">{t('Step {n} · {meta}', { n: stepNumber, meta: meta.join(' · ') })}</span>
+          <h3 className="m-0 text-lg font-semibold leading-snug text-ink">{asset.title}</h3>
         </div>
       </div>
 
@@ -103,7 +91,7 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
       {asset.url && asset.type !== 'image' && asset.type !== 'audio' &&
         !(asset.type === 'video' && asset.mimeType?.startsWith('video/')) && (
           <a href={asset.url} target="_blank" rel="noopener noreferrer" className={`${buttonClasses('secondary', 'sm')} self-start`}>
-            {t('Open {type} ↗', { type: TYPE_LABEL[asset.type] ? tr(TYPE_LABEL[asset.type]).toLowerCase() : t('resource') })}
+            {t('Open {type}', { type: TYPE_LABEL[asset.type] ? tr(TYPE_LABEL[asset.type]).toLowerCase() : t('resource') })}
           </a>
       )}
     </article>

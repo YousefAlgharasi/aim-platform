@@ -45,7 +45,7 @@ function Ring({ percent, size = 128 }: { percent: number; size?: number }) {
         <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" stroke="rgb(255 255 255 / 0.2)" />
         <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" strokeLinecap="round" stroke="white" strokeDasharray={`${(percent / 100) * c} ${c}`} />
       </svg>
-      <span className="text-3xl font-extrabold tabular-nums tracking-tight">{percent}%</span>
+      <span className="text-3xl font-semibold tabular-nums tracking-tight">{percent}%</span>
     </div>
   );
 }
@@ -69,8 +69,8 @@ export function ProgressSummary() {
   const isEmpty = skillStates.length === 0 && spots.length === 0 && reviewSchedules.length === 0;
 
   const stat = (value: string | number, label: string) => (
-    <div className="rounded-2xl bg-white/10 p-3 backdrop-blur-sm">
-      <span className="block text-2xl font-extrabold tabular-nums tracking-tight">{value}</span>
+    <div className="rounded-2xl bg-white/10 p-3">
+      <span className="block text-2xl font-semibold tabular-nums tracking-tight">{value}</span>
       <span className="text-xs font-semibold text-on-brand">{label}</span>
     </div>
   );
@@ -88,7 +88,7 @@ export function ProgressSummary() {
               {avg !== null ? <Ring percent={avg} /> : null}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2"><LevelBadge tone="onBrand" /></div>
-                <p className="m-0 mt-2 text-xl font-extrabold leading-snug sm:text-2xl">{avg !== null ? t('Overall mastery') : t('Not enough data yet')}</p>
+                <p className="m-0 mt-2 text-xl font-semibold leading-snug sm:text-2xl">{avg !== null ? t('Overall mastery') : t('Not enough data yet')}</p>
                 <p className="m-0 mt-1 text-sm text-on-brand">{t('Based on your lessons, practice and assessments.')}</p>
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {stat(skillStates.length, t('Skills tracked'))}
@@ -114,7 +114,7 @@ export function ProgressSummary() {
                     <li key={a.category} className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-bold text-ink">{t(CATEGORY_LABEL[a.category])}</span>
-                        <span className="flex items-center gap-2 text-sm font-extrabold tabular-nums text-ink">
+                        <span className="flex items-center gap-2 text-sm font-semibold tabular-nums text-ink">
                           <span aria-hidden="true" className={`text-xs ${a.trend === 'up' ? 'text-success-ink' : a.trend === 'down' ? 'text-danger-ink' : 'text-ink-muted'}`}>{TREND[a.trend]}</span>
                           {a.percent}%
                         </span>
@@ -145,7 +145,7 @@ export function ProgressSummary() {
                       <li key={s.skillId}>
                         <Link to={s.lessonId ? `/practice/lesson/${encodeURIComponent(s.lessonId)}` : '/improve'} className="flex items-center justify-between gap-3 rounded-xl bg-surface-sunken p-3 no-underline transition-colors hover:bg-brand-soft">
                           <span className="min-w-0 truncate text-sm font-bold text-ink [unicode-bidi:plaintext]">{prettifySkillId(s.skillId)}</span>
-                          {s.skill && <span className="shrink-0 text-xs font-extrabold tabular-nums text-danger-ink">{toPercent(s.skill.masteryScore)}%</span>}
+                          {s.skill && <span className="shrink-0 text-xs font-semibold tabular-nums text-danger-ink">{toPercent(s.skill.masteryScore)}%</span>}
                         </Link>
                       </li>
                     ))}
@@ -186,9 +186,9 @@ export function ProgressSummary() {
             { to: '/certificates', text: 'Certificates', body: 'Proof of finished courses', icon: <AcademicIcon className="size-6" /> },
             { to: '/reports', text: 'Reports', body: 'Summaries of your activity', icon: <TrendingUpIcon className="size-6" /> },
           ].map((x) => (
-            <Link key={x.to} to={x.to} className="group flex items-center gap-3 rounded-2xl bg-surface p-4 no-underline shadow-card ring-1 ring-line transition-all hover:-translate-y-0.5 hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none">
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink" aria-hidden="true">{x.icon}</span>
-              <span className="min-w-0"><span className="block text-sm font-extrabold text-ink">{t(x.text)}</span><span className="block text-xs text-ink-muted">{t(x.body)}</span></span>
+            <Link key={x.to} to={x.to} className="group flex items-center gap-3 rounded-2xl bg-surface p-4 no-underline ring-1 ring-line transition-all hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true">{x.icon}</span>
+              <span className="min-w-0"><span className="block text-sm font-semibold text-ink">{t(x.text)}</span><span className="block text-xs text-ink-muted">{t(x.body)}</span></span>
             </Link>
           ))}
         </div>

@@ -59,7 +59,7 @@ export function VocabularyPage() {
   const mastered = words.filter((w) => w.box >= 5).length;
 
   return (
-    <div className="stagger mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="stagger flex w-full flex-col gap-6">
       <PageTitleBar
         title={t('My words')}
         subtitle={t('Words you saved while learning, ready to review.')}
@@ -70,7 +70,7 @@ export function VocabularyPage() {
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="m-0 text-sm font-bold text-on-brand">{t('Today’s review')}</p>
-            <p className="m-0 mt-1 text-3xl font-extrabold tabular-nums">{dueCount === 0 ? t('All caught up') : t('{n} words due', { n: dueCount })}</p>
+            <p className="m-0 mt-1 text-3xl font-semibold tabular-nums">{dueCount === 0 ? t('All caught up') : t('{n} words due', { n: dueCount })}</p>
             <p className="m-0 mt-1 text-sm text-on-brand">{t('{total} saved · {mastered} well known', { total: words.length, mastered })}</p>
           </div>
           <Button onClick={() => setReviewing(true)} disabled={dueCount === 0} size="lg" className="hero-cta !ring-0">
@@ -82,7 +82,7 @@ export function VocabularyPage() {
       {adding && (
         <Card>
           <form onSubmit={add} className="flex flex-col gap-3">
-            <h2 className="m-0 text-base font-extrabold tracking-tight text-ink">{t('Add a word')}</h2>
+            <h2 className="m-0 text-xl font-semibold tracking-tight text-ink">{t('Add a word')}</h2>
             {formError && <Banner variant="error">{formError}</Banner>}
             <div className="grid gap-3 sm:grid-cols-2">
               <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={60} required autoFocus
@@ -113,10 +113,10 @@ export function VocabularyPage() {
               {shown.map((w) => {
                 const isDue = new Date(w.nextReviewAt).getTime() <= Date.now();
                 return (
-                  <li key={w.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-card ring-1 ring-line">
+                  <li key={w.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line">
                     <div className="flex items-start gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="m-0 text-base font-extrabold text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{w.word}</p>
+                        <p className="m-0 text-base font-semibold text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{w.word}</p>
                         {w.meaning && <p className="m-0 mt-0.5 text-sm text-ink-soft [unicode-bidi:plaintext]">{w.meaning}</p>}
                         {w.context && <p className="m-0 mt-1 line-clamp-2 text-xs italic text-ink-muted [unicode-bidi:plaintext]">{w.context}</p>}
                       </div>
@@ -130,7 +130,7 @@ export function VocabularyPage() {
                         {Array.from({ length: 6 }).map((_, i) => <span key={i} className={`h-1.5 w-4 rounded-full ${i < w.box ? 'bg-brand' : 'bg-surface-strong'}`} />)}
                       </span>
                       {isDue
-                        ? <span className="rounded-full bg-warning-soft px-2.5 py-0.5 text-xs font-extrabold text-warning-ink">{t('Due')}</span>
+                        ? <span className="rounded-full bg-warning-soft px-2.5 py-0.5 text-xs font-semibold text-warning-ink">{t('Due')}</span>
                         : <span className="text-xs text-ink-muted">{t('Next review: {date}', { date: formatDate(w.nextReviewAt) })}</span>}
                     </div>
                   </li>

@@ -40,12 +40,12 @@ function DeadlineCard({ item }: { item: StudentDeadlineItem }) {
   return (
     <Link
       to={`/assessments/${item.assessmentId}`}
-      className="flex flex-col gap-2.5 rounded-2xl bg-surface p-4 no-underline shadow-card ring-1 ring-line transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:ring-brand-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none sm:p-5"
+      className="flex flex-col gap-2.5 rounded-2xl bg-surface p-4 no-underline ring-1 ring-line transition-all duration-200 hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none sm:p-5"
     >
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={statusTone(item.status)}>{deadlineStatusLabel(item.status)}</Badge>
         {item.extendedClosesAt && <Badge tone="indigo">{t('Extended')}</Badge>}
-        {due && <span className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${due.urgent ? 'bg-danger-soft text-danger-ink' : 'bg-surface-muted text-ink-soft'}`}>{due.text}</span>}
+        {due && <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${due.urgent ? 'bg-danger-soft text-danger-ink' : 'bg-surface-muted text-ink-soft'}`}>{due.text}</span>}
       </div>
       <h3 className="m-0 text-base font-bold leading-snug text-ink">{item.assessmentTitle}</h3>
       <p className="m-0 text-xs font-medium text-ink-muted">
@@ -87,7 +87,7 @@ export function AssessmentDeadlinesPage() {
   const total = GROUPS.reduce((n, g) => n + deadlines[g.key].length, 0);
 
   return (
-    <div className="stagger mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="stagger flex w-full flex-col gap-6">
       <PageHeader
         fallback="/assessments"
         title={t('Deadlines')}
@@ -98,7 +98,7 @@ export function AssessmentDeadlinesPage() {
       ) : (
         GROUPS.filter((g) => deadlines[g.key].length > 0).map((g) => (
           <section key={g.key} className="flex flex-col gap-3">
-            <h2 className="m-0 px-1 text-base font-extrabold tracking-tight text-ink">{t(g.title)} <span className="text-sm font-bold text-ink-muted">({deadlines[g.key].length})</span></h2>
+            <h2 className="m-0 px-1 text-xl font-semibold tracking-tight text-ink">{t(g.title)} <span className="text-sm font-bold text-ink-muted">({deadlines[g.key].length})</span></h2>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {deadlines[g.key].map((item) => (
                 <DeadlineCard key={`${item.deadlineId}-${item.assessmentId}`} item={item} />

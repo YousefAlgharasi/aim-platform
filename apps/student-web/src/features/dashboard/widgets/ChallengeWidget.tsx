@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../../i18n/I18nContext';
-import { Card } from '../../../components/common/Card';
 import type { DailyChallengeSummary } from '../dashboardApi';
 import * as ui from './ui';
 
@@ -16,21 +15,17 @@ export function ChallengeWidget({ challenge, courseId }: ChallengeWidgetProps) {
   const target = Math.max(challenge.targetCount, 1);
   const pct = Math.min(100, Math.round((challenge.progressCount / target) * 100));
   return (
-    <Card>
+    <section className={ui.panel}>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <span className={ui.eyebrow}>{t('Daily challenge')}</span>
+          <h3 className={ui.cardTitle}>{t('Daily challenge')}</h3>
           <span
-            className={
-              challenge.completed
-                ? 'rounded-full bg-success-soft px-2.5 py-1 text-xs font-extrabold text-success-ink'
-                : 'rounded-full bg-brand-soft px-2.5 py-1 text-xs font-extrabold text-brand-ink'
-            }
+            className={challenge.completed ? 'lp-num text-sm font-semibold text-success-ink' : 'lp-num text-sm text-ink-muted'}
           >
             {challenge.completed ? t('Completed') : `${challenge.progressCount}/${challenge.targetCount}`}
           </span>
         </div>
-        <span className="text-lg font-extrabold leading-tight tracking-tight text-ink [unicode-bidi:plaintext]">{t(challenge.title)}</span>
+        <span className="text-lg font-semibold leading-snug text-ink [unicode-bidi:plaintext]">{t(challenge.title)}</span>
         <span className="text-sm leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{t(challenge.description)}</span>
         <div
           className={ui.barTrack}
@@ -48,6 +43,6 @@ export function ChallengeWidget({ challenge, courseId }: ChallengeWidgetProps) {
           </div>
         )}
       </div>
-    </Card>
+    </section>
   );
 }

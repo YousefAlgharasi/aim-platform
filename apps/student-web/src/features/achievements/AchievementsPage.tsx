@@ -1,4 +1,5 @@
 import { PageTitleBar } from '../../components/common/PageTitleBar';
+import { FilterPills } from '../../components/common/FilterPills';
 import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
@@ -8,24 +9,8 @@ import { CardGridSkeleton } from '../../components/common/Skeleton';
 import { getErrorMessage } from '../../api/client';
 import { t } from '../../i18n';
 import { fetchAchievements, type Achievement } from './achievementsApi';
-import { TrophyIcon } from '../../components/common/Icons';
 
 type Tab = 'all' | 'unlocked' | 'locked';
-
-// Backend icons are Material icon names; map the known ones to emoji for the web.
-const ICONS: Record<string, string> = {
-  emoji_events: '🏆',
-  local_fire_department: '🔥',
-  workspace_premium: '🏅',
-  school: '🎓',
-  star: '⭐',
-  bolt: '⚡',
-  military_tech: '🎖️',
-};
-
-function iconFor(a: Achievement): string {
-  return ICONS[a.icon] ?? '⭐';
-}
 
 function humanize(value: string): string {
   if (!value) return t('Other');
@@ -81,48 +66,29 @@ export function AchievementsPage() {
       ) : (
         <>
           <div className="hero-panel">
-            <div className="pointer-events-none absolute top-0 end-0 size-36 rounded-full bg-white/10 blur-2xl" />
             <div className="relative z-10 flex items-center gap-4">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-black/20 text-gold-on-brand backdrop-blur-md" aria-hidden="true">
-                <TrophyIcon className="size-6" />
-              </span>
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-base font-extrabold leading-tight">
+                  <span className="text-base font-semibold leading-tight">
                     {t('{done} of {total} badges unlocked', { done: unlocked.length, total: items.length })}
                   </span>
-                  <span className="text-xs font-extrabold">{pct}%</span>
+                  <span className="text-xs font-semibold">{pct}%</span>
                 </div>
                 <div
-                  className="h-2 overflow-hidden rounded-full bg-black/20 p-0.5"
+                  className="h-2 overflow-hidden rounded-full bg-white/25"
                   role="progressbar"
                   aria-label={t('Badges unlocked')}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={pct}
                 >
-                  <div className="h-full rounded-full bg-gradient-to-r from-white to-brand-soft transition-all duration-500" style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full bg-white transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t('Filter achievements')}>
-            {tabs.map((tb) => (
-              <button
-                key={tb.key}
-                type="button"
-                role="tab"
-                aria-selected={tab === tb.key}
-                className={`min-h-10 shrink-0 cursor-pointer rounded-full border-0 px-4 text-sm font-bold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
-                  tab === tb.key ? 'bg-brand text-white ring-brand' : 'bg-surface text-ink-soft ring-line hover:bg-brand-soft'
-                }`}
-                onClick={() => setTab(tb.key)}
-              >
-                {tb.label}
-              </button>
-            ))}
-          </div>
+          <FilterPills label={t('Filter achievements')} value={tab} onChange={setTab} options={tabs.map((tb) => ({ key: tb.key, label: tb.label }))} />
 
           {visible.length === 0 ? (
             <EmptyState
@@ -139,18 +105,8 @@ export function AchievementsPage() {
                 <li key={a.key}>
                   <Card className="h-full">
                     <div className="flex items-start gap-3.5">
-                      <span
-                        className={`flex size-11 shrink-0 items-center justify-center rounded-xl text-2xl ${
-                          a.unlocked
-                            ? 'bg-brand-soft'
-                            : 'bg-surface-muted'
-                        }`}
-                        aria-hidden="true"
-                      >
-                        {a.unlocked ? iconFor(a) : '🔒'}
-                      </span>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <span className="text-xs font-extrabold uppercase tracking-wider text-brand-ink">
+                        <span className="text-xs font-semibold text-brand-ink">
                           {humanize(a.category)}
                         </span>
                         <span className="text-sm font-bold text-ink">{a.title}</span>
