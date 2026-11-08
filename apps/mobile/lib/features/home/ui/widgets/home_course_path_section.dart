@@ -37,8 +37,8 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/home/logic/provider/course_path_loader_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
-import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -103,8 +103,6 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     if (token == null || token.isEmpty) return;
 
     try {
-      final lessonsRepo = ref.read(lessonsRepositoryProvider);
-
       final courses = await ref.read(homeCoursesProvider.future);
       final course = _pickCurrentCourse(courses);
       if (course == null) {
@@ -146,40 +144,18 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
-      final levels =
-          await lessonsRepo.getLevels(bearerToken: token, courseId: course.courseId);
-      if (levels.isEmpty) {
+      final data = await ref.read(coursePathLoaderProvider).load(
+            bearerToken: token,
+            courseId: course.courseId,
+          );
+      if (data == null) {
         if (mounted) setState(() => _state = _LoadState.empty);
         return;
       }
-      final levelId = levels.first.id;
+      final finalExam = data.finalExam;
+      final activeChapterId = data.activeChapterId;
 
-      // Chapters and the final exam only need the level id, so fetch them
-      // together instead of one after the other.
-      final (chapters, finalExam) = await (
-        lessonsRepo.getChaptersWithProgress(
-          bearerToken: token,
-          levelId: levelId,
-        ),
-        lessonsRepo.getFinalExamForLevel(bearerToken: token, levelId: levelId),
-      ).wait;
-
-      _PathNode? currentChapterIncomplete;
-      for (final c in chapters) {
-        if (!c.isCompleted) {
-          currentChapterIncomplete = _PathNode(
-            kind: _NodeKind.lesson,
-            id: c.chapterId,
-            title: c.title,
-            completed: false,
-            unlocked: true,
-            current: false,
-          );
-          break;
-        }
-      }
-
-      if (currentChapterIncomplete == null) {
+      if (activeChapterId == null) {
         // Every chapter is done — the course's final stretch is its exam.
         if (finalExam == null) {
           if (mounted) setState(() => _state = _LoadState.empty);
@@ -208,15 +184,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
-      final chapterId = currentChapterIncomplete.id;
-      // Lessons and the chapter quiz are independent of each other.
-      final (lessons, quiz) = await (
-        lessonsRepo.getLessonsWithProgress(
-          bearerToken: token,
-          chapterId: chapterId,
-        ),
-        lessonsRepo.getChapterQuiz(bearerToken: token, chapterId: chapterId),
-      ).wait;
+      final lessons = data.lessons;
+      final quiz = data.quiz;
 
       final nodes = <_PathNode>[
         for (final lesson in lessons)
@@ -243,7 +212,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       setState(() {
         _nextCourse = null;
         _courseTitle = course.title;
-        _subtitle = currentChapterIncomplete!.title;
+        _subtitle = data.activeChapterTitle;
         _nodes = nodes;
         _state = _LoadState.success;
       });
