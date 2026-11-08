@@ -110,6 +110,17 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
       if (coreResults.every((r) => r.error != null)) {
         throw skillStatesResult.error!;
       }
+      // Show the page as soon as the core sections are in; the supplementary
+      // cards fill in when they arrive instead of holding everything back.
+      // `hasFailedSections` stays true meanwhile so the getting-started
+      // promos are not shown for data that has not arrived yet.
+      setSuccess(HomeData(
+        skillStates: skillStatesResult.value ?? const <HomeSkillState>[],
+        weaknessRecords: weaknessResult.value ?? const <HomeWeaknessRecord>[],
+        reviewSchedules: scheduleResult.value ?? const <HomeReviewSchedule>[],
+        recommendations: recommendResult.value ?? const <HomeRecommendation>[],
+        hasFailedSections: true,
+      ));
       final engagementResult = await engagementFuture;
       final engagementStatsResult = await engagementStatsFuture;
       final continueLearningResult = await continueLearningFuture;
