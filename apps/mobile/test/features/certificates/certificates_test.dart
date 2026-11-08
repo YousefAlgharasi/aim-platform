@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/features/certificates/data/models/certificate_model.dart';
 import 'package:aim_mobile/features/certificates/ui/pages/certificate_detail_page.dart';
+import 'package:aim_mobile/features/certificates/ui/widgets/certificate_painter.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 void main() {
@@ -124,14 +125,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('AIM Language Platform'), findsOneWidget);
-      expect(find.text('Sami Ali'), findsOneWidget);
-      expect(find.text('English A1.1 Beginners'), findsOneWidget);
-      expect(find.text('935 / 1000 pts'), findsOneWidget);
-      expect(find.text('94%'), findsOneWidget);
-      expect(find.text('190 / 200 pts'), findsOneWidget);
-      expect(find.text('370 / 400 pts'), findsOneWidget);
-      expect(find.text('Copy Verification Link'), findsOneWidget);
+      // The certificate itself is a picture (as on the web), so the text
+      // checks are on the breakdown beneath it, which is out of 100.
+      expect(find.byType(CertificateView), findsOneWidget);
+      expect(find.text('Score breakdown'), findsOneWidget);
+      expect(find.text('19 / 20 pts · 95%'), findsOneWidget);
+      expect(find.text('18 / 20 pts · 90%'), findsOneWidget);
+      expect(find.text('37 / 40 pts · 93%'), findsOneWidget);
+      expect(find.text('Your mark'), findsOneWidget);
+      expect(find.text('\u206694 / 100\u2069'), findsOneWidget);
+      // The web app never shows a verification link.
+      expect(find.text('Copy Verification Link'), findsNothing);
     });
 
     testWidgets('renders correctly in Arabic (RTL) adhering to Rule 12', (tester) async {
@@ -172,12 +176,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('AIM Language Platform'), findsOneWidget);
-      expect(find.text('أحمد العلوي'), findsOneWidget);
-      expect(find.text('اللغة الإنجليزية للمبتدئين A1.1'), findsOneWidget);
-      expect(find.text('980 / 1000 نقطة'), findsOneWidget);
-      expect(find.text('98%'), findsOneWidget);
-      expect(find.text('نسخ رابط التحقق'), findsOneWidget);
+      expect(find.byType(CertificateView), findsOneWidget);
+      expect(find.text('تفاصيل الدرجات'), findsOneWidget);
+      expect(find.text('درجتك'), findsOneWidget);
+      expect(find.text('نسخ رابط التحقق'), findsNothing);
     });
   });
 }

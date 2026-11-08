@@ -74,6 +74,11 @@ import '../../features/course_billing/ui/pages/course_claim_page.dart';
 import '../../features/course_billing/ui/pages/my_course_payments_page.dart';
 import '../../features/certificates/ui/pages/certificate_detail_page.dart';
 
+import '../../features/improve/ui/improve_page.dart';
+import '../../features/learner_tools/ui/mistakes_page.dart';
+import '../../features/learner_tools/ui/vocabulary_page.dart';
+import '../../features/practice_hub/ui/practice_hub_page.dart';
+
 import 'app_route_paths.dart';
 
 /// Centralised GoRouter configuration for the app.
@@ -463,6 +468,25 @@ class AppRouter {
           path: AppRoutePaths.accountSettings,
           builder: (context, state) => const AccountSettingsPage(),
         ),
+        GoRoute(
+          path: AppRoutePaths.improve,
+          builder: (context, state) => const ImprovePage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.practiceHub,
+          builder: (context, state) => const PracticeHubPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.vocabulary,
+          builder: (context, state) => const VocabularyPage(),
+        ),
+        GoRoute(
+          path: AppRoutePaths.mistakes,
+          builder: (context, state) => MistakesPage(
+            quick: state.uri.queryParameters['quick'] == '1',
+            skill: state.uri.queryParameters['skill'],
+          ),
+        ),
 
       ],
     );
@@ -829,6 +853,10 @@ class AppRouter {
     AppRoutePaths.achievements,
     AppRoutePaths.certificates,
     AppRoutePaths.certificateDetail,
+    AppRoutePaths.improve,
+    AppRoutePaths.practiceHub,
+    AppRoutePaths.vocabulary,
+    AppRoutePaths.mistakes,
     // TASK-14: Newly wired-up screens are authenticated-student-facing
     AppRoutePaths.editProfile,
     AppRoutePaths.skillState,
