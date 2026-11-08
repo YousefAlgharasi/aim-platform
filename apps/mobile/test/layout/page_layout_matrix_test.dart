@@ -30,7 +30,6 @@ import 'package:aim_mobile/features/progress/ui/pages/skill_state_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/review_schedule_page.dart';
 import 'package:aim_mobile/features/learning_path/ui/pages/learning_path_page.dart';
 import 'package:aim_mobile/features/reviews/ui/pages/review_page.dart';
-import 'package:aim_mobile/features/analytics_summary/ui/pages/analytics_summary_page.dart';
 import 'package:aim_mobile/features/notifications/ui/pages/notification_inbox_page.dart';
 import 'package:aim_mobile/features/notifications/ui/pages/notification_preferences_page.dart';
 import 'package:aim_mobile/features/notifications/ui/pages/reminder_settings_page.dart';
@@ -95,7 +94,6 @@ final _pages = <_Page>[
   _Page('ReviewSchedulePage', () => ReviewSchedulePage()),
   _Page('LearningPathPage', () => LearningPathPage()),
   _Page('ReviewPage', () => ReviewPage()),
-  _Page('AnalyticsSummaryPage', () => AnalyticsSummaryPage()),
   _Page('NotificationInboxPage', () => NotificationInboxPage()),
   _Page('NotificationPreferencesPage', () => NotificationPreferencesPage()),
   _Page('ReminderSettingsPage', () => ReminderSettingsPage()),

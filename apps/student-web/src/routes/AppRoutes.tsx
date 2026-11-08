@@ -43,7 +43,6 @@ import { NotificationCenterPage } from '../features/notifications/NotificationCe
 import { NotificationPreferencesPage } from '../features/notifications/NotificationPreferencesPage';
 import { BillingPage } from '../features/billing/BillingPage';
 import { CheckoutPage } from '../features/billing/CheckoutPage';
-import { ReportsSummaryPage } from '../features/reports/ReportsSummaryPage';
 import { SupportPage } from '../features/support/SupportPage';
 import { PlacementGatePage } from '../features/placement/PlacementGatePage';
 import { AssessmentDeadlinesPage } from '../features/assessments/AssessmentDeadlinesPage';
@@ -129,7 +128,6 @@ export function AppRoutes() {
         <Route path="/billing" element={<BillingPage />} />
         <Route path="/billing/payments" element={<MyPaymentsPage />} />
         <Route path="/billing/checkout/:planId" element={<CheckoutPage />} />
-        <Route path="/reports" element={<ReportsSummaryPage />} />
         <Route path="/support" element={<SupportPage />} />
         <Route path="/support/tickets/:ticketId" element={<TicketDetailPage />} />
       </Route>

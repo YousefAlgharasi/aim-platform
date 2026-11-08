@@ -1,44 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/localization/app_locale.dart';
-import 'package:aim_mobile/core/widgets/widgets.dart';
+import 'package:aim_mobile/features/support/data/models/support_models.dart';
+import 'package:aim_mobile/features/support/logic/provider/support_provider.dart';
+import 'package:aim_mobile/features/support/logic/provider/ticket_list_notifier.dart';
+import 'package:aim_mobile/features/support/logic/repository/support_repository.dart';
 import 'package:aim_mobile/features/support/ui/pages/help_center_page.dart';
 
-Widget _wrap(Widget child) {
-  return MaterialApp(
-    localizationsDelegates: AppLocale.delegates,
-    supportedLocales: AppLocale.supportedLocales,
-    home: child,
+class _NoTicketsRepo implements SupportRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #getTickets) {
+      return Future<List<SupportTicket>>.value(const []);
+    }
+    return super.noSuchMethod(invocation);
+  }
+}
+
+Widget _wrap(Widget child, {Locale locale = const Locale('en')}) {
+  return ProviderScope(
+    overrides: [
+      ticketListProvider.overrideWith(
+        (ref) => TicketListNotifier(repository: _NoTicketsRepo()),
+      ),
+    ],
+    child: MaterialApp(
+      locale: locale,
+      localizationsDelegates: AppLocale.delegates,
+      supportedLocales: AppLocale.supportedLocales,
+      home: child,
+    ),
   );
 }
 
 void main() {
-  group('HelpCenterPage', () {
-    testWidgets('renders scaffold with title', (tester) async {
+  group('HelpCenterPage (web-style Help & Support)', () {
+    testWidgets('shows the title and the two action cards', (tester) async {
       await tester.pumpWidget(_wrap(const HelpCenterPage()));
-      expect(find.text('Help Center'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('Help & Support'), findsOneWidget);
+      expect(find.text('Submit a Ticket'), findsOneWidget);
+      expect(find.text('Send Feedback'), findsOneWidget);
     });
 
-    testWidgets('shows help categories', (tester) async {
+    testWidgets('shows My Tickets with an empty state', (tester) async {
       await tester.pumpWidget(_wrap(const HelpCenterPage()));
-      expect(find.text('Lessons & Content'), findsOneWidget);
-      expect(find.text('Assessments & Grades'), findsOneWidget);
-      expect(find.text('Account & Profile'), findsOneWidget);
-      expect(find.text('Billing & Subscription'), findsOneWidget);
-      expect(find.text('Technical Issues'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('My Tickets'), findsOneWidget);
+      expect(find.text('No tickets yet'), findsOneWidget);
+    });
+
+    testWidgets('shows the common questions', (tester) async {
+      await tester.pumpWidget(_wrap(const HelpCenterPage()));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('General Help'),
-        100,
+        find.text('Technical Issues'),
+        200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('General Help'), findsOneWidget);
+      expect(find.text('Technical Issues'), findsOneWidget);
+      expect(find.text('Common questions'), findsOneWidget);
     });
 
-    testWidgets('shows create ticket button', (tester) async {
-      await tester.pumpWidget(_wrap(const HelpCenterPage()));
-      expect(find.text('Create Ticket'), findsOneWidget);
-      expect(find.byType(AIMGradientButton), findsOneWidget);
+    testWidgets('renders in Arabic without overflow', (tester) async {
+      await tester.pumpWidget(_wrap(const HelpCenterPage(), locale: const Locale('ar')));
+      await tester.pumpAndSettle();
+      expect(find.text('المساعدة والدعم'), findsOneWidget);
+      expect(find.text('أرسل تذكرة'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

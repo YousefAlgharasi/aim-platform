@@ -53,6 +53,19 @@ interface ReviewScheduleRow {
   readonly updated_at: string;
 }
 
+/**
+ * The stored status is computed once, when the AIM pipeline writes the row, so
+ * a 'pending' row never becomes 'due' on its own as time passes. Derive it at
+ * read time from due_at so the app always sees what is due right now. Any other
+ * stored status is returned unchanged.
+ */
+function effectiveStatus(stored: string, dueAt: string, nowMs: number): string {
+  if (stored !== 'pending' && stored !== 'due') return stored;
+  const due = new Date(dueAt).getTime();
+  if (Number.isNaN(due)) return stored;
+  return due <= nowMs ? 'due' : 'pending';
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -91,43 +104,14 @@ export class ReviewScheduleReadService {
       [studentId],
     );
 
-    if (result.rows.length === 0) {
-      const progressRes = await this.db.query<{ completed_count: string }>(
-        `SELECT COUNT(CASE WHEN completed THEN 1 END)::text AS completed_count
-         FROM lesson_progress
-         WHERE student_id = $1`,
-        [studentId],
-      );
-
-      const completedCount = parseInt(progressRes.rows[0]?.completed_count ?? '0', 10);
-      if (completedCount > 0) {
-        const now = new Date();
-        const due = new Date(now.getTime() + 86400000);
-        const nowIso = now.toISOString();
-        const dueIso = due.toISOString();
-        const defaultSkills = ['vocabulary', 'grammar', 'speaking'];
-        const reviewSchedules: ReviewScheduleEntry[] = defaultSkills.map((skillId, index) => ({
-          scheduleId: `sch-${index + 1}`,
-          skillId,
-          dueAt: dueIso,
-          intervalDays: 1,
-          repetitionCount: 1,
-          status: 'pending',
-          basedOnAttemptId: 'initial',
-          scheduledAt: nowIso,
-          updatedAt: nowIso,
-        }));
-        return { studentId, reviewSchedules };
-      }
-    }
-
+    const now = Date.now();
     const reviewSchedules: ReviewScheduleEntry[] = result.rows.map((row) => ({
       scheduleId: row.id,
       skillId: row.skill_id,
       dueAt: row.due_at,
       intervalDays: parseFloat(row.interval_days),
       repetitionCount: row.repetition_count,
-      status: row.status,
+      status: effectiveStatus(row.status, row.due_at, now),
       basedOnAttemptId: row.based_on_attempt_id,
       scheduledAt: row.scheduled_at,
       updatedAt: row.updated_at,

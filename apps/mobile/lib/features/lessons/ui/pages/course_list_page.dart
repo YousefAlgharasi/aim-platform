@@ -130,28 +130,6 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF653BFF).withValues(alpha: 0.45),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-          backgroundColor: const Color(0xFF653BFF),
-          shape: const CircleBorder(),
-          elevation: 0,
-          child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
-        ),
-      ),
       body: SafeArea(
         child: switch (state) {
           AppAsyncLoading() => AIMFullScreenLoading(
