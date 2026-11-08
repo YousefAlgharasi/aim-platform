@@ -17,6 +17,8 @@ import 'package:aim_mobile/features/aim_results/logic/entity/aim_review_schedule
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/core/localization/inline_tr.dart';
+import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Review — Spaced-repetition schedule tab.
@@ -202,6 +204,7 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
                       )
                     : _ReviewContent(
                         schedules: data.reviewSchedules,
+                        recommendations: data.recommendations,
                         onRefresh: _refresh,
                       ),
                 AppAsyncIdle() => AIMFullScreenLoading(
@@ -219,16 +222,44 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
 class _ReviewContent extends StatelessWidget {
   const _ReviewContent({
     required this.schedules,
+    required this.recommendations,
     required this.onRefresh,
   });
 
   final List<AimReviewScheduleModel> schedules;
+  final List<AimRecommendationModel> recommendations;
   final Future<void> Function() onRefresh;
+
+  /// Starts a real review: practice the lesson the backend recommends for the
+  /// first skill that is due; if none has one, retry the student's mistakes.
+  void _start(BuildContext context) {
+    final dueSkills = schedules
+        .where((s) => s.status == 'due')
+        .map((s) => s.skillId)
+        .toList();
+    final ranked = [...recommendations]
+      ..sort((a, b) => a.rank.compareTo(b.rank));
+    for (final skill in dueSkills) {
+      for (final r in ranked) {
+        if (r.targetSkillId == skill && r.targetLessonId != null) {
+          context.push(AppRoutePaths.practiceSession, extra: {
+            'lessonId': r.targetLessonId,
+            'lessonTitle': _prettifySkillId(skill),
+          });
+          return;
+        }
+      }
+    }
+    context.push('${AppRoutePaths.mistakes}?quick=1');
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Status comes from the backend, which derives it from the due date on
+    // every read, so these counts are always current.
     final dueNowCount = schedules.where((s) => s.status == 'due').length;
-    final learnedCount = schedules.length;
+    final upcomingCount = schedules.where((s) => s.status == 'pending').length;
+    final skillCount = schedules.map((s) => s.skillId).toSet().length;
     final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
 
     return Column(
@@ -247,25 +278,25 @@ class _ReviewContent extends StatelessWidget {
                         context: context,
                         val: '$dueNowCount',
                         label: l10n?.reviewsStatDueNow ?? 'Due now',
-                        color: const Color(0xFFEF4444),
+                        color: AimColors.error500,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildStatCard(
                         context: context,
-                        val: '$learnedCount',
-                        label: l10n?.reviewsStatLearned ?? 'Learned',
-                        color: const Color(0xFF4F46E5),
+                        val: '$upcomingCount',
+                        label: context.tr('Upcoming', 'قادمة'),
+                        color: AimColors.primary500,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildStatCard(
                         context: context,
-                        val: '7d',
-                        label: l10n?.reviewsStatStreak ?? 'Streak',
-                        color: const Color(0xFFF59E0B),
+                        val: '$skillCount',
+                        label: context.tr('Skills', 'مهارات'),
+                        color: AimColors.warning500,
                       ),
                     ),
                   ],
@@ -309,12 +340,12 @@ class _ReviewContent extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+                  colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                    color: AimColors.primary500.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -323,13 +354,7 @@ class _ReviewContent extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
-                    // Navigate to lesson practice / question session
-                    context.push('/practice/session', extra: {
-                      'lessonId': 'review-session',
-                      'lessonTitle': 'Spaced Repetition Review',
-                    });
-                  },
+                  onTap: () => _start(context),
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
                     child: Row(

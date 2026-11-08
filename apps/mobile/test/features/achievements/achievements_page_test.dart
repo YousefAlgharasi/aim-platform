@@ -125,25 +125,67 @@ Widget _wrap({
   );
 }
 
+const _unlocked = AchievementModel(
+  key: 'first_step',
+  title: 'First Steps',
+  description: 'Complete your first lesson.',
+  icon: 'menu_book',
+  category: 'learning',
+  unlocked: true,
+  unlockedAt: '2026-10-18T10:00:00Z',
+);
+
+const _locked = AchievementModel(
+  key: 'streak_master',
+  title: 'Week Warrior',
+  description: 'Keep a 7-day learning streak.',
+  icon: 'local_fire_department',
+  category: 'streak',
+  unlocked: false,
+  unlockedAt: null,
+);
+
 void main() {
-  testWidgets('AchievementsPage renders default badges in English', (tester) async {
-    await tester.pumpWidget(_wrap());
+  testWidgets('shows real achievements with the progress panel (English)', (tester) async {
+    await tester.pumpWidget(_wrap(achievements: const [_unlocked, _locked]));
     await tester.pumpAndSettle();
 
     expect(find.text('Achievements'), findsOneWidget);
-    expect(find.text('AIM Milestones'), findsOneWidget);
-    expect(find.text('All Badges'), findsOneWidget);
+    expect(find.text('1 of 2 badges unlocked'), findsOneWidget);
+    expect(find.text('All (2)'), findsOneWidget);
+    expect(find.text('Unlocked (1)'), findsOneWidget);
+    expect(find.text('Locked (1)'), findsOneWidget);
     expect(find.text('First Steps'), findsOneWidget);
+    expect(find.text('Week Warrior'), findsOneWidget);
+    expect(find.text('Locked'), findsOneWidget);
   });
 
-  testWidgets('AchievementsPage renders correctly in Arabic RTL', (tester) async {
-    await tester.pumpWidget(_wrap(locale: const Locale('ar')));
+  testWidgets('the Locked filter shows only locked badges', (tester) async {
+    await tester.pumpWidget(_wrap(achievements: const [_unlocked, _locked]));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Locked (1)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Week Warrior'), findsOneWidget);
+    expect(find.text('First Steps'), findsNothing);
+  });
+
+  testWidgets('never invents badges when the backend has none', (tester) async {
+    await tester.pumpWidget(_wrap(achievements: const []));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No achievements yet'), findsOneWidget);
+    expect(find.text('First Steps'), findsNothing);
+  });
+
+  testWidgets('renders correctly in Arabic RTL', (tester) async {
+    await tester.pumpWidget(
+      _wrap(locale: const Locale('ar'), achievements: const [_unlocked, _locked]),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('الإنجازات'), findsOneWidget);
-    expect(find.text('إنجازات AIM'), findsOneWidget);
-    expect(find.text('جميع الشارات'), findsOneWidget);
-    expect(find.text('الخطوات الأولى'), findsOneWidget);
+    expect(find.text('الكل (2)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

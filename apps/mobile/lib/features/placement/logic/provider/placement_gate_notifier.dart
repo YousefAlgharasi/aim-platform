@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:aim_mobile/features/placement/data/placement_gate_done_store.dart';
 import 'package:aim_mobile/features/placement/logic/repository/placement_repository.dart';
 
 sealed class PlacementGateState {
@@ -37,11 +38,15 @@ final class PlacementGateError extends PlacementGateState {
 }
 
 class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
-  PlacementGateNotifier({required PlacementRepository repository})
-      : _repository = repository,
+  PlacementGateNotifier({
+    required PlacementRepository repository,
+    PlacementGateDoneStore doneStore = const PlacementGateDoneStore(),
+  })  : _repository = repository,
+        _doneStore = doneStore,
         super(const PlacementGateIdle());
 
   final PlacementRepository _repository;
+  final PlacementGateDoneStore _doneStore;
 
   Future<void> check(String bearerToken) async {
     state = const PlacementGateChecking();
@@ -49,14 +54,25 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
       state = const PlacementGateShouldShow();
       return;
     }
+    // The backend already released this student from the gate on an earlier
+    // launch; it never comes back, so skip the round trip.
+    if (await _doneStore.isDone(bearerToken)) {
+      state = const PlacementGateHidden();
+      return;
+    }
     try {
       final result = await _repository.getPlacementDecision(bearerToken);
-      state = result.shouldShowGate
-          ? const PlacementGateShouldShow()
-          : const PlacementGateHidden();
-    } catch (e) {
-      // Do not block the student on a transient error — treat as should show
-      state = const PlacementGateShouldShow();
+      if (result.shouldShowGate) {
+        state = const PlacementGateShouldShow();
+      } else {
+        await _doneStore.markDone(bearerToken);
+        state = const PlacementGateHidden();
+      }
+    } catch (_) {
+      // Fail open: a transient error must not push a student who already
+      // passed the gate back into it. Nothing is remembered, so the next
+      // launch asks the backend again.
+      state = const PlacementGateHidden();
     }
   }
 
@@ -71,6 +87,7 @@ class PlacementGateNotifier extends StateNotifier<PlacementGateState> {
         bearerToken,
         decision: decision,
       );
+      await _doneStore.markDone(bearerToken);
       state = PlacementGateDecided(decision: result.decision ?? decision);
     } catch (_) {
       state = PlacementGateDecided(decision: decision);

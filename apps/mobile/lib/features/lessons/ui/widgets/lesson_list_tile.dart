@@ -94,7 +94,7 @@ class LessonListTile extends StatelessWidget {
                   height: 46,
                   decoration: BoxDecoration(
                     color: isCompleted
-                        ? const Color(0xFFD1FAE5)
+                        ? AimColors.success100
                         : (isCurrent
                             ? colorScheme.primary
                             : surfaces.surfaceSunken),
@@ -111,7 +111,7 @@ class LessonListTile extends StatelessWidget {
                   ),
                   child: Center(
                     child: isCompleted
-                        ? const Icon(Icons.done_rounded, color: Color(0xFF059669), size: 22)
+                        ? const Icon(Icons.done_rounded, color: AimColors.success600, size: 22)
                         : (typeBadge == 'SPEAKING'
                             ? Icon(Icons.mic_rounded,
                                 color: isCurrent ? Colors.white : surfaces.textSecondary, size: 22)
@@ -159,7 +159,7 @@ class LessonListTile extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4F46E5),
+                                color: AimColors.primary500,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
@@ -208,14 +208,14 @@ class LessonListTile extends StatelessWidget {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            const Icon(Icons.bolt_rounded, size: 14, color: Color(0xFFF59E0B)),
+                            const Icon(Icons.bolt_rounded, size: 14, color: AimColors.warning500),
                             const SizedBox(width: 2),
                             Text(
                               l10n.lessonsXpValueLabel(model.xpValue),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFFD97706),
+                                color: AimColors.warning600,
                               ),
                             ),
                           ],

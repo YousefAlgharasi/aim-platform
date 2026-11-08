@@ -65,9 +65,9 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                       surfaces.background,
                     ]
                   : [
-                      const Color(0xFFEEF2FF).withValues(alpha: 0.4),
+                      AimColors.primary50.withValues(alpha: 0.4),
                       AimColors.neutral0,
-                      const Color(0xFFF8FAFC).withValues(alpha: 0.5),
+                      AimColors.neutral50.withValues(alpha: 0.5),
                     ],
             ),
           ),
@@ -85,11 +85,11 @@ class _PlacementStartPageState extends ConsumerState<PlacementStartPage> {
                     gradient: RadialGradient(
                       colors: [
                         isDark
-                            ? const Color(0xFF8B5CF6).withValues(alpha: 0.12)
-                            : const Color(0xFF8B5CF6).withValues(alpha: 0.38),
+                            ? AimColors.primary500.withValues(alpha: 0.12)
+                            : AimColors.primary500.withValues(alpha: 0.38),
                         isDark
-                            ? const Color(0xFF6366F1).withValues(alpha: 0.04)
-                            : const Color(0xFFC7D2FE).withValues(alpha: 0.18),
+                            ? AimColors.primary400.withValues(alpha: 0.04)
+                            : AimColors.primary200.withValues(alpha: 0.18),
                         Colors.transparent,
                       ],
                       stops: const [0.0, 0.5, 1.0],
@@ -157,28 +157,28 @@ class _AssessmentIntroBody extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final badgeBg = isDark ? const Color(0xFF312E81) : const Color(0xFFEEF2FF);
-    final badgeText = isDark ? const Color(0xFFC7D2FE) : const Color(0xFF4F46E5);
+    final badgeBg = isDark ? AimColors.primary900 : AimColors.primary50;
+    final badgeText = isDark ? AimColors.primary200 : AimColors.primary500;
 
     final items = [
       {
         'iconData': Icons.access_time_rounded,
-        'iconColor': const Color(0xFF4F46E5),
-        'bgColor': isDark ? const Color(0xFF312E81).withValues(alpha: 0.4) : const Color(0xFFEEF2FF),
+        'iconColor': AimColors.primary500,
+        'bgColor': isDark ? AimColors.primary900.withValues(alpha: 0.4) : AimColors.primary50,
         'title': l10n.placementStartLimitTitle(25),
         'desc': l10n.placementStartLimitDesc,
       },
       {
         'iconData': Icons.assignment_outlined,
-        'iconColor': const Color(0xFF4F46E5),
-        'bgColor': isDark ? const Color(0xFF312E81).withValues(alpha: 0.4) : const Color(0xFFEEF2FF),
+        'iconColor': AimColors.primary500,
+        'bgColor': isDark ? AimColors.primary900.withValues(alpha: 0.4) : AimColors.primary50,
         'title': l10n.placementStartQuestionsTitle(20),
         'desc': l10n.placementStartQuestionsDesc,
       },
       {
         'iconData': Icons.lightbulb_outline_rounded,
-        'iconColor': const Color(0xFFF59E0B),
-        'bgColor': isDark ? const Color(0xFF78350F).withValues(alpha: 0.4) : const Color(0xFFFEF3C7),
+        'iconColor': AimColors.warning500,
+        'bgColor': isDark ? AimColors.warning700.withValues(alpha: 0.4) : AimColors.warning100,
         'title': l10n.placementStartCalibrationTitle,
         'desc': l10n.placementStartCalibrationDesc,
       },
@@ -232,8 +232,8 @@ class _AssessmentIntroBody extends StatelessWidget {
                               borderRadius: BorderRadius.circular(24),
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF6366F1).withValues(alpha: 0.25),
-                                  const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                                  AimColors.primary400.withValues(alpha: 0.25),
+                                  AimColors.primary500.withValues(alpha: 0.25),
                                 ],
                               ),
                             ),
@@ -248,21 +248,21 @@ class _AssessmentIntroBody extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           gradient: const LinearGradient(
                             colors: [
-                              Color(0xFF6366F1),
-                              Color(0xFF8B5CF6),
+                              AimColors.primary400,
+                              AimColors.primary500,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                              color: AimColors.primary400.withValues(alpha: 0.15),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
                           ],
                           border: Border.all(
-                            color: const Color(0xFF818CF8).withValues(alpha: 0.3),
+                            color: AimColors.primary300.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),
@@ -325,7 +325,7 @@ class _AssessmentIntroBody extends StatelessWidget {
                           border: Border.all(
                             color: isDark
                                 ? surfaces.border
-                                : const Color(0xFFE2E8F0).withValues(alpha: 0.8),
+                                : AimColors.neutral200.withValues(alpha: 0.8),
                             width: 1,
                           ),
                           boxShadow: [
@@ -399,7 +399,7 @@ class _AssessmentIntroBody extends StatelessWidget {
                             TextSpan(
                               text: linkText,
                               style: TextStyle(
-                                color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5),
+                                color: isDark ? AimColors.primary300 : AimColors.primary500,
                                 fontWeight: AimFontWeights.semibold,
                                 decoration: TextDecoration.underline,
                               ),

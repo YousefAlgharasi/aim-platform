@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/l10n/app_localizations.dart';
-import '../../../../core/localization/inline_tr.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/logic/provider/logout_provider.dart';
 import '../../../home/ui/pages/home_page.dart';
 import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
@@ -24,9 +20,8 @@ import '../../logic/main_shell_tab_provider.dart';
 
 /// Main shell page — holds the tab [IndexedStack].
 ///
-/// Navigation between tabs is via the [AIMAppDrawer] (opened from the FAB)
-/// only — no bottom tab bar, per product direction (the drawer's MENU
-/// section already covers the same 5 destinations).
+/// The top bar, bottom tab bar and slide-in menu live in [AppChrome], which
+/// wraps this page and every other main page; this page only switches tabs.
 ///
 /// The selected tab is held in [mainShellTabIndexProvider] (rather than
 /// local State) so descendant pages — e.g. Home's "Browse Courses" action —
@@ -63,7 +58,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       _blockedByGateCheck = true;
     }
     // Eagerly load the unread notification count so the drawer's
-    // Notifications badge (see _buildDrawer) reflects real data as soon as
+    // Notifications badge reflects real data as soon as
     // the shell mounts, rather than only after some other screen (e.g.
     // Profile's NotificationBellButton) happens to have loaded it first.
     // Deferred via addPostFrameCallback, matching the same pattern already
@@ -144,7 +139,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     }
 
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
-    final l10n = AppLocalizations.of(context);
     final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);
 
     return PopScope(
@@ -157,36 +151,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       child: Stack(
         children: [
           Scaffold(
-          drawer: _buildDrawer(context, ref, selectedIndex),
-          floatingActionButton: Builder(
-            builder: (context) => Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF653BFF).withValues(alpha: 0.45),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                backgroundColor: const Color(0xFF653BFF),
-                foregroundColor: AimColors.neutral0,
-                elevation: 0,
-                tooltip: l10n.shellOpenMenuTooltip,
-                onPressed: () => Scaffold.of(context).openDrawer(),
-                child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
-              ),
-            ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          // No bottomNavigationBar: navigation between tabs is handled entirely
-          // by the drawer's MENU section (see _buildDrawer) opened via the FAB
-          // above, per product direction — the bottom tab bar was redundant
-          // with the drawer and has been removed.
-          body: IndexedStack(
+          body: _LazyIndexedStack(
             index: selectedIndex,
             children: MainShellPage._screens,
           ),
@@ -203,332 +168,41 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     ),
   );
   }
-
-  /// Builds the side navigation drawer: app-branding header, a "MENU"
-  /// section mirroring the 5 bottom-nav tabs, a "MORE" section of
-  /// secondary destinations, a theme toggle, and a sign-out footer.
-  Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
-    return _AIMAppDrawerWithMore(selectedIndex: selectedIndex);
-  }
 }
 
-class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
-  const _AIMAppDrawerWithMore({required this.selectedIndex});
+/// An [IndexedStack] that only builds a tab the first time it is selected.
+///
+/// A plain IndexedStack builds every child immediately, which made all five
+/// tabs (Home, Courses, Review, Progress, Profile) mount and fire their
+/// network loads at launch, competing with Home for bandwidth and CPU on the
+/// first frames. Once a tab has been visited it stays mounted (state, scroll
+/// position and loaded data are preserved), exactly like IndexedStack.
+class _LazyIndexedStack extends StatefulWidget {
+  const _LazyIndexedStack({required this.index, required this.children});
 
-  final int selectedIndex;
+  final int index;
+  final List<Widget> children;
 
   @override
-  ConsumerState<_AIMAppDrawerWithMore> createState() =>
-      _AIMAppDrawerWithMoreState();
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
 }
 
-class _AIMAppDrawerWithMoreState
-    extends ConsumerState<_AIMAppDrawerWithMore> {
-  void _selectTab(int index) {
-    context.pop();
-    ref.read(mainShellTabIndexProvider.notifier).state = index;
-  }
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  late final Set<int> _built = {widget.index};
 
-  void _navigateTo(String routeName) {
-    context.pop();
-    context.push(routeName);
+  @override
+  void didUpdateWidget(covariant _LazyIndexedStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _built.add(widget.index);
   }
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = widget.selectedIndex;
-    final unread = switch (ref.watch(notificationUnreadCountProvider)) {
-      AppAsyncSuccess(:final data) => data,
-      _ => 0,
-    };
-
-    AIMDrawerItemData item(
-      IconData icon,
-      String en,
-      String ar, {
-      bool selected = false,
-      VoidCallback? onTap,
-      Widget? trailing,
-    }) =>
-        AIMDrawerItemData(
-          icon: Icon(icon),
-          label: context.tr(en, ar),
-          selected: selected,
-          trailing: trailing,
-          onTap: onTap ?? () {},
-        );
-
-    // Same sections, order and names as the student web app's menu.
-    // The Dashboard entry opens the Home tab (the page itself is untouched).
-    final sections = [
-      AIMDrawerSectionData(
-        label: context.tr('LEARN', 'تعلّم'),
-        items: [
-          item(Icons.home_outlined, 'Dashboard', 'لوحة التحكم',
-              selected: selectedIndex == 0, onTap: () => _selectTab(0)),
-          item(Icons.menu_book_outlined, 'Courses', 'الدورات',
-              selected: selectedIndex == 1, onTap: () => _selectTab(1)),
-          item(Icons.track_changes_rounded, 'Improve', 'تحسين',
-              onTap: () => _navigateTo(AppRoutePaths.improve)),
-          item(Icons.assignment_outlined, 'Assessments', 'التقييمات',
-              onTap: () => _navigateTo(AppRoutePaths.assessments)),
-        ],
-      ),
-      AIMDrawerSectionData(
-        label: context.tr('PRACTICE', 'تدرّب'),
-        items: [
-          item(Icons.bolt_rounded, 'Practice', 'تدرّب',
-              onTap: () => _navigateTo(AppRoutePaths.practiceHub)),
-          item(Icons.chat_bubble_outline_rounded, 'AI Teacher', 'المعلم الذكي',
-              onTap: () {
-            context.pop();
-            context.push(AppRoutePaths.aiTeacherChat,
-                extra: const {'contextRef': 'general'});
-          }),
-          item(Icons.lightbulb_outline_rounded, 'My words', 'كلماتي',
-              onTap: () => _navigateTo(AppRoutePaths.vocabulary)),
-          item(Icons.refresh_rounded, 'My mistakes', 'أخطائي',
-              onTap: () => _navigateTo(AppRoutePaths.mistakes)),
-          item(Icons.style_outlined, 'Review', 'المراجعة',
-              selected: selectedIndex == 2, onTap: () => _selectTab(2)),
-        ],
-      ),
-      AIMDrawerSectionData(
-        label: context.tr('PROGRESS', 'التقدم'),
-        items: [
-          item(Icons.bar_chart_outlined, 'Progress', 'التقدم',
-              selected: selectedIndex == 3, onTap: () => _selectTab(3)),
-          item(Icons.emoji_events_outlined, 'Achievements', 'الإنجازات',
-              onTap: () => _navigateTo(AppRoutePaths.achievements)),
-          item(Icons.workspace_premium_outlined, 'Certificates', 'الشهادات',
-              onTap: () => _navigateTo(AppRoutePaths.certificates)),
-          item(Icons.trending_up_rounded, 'Reports', 'التقارير',
-              onTap: () => _navigateTo(AppRoutePaths.analyticsSummary)),
-        ],
-      ),
-      AIMDrawerSectionData(
-        label: context.tr('ACCOUNT', 'الحساب'),
-        items: [
-          item(Icons.notifications_none_rounded, 'Notifications', 'الإشعارات',
-              onTap: () => _navigateTo(AppRoutePaths.notificationInbox),
-              trailing: unread > 0 ? _UnreadBadge(count: unread) : null),
-          item(Icons.credit_card_outlined, 'Billing', 'الفواتير',
-              onTap: () => _navigateTo(AppRoutePaths.subscription)),
-          item(Icons.support_agent_outlined, 'Support', 'الدعم',
-              onTap: () => _navigateTo(AppRoutePaths.helpCenter)),
-          item(Icons.settings_outlined, 'Settings', 'الإعدادات',
-              onTap: () => _navigateTo(AppRoutePaths.accountSettings)),
-        ],
-      ),
-    ];
-
-    return AIMAppDrawer(
-      header: const _AIMDrawerBrandHeader(),
-      items: const [],
-      sections: sections,
-      footer: Consumer(
-        builder: (context, ref, child) {
-          final logoutState = ref.watch(logoutProvider);
-          final isLoggingOut = logoutState.isLoading;
-          final surfaces = aimSurfacesOf(context);
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: isLoggingOut
-                    ? null
-                    : () {
-                        final token =
-                            ref.read(authFlowProvider).accessToken ?? '';
-                        ref.read(logoutProvider.notifier).logout(token);
-                      },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AimSpacing.space8),
-                  child: Text(
-                    context.tr('Log Out', 'تسجيل الخروج'),
-                    style: AimTextStyles.bodyMd.copyWith(
-                      color: AimColors.error500,
-                      fontWeight: AimFontWeights.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AimSpacing.space4),
-              Text(
-                'AIM Mind Coach v2.4.0',
-                style: AimTextStyles.caption.copyWith(
-                  color: surfaces.textMuted,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _UnreadBadge extends StatelessWidget {
-  const _UnreadBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsetsDirectional.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: AimColors.error500,
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Text(
-        count > 99 ? '99+' : '$count',
-        style: AimTextStyles.caption.copyWith(
-          color: Colors.white,
-          fontWeight: AimFontWeights.bold,
-        ),
-      ),
-    );
-  }
-}
-
-/// App-branding & profile header shown at the top of the side navigation drawer.
-class _AIMDrawerBrandHeader extends ConsumerWidget {
-  const _AIMDrawerBrandHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
-    final authContextState = ref.watch(authContextProvider);
-
-    final displayName = switch (authContextState) {
-      AppAsyncSuccess(:final data) => data.profile?.displayName ??
-          ((data.user.email != null && data.user.email!.isNotEmpty)
-              ? data.user.email!.split('@').first
-              : AppLocalizations.of(context).commonLearner),
-      _ => AppLocalizations.of(context).commonLearner,
-    };
-
-    final avatarLetter =
-        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
-
-    final isParent = switch (authContextState) {
-      AppAsyncSuccess(:final data) => data.hasRole('parent'),
-      _ => false,
-    };
-    final badgeText = isParent ? 'PARENT MEMBER' : 'AIM PLUS MEMBER';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+    return IndexedStack(
+      index: widget.index,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'AIM',
-              style: AimTextStyles.h2.copyWith(
-                color: AimColors.primary500,
-                fontWeight: AimFontWeights.extrabold,
-                fontSize: 22,
-                letterSpacing: -0.5,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.all(AimSpacing.space8),
-                decoration: BoxDecoration(
-                  color: surfaces.surfaceSunken,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close,
-                  size: AimSizes.iconSm,
-                  color: surfaces.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AimSpacing.space16),
-        GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-            ref.read(mainShellTabIndexProvider.notifier).state = 4;
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AimSpacing.space16),
-            decoration: BoxDecoration(
-              color: surfaces.surfaceRaised,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: surfaces.border,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: AimGradients.gzHero,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    avatarLetter,
-                    style: AimTextStyles.h3.copyWith(
-                      color: AimColors.neutral0,
-                      fontWeight: AimFontWeights.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: AimTextStyles.bodyLg.copyWith(
-                          color: surfaces.textPrimary,
-                          fontWeight: AimFontWeights.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: soft.primary,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: AimTextStyles.caption.copyWith(
-                            color: soft.onPrimary,
-                            fontWeight: AimFontWeights.extrabold,
-                            fontSize: 10,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        for (var i = 0; i < widget.children.length; i++)
+          _built.contains(i) ? widget.children[i] : const SizedBox.shrink(),
       ],
     );
   }

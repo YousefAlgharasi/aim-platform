@@ -55,9 +55,9 @@ class PlacementIntroPage extends StatelessWidget {
                 ? null
                 : const LinearGradient(
                     colors: [
-                      Color(0xFFEEF2FF),
+                      AimColors.primary50,
                       Colors.white,
-                      Color(0xFFF8FAFC),
+                      AimColors.neutral50,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -87,7 +87,7 @@ class PlacementIntroPage extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isDark
                             ? AimColors.primary500.withValues(alpha: 0.18)
-                            : const Color(0xFFEEF2FF),
+                            : AimColors.primary50,
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
@@ -143,7 +143,7 @@ class PlacementIntroPage extends StatelessWidget {
                 const SizedBox(height: AimSpacing.componentGap),
                 _InfoCard(
                   icon: Icons.lightbulb_outline_rounded,
-                  iconColor: const Color(0xFFF59E0B),
+                  iconColor: AimColors.warning500,
                   title: l10n.placementStartCalibrationTitle,
                   subtitle: l10n.placementStartCalibrationDesc,
                 ),
@@ -246,7 +246,7 @@ class _HeroBadge extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [AimColors.primary400, AimColors.primary500],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -265,7 +265,7 @@ class _HeroBadge extends StatelessWidget {
                     borderRadius: BorderRadius.circular(26),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                        color: AimColors.primary400.withValues(alpha: 0.35),
                         blurRadius: 16,
                         spreadRadius: 0,
                       ),
@@ -281,7 +281,7 @@ class _HeroBadge extends StatelessWidget {
                   gradient: AimGradients.gzHero,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF818CF8).withValues(alpha: 0.3),
+                    color: AimColors.primary300.withValues(alpha: 0.3),
                     width: 1,
                   ),
                   boxShadow: [

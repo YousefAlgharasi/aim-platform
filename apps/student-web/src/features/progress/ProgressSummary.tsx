@@ -5,7 +5,7 @@ import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { DetailSkeleton } from '../../components/common/Skeleton';
-import { AcademicIcon, TrendingUpIcon, TrophyIcon } from '../../components/common/Icons';
+import { AcademicIcon, TrophyIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
 import { LevelBadge } from '../level/LevelBadge';
 import { buildWeakSpots, categoryOf, CATEGORY_LABEL, type Category } from '../improve/ImprovePage';
@@ -180,11 +180,10 @@ export function ProgressSummary() {
 
       <section className="flex flex-col gap-3" aria-label={t('More')}>
         <h2 className={`${ui.sectionTitle} px-1`}>{t('Your record')}</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {[
             { to: '/achievements', text: 'Achievements', body: 'Badges you have earned', icon: <TrophyIcon className="size-6" /> },
             { to: '/certificates', text: 'Certificates', body: 'Proof of finished courses', icon: <AcademicIcon className="size-6" /> },
-            { to: '/reports', text: 'Reports', body: 'Summaries of your activity', icon: <TrendingUpIcon className="size-6" /> },
           ].map((x) => (
             <Link key={x.to} to={x.to} className="group flex items-center gap-3 rounded-2xl bg-surface p-4 no-underline ring-1 ring-line transition-all hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none">
               <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true">{x.icon}</span>

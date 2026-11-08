@@ -35,8 +35,9 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
 
   /// Fetch all home screen data for [studentId] using [bearerToken].
   ///
-  /// Runs the four backend calls in parallel for speed.
-  /// Any failure marks the full state as [AppAsyncFailure].
+  /// Runs the backend calls in parallel for speed. A failing section is
+  /// left empty ([HomeData.hasFailedSections]); only when every core call
+  /// fails is the full state an [AppAsyncFailure].
   ///
   /// [studentId] must come from [authContextProvider] (JWT-resolved).
   /// Never pass a user-supplied value here.
@@ -46,7 +47,13 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
   }) async {
     setLoading();
     try {
-      // Fetch all four data sets in parallel.
+      // Start every request at once. The supplementary calls (engagement,
+      // continue-learning, quick-start, recommended course) used to be
+      // awaited one after another *after* the core four finished, adding
+      // five serial round trips to every home load. They have no data
+      // dependency on each other, so they now run concurrently with the
+      // core calls; a failure in a supplementary call still resolves to
+      // null instead of failing the whole page.
       final skillStatesFuture = _repository.getSkillStates(
         bearerToken: bearerToken,
         studentId: studentId,
@@ -64,38 +71,57 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         studentId: studentId,
       );
 
-      final results = await Future.wait<Object>([
-        skillStatesFuture,
-        weaknessFuture,
-        scheduleFuture,
-        recommendFuture,
-      ]);
-
-      // Goal, daily challenge, continue-learning, quick-start lesson, and
-      // recommended course are supplementary — a failure here must not take
-      // down the whole home page.
-      final engagementResult = await _repository
+      final engagementFuture = _repository
           .getEngagementSummary(bearerToken: bearerToken)
           .then<HomeEngagementSummary?>((value) => value)
           .catchError((_) => null);
-      final engagementStatsResult = await _repository
+      final engagementStatsFuture = _repository
           .getEngagementStats(bearerToken: bearerToken)
           .catchError((_) => null);
-      final continueLearningResult = await _repository
+      final continueLearningFuture = _repository
           .getContinueLearning(bearerToken: bearerToken)
           .catchError((_) => null);
-      final quickStartResult = await _repository
+      final quickStartFuture = _repository
           .getQuickStartLesson(bearerToken: bearerToken)
           .catchError((_) => null);
-      final recommendedCourseResult = await _repository
+      final recommendedCourseFuture = _repository
           .getRecommendedCourse(bearerToken: bearerToken)
           .catchError((_) => null);
 
+      // Each core section settles on its own: one failing call degrades just
+      // that section (the web dashboard does the same). The page only fails
+      // when every core call fails.
+      // All four are wrapped before the first await so none of them can
+      // fail with no listener attached.
+      final skillStatesSettled = _settle(skillStatesFuture);
+      final weaknessSettled = _settle(weaknessFuture);
+      final scheduleSettled = _settle(scheduleFuture);
+      final recommendSettled = _settle(recommendFuture);
+      final skillStatesResult = await skillStatesSettled;
+      final weaknessResult = await weaknessSettled;
+      final scheduleResult = await scheduleSettled;
+      final recommendResult = await recommendSettled;
+      final coreResults = [
+        skillStatesResult,
+        weaknessResult,
+        scheduleResult,
+        recommendResult,
+      ];
+      if (coreResults.every((r) => r.error != null)) {
+        throw skillStatesResult.error!;
+      }
+      final engagementResult = await engagementFuture;
+      final engagementStatsResult = await engagementStatsFuture;
+      final continueLearningResult = await continueLearningFuture;
+      final quickStartResult = await quickStartFuture;
+      final recommendedCourseResult = await recommendedCourseFuture;
+
       setSuccess(HomeData(
-        skillStates: results[0] as List<HomeSkillState>,
-        weaknessRecords: results[1] as List<HomeWeaknessRecord>,
-        reviewSchedules: results[2] as List<HomeReviewSchedule>,
-        recommendations: results[3] as List<HomeRecommendation>,
+        skillStates: skillStatesResult.value ?? const <HomeSkillState>[],
+        weaknessRecords: weaknessResult.value ?? const <HomeWeaknessRecord>[],
+        reviewSchedules: scheduleResult.value ?? const <HomeReviewSchedule>[],
+        recommendations: recommendResult.value ?? const <HomeRecommendation>[],
+        hasFailedSections: coreResults.any((r) => r.error != null),
         goal: engagementResult?.goal,
         dailyChallenge: engagementResult?.dailyChallenge,
         engagementStats: engagementStatsResult,
@@ -110,6 +136,17 @@ class HomeNotifier extends AppStateNotifier<HomeData> {
         message: e is Exception ? e.toString() : 'Failed to load home data',
         code: 'HOME_LOAD_FAILED',
       );
+    }
+  }
+
+  /// Awaits [future] and captures its outcome instead of throwing, so the
+  /// other sections can still render. The future is already running, so
+  /// awaiting the results one after another does not serialise the requests.
+  static Future<({T? value, Object? error})> _settle<T>(Future<T> future) async {
+    try {
+      return (value: await future, error: null);
+    } catch (e) {
+      return (value: null, error: e);
     }
   }
 

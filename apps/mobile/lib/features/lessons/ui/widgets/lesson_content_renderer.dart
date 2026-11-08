@@ -104,6 +104,10 @@ class _ImageRenderer extends StatelessWidget {
           child: Image.network(
             // Backend-supplied URL; never constructed or modified by Flutter.
             asset.url!,
+            // Decode at display size, not full source resolution.
+            cacheWidth: (MediaQuery.sizeOf(context).width *
+                    MediaQuery.devicePixelRatioOf(context))
+                .round(),
             semanticLabel:
                 asset.altText ?? asset.title, // altText is backend-supplied
             fit: BoxFit.contain,

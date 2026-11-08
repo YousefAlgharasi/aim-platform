@@ -54,9 +54,6 @@ class AppRoutePaths {
   // Notification routes
   static const String notificationInbox = '/notifications/inbox';
 
-  // Analytics summary
-  static const String analyticsSummary = '/analytics/summary';
-
   // Achievements
   static const String achievements = '/achievements';
 

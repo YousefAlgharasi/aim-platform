@@ -12,6 +12,7 @@ import 'package:aim_mobile/features/auth/logic/provider/app_bootstrap_provider.d
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/session_store_provider.dart';
+import 'package:aim_mobile/features/onboarding/ui/pages/splash_page.dart';
 
 import '../../support/test_router_app.dart';
 
@@ -92,7 +93,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('AIM'), findsOneWidget);
+    expect(find.byType(SplashPage), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
     expect(find.text('Welcome back'), findsNothing);
   });

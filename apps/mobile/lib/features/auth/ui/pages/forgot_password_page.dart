@@ -194,14 +194,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           gradient: LinearGradient(
             colors: isDark
                 ? const [
-                    Color(0xFF0F172A),
-                    Color(0xFF0F172A),
-                    Color(0xFF020617),
+                    AimColors.neutral900,
+                    AimColors.neutral900,
+                    AimColors.neutral900,
                   ]
-                : const [
-                    Color(0x22EEF2FF),
+                : [
+                    AimColors.primary50.withValues(alpha: 0.13),
                     Colors.white,
-                    Color(0x40F8FAFC),
+                    AimColors.neutral50.withValues(alpha: 0.25),
                   ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -260,7 +260,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 gradient: AimGradients.ai,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.25),
+                    color: AimColors.primary500.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -326,7 +326,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     bool isDark,
   ) {
     final primaryColor =
-        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+        isDark ? AimColors.primary300 : AimColors.primary500;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -500,7 +500,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     bool isDark,
   ) {
     final primaryColor =
-        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+        isDark ? AimColors.primary300 : AimColors.primary500;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -518,15 +518,15 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     height: 64,
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0x3310B981)
-                          : const Color(0xFFD1FAE5),
+                          ? AimColors.success500.withValues(alpha: 0.2)
+                          : AimColors.success100,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.mail_outline_rounded,
                       color: isDark
-                          ? const Color(0xFF34D399)
-                          : const Color(0xFF059669),
+                          ? AimColors.success500
+                          : AimColors.success600,
                       size: 32,
                     ),
                   ),
@@ -623,7 +623,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     bool isDark,
   ) {
     final primaryColor =
-        isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5);
+        isDark ? AimColors.primary300 : AimColors.primary500;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -823,7 +823,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                       height: 88,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF34D399), Color(0xFF4F46E5)],
+                          colors: [AimColors.success500, AimColors.primary500],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -831,7 +831,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         boxShadow: [
                           BoxShadow(
                             color:
-                                const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                                AimColors.primary500.withValues(alpha: 0.35),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),

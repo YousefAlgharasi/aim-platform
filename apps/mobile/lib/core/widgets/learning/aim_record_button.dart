@@ -153,10 +153,10 @@ class _AIMRecordButtonState extends State<AIMRecordButton>
                       boxShadow: isEnabled
                           ? (isRecording
                               ? [
-                                  const BoxShadow(
-                                    color: Color(0x4DE5484D),
+                                  BoxShadow(
+                                    color: AimColors.error500.withValues(alpha: 0.3),
                                     blurRadius: 10,
-                                    offset: Offset(0, 4),
+                                    offset: const Offset(0, 4),
                                   ),
                                 ]
                               : shadows.fab)

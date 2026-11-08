@@ -92,14 +92,6 @@ class BackendApiPaths {
       '/aim/students/$studentId/recommendations';
 
   // ---------------------------------------------------------------------------
-  // Student Analytics Summary — Phase 15 P15-072
-  // Read-only. Returns backend-approved report definitions visible to the
-  // student role; Flutter never computes mastery/progress figures here.
-  // ---------------------------------------------------------------------------
-
-  static const String studentAnalyticsSummary = '/student/analytics/summary';
-
-  // ---------------------------------------------------------------------------
   // Achievements — Phase 13
   // Read-only. Achievement unlock criteria, badge logic, and milestone
   // tracking are never computed in Flutter.
@@ -159,6 +151,9 @@ class BackendApiPaths {
   // Streak and challenge progress are always backend-computed.
   // ---------------------------------------------------------------------------
 
+  /// GET /student/home — every Home section in one response.
+  static const String studentHome = '/student/home';
+
   static const String engagementSummary = '/student/engagement/summary';
   static const String engagementGoal = '/student/engagement/goal';
 
@@ -200,6 +195,11 @@ class BackendApiPaths {
   /// GET /curriculum/courses/:courseId/sessions
   static String curriculumCourseSessions(String courseId) =>
       '/curriculum/courses/$courseId/sessions';
+
+  /// GET /student/courses/:courseId/path — levels, chapters, final exam and
+  /// the active chapter's lessons in one response.
+  static String studentCoursePath(String courseId) =>
+      '/student/courses/$courseId/path';
 
   /// GET /curriculum/courses/:courseId/levels
   static String curriculumCourseLevels(String courseId) =>

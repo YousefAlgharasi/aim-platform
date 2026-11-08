@@ -218,242 +218,687 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
     final localeCode = ref.watch(localeProvider).languageCode;
     final name = _nameController.text.trim();
     final nameChanged = name.isNotEmpty && name != _savedName;
+    final shownName = _savedName.isNotEmpty ? _savedName : name;
+    final initial = shownName.isNotEmpty
+        ? String.fromCharCode(shownName.runes.first).toUpperCase()
+        : (email.isNotEmpty ? email[0].toUpperCase() : '?');
+
+    void goBack() => context.canPop()
+        ? context.pop()
+        : context.go(AppRoutePaths.mainShell);
 
     return Scaffold(
-      appBar: AIMTopAppBar(
-        title: l10n.settingsPageTitle,
-        onBack: () => context.canPop()
-            ? context.pop()
-            : context.go(AppRoutePaths.mainShell),
-      ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AimSpacing.screenPaddingMobile,
-            vertical: AimSpacing.space16,
+      backgroundColor: surfaces.background,
+      body: Column(
+        children: [
+          _SettingsTopBar(
+            title: l10n.settingsPageTitle,
+            initial: initial,
+            onBack: goBack,
           ),
-          children: [
-            // ── Profile ──
-            _SectionTitle(l10n.settingsSectionProfile),
-            AIMCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AimSpacing.space20,
+                  AimSpacing.space16,
+                  AimSpacing.space20,
+                  AimSpacing.space32,
+                ),
                 children: [
-                  _FieldLabel(l10n.settingsFullName),
-                  AIMInput(
-                    controller: _nameController,
-                    placeholder: l10n.settingsEnterFullName,
-                  ),
-                  const SizedBox(height: AimSpacing.space16),
-                  _FieldLabel(l10n.settingsEmailAddress),
-                  Text(
-                    email,
-                    style: AimTextStyles.bodyMd
-                        .copyWith(color: surfaces.textSecondary),
-                  ),
-                  const SizedBox(height: AimSpacing.space16),
-                  AIMButton(
-                    fullWidth: true,
-                    loading: _savingName,
-                    disabled: !nameChanged,
-                    onPressed: _saveName,
-                    child: Text(l10n.settingsSave),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Learning ──
-            _SectionTitle(l10n.settingsSectionLearning),
-            AIMCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _FieldLabel(l10n.settingsDailyGoal),
-                  SegmentedButton<int>(
-                    showSelectedIcon: false,
-                    emptySelectionAllowed: true,
-                    segments: [
-                      for (final n in _dailyGoalOptions)
-                        ButtonSegment(
-                          value: n,
-                          label: Text(l10n.settingsDailyGoalLessons(n)),
+                  // ── Profile ──
+                  _SectionCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            _Avatar(initial: initial, size: 56),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    shownName.isNotEmpty
+                                        ? shownName
+                                        : l10n.settingsSectionProfile,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AimTextStyles.bodyMd.copyWith(
+                                      color: surfaces.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  if (email.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: Text(
+                                        email,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AimTextStyles.bodySm.copyWith(
+                                          color: surfaces.textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                    ],
-                    selected: {if (goal != null) goal},
-                    onSelectionChanged: _savingGoal
-                        ? null
-                        : (selection) {
-                            if (selection.isNotEmpty &&
-                                selection.first != goal) {
-                              _saveGoal(selection.first);
-                            }
-                          },
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Preferences ──
-            _SectionTitle(l10n.settingsSectionPreferences),
-            AIMCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _FieldLabel(l10n.settingsTheme),
-                  SegmentedButton<ThemeMode>(
-                    showSelectedIcon: false,
-                    segments: [
-                      ButtonSegment(
-                        value: ThemeMode.system,
-                        icon: const Icon(Icons.brightness_auto_rounded),
-                        label: Text(l10n.settingsThemeSystem),
-                      ),
-                      ButtonSegment(
-                        value: ThemeMode.light,
-                        icon: const Icon(Icons.light_mode_rounded),
-                        label: Text(l10n.settingsThemeLightShort),
-                      ),
-                      ButtonSegment(
-                        value: ThemeMode.dark,
-                        icon: const Icon(Icons.dark_mode_rounded),
-                        label: Text(l10n.settingsThemeDarkShort),
-                      ),
-                    ],
-                    selected: {themeMode},
-                    onSelectionChanged: (s) =>
-                        ref.read(themeModeProvider.notifier).state = s.first,
-                  ),
-                  const SizedBox(height: AimSpacing.space16),
-                  _FieldLabel(l10n.profileLabelLanguage),
-                  SegmentedButton<String>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(
-                        value: AppLocale.english,
-                        label: Text('English'),
-                      ),
-                      ButtonSegment(
-                        value: AppLocale.arabic,
-                        label: Text('العربية'),
-                      ),
-                    ],
-                    selected: {localeCode},
-                    onSelectionChanged: (s) => ref
-                        .read(localeProvider.notifier)
-                        .setLocale(Locale(s.first)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AimSpacing.componentGap),
-            AIMCard(
-              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
-              child: Column(
-                children: [
-                  _SettingsRow(
-                    icon: Icons.notifications_outlined,
-                    label: l10n.settingsNotificationPreferences,
-                    onTap: () =>
-                        context.push(AppRoutePaths.notificationPreferences),
-                  ),
-                  Divider(
-                    height: 1,
-                    indent: AimSpacing.space48,
-                    color: surfaces.divider,
-                  ),
-                  _SettingsRow(
-                    icon: Icons.alarm_rounded,
-                    label: l10n.settingsStudyReminders,
-                    onTap: () => context.push(AppRoutePaths.reminderSettings),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Account ──
-            _SectionTitle(l10n.settingsSectionAccount),
-            AIMCard(
-              padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
-              child: Column(
-                children: [
-                  if (email.isNotEmpty) ...[
-                    _SettingsRow(
-                      icon: Icons.lock_reset_rounded,
-                      label: l10n.settingsChangePassword,
-                      onTap: () => _changePassword(email),
+                        const SizedBox(height: AimSpacing.space16),
+                        _FieldLabel(l10n.settingsFullName),
+                        _SettingsTextField(
+                          controller: _nameController,
+                          hint: l10n.settingsEnterFullName,
+                        ),
+                        const SizedBox(height: AimSpacing.space12),
+                        _FieldLabel(
+                          l10n.settingsEmailAddress,
+                          trailing: Icon(
+                            Icons.lock_outline_rounded,
+                            size: 14,
+                            color: surfaces.textMuted,
+                          ),
+                        ),
+                        _ReadOnlyField(text: email),
+                        const SizedBox(height: AimSpacing.space16),
+                        _PrimaryActionButton(
+                          label: l10n.settingsSave,
+                          loading: _savingName,
+                          onPressed: nameChanged ? _saveName : null,
+                        ),
+                      ],
                     ),
-                    Divider(
-                      height: 1,
-                      indent: AimSpacing.space48,
-                      color: surfaces.divider,
+                  ),
+
+                  // ── Learning ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _SectionCard(
+                    title: l10n.settingsSectionLearning,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _FieldLabel(l10n.settingsDailyGoal),
+                        _PillSelector<int>(
+                          value: goal,
+                          enabled: !_savingGoal,
+                          options: [
+                            for (final n in _dailyGoalOptions)
+                              (n, l10n.settingsDailyGoalLessons(n), null),
+                          ],
+                          onChanged: (n) {
+                            if (n != goal) _saveGoal(n);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Theme & display ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _SectionCard(
+                    title: l10n.settingsAppThemeDisplay,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _FieldLabel(l10n.settingsTheme),
+                        _PillSelector<ThemeMode>(
+                          value: themeMode,
+                          options: [
+                            (
+                              ThemeMode.system,
+                              l10n.settingsThemeSystem,
+                              Icons.brightness_auto_rounded
+                            ),
+                            (
+                              ThemeMode.light,
+                              l10n.settingsThemeLightShort,
+                              Icons.light_mode_rounded
+                            ),
+                            (
+                              ThemeMode.dark,
+                              l10n.settingsThemeDarkShort,
+                              Icons.dark_mode_rounded
+                            ),
+                          ],
+                          onChanged: (m) =>
+                              ref.read(themeModeProvider.notifier).state = m,
+                        ),
+                        const SizedBox(height: AimSpacing.space16),
+                        _FieldLabel(l10n.profileLabelLanguage),
+                        _PillSelector<String>(
+                          value: localeCode,
+                          options: const [
+                            (AppLocale.english, 'English', null),
+                            (AppLocale.arabic, 'العربية', null),
+                          ],
+                          onChanged: (code) => ref
+                              .read(localeProvider.notifier)
+                              .setLocale(Locale(code)),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Notifications ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _SectionCard(
+                    title: l10n.settingsNotificationPreferences,
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space4,
+                    ),
+                    child: Column(
+                      children: [
+                        _SettingsRow(
+                          icon: Icons.notifications_outlined,
+                          label: l10n.settingsNotificationPreferences,
+                          onTap: () => context
+                              .push(AppRoutePaths.notificationPreferences),
+                        ),
+                        Divider(height: 1, color: surfaces.divider),
+                        _SettingsRow(
+                          icon: Icons.alarm_rounded,
+                          label: l10n.settingsStudyReminders,
+                          onTap: () =>
+                              context.push(AppRoutePaths.reminderSettings),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Security ──
+                  if (email.isNotEmpty) ...[
+                    const SizedBox(height: AimSpacing.space16),
+                    _SectionCard(
+                      title: l10n.settingsSectionAccount,
+                      child: _PrimaryActionButton(
+                        label: l10n.settingsChangePassword,
+                        dark: true,
+                        icon: Icons.lock_reset_rounded,
+                        onPressed: () => _changePassword(email),
+                      ),
                     ),
                   ],
-                  _SettingsRow(
-                    icon: Icons.logout_rounded,
+
+                  // ── Log out ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _LogoutButton(
                     label: l10n.authSignOutButton,
-                    destructive: true,
-                    onTap: _signOut,
+                    onPressed: _signOut,
                   ),
+
+                  if (_version != null) ...[
+                    const SizedBox(height: AimSpacing.sectionGap),
+                    Text(
+                      l10n.settingsAppVersion(_version!),
+                      textAlign: TextAlign.center,
+                      style: AimTextStyles.caption
+                          .copyWith(color: surfaces.textMuted),
+                    ),
+                  ],
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-            if (_version != null) ...[
-              const SizedBox(height: AimSpacing.sectionGap),
-              Text(
-                l10n.settingsAppVersion(_version!),
-                textAlign: TextAlign.center,
-                style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+// ─────────────────────────── Building blocks ───────────────────────────
+// Mirrors the "Modern Auth Pages" account-settings design: rounded bordered
+// cards, uppercase muted field labels, 12px-radius inputs, pill selectors.
+
+class _SettingsTopBar extends StatelessWidget {
+  const _SettingsTopBar({
+    required this.title,
+    required this.initial,
+    required this.onBack,
+  });
+
+  final String title;
+  final String initial;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaces.surface.withValues(alpha: 0.9),
+        border: Border(bottom: BorderSide(color: surfaces.border)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        AimSpacing.space20 + MediaQuery.paddingOf(context).left,
+        MediaQuery.paddingOf(context).top + AimSpacing.space8,
+        AimSpacing.space20 + MediaQuery.paddingOf(context).right,
+        AimSpacing.space12,
+      ),
+      child: Row(
+        children: [
+          Material(
+            color: surfaces.surfaceSunken,
+            borderRadius: AimRadius.borderMd,
+            child: InkWell(
+              borderRadius: AimRadius.borderMd,
+              onTap: onBack,
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  isRtl
+                      ? Icons.arrow_forward_rounded
+                      : Icons.arrow_back_rounded,
+                  size: 20,
+                  color: surfaces.textPrimary,
+                ),
               ),
-            ],
-            const SizedBox(height: AimSpacing.sectionGap),
-          ],
+            ),
+          ),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: surfaces.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          _Avatar(initial: initial, size: 36),
+        ],
+      ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.initial, required this.size});
+
+  final String initial;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: AimGradients.ai,
+        borderRadius: BorderRadius.circular(size * 0.3),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.primary500.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+          fontSize: size * 0.4,
         ),
       ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({
+    required this.child,
+    this.title,
+    this.padding = const EdgeInsets.all(18),
+  });
 
-  final String text;
+  final Widget child;
+  final String? title;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(
-        start: AimSpacing.space4,
-        top: AimSpacing.sectionGap,
-        bottom: AimSpacing.space8,
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: AimRadius.borderLg,
+        border: Border.all(color: surfaces.border),
       ),
-      child: Text(
-        text,
-        style: AimTextStyles.label.copyWith(
-          color: aimSurfacesOf(context).textSecondary,
-          letterSpacing: 0.6,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: AimTextStyles.bodySm.copyWith(
+                color: surfaces.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AimSpacing.space12),
+          ],
+          child,
+        ],
       ),
     );
   }
 }
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
+  const _FieldLabel(this.text, {this.trailing});
+
+  final String text;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              text.toUpperCase(),
+              style: AimTextStyles.caption.copyWith(
+                color: aimSurfacesOf(context).textMuted,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          if (trailing != null) trailing!,
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsTextField extends StatelessWidget {
+  const _SettingsTextField({
+    required this.controller,
+    this.hint,
+  });
+
+  final TextEditingController controller;
+  final String? hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    OutlineInputBorder border(Color c, [double w = 1]) => OutlineInputBorder(
+          borderRadius: AimRadius.borderMd,
+          borderSide: BorderSide(color: c, width: w),
+        );
+    return TextField(
+      controller: controller,
+      style: AimTextStyles.bodyMd.copyWith(
+        color: surfaces.textPrimary,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: InputDecoration(
+        isDense: true,
+        hintText: hint,
+        hintStyle: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+        filled: true,
+        fillColor: surfaces.background,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        border: border(surfaces.border),
+        enabledBorder: border(surfaces.border),
+        focusedBorder: border(AimColors.primary500, 1.5),
+      ),
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({required this.text});
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AimSpacing.space8),
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      decoration: BoxDecoration(
+        color: surfaces.surfaceSunken,
+        borderRadius: AimRadius.borderMd,
+        border: Border.all(color: surfaces.border),
+      ),
       child: Text(
         text,
-        style: AimTextStyles.bodySm.copyWith(
-          color: aimSurfacesOf(context).textSecondary,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AimTextStyles.bodyMd.copyWith(
+          color: surfaces.textMuted,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Segmented "pill" selector: the selected option is a filled brand-blue pill.
+class _PillSelector<T> extends StatelessWidget {
+  const _PillSelector({
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    this.enabled = true,
+  });
+
+  final T? value;
+  final List<(T, String, IconData?)> options;
+  final ValueChanged<T> onChanged;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return Row(
+      children: [
+        for (var i = 0; i < options.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: _Pill(
+              label: options[i].$2,
+              icon: options[i].$3,
+              selected: options[i].$1 == value,
+              surfaces: surfaces,
+              onTap: enabled ? () => onChanged(options[i].$1) : null,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.label,
+    required this.selected,
+    required this.surfaces,
+    required this.onTap,
+    this.icon,
+  });
+
+  final String label;
+  final IconData? icon;
+  final bool selected;
+  final AimSurfaceTheme surfaces;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = selected ? Colors.white : surfaces.textSecondary;
+    return Material(
+      color: selected ? AimColors.primary500 : surfaces.surfaceSunken,
+      borderRadius: AimRadius.borderMd,
+      child: InkWell(
+        borderRadius: AimRadius.borderMd,
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: AimRadius.borderMd,
+            border: Border.all(
+              color: selected ? AimColors.primary500 : surfaces.border,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: fg),
+                const SizedBox(width: 4),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: fg,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PrimaryActionButton extends StatelessWidget {
+  const _PrimaryActionButton({
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+    this.dark = false,
+    this.icon,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool loading;
+  final bool dark;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = dark
+        ? (isDark ? AimColors.neutral700 : AimColors.neutral900)
+        : AimColors.primary500;
+    final enabled = onPressed != null && !loading;
+    return Opacity(
+      opacity: onPressed == null && !loading ? 0.45 : 1,
+      child: Material(
+        color: bg,
+        borderRadius: AimRadius.borderMd,
+        child: InkWell(
+          borderRadius: AimRadius.borderMd,
+          onTap: enabled ? onPressed : null,
+          child: Container(
+            height: 48,
+            alignment: Alignment.center,
+            child: loading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 18, color: Colors.white),
+                        const SizedBox(width: 8),
+                      ],
+                      Flexible(
+                        child: Text(
+                          label,
+                          overflow: TextOverflow.ellipsis,
+                          style: AimTextStyles.button.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutButton extends StatelessWidget {
+  const _LogoutButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fg = isDark ? AimColors.error500 : AimColors.error600;
+    return Material(
+      color: isDark ? AimColors.error500.withValues(alpha: 0.12) : AimColors.error50,
+      borderRadius: AimRadius.borderMd,
+      child: InkWell(
+        borderRadius: AimRadius.borderMd,
+        onTap: onPressed,
+        child: Container(
+          height: 50,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: AimRadius.borderMd,
+            border: Border.all(
+              color: isDark
+                  ? AimColors.error500.withValues(alpha: 0.4)
+                  : AimColors.error100,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout_rounded, size: 18, color: fg),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: AimTextStyles.button
+                      .copyWith(color: fg, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -465,49 +910,48 @@ class _SettingsRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.destructive = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final color = destructive ? AimColors.error500 : surfaces.textPrimary;
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AimSpacing.space16,
           vertical: AimSpacing.space12,
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: AimSizes.iconMd,
-              color: destructive ? AimColors.error500 : AimColors.primary600,
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: AimRadius.borderMd,
+              ),
+              child: Icon(icon, size: 18, color: AimColors.primary500),
             ),
             const SizedBox(width: AimSpacing.componentGap),
             Expanded(
               child: Text(
                 label,
                 style: AimTextStyles.bodyMd.copyWith(
-                  color: color,
+                  color: surfaces.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            if (!destructive)
-              Icon(
-                isRtl ? Icons.chevron_left : Icons.chevron_right,
-                size: AimSizes.iconSm,
-                color: surfaces.textMuted,
-              ),
+            Icon(
+              isRtl ? Icons.chevron_left : Icons.chevron_right,
+              size: AimSizes.iconSm,
+              color: surfaces.textMuted,
+            ),
           ],
         ),
       ),

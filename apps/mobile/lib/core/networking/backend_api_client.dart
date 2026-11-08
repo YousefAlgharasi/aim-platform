@@ -54,6 +54,13 @@ class BackendApiClient {
   /// Offline signal for the UI, fed by real request outcomes.
   final NetworkStatus? _networkStatus;
 
+  /// GET requests currently on the wire, keyed by user + URL + result type.
+  /// Screens that ask for the same endpoint at the same moment (home widgets,
+  /// providers re-created after navigation) share one network call instead
+  /// of each making their own. Cleared whenever a write succeeds so a read
+  /// started after a mutation never joins a request that predates it.
+  final Map<String, Future<Object?>> _inFlightGets = {};
+
   /// Bound on every outbound call so a slow or cold-starting backend
   /// surfaces as a catchable [ApiClientException] instead of leaving the
   /// awaiting notifier (and its UI) stuck on an unresolved loading state
@@ -161,23 +168,43 @@ class BackendApiClient {
       return _parseResponse<T>(http.Response.bytes(utf8.encode(saved.body), 200, headers: const {'content-type': 'application/json; charset=utf-8'}), decodeData: decodeData);
     }
 
-    try {
-      return await _sendWithRefreshRetry<T>(
-        decodeData: decodeData,
-        send: (effectiveHeaders) => _withTimeout(() => _httpClient.get(
-              uri,
-              headers: effectiveHeaders,
-            )),
-        buildHeaders: () => _jsonHeaders(headers),
-        onSuccessBody: cacheKey == null ? null : (body) => cache!.write(cacheKey, body),
-      );
-    } on ApiClientException catch (e) {
-      // Offline: show the last saved copy instead of an error.
-      if (saved != null && isConnectivityError(e)) {
-        _networkStatus?.reportServedFromCache();
-        return _parseResponse<T>(http.Response.bytes(utf8.encode(saved.body), 200, headers: const {'content-type': 'application/json; charset=utf-8'}), decodeData: decodeData);
+    Future<ApiResponseEnvelope<T>> fetch() async {
+      try {
+        return await _sendWithRefreshRetry<T>(
+          decodeData: decodeData,
+          send: (effectiveHeaders) => _withTimeout(() => _httpClient.get(
+                uri,
+                headers: effectiveHeaders,
+              )),
+          buildHeaders: () => _jsonHeaders(headers),
+          onSuccessBody:
+              cacheKey == null ? null : (body) => cache!.write(cacheKey, body),
+        );
+      } on ApiClientException catch (e) {
+        // Offline: show the last saved copy instead of an error.
+        if (saved != null && isConnectivityError(e)) {
+          _networkStatus?.reportServedFromCache();
+          return _parseResponse<T>(http.Response.bytes(utf8.encode(saved.body), 200, headers: const {'content-type': 'application/json; charset=utf-8'}), decodeData: decodeData);
+        }
+        rethrow;
       }
-      rethrow;
+    }
+
+    if (cacheKey == null) return fetch();
+
+    final flightKey = '$T|$cacheKey';
+    final existing = _inFlightGets[flightKey];
+    if (existing != null) {
+      return await existing as ApiResponseEnvelope<T>;
+    }
+    final future = fetch();
+    _inFlightGets[flightKey] = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_inFlightGets[flightKey], future)) {
+        _inFlightGets.remove(flightKey);
+      }
     }
   }
 
@@ -443,6 +470,7 @@ class BackendApiClient {
   ) async {
     final result = await send();
     _responseCache?.markStale();
+    _inFlightGets.clear();
     return result;
   }
 

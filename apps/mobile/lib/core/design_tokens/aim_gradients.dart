@@ -8,12 +8,13 @@ final class AimGradients {
   static const Alignment begin135 = Alignment.topLeft;
   static const Alignment end135 = Alignment.bottomRight;
 
+  /// Official brand gradient (same blues as the app icon).
   static const LinearGradient ai = LinearGradient(
     begin: begin135,
     end: end135,
     colors: <Color>[
-      AimColors.primary500,
-      AimColors.secondary500,
+      AimColors.primary400,
+      AimColors.primary600,
     ],
   );
 
@@ -22,7 +23,7 @@ final class AimGradients {
     end: end135,
     colors: <Color>[
       AimColors.primary50,
-      AimColors.secondary50,
+      AimColors.primary100,
     ],
   );
 
@@ -35,14 +36,29 @@ final class AimGradients {
     ],
   );
 
+  /// Launch-screen backdrop. MUST stay identical to the radial gradient in
+  /// android/app/src/main/res/drawable*/launch_background.xml (center 50%/45%,
+  /// radius = shortest side) so the native splash hands off to the first
+  /// Flutter frame without a visible jump.
+  static const RadialGradient splash = RadialGradient(
+    center: Alignment(0.0, -0.1),
+    radius: 1.0,
+    colors: <Color>[
+      AimColors.primary400,
+      AimColors.primary600,
+    ],
+  );
+
   // Gen Z gradients — see docs/design/ui-for-all-system-mobile/README.md.
+  /// Hero gradient — now the official brand blues (previously purple → sky),
+  /// so every hero surface matches the app icon and launch screens.
   static const LinearGradient gzHero = LinearGradient(
     begin: begin135,
     end: end135,
     colors: <Color>[
-      Color(0xFF8B5CF6),
-      Color(0xFF6C63FF),
-      Color(0xFF5AC8FA),
+      AimColors.primary400,
+      AimColors.primary500,
+      AimColors.primary600,
     ],
   );
 

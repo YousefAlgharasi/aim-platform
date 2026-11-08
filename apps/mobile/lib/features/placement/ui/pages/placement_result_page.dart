@@ -169,14 +169,14 @@ class _ResultBodyState extends State<_ResultBody> {
                   height: 120,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [AimColors.primary400, AimColors.primary500],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(36),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.30),
+                        color: AimColors.primary400.withValues(alpha: 0.30),
                         blurRadius: 24,
                         spreadRadius: 0,
                       ),
@@ -192,7 +192,7 @@ class _ResultBodyState extends State<_ResultBody> {
                   gradient: AimGradients.gzHero,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: const Color(0xFF818CF8).withValues(alpha: 0.30),
+                    color: AimColors.primary300.withValues(alpha: 0.30),
                     width: 1,
                   ),
                   boxShadow: [
@@ -246,7 +246,7 @@ class _ResultBodyState extends State<_ResultBody> {
               const Icon(
                 Icons.auto_awesome,
                 size: 22,
-                color: Color(0xFFF59E0B),
+                color: AimColors.warning500,
               ),
             ],
           ),

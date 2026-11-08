@@ -41,19 +41,19 @@ class PlacementOptionCard extends StatelessWidget {
 
     final cardBg = isSelected
         ? primaryColor.withValues(alpha: isDark ? 0.15 : 0.07)
-        : (isDark ? const Color(0xFF1E293B) : Colors.white);
+        : (isDark ? AimColors.neutral800 : Colors.white);
 
     final border = isSelected
         ? Border.all(color: primaryColor, width: 2.0)
         : Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            color: isDark ? AimColors.neutral700 : AimColors.neutral200,
             width: 1.0,
           );
 
     // Icon pill background
     final iconBg = isSelected
         ? primaryColor.withValues(alpha: 0.14)
-        : (isDark ? const Color(0xFF334155) : const Color(0xFFEEF2FF));
+        : (isDark ? AimColors.neutral700 : AimColors.primary50);
 
     // Build the icon pill widget
     Widget? resolvedIcon;
@@ -195,7 +195,7 @@ class PlacementOptionCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    color: isDark ? AimColors.neutral600 : AimColors.neutral300,
                     width: 2.0,
                   ),
                 ),

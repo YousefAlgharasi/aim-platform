@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../logic/provider/microphone_permission_provider.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
 class MicrophonePermissionGate extends StatefulWidget {
   final Widget child;
@@ -49,7 +50,7 @@ class _MicrophonePermissionGateState extends State<MicrophonePermissionGate> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic_off, size: 64, color: Colors.grey),
+            const Icon(Icons.mic_off, size: 64, color: AimColors.neutral500),
             const SizedBox(height: 16),
             Text(
               isArabic

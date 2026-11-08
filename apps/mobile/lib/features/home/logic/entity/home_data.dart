@@ -30,6 +30,7 @@ class HomeData {
     this.quickStartLesson,
     this.recommendedCourse,
     this.engagementStats,
+    this.hasFailedSections = false,
   });
 
   /// Backend-computed skill state summary cards.
@@ -71,6 +72,10 @@ class HomeData {
   /// never fails the whole page).
   final HomeEngagementStats? engagementStats;
 
+  /// True when at least one of the four core lists failed to load and was
+  /// left empty. Empty then means "unknown", not "no data".
+  final bool hasFailedSections;
+
   /// True when the four core AIM lists and continue-learning are all empty
   /// (backend returned no progress data yet) — drives whether the "getting
   /// started" promo cards are shown in place of those sections. Goal and
@@ -78,6 +83,7 @@ class HomeData {
   /// (with sane defaults) for any student and are rendered independently of
   /// this flag, so a brand-new student still sees their goal/streak.
   bool get isEmpty =>
+      !hasFailedSections &&
       skillStates.isEmpty &&
       weaknessRecords.isEmpty &&
       reviewSchedules.isEmpty &&

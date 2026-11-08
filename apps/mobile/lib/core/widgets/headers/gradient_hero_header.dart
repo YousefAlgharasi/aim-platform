@@ -23,7 +23,7 @@ class AIMGradientHeroHeader extends StatelessWidget {
   const AIMGradientHeroHeader({
     required this.title,
     super.key,
-    this.gradient = AimGradients.gzHero,
+    this.gradient = AimGradients.ai,
     this.subtitle,
     this.leading,
     this.trailing,

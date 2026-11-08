@@ -5,6 +5,7 @@ import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
 import 'auth_context_provider.dart';
 import 'auth_flow_provider.dart';
+import 'session_scoped_providers.dart';
 import 'session_store_provider.dart';
 
 class LogoutNotifier extends AppStateNotifier<void> {
@@ -38,6 +39,9 @@ class LogoutNotifier extends AppStateNotifier<void> {
     // 4. Clear in-memory auth state.
     _ref.read(authContextProvider.notifier).clearCurrentUser();
     _ref.read(authFlowProvider.notifier).signOut();
+
+    // 5. Forget the previous student's in-memory data.
+    resetSessionScopedProviders(_ref);
 
     setSuccess(null);
   }

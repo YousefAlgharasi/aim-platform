@@ -8,7 +8,6 @@ import {
   CreditCardIcon,
   HomeIcon,
   LightbulbIcon,
-  TrendingUpIcon,
   TrophyIcon,
   UserIcon,
 } from '../components/common/Icons';
@@ -95,7 +94,6 @@ export const navSections: NavSection[] = [
       { to: '/progress', label: 'Progress', icon: icon(ChartIcon) },
       { to: '/achievements', label: 'Achievements', icon: icon(TrophyIcon) },
       { to: '/certificates', label: 'Certificates', icon: icon(AcademicIcon) },
-      { to: '/reports', label: 'Reports', icon: icon(TrendingUpIcon) },
     ],
   },
   {

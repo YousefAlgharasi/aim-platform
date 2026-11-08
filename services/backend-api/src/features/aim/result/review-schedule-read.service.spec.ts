@@ -35,7 +35,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'ee0e8400-e29b-41d4-a716-446655440009',
     skill_id: 'skill:arabic:p1:listening',
-    due_at: '2026-06-20T10:30:00.000Z',
+    due_at: '2999-06-20T10:30:00.000Z',
     interval_days: '3.00',
     repetition_count: 2,
     status: 'pending',
@@ -93,7 +93,7 @@ describe('ReviewScheduleReadService', () => {
     const entry = result.reviewSchedules[0];
     expect(entry.scheduleId).toBe('ee0e8400-e29b-41d4-a716-446655440009');
     expect(entry.skillId).toBe('skill:arabic:p1:listening');
-    expect(entry.dueAt).toBe('2026-06-20T10:30:00.000Z');
+    expect(entry.dueAt).toBe('2999-06-20T10:30:00.000Z');
     expect(entry.intervalDays).toBe(3);
     expect(entry.repetitionCount).toBe(2);
     expect(entry.status).toBe('pending');
@@ -163,7 +163,7 @@ describe('AimResultController.getReviewSchedules (P5-072)', () => {
       reviewSchedules: [{
         scheduleId: 'ee0e8400-e29b-41d4-a716-446655440009',
         skillId: 'skill:arabic:p1:listening',
-        dueAt: '2026-06-20T10:30:00.000Z',
+        dueAt: '2999-06-20T10:30:00.000Z',
         intervalDays: 3,
         repetitionCount: 2,
         status: 'pending',
@@ -195,5 +195,40 @@ describe('AimResultController.getReviewSchedules (P5-072)', () => {
     const ctrl = new AimResultController(skillStateSvc, reviewScheduleSvc, {} as unknown as import('./session-state-read.service').SessionStateReadService, {} as unknown as import('./weakness-records-read.service').WeaknessRecordsReadService, {} as unknown as import('./recommendation-read.service').RecommendationReadService, {} as unknown as import('./difficulty-decision-read.service').DifficultyDecisionReadService);
 
     await expect(ctrl.getReviewSchedules(STUDENT_ID)).rejects.toThrow('db error');
+  });
+});
+
+describe('ReviewScheduleReadService — status and empty state', () => {
+  it('reports a stored "pending" row as "due" once its due_at has passed', async () => {
+    const db = makeMockDb(async () => ({
+      rows: [makeRow({ status: 'pending', due_at: '2020-01-01T00:00:00.000Z' })],
+      rowCount: 1,
+    }));
+    const result = await new ReviewScheduleReadService(db).getReviewSchedulesForStudent(STUDENT_ID);
+    expect(result.reviewSchedules[0].status).toBe('due');
+  });
+
+  it('keeps a row pending while its due_at is still in the future', async () => {
+    const future = new Date(Date.now() + 3 * 86400000).toISOString();
+    const db = makeMockDb(async () => ({
+      rows: [makeRow({ status: 'due', due_at: future })],
+      rowCount: 1,
+    }));
+    const result = await new ReviewScheduleReadService(db).getReviewSchedulesForStudent(STUDENT_ID);
+    expect(result.reviewSchedules[0].status).toBe('pending');
+  });
+
+  it('never invents placeholder schedules for a student who has completed lessons', async () => {
+    const sqls: string[] = [];
+    const db = makeMockDb(async (sql) => {
+      sqls.push(sql);
+      // Any second query (the old lesson_progress lookup) would see 5 lessons.
+      return sqls.length === 1
+        ? { rows: [], rowCount: 0 }
+        : { rows: [{ completed_count: '5' }], rowCount: 1 };
+    });
+    const result = await new ReviewScheduleReadService(db).getReviewSchedulesForStudent(STUDENT_ID);
+    expect(result.reviewSchedules).toHaveLength(0);
+    expect(sqls).toHaveLength(1);
   });
 });

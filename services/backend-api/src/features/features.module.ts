@@ -23,6 +23,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { StudentChaptersModule } from './student-chapters/student-chapters.module';
 import { StudentCoursesModule } from './student-courses/student-courses.module';
 import { StudentLessonsModule } from './student-lessons/student-lessons.module';
+import { StudentHomeModule } from './student-home/student-home.module';
 import { StudentsModule } from './students/students.module';
 import { UsersModule } from './users/users.module';
 import { VoiceTeacherModule } from './voice-teacher/voice-teacher.module';
@@ -61,6 +62,7 @@ import { PracticeModule } from './practice/practice.module';
     StudentCoursesModule,
     StudentChaptersModule,
     StudentLessonsModule,
+    StudentHomeModule,
     EnrollmentModule,
     AppVersionModule,
     CourseBillingModule,

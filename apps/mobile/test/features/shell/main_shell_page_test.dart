@@ -7,6 +7,7 @@ import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/onboarding/data/onboarding_walkthrough_store.dart';
 import 'package:aim_mobile/features/onboarding/logic/provider/onboarding_walkthrough_provider.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
+import 'package:aim_mobile/features/shell/ui/widgets/app_chrome.dart';
 
 /// Marks the first-time walkthrough as already seen so these navigation
 /// tests aren't blocked by the overlay (that's covered separately in
@@ -37,10 +38,19 @@ void main() {
 
     await tester.pumpWidget(TestShell(
       overrides: [_walkthroughAlreadySeen],
-      child: const MainShellPage(),
+      child: const AppChrome(location: '/main', child: MainShellPage()),
     ));
 
-    expect(find.byType(BottomNavigationBar), findsNothing);
+    // Phone navigation like the web app: four tabs plus Menu.
+    final bottom = find.descendant(
+      of: find.byType(Scaffold).first,
+      matching: find.byType(InkWell),
+    );
+    expect(bottom, findsWidgets);
+    for (final tab in const ['Dashboard', 'Courses', 'Improve', 'Practice', 'Menu']) {
+      expect(find.text(tab), findsWidgets, reason: tab);
+    }
+    expect(find.text('AIM'), findsWidgets);
 
     Finder inDrawer(String text) => find.descendant(
           of: find.byType(Drawer),
@@ -57,7 +67,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    await openDrawer();
+    // The bottom bar's Menu button opens the slide-in menu.
+    await tester.tap(find.text('Menu').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(Drawer), findsOneWidget);
     // Same menu as the student web app.
     for (final label in const [
       'Dashboard',
@@ -71,7 +85,6 @@ void main() {
       'Progress',
       'Achievements',
       'Certificates',
-      'Reports',
       'Notifications',
       'Billing',
       'Support',
@@ -79,6 +92,8 @@ void main() {
     ]) {
       expect(inDrawer(label), findsOneWidget, reason: label);
     }
+
+    expect(inDrawer('Reports'), findsNothing); // Reports was removed.
 
     await tester.tap(inDrawer('Courses'));
     await tester.pump();
@@ -111,6 +126,7 @@ class TestShell extends StatelessWidget {
           initialLocation: '/',
           routes: [
             GoRoute(path: '/', builder: (context, state) => child),
+            GoRoute(path: '/main', builder: (context, state) => child),
           ],
           errorBuilder: (context, state) => const SizedBox(),
         ),

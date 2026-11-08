@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
+import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 
 /// Segmented step progress indicator matching Modern Auth Pages (3)-1 design.
 ///
@@ -24,8 +25,8 @@ class PlacementProgressBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const primaryColor = AimColors.primary500;
     final inactiveColor = isDark
-        ? const Color(0xFF334155)
-        : const Color(0xFFE2E8F0);
+        ? AimColors.neutral700
+        : AimColors.neutral200;
 
     return Padding(
       padding: padding,

@@ -37,8 +37,8 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/home/logic/provider/course_path_loader_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
-import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -103,8 +103,6 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     if (token == null || token.isEmpty) return;
 
     try {
-      final lessonsRepo = ref.read(lessonsRepositoryProvider);
-
       final courses = await ref.read(homeCoursesProvider.future);
       final course = _pickCurrentCourse(courses);
       if (course == null) {
@@ -146,37 +144,18 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
-      final levels =
-          await lessonsRepo.getLevels(bearerToken: token, courseId: course.courseId);
-      if (levels.isEmpty) {
+      final data = await ref.read(coursePathLoaderProvider).load(
+            bearerToken: token,
+            courseId: course.courseId,
+          );
+      if (data == null) {
         if (mounted) setState(() => _state = _LoadState.empty);
         return;
       }
-      final levelId = levels.first.id;
+      final finalExam = data.finalExam;
+      final activeChapterId = data.activeChapterId;
 
-      final chapters = await lessonsRepo.getChaptersWithProgress(
-        bearerToken: token,
-        levelId: levelId,
-      );
-      final finalExam =
-          await lessonsRepo.getFinalExamForLevel(bearerToken: token, levelId: levelId);
-
-      _PathNode? currentChapterIncomplete;
-      for (final c in chapters) {
-        if (!c.isCompleted) {
-          currentChapterIncomplete = _PathNode(
-            kind: _NodeKind.lesson,
-            id: c.chapterId,
-            title: c.title,
-            completed: false,
-            unlocked: true,
-            current: false,
-          );
-          break;
-        }
-      }
-
-      if (currentChapterIncomplete == null) {
+      if (activeChapterId == null) {
         // Every chapter is done — the course's final stretch is its exam.
         if (finalExam == null) {
           if (mounted) setState(() => _state = _LoadState.empty);
@@ -205,13 +184,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
-      final chapterId = currentChapterIncomplete.id;
-      final lessons = await lessonsRepo.getLessonsWithProgress(
-        bearerToken: token,
-        chapterId: chapterId,
-      );
-      final quiz =
-          await lessonsRepo.getChapterQuiz(bearerToken: token, chapterId: chapterId);
+      final lessons = data.lessons;
+      final quiz = data.quiz;
 
       final nodes = <_PathNode>[
         for (final lesson in lessons)
@@ -238,7 +212,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       setState(() {
         _nextCourse = null;
         _courseTitle = course.title;
-        _subtitle = currentChapterIncomplete!.title;
+        _subtitle = data.activeChapterTitle;
         _nodes = nodes;
         _state = _LoadState.success;
       });
@@ -486,7 +460,7 @@ class _CoursePathTrail extends StatelessWidget {
               child: CustomPaint(
                 painter: _WavyPathPainter(
                   nodeOffsets: nodeOffsets,
-                  color: const Color(0xFFC7D2FE),
+                  color: AimColors.primary200,
                 ),
               ),
             ),
@@ -594,14 +568,14 @@ class _RoadmapNodeWidget extends StatelessWidget {
         height: nodeSize,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF34D399), Color(0xFF059669)],
+            colors: [AimColors.success500, AimColors.success600],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+              color: AimColors.success500.withValues(alpha: 0.2),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -622,15 +596,15 @@ class _RoadmapNodeWidget extends StatelessWidget {
           height: nodeSize,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+              colors: [AimColors.primary500, AimColors.primary400],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFFC7D2FE), width: 4),
+            border: Border.all(color: AimColors.primary200, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                color: AimColors.primary500.withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -699,7 +673,7 @@ class _RoadmapNodeWidget extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          gradient: AimGradients.gzHero,
+                          gradient: AimGradients.ai,
                           borderRadius: AimRadius.borderPill,
                           boxShadow: [
                             BoxShadow(
@@ -740,7 +714,7 @@ class _RoadmapNodeWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AimTextStyles.caption.copyWith(
                   color: isDone
-                      ? const Color(0xFF22C55E)
+                      ? AimColors.success500
                       : isCurrent
                           ? AimColors.primary500
                           : surfaces.textMuted,

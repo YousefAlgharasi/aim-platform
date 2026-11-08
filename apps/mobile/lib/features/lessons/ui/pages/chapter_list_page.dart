@@ -92,28 +92,6 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF653BFF).withValues(alpha: 0.45),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-          backgroundColor: const Color(0xFF653BFF),
-          shape: const CircleBorder(),
-          elevation: 0,
-          child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
-        ),
-      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -296,14 +274,14 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF6366F1), Color(0xFF7C3AED)],
+                colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                  color: AimColors.primary500.withValues(alpha: 0.3),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -459,7 +437,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   Widget _buildFilterTab(String label, ChapterListFilter filter) {
     final isSelected = _filter == filter;
     final surfaces = aimSurfacesOf(context);
-    const brandIndigo = Color(0xFF6366F1);
+    const brandIndigo = AimColors.primary400;
     return InkWell(
       onTap: () => setState(() => _filter = filter),
       borderRadius: BorderRadius.circular(20),
@@ -559,8 +537,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
         ? (isDark ? AimColors.success500.withValues(alpha: 0.6) : AimColors.success500)
         : (isUnlocked ? AimColors.primary500 : surfaces.border);
     final badgeColor = isPassed
-        ? (isDark ? AimColors.success500 : const Color(0xFF16A34A))
-        : (isUnlocked ? const Color(0xFFD97706) : surfaces.textSecondary);
+        ? (isDark ? AimColors.success500 : AimColors.success600)
+        : (isUnlocked ? AimColors.warning600 : surfaces.textSecondary);
 
     return Material(
       color: Colors.transparent,
@@ -650,7 +628,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                       style: TextStyle(
                         fontSize: 13,
                         color: isPassed
-                            ? (isDark ? AimColors.success500 : const Color(0xFF15803D))
+                            ? (isDark ? AimColors.success500 : AimColors.success700)
                             : (isUnlocked
                                 ? AimColors.primary500
                                 : surfaces.textSecondary),
@@ -837,13 +815,13 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                     height: 48,
                     decoration: BoxDecoration(
                       color: isCompleted
-                          ? const Color(0xFF10B981)
-                          : (isLocked ? surfaces.surfaceSunken : const Color(0xFF6366F1)),
+                          ? AimColors.success500
+                          : (isLocked ? surfaces.surfaceSunken : AimColors.primary400),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: (isCompleted || !isLocked)
                           ? [
                               BoxShadow(
-                                color: (isCompleted ? const Color(0xFF10B981) : const Color(0xFF6366F1))
+                                color: (isCompleted ? AimColors.success500 : AimColors.primary400)
                                     .withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
@@ -896,7 +874,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
-                                    color: isDark ? AimColors.success500 : const Color(0xFF16A34A),
+                                    color: isDark ? AimColors.success500 : AimColors.success600,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -966,7 +944,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                   backgroundColor: surfaces.surfaceSunken,
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     isCompleted
-                                        ? const Color(0xFF10B981)
+                                        ? AimColors.success500
                                         : colorScheme.primary,
                                   ),
                                 ),
@@ -1230,17 +1208,17 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                         final scoreText = quiz.scorePercent != null ? ' · ${quiz.scorePercent}%' : '';
 
                         final bgColor = isCompleted
-                            ? (isDark ? const Color(0xFF065F46).withValues(alpha: 0.2) : const Color(0xFFECFDF5))
+                            ? (isDark ? AimColors.success700.withValues(alpha: 0.2) : AimColors.success50)
                             : (isLocked
-                                ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9))
-                                : (isDark ? AimColors.primary500.withValues(alpha: 0.15) : const Color(0xFFEEF2FF)));
+                                ? (isDark ? AimColors.neutral800 : AimColors.neutral100)
+                                : (isDark ? AimColors.primary500.withValues(alpha: 0.15) : AimColors.primary50));
 
                         final borderColor = isCompleted
-                            ? const Color(0xFF10B981)
+                            ? AimColors.success500
                             : (isLocked ? surfaces.border : AimColors.primary500.withValues(alpha: 0.4));
 
                         final iconBgColor = isCompleted
-                            ? const Color(0xFF10B981)
+                            ? AimColors.success500
                             : (isLocked ? surfaces.surfaceSunken : AimColors.primary500);
 
                         final iconData = isCompleted
@@ -1305,7 +1283,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.w800,
                                                 color: isCompleted
-                                                    ? const Color(0xFF059669)
+                                                    ? AimColors.success600
                                                     : (isLocked ? surfaces.textMuted : AimColors.primary600),
                                                 letterSpacing: 0.8,
                                               ),
@@ -1318,7 +1296,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   vertical: 1.5,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFD1FAE5),
+                                                  color: AimColors.success100,
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: Text(
@@ -1326,7 +1304,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                                   style: const TextStyle(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w800,
-                                                    color: Color(0xFF065F46),
+                                                    color: AimColors.success700,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -1377,7 +1355,7 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                                             : Icons.chevron_right_rounded),
                                     size: 20,
                                     color: isCompleted
-                                        ? const Color(0xFF10B981)
+                                        ? AimColors.success500
                                         : (isLocked ? surfaces.textMuted : AimColors.primary500),
                                   ),
                                 ],

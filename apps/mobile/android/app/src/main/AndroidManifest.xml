@@ -3,9 +3,10 @@
     <!-- Required for the Voice Teacher's microphone recording (record package) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
-        android:label="aim_mobile"
+        android:label="AIM English"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -410,7 +410,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     alignment: Alignment.center,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                        colors: [AimColors.primary500, AimColors.primary300],
                       ),
                       shape: BoxShape.circle,
                     ),
@@ -717,7 +717,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                  color: AimColors.warning500.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -726,14 +726,14 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 height: 76,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                    colors: [AimColors.warning500, AimColors.warning500],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                      color: AimColors.warning500.withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),
@@ -756,7 +756,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
+              color: AimColors.warning100,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -764,7 +764,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFFD97706),
+                color: AimColors.warning600,
                 letterSpacing: 1.0,
               ),
             ),
@@ -830,7 +830,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF10B981),
+                      color: AimColors.success500,
                     ),
                   ),
                 ],
@@ -857,7 +857,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFFEF4444),
+                      color: AimColors.error500,
                     ),
                   ),
                 ],
@@ -885,10 +885,10 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: accuracyPercent >= 70
-                          ? const Color(0xFF10B981)
+                          ? AimColors.success500
                           : (accuracyPercent >= 40
-                              ? const Color(0xFFF59E0B)
-                              : const Color(0xFFEF4444)),
+                              ? AimColors.warning500
+                              : AimColors.error500),
                     ),
                   ),
                 ],
@@ -932,13 +932,13 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _wrongCount == 0
-                ? const Color(0xFFD1FAE5)
-                : const Color(0xFFFEF3C7),
+                ? AimColors.success100
+                : AimColors.warning100,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _wrongCount == 0
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFF59E0B),
+                  ? AimColors.success500
+                  : AimColors.warning500,
             ),
           ),
           child: Row(
@@ -948,8 +948,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     ? Icons.emoji_events_rounded
                     : Icons.info_outline_rounded,
                 color: _wrongCount == 0
-                    ? const Color(0xFF065F46)
-                    : const Color(0xFFB45309),
+                    ? AimColors.success700
+                    : AimColors.warning700,
                 size: 26,
               ),
               const SizedBox(width: 12),
@@ -971,8 +971,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: _wrongCount == 0
-                            ? const Color(0xFF065F46)
-                            : const Color(0xFF92400E),
+                            ? AimColors.success700
+                            : AimColors.warning700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -987,8 +987,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       style: TextStyle(
                         fontSize: 12,
                         color: _wrongCount == 0
-                            ? const Color(0xFF047857)
-                            : const Color(0xFFB45309),
+                            ? AimColors.success700
+                            : AimColors.warning700,
                       ),
                     ),
                   ],
@@ -1090,8 +1090,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: item.isCorrect
-                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                      : const Color(0xFFEF4444).withValues(alpha: 0.3),
+                      ? AimColors.success500.withValues(alpha: 0.3)
+                      : AimColors.error500.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -1101,8 +1101,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: item.isCorrect
-                          ? const Color(0xFFD1FAE5)
-                          : const Color(0xFFFEE2E2),
+                          ? AimColors.success100
+                          : AimColors.error100,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1110,8 +1110,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                           ? Icons.check_rounded
                           : Icons.close_rounded,
                       color: item.isCorrect
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
+                          ? AimColors.success500
+                          : AimColors.error500,
                       size: 16,
                     ),
                   ),
@@ -1135,8 +1135,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: item.isCorrect
-                                ? const Color(0xFF065F46)
-                                : const Color(0xFFB91C1C),
+                                ? AimColors.success700
+                                : AimColors.error700,
                           ),
                         ),
                       ],
@@ -1200,7 +1200,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     alignment: Alignment.center,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                        colors: [AimColors.primary500, AimColors.primary300],
                       ),
                       shape: BoxShape.circle,
                     ),
@@ -1435,7 +1435,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                  color: AimColors.warning500.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -1446,14 +1446,14 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                   height: 76,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                      colors: [AimColors.warning500, AimColors.warning500],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                        color: AimColors.warning500.withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -1477,7 +1477,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
+              color: AimColors.warning100,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -1485,7 +1485,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFFD97706),
+                color: AimColors.warning600,
                 letterSpacing: 1.0,
               ),
             ),
@@ -1551,7 +1551,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF10B981),
+                      color: AimColors.success500,
                     ),
                   ),
                 ],
@@ -1578,7 +1578,7 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFFEF4444),
+                      color: AimColors.error500,
                     ),
                   ),
                 ],
@@ -1606,8 +1606,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
                       color: accuracyPercent >= 70
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
+                          ? AimColors.success500
+                          : AimColors.error500,
                     ),
                   ),
                 ],
@@ -1624,13 +1624,13 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: wrongCount == 0
-                ? const Color(0xFFD1FAE5)
-                : const Color(0xFFFEF3C7),
+                ? AimColors.success100
+                : AimColors.warning100,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: wrongCount == 0
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFF59E0B),
+                  ? AimColors.success500
+                  : AimColors.warning500,
             ),
           ),
           child: Row(
@@ -1640,8 +1640,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                     ? Icons.emoji_events_rounded
                     : Icons.info_outline_rounded,
                 color: wrongCount == 0
-                    ? const Color(0xFF065F46)
-                    : const Color(0xFFB45309),
+                    ? AimColors.success700
+                    : AimColors.warning700,
                 size: 26,
               ),
               const SizedBox(width: 12),
@@ -1663,8 +1663,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: wrongCount == 0
-                            ? const Color(0xFF065F46)
-                            : const Color(0xFF92400E),
+                            ? AimColors.success700
+                            : AimColors.warning700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1679,8 +1679,8 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
                       style: TextStyle(
                         fontSize: 12,
                         color: wrongCount == 0
-                            ? const Color(0xFF047857)
-                            : const Color(0xFFB45309),
+                            ? AimColors.success700
+                            : AimColors.warning700,
                       ),
                     ),
                   ],
@@ -1782,12 +1782,12 @@ class _PracticeSessionPageState extends ConsumerState<PracticeSessionPage> {
               width: 80,
               height: 80,
               decoration: const BoxDecoration(
-                color: Color(0xFFFEF2F2),
+                color: AimColors.error50,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.assignment_late_rounded,
-                color: Color(0xFFEF4444),
+                color: AimColors.error500,
                 size: 40,
               ),
             ),
@@ -2103,14 +2103,14 @@ class _PracticeAudioButtonState extends ConsumerState<_PracticeAudioButton> {
                       height: 52,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+                          colors: [AimColors.primary500, AimColors.primary400],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
+                            color: AimColors.primary500.withValues(alpha: 0.35),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),

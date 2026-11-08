@@ -10,11 +10,11 @@ import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Distinct colors for each course card icon box to match Figma prototype.
 const List<Color> _kCourseIconBgColors = [
-  Color(0xFF6366F1), // Purple (Starter)
-  Color(0xFFFDBA74), // Orange (A1.1)
-  Color(0xFF86EFAC), // Soft Green (A1.2)
-  Color(0xFFFCA5A5), // Salmon/Peach (Writing 1)
-  Color(0xFFC084FC), // Soft Purple (A2.1)
+  AimColors.primary400, // Purple (Starter)
+  AimColors.warning100, // Orange (A1.1)
+  AimColors.success100, // Soft Green (A1.2)
+  AimColors.error100, // Salmon/Peach (Writing 1)
+  AimColors.primary300, // Soft Purple (A2.1)
 ];
 
 const List<IconData> _kCourseIcons = [
@@ -56,7 +56,7 @@ class CourseListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isCurrentEnrollment
-              ? const Color(0xFF6366F1)
+              ? AimColors.primary400
               : surfaces.border,
           width: isCurrentEnrollment ? 2 : 1,
         ),
@@ -185,7 +185,7 @@ class CourseListTile extends StatelessWidget {
                                 const Icon(
                                   Icons.lock_outline_rounded,
                                   size: 18,
-                                  color: Color(0xFF94A3B8),
+                                  color: AimColors.neutral400,
                                 ),
                               ],
                             ],
@@ -238,7 +238,7 @@ class CourseListTile extends StatelessWidget {
                             minHeight: 6,
                             backgroundColor: surfaces.surfaceSunken,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              completed ? const Color(0xFF10B981) : colorScheme.primary,
+                              completed ? AimColors.success500 : colorScheme.primary,
                             ),
                           ),
                         ),
