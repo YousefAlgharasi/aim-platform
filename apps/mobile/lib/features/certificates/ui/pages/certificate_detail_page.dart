@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
+import '../../../../core/localization/inline_tr.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/certificate_model.dart';
 import '../../logic/provider/certificates_provider.dart';
+import '../widgets/certificate_painter.dart';
 
 class CertificateDetailPage extends ConsumerWidget {
   const CertificateDetailPage({
@@ -32,7 +33,7 @@ class CertificateDetailPage extends ConsumerWidget {
     if (id == null || id.isEmpty) {
       return Scaffold(
         appBar: AIMTopAppBar(
-          title: l10n.certificateDetailTitle,
+          title: context.tr('Certificate', 'الشهادة'),
           leading: IconButton(
             icon: Icon(
               isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
@@ -54,7 +55,7 @@ class CertificateDetailPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AIMTopAppBar(
-        title: l10n.certificateDetailTitle,
+        title: context.tr('Certificate', 'الشهادة'),
         leading: IconButton(
           icon: Icon(
             isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
@@ -84,12 +85,11 @@ class _CertificateScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Scaffold(
       appBar: AIMTopAppBar(
-        title: l10n.certificateDetailTitle,
+        title: context.tr('Certificate', 'الشهادة'),
         leading: IconButton(
           icon: Icon(
             isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
@@ -103,6 +103,8 @@ class _CertificateScaffold extends StatelessWidget {
   }
 }
 
+/// Certificate detail — the same layout as the web app: the certificate
+/// picture, then the score breakdown and the assessments it was based on.
 class _CertificateDetailBody extends StatelessWidget {
   const _CertificateDetailBody({required this.certificate});
 
@@ -110,319 +112,159 @@ class _CertificateDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final formattedDate =
-        DateFormat.yMMMMd(isRtl ? 'ar' : 'en').format(certificate.issuedAt);
+    final rtl = context.isArabic;
+    final locale = rtl ? 'ar' : 'en';
+    final nf = NumberFormat.decimalPattern(locale);
+    String fmt(num n) => nf.format(n);
 
-    final breakdown = certificate.breakdown;
-    final totalPts = certificate.totalPoints ??
-        breakdown?.totalPoints ??
-        (certificate.overallScorePercent != null
-            ? certificate.overallScorePercent! * 10
-            : 0);
+    final issued = DateFormat.yMMMMd(locale).format(certificate.issuedAt);
+    final b = certificate.breakdown;
+    final pct = certificate.overallScorePercent ??
+        b?.overallPercent ??
+        (certificate.totalPoints != null
+            ? (certificate.totalPoints! / 10).round()
+            : null);
+    final course = certificate.courseTitle.isEmpty
+        ? context.tr('Course', 'الدورة')
+        : certificate.courseTitle;
 
-    final gradePercent = certificate.overallScorePercent ??
-        breakdown?.overallPercent ??
-        (totalPts / 10).round();
+    // The mark is out of 100. Each part is shown on that same scale, so the
+    // parts add up to the mark. Chapter exams are not part of it.
+    double on100(int points) => points.round() / 10;
+    final rows = <({String label, int points, int max, int percent, bool hasPercent})>[
+      if (b != null && b.practiceMaxPoints > 0)
+        (
+          label: context.tr('Lesson practice', 'تدريبات الدروس'),
+          points: b.practicePoints,
+          max: b.practiceMaxPoints,
+          percent: b.practiceAccuracyPercent,
+          hasPercent: true,
+        ),
+      if (b != null && b.quizMaxPoints > 0)
+        (
+          label: context.tr('Chapter quizzes', 'اختبارات الفصول'),
+          points: b.quizPoints,
+          max: b.quizMaxPoints,
+          percent: b.quizAveragePercent,
+          hasPercent: true,
+        ),
+      if (b != null && b.finalExamMaxPoints > 0)
+        (
+          label: context.tr('Final exam', 'الامتحان النهائي'),
+          points: b.finalExamPoints,
+          max: b.finalExamMaxPoints,
+          percent: b.finalExamPercent,
+          hasPercent: true,
+        ),
+    ];
+
+    final painter = CertificatePainter(
+      studentName: certificate.studentName,
+      courseTitle: course,
+      scorePercent: pct,
+      issuedText: issued,
+      reference: certificate.id.length >= 8
+          ? certificate.id.substring(0, 8).toUpperCase()
+          : certificate.id.toUpperCase(),
+      rtl: rtl,
+      // A left-to-right isolate keeps "73 / 100" in that order in Arabic too.
+      scoreText: pct == null ? null : '\u2066${fmt(pct)} / ${fmt(100)}\u2069',
+      labels: CertificateLabels(
+        brand: 'AIM English',
+        title: context.tr('Certificate of completion', 'شهادة إتمام'),
+        presentedTo: context.tr('This certificate is proudly presented to', 'تُمنح هذه الشهادة بكل فخر إلى'),
+        forCompleting: context.tr('for successfully completing', 'لإتمامه بنجاح'),
+        finalScore: context.tr('Final score', 'الدرجة النهائية'),
+        issued: context.tr('Issued', 'تاريخ الإصدار'),
+        reference: context.tr('Certificate ID', 'رقم الشهادة'),
+      ),
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Certificate parchment card
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AimRadius.lg),
-              border: Border.all(
-                color: const Color(0xFFD97706).withValues(alpha: 0.5),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsetsDirectional.all(AimSpacing.space24),
-            child: Column(
-              children: [
-                // Top Golden Seal
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFFBBF24), Color(0xFFD97706)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.verified_rounded,
-                      color: Colors.white,
-                      size: 38,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AimSpacing.space16),
-
-                // Eyebrow
-                Text(
-                  l10n.certificateEyebrow,
-                  style: AimTextStyles.caption.copyWith(
-                    color: const Color(0xFFB45309),
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2.0,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space8),
-
-                // Main Heading
-                Text(
-                  'AIM Language Platform',
-                  style: AimTextStyles.h2.copyWith(
-                    color: const Color(0xFF1E293B),
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space16),
-
-                const Divider(color: Color(0xFFE2E8F0)),
-                const SizedBox(height: AimSpacing.space16),
-
-                // Student statement
-                Text(
-                  l10n.certificateCertifiesThat,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: const Color(0xFF64748B),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space8),
-
-                // Student Name
-                Text(
-                  certificate.studentName ?? 'Student',
-                  style: AimTextStyles.h2.copyWith(
-                    color: const Color(0xFF0F172A),
-                    fontWeight: FontWeight.w700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space8),
-
-                // Completion statement
-                Text(
-                  l10n.certificateHasCompleted,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: const Color(0xFF64748B),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space8),
-
-                // Course title
-                Text(
-                  certificate.courseTitle,
-                  style: AimTextStyles.h3.copyWith(
-                    color: const Color(0xFF1E293B),
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.space8),
-
-                // Date
-                Text(
-                  l10n.certificatesIssuedOn(formattedDate),
-                  style: AimTextStyles.caption.copyWith(
-                    color: const Color(0xFF94A3B8),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          CertificateView(
+            painter: painter,
+            semanticLabel: fill(
+              context.tr('Certificate of completion for {course}', 'شهادة إتمام دورة {course}'),
+              {'course': course},
             ),
           ),
-
-          const SizedBox(height: AimSpacing.space24),
-
-          // 1,000-Point System Evaluation Card
-          AIMCard(
-            child: Padding(
-              padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.analytics_outlined,
-                        color: Color(0xFF4F46E5),
-                        size: 20,
+          if (rows.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              context.tr('Score breakdown', 'تفاصيل الدرجات'),
+              style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMCard(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (i, r) in rows.indexed) ...[
+                      if (i > 0) const SizedBox(height: AimSpacing.space16),
+                      _BreakdownRow(
+                        label: r.label,
+                        trailing: fill(
+                          context.tr('{pts} / {max} pts', '{pts} / {max} نقطة'),
+                          {'pts': fmt(on100(r.points)), 'max': fmt(on100(r.max))},
+                        ),
+                        percentText: r.hasPercent ? ' · ${fmt(r.percent)}%' : '',
+                        value: r.max > 0 ? (r.points / r.max).clamp(0.0, 1.0) : 0,
                       ),
-                      const SizedBox(width: AimSpacing.space8),
-                      Expanded(
-                        child: Text(
-                          l10n.certificateCourseEvaluation,
-                          style: AimTextStyles.title.copyWith(
-                            color: surfaces.textPrimary,
+                    ],
+                    if (pct != null) ...[
+                      const SizedBox(height: AimSpacing.space16),
+                      Divider(height: 1, color: surfaces.divider),
+                      const SizedBox(height: AimSpacing.space12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            context.tr('Your mark', 'درجتك'),
+                            style: AimTextStyles.bodyLg.copyWith(
+                              color: surfaces.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
+                          Text(
+                            '\u2066${fmt(pct)} / ${fmt(100)}\u2069',
+                            style: AimTextStyles.h2.copyWith(color: surfaces.textPrimary),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                  const SizedBox(height: AimSpacing.space16),
-
-                  if (breakdown != null) ...[
-                    for (final (index, row) in [
-                      if (breakdown.practiceMaxPoints > 0)
-                        (
-                          l10n.certificatePractices,
-                          breakdown.practicePoints,
-                          breakdown.practiceMaxPoints,
-                          '${breakdown.practiceAccuracyPercent}% ${l10n.certificateAccuracy}',
-                        ),
-                      if (breakdown.quizMaxPoints > 0)
-                        (
-                          l10n.certificateQuizzes,
-                          breakdown.quizPoints,
-                          breakdown.quizMaxPoints,
-                          '${breakdown.quizAveragePercent}% ${l10n.certificateAverage}',
-                        ),
-                      if (breakdown.chapterExamMaxPoints > 0)
-                        (
-                          l10n.certificateChapterExams,
-                          breakdown.chapterExamPoints,
-                          breakdown.chapterExamMaxPoints,
-                          '${breakdown.chapterExamAveragePercent}% ${l10n.certificateAverage}',
-                        ),
-                      if (breakdown.finalExamMaxPoints > 0)
-                        (
-                          l10n.certificateFinalExam,
-                          breakdown.finalExamPoints,
-                          breakdown.finalExamMaxPoints,
-                          '${breakdown.finalExamPercent}%',
-                        ),
-                    ].indexed) ...[
-                      if (index > 0) const Divider(height: AimSpacing.space16),
-                      _BreakdownItemRow(
-                        label: row.$1,
-                        // Each component's share of the 1,000-point total.
-                        weight: l10n.certificateWeightPercent((row.$3 / 10).round()),
-                        points: l10n.certificatePointsOfMax(row.$2, row.$3),
-                        detail: row.$4,
-                      ),
-                    ],
-                    const SizedBox(height: AimSpacing.space16),
                   ],
-
-                  // Grand Total Banner
-                  Container(
-                    padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(AimRadius.md),
-                      border: Border.all(color: const Color(0xFFC7D2FE)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.certificateTotalScoreLabel,
-                              style: AimTextStyles.caption.copyWith(
-                                color: const Color(0xFF4338CA),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: AimSpacing.space4),
-                            Text(
-                              l10n.certificatePointsOfMax(totalPts, 1000),
-                              style: AimTextStyles.h3.copyWith(
-                                color: const Color(0xFF1E1B4B),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              l10n.certificateFinalGradeLabel,
-                              style: AimTextStyles.caption.copyWith(
-                                color: const Color(0xFF047857),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: AimSpacing.space4),
-                            Text(
-                              '$gradePercent%',
-                              style: AimTextStyles.h2.copyWith(
-                                color: const Color(0xFF065F46),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-
-          const SizedBox(height: AimSpacing.space16),
-
-          // Verification Link Button
-          if (certificate.verificationUrl != null &&
-              certificate.verificationUrl!.isNotEmpty) ...[
-            AIMButton(
-              variant: AIMButtonVariant.secondary,
-              leadingIcon: const Icon(Icons.link_rounded),
-              onPressed: () {
-                Clipboard.setData(
-                  ClipboardData(text: certificate.verificationUrl!),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.certificateCopiedToast),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              child: Text(l10n.certificateCopyVerification),
-            ),
-            const SizedBox(height: AimSpacing.space12),
           ],
-
-          // Footer
-          Center(
-            child: Text(
-              l10n.certificateIdLabel(certificate.id),
-              style: AimTextStyles.caption.copyWith(
-                color: surfaces.textMuted,
-              ),
-              textAlign: TextAlign.center,
+          if (certificate.scoreSnapshot.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            Text(
+              context.tr('Assessments', 'التقييمات'),
+              style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
             ),
-          ),
+            const SizedBox(height: AimSpacing.componentGap),
+            AIMCard(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+                child: Column(
+                  children: [
+                    for (final (i, s) in certificate.scoreSnapshot.indexed) ...[
+                      if (i > 0) const SizedBox(height: AimSpacing.space16),
+                      _AssessmentRow(entry: s),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AimSpacing.space24),
         ],
       ),
@@ -430,77 +272,103 @@ class _CertificateDetailBody extends StatelessWidget {
   }
 }
 
-class _BreakdownItemRow extends StatelessWidget {
-  const _BreakdownItemRow({
+class _BreakdownRow extends StatelessWidget {
+  const _BreakdownRow({
     required this.label,
-    required this.weight,
-    required this.points,
-    required this.detail,
+    required this.trailing,
+    required this.percentText,
+    required this.value,
   });
 
   final String label;
-  final String weight;
-  final String points;
-  final String detail;
+  final String trailing;
+  final String percentText;
+  final double value;
 
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space8),
+            Text(
+              '$trailing$percentText',
+              style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(100),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            color: AimColors.primary500,
+            backgroundColor: surfaces.surfaceSunken,
+          ),
+        ),
+      ],
+    );
+  }
+}
 
+class _AssessmentRow extends StatelessWidget {
+  const _AssessmentRow({required this.entry});
+
+  final CertificateScoreEntryModel entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final kind = entry.isFinalExam
+        ? context.tr('Final exam', 'الامتحان النهائي')
+        : entry.type == 'exam'
+            ? context.tr('Exam', 'امتحان')
+            : context.tr('Quiz', 'اختبار قصير');
+    final tone = entry.passed ? AimColors.success500 : AimColors.error500;
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: AimTextStyles.bodyMd.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: surfaces.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: AimSpacing.space8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AimSpacing.space8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: surfaces.surfaceSunken,
-                      borderRadius: BorderRadius.circular(AimRadius.sm),
-                    ),
-                    child: Text(
-                      weight,
-                      style: AimTextStyles.caption.copyWith(
-                        color: surfaces.textMuted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
               Text(
-                detail,
-                style: AimTextStyles.caption.copyWith(
-                  color: surfaces.textMuted,
+                entry.title,
+                style: AimTextStyles.bodyMd.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+              Text(
+                '$kind · ${entry.score} / ${entry.maxScore}',
+                style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
               ),
             ],
           ),
         ),
-        Text(
-          points,
-          style: AimTextStyles.bodyMd.copyWith(
-            fontWeight: FontWeight.bold,
-            color: surfaces.textPrimary,
+        const SizedBox(width: AimSpacing.space8),
+        Container(
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: tone.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            '${entry.scorePercent}% · ${entry.passed ? context.tr('Passed', 'ناجح') : context.tr('Not passed', 'غير ناجح')}',
+            style: AimTextStyles.caption.copyWith(color: tone, fontWeight: FontWeight.w700),
           ),
         ),
       ],

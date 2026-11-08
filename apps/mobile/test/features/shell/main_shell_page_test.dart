@@ -31,6 +31,10 @@ class _NoopStore extends OnboardingWalkthroughStore {
 void main() {
   testWidgets('main shell shows primary navigation items via the drawer',
       (tester) async {
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(TestShell(
       overrides: [_walkthroughAlreadySeen],
       child: const MainShellPage(),
@@ -54,23 +58,39 @@ void main() {
     }
 
     await openDrawer();
-    expect(inDrawer('Home Feed'), findsOneWidget);
-    expect(inDrawer('Chapters & Course'), findsOneWidget);
-    expect(inDrawer('Analytics & Progress'), findsOneWidget);
-    expect(inDrawer('Achievements'), findsOneWidget);
-    expect(inDrawer('Account Settings'), findsOneWidget);
+    // Same menu as the student web app.
+    for (final label in const [
+      'Dashboard',
+      'Courses',
+      'Improve',
+      'Assessments',
+      'Practice',
+      'AI Teacher',
+      'My words',
+      'My mistakes',
+      'Progress',
+      'Achievements',
+      'Certificates',
+      'Reports',
+      'Notifications',
+      'Billing',
+      'Support',
+      'Settings',
+    ]) {
+      expect(inDrawer(label), findsOneWidget, reason: label);
+    }
 
-    await tester.tap(inDrawer('Chapters & Course'));
+    await tester.tap(inDrawer('Courses'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(inDrawer('Analytics & Progress'));
+    await tester.tap(inDrawer('Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    expect(inDrawer('Home Feed'), findsOneWidget);
+    expect(inDrawer('Dashboard'), findsOneWidget);
   });
 }
 

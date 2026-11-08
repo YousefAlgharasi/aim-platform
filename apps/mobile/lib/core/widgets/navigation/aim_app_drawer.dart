@@ -23,6 +23,14 @@ class AIMDrawerItemData {
   final Widget? trailing;
 }
 
+/// A titled group of drawer entries (e.g. "Learn", "Practice").
+class AIMDrawerSectionData {
+  const AIMDrawerSectionData({required this.label, required this.items});
+
+  final String label;
+  final List<AIMDrawerItemData> items;
+}
+
 /// Side navigation drawer shown from [MainShellPage]'s `Scaffold.drawer`.
 ///
 /// Drop-in compatible with `Scaffold(drawer: AIMAppDrawer(...))` or
@@ -50,6 +58,7 @@ class AIMAppDrawer extends StatelessWidget {
     this.menuLabel,
     this.moreLabel,
     this.moreItems,
+    this.sections,
   });
 
   /// User avatar/name block shown above the menu items.
@@ -77,6 +86,10 @@ class AIMAppDrawer extends StatelessWidget {
   /// renders exactly as it did before this field existed.
   final List<AIMDrawerItemData>? moreItems;
 
+  /// Optional titled groups of entries. When provided they are rendered
+  /// instead of [items] / [moreItems], each group under its own label.
+  final List<AIMDrawerSectionData>? sections;
+
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
@@ -87,8 +100,8 @@ class AIMAppDrawer extends StatelessWidget {
       backgroundColor: surfaces.surface,
       semanticLabel: semanticLabel,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(
-          right: Radius.circular(32),
+        borderRadius: BorderRadiusDirectional.horizontal(
+          end: Radius.circular(32),
         ),
       ),
       child: SafeArea(
@@ -105,6 +118,20 @@ class AIMAppDrawer extends StatelessWidget {
                   vertical: AimSpacing.space8,
                 ),
                 children: [
+                  if (sections != null)
+                    for (final section in sections!) ...[
+                      _AIMDrawerSectionLabel(
+                        label: section.label,
+                        color: surfaces.textMuted,
+                      ),
+                      for (final item in section.items)
+                        _AIMDrawerItem(
+                          data: item,
+                          surfaces: surfaces,
+                          soft: soft,
+                        ),
+                    ]
+                  else ...[
                   if (hasMoreSection && menuLabel != null)
                     _AIMDrawerSectionLabel(
                       label: menuLabel!,
@@ -124,6 +151,7 @@ class AIMAppDrawer extends StatelessWidget {
                         surfaces: surfaces,
                         soft: soft,
                       ),
+                  ],
                   ],
                 ],
               ),
