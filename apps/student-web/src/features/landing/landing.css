@@ -1,0 +1,75 @@
+/* Landing page (Swiss editorial + product SaaS). Everything is prefixed lp- and scoped to .lp. */
+.lp { font-family: 'IBM Plex Sans', 'LP Arabic', 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif; font-feature-settings: 'tnum' 0; }
+.lp .lp-num { font-variant-numeric: tabular-nums; }
+
+/* Display type: tight in English, never tracked tight in Arabic (it breaks the letter joins). */
+.lp .lp-display { letter-spacing: -0.035em; line-height: 1.02; text-wrap: balance; }
+[dir='rtl'] .lp .lp-display { letter-spacing: 0; line-height: 1.3; }
+.lp .lp-h2 { letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; }
+[dir='rtl'] .lp .lp-h2 { letter-spacing: 0; line-height: 1.35; }
+
+/* The red-pen specimen: wrong words get struck, the corrected sentence rises in, fixes get underlined. */
+.lp del, .lp ins { text-decoration: none; }
+.lp .lp-strike { position: relative; white-space: nowrap; }
+.lp .lp-strike::after {
+  content: ''; position: absolute; inset-inline: -0.03em; top: 54%; height: 0.075em;
+  background: rgb(var(--c-danger)); transform-origin: left center; border-radius: 1px;
+}
+[dir='rtl'] .lp .lp-strike::after { transform-origin: right center; }
+.lp .lp-fix {
+  color: rgb(var(--c-ink));
+  background: linear-gradient(rgb(var(--c-brand)), rgb(var(--c-brand))) no-repeat left 100% / 100% 0.09em;
+}
+[dir='rtl'] .lp .lp-fix { background-position: right 100%; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lp .lp-strike::after { animation: lp-draw 0.45s cubic-bezier(0.7, 0, 0.2, 1) both; animation-delay: calc(0.45s + var(--i, 0) * 0.3s); }
+  .lp .lp-after { animation: lp-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: 1.25s; }
+  .lp .lp-fix { animation: lp-underline 0.5s ease-out both; animation-delay: calc(1.6s + var(--i, 0) * 0.15s); }
+}
+@keyframes lp-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes lp-rise { from { opacity: 0; transform: translateY(0.18em); } to { opacity: 1; transform: none; } }
+@keyframes lp-underline { from { background-size: 0 0.09em; } to { background-size: 100% 0.09em; } }
+
+
+/* Example switcher: each bar doubles as the timer for its example. Reduced motion: no timer, bar just marks the current one. */
+.lp .lp-bar { position: relative; height: 3px; overflow: hidden; border-radius: 2px; background: rgb(var(--c-line-strong)); }
+.lp .lp-bar > i { position: absolute; inset: 0; background: rgb(var(--c-ink)); transform: scaleX(0); transform-origin: left center; }
+[dir='rtl'] .lp .lp-bar > i { transform-origin: right center; }
+.lp .lp-bar[data-on='true'] > i { transform: scaleX(1); }
+.lp .group:hover .lp-bar { background: rgb(var(--c-ink-faint)); }
+@media (prefers-reduced-motion: no-preference) {
+  .lp .lp-bar[data-on='true'] > i { transform: scaleX(0); animation: lp-fill 6.5s linear forwards; }
+}
+@keyframes lp-fill { to { transform: scaleX(1); } }
+
+/* Mobile menu panel: a short fade-and-drop, only when the visitor opens it. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp .lp-menu { animation: lp-menu-in 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+}
+@keyframes lp-menu-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* English sentences inside the Arabic layout keep the same tight display setting as in English. */
+.lp bdi[lang='en'] { letter-spacing: -0.035em; }
+
+
+/* Forms: keep Arabic at its natural size (the landing page scales it down; small form labels hurt legibility). */
+.lp.lp-auth { font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', 'Inter', system-ui, sans-serif; }
+
+/* Roadmap nodes: feedback for what the student does, and one gentle cue on the next lesson. */
+.lp .lp-node { transition: transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.lp a:hover .lp-node, .lp a:focus-visible .lp-node { transform: scale(1.07); }
+.lp a:active .lp-node { transform: scale(0.95); }
+.lp .lp-pulse { border-radius: 9999px; }
+@media (prefers-reduced-motion: no-preference) {
+  .lp .lp-pulse::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; pointer-events: none; animation: lp-pulse 2.4s ease-out infinite; }
+  .lp .lp-shake { animation: lp-shake 0.42s ease; }
+}
+@keyframes lp-pulse { 0% { box-shadow: 0 0 0 0 rgb(var(--c-brand) / 0.45); } 70%, 100% { box-shadow: 0 0 0 16px rgb(var(--c-brand) / 0); } }
+@keyframes lp-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+
+/* Small bobbing "Next" bubble above the lesson you are on (course path). */
+@media (prefers-reduced-motion: no-preference) {
+  .lp .lp-float { animation: lp-float 1.8s ease-in-out infinite; }
+}
+@keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }

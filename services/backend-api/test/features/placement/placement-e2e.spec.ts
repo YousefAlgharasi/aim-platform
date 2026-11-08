@@ -14,6 +14,7 @@
 //
 // This file is test-only: no production code is modified by P19-009.
 
+import { IdempotencyModule } from '../../../src/common/idempotency/idempotency.module';
 import { CanActivate, ExecutionContext, INestApplication, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request = require('supertest');
@@ -67,7 +68,7 @@ describe('Placement integration (P19-009)', () => {
     db = new FakeDatabaseService();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [PlacementModule],
+      imports: [PlacementModule, IdempotencyModule],
     })
       .overrideProvider(DatabaseService)
       .useValue(db)

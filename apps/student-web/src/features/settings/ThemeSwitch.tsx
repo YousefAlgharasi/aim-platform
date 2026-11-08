@@ -22,7 +22,7 @@ export function ThemeSwitch() {
       >
         <span
           aria-hidden="true"
-          className={`absolute top-0.5 start-0.5 size-6 rounded-full bg-white shadow transition-transform motion-reduce:transition-none ${
+          className={`absolute top-0.5 start-0.5 size-6 rounded-full bg-white transition-transform motion-reduce:transition-none ${
             isDarkMode ? 'ltr:translate-x-5 rtl:-translate-x-5' : ''
           }`}
         />

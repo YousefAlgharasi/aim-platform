@@ -29,7 +29,7 @@ export function BackButton({ fallback = '/', className = '' }: BackButtonProps) 
       onClick={goBack}
       aria-label={t('Go back')}
       title={t('Go back')}
-      className={`size-10 shrink-0 rounded-xl flex items-center justify-center border-none cursor-pointer transition-colors bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${className}`}
+      className={`size-11 shrink-0 rounded-full flex items-center justify-center border-none cursor-pointer transition-colors bg-transparent ring-1 ring-line-strong text-ink-soft hover:bg-surface-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${className}`}
     >
       <svg aria-hidden="true" className="size-5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 12H5M12 19l-7-7 7-7" />

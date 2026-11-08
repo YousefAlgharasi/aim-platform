@@ -74,8 +74,8 @@ module.exports = {
         info: status('info'),
       },
       fontFamily: {
-        // Inter for English; IBM Plex Sans Arabic for Arabic glyphs (Inter has none, so it falls through).
-        sans: ['Inter', '"IBM Plex Sans Arabic"', 'system-ui', '-apple-system', '"Segoe UI"', 'sans-serif'],
+        // IBM Plex Sans for English; IBM Plex Sans Arabic for Arabic glyphs (Plex Sans has none, so it falls through).
+        sans: ['"IBM Plex Sans"', '"IBM Plex Sans Arabic"', 'Inter', 'system-ui', '-apple-system', '"Segoe UI"', 'sans-serif'],
       },
       // Prototype classes written for Tailwind v4's dynamic scale.
       spacing: { 4.5: '1.125rem', 22: '5.5rem' },
@@ -89,6 +89,8 @@ module.exports = {
         lg: '0 10px 20px -4px rgb(20 26 44 / 0.10), 0 4px 8px -4px rgb(20 26 44 / 0.05)',
         xl: '0 16px 32px -8px rgb(20 26 44 / 0.12), 0 6px 12px -6px rgb(20 26 44 / 0.06)',
         '2xl': '0 24px 48px -12px rgb(20 26 44 / 0.18)',
+        card: 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
       },
       blur: { xs: '4px' },
       backdropBlur: { xs: '4px' },

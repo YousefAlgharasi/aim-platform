@@ -1,3 +1,4 @@
+import { InlineSkeleton, ListSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
@@ -5,7 +6,6 @@ import { t as tr, formatNumber, formatDateTime } from '../../i18n';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -54,7 +54,7 @@ function SectionView({ section }: { section: ReportSection }) {
   const columns = Array.from(new Set(rows.flatMap(r => Object.keys(r ?? {}))));
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-extrabold tracking-tight text-ink m-0">{section.title}</h3>
+      <h3 className="text-sm font-semibold tracking-tight text-ink m-0">{section.title}</h3>
       {rows.length === 0 ? (
         <p className={subCls}>{t('No data for this section yet.')}</p>
       ) : (
@@ -78,7 +78,7 @@ function SectionView({ section }: { section: ReportSection }) {
               <thead>
                 <tr className="bg-surface-sunken">
                   {columns.map(c => (
-                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-wider text-ink-muted whitespace-nowrap">
+                    <th key={c} scope="col" className="px-3.5 py-2.5 text-start text-xs font-bold text-ink-muted whitespace-nowrap">
                       {humanize(c)}
                     </th>
                   ))}
@@ -164,13 +164,13 @@ export function ReportsSummaryPage() {
       .catch(err => update(report.key, { running: false, error: getErrorMessage(err, t('Failed to run report')) }));
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <ListSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchReports} />;
   if (!reports) return null;
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t('My Reports')} subtitle={t('Generate summaries of your learning activity.')} />
+      <PageHeader title={t('My Reports')} />
 
       {reports.length === 0 ? (
         <EmptyState
@@ -202,7 +202,7 @@ export function ReportsSummaryPage() {
                   </div>
                   {report.description && <p className={subCls}>{report.description}</p>}
 
-                  {state?.running && <LoadingSpinner />}
+                  {state?.running && <InlineSkeleton rows={4} />}
                   {state?.error && <Banner variant="error">{state.error}</Banner>}
                   {run?.status === 'failed' && (
                     <Banner variant="error">{run.errorMessage || t('This report could not be generated.')}</Banner>

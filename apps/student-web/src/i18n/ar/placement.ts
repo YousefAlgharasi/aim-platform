@@ -12,6 +12,10 @@ export const placement: Record<string, string> = {
   'Take the placement test': 'خوض اختبار تحديد المستوى',
   'Answer a short test so we can find your level and start you in the right place.':
     'أجب عن اختبار قصير لنحدد مستواك ونبدأ بك من المكان المناسب.',
+  'Your last attempt was interrupted. Start again from the beginning.': 'انقطعت محاولتك الأخيرة. ابدأ من البداية.',
+  'Continue without the test': 'المتابعة بدون الاختبار',
+  'Taking you to your dashboard in a few seconds…': 'سننقلك إلى لوحتك خلال ثوانٍ…',
+  'Start from the beginning': 'البدء من البداية',
   'Start from scratch': 'البدء من الصفر',
   'Skip the test and begin with the first level. You can take the placement test later.':
     'تخطَّ الاختبار وابدأ من المستوى الأول. يمكنك خوض اختبار تحديد المستوى لاحقًا.',
@@ -137,7 +141,6 @@ export const placement: Record<string, string> = {
   'Section {n}': 'القسم {n}',
   '{count}. The timer keeps running between sections.': '{count}. يستمر المؤقت في العمل بين الأقسام.',
   'Start section': 'بدء القسم',
-  'Exit — you can continue later': 'خروج — يمكنك المتابعة لاحقًا',
   'No questions in this section': 'لا توجد أسئلة في هذا القسم',
   'This section has no questions yet.': 'لا يحتوي هذا القسم على أسئلة بعد.',
   True: 'صحيح',

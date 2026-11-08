@@ -181,9 +181,8 @@ export function BoltIcon({ className = 'size-5' }: IconProps) {
 
 export function FlameIcon({ className = 'size-5' }: IconProps) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
-      <path d="M12 23c-4.97 0-9-3.58-9-8 0-4.04 3.03-7.55 7.07-9.58.46-.23 1.03.04 1.12.55.24 1.34.87 2.57 1.81 3.53.4.4.98.54 1.5.34.52-.2 1.05-.31 1.6-.31 3.87 0 7 3.13 7 7 0 3.58-4.03 6.47-9.1 6.47z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M12 23c-4.97 0-9-3.58-9-8 0-4.04 3.03-7.55 7.07-9.58.46-.23 1.03.04 1.12.55.24 1.34.87 2.57 1.81 3.53.4.4.98.54 1.5.34.52-.2 1.05-.31 1.6-.31 3.87 0 7 3.13 7 7 0 3.58-4.03 6.47-9.1 6.47z" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
     </svg>
   )
 }

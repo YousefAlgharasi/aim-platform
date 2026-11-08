@@ -1,3 +1,4 @@
+import { Markdown } from './Markdown';
 import { Popover } from './Popover';
 import { InfoIcon } from './Icons';
 
@@ -32,7 +33,7 @@ export function InfoPopoverButton({ title, label, text, tone = 'default' }: Info
         </button>
       )}
     >
-      <p dir="auto" className="text-sm leading-relaxed text-ink-soft m-0 whitespace-pre-line">{text}</p>
+      <Markdown text={text} className="text-sm leading-relaxed text-ink-soft" />
     </Popover>
   );
 }

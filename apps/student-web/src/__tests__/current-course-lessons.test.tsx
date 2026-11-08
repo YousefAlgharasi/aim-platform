@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
-import { CurrentCourseLessons } from '../features/dashboard/widgets/CurrentCourseLessons';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { CurrentCourseLessons, lessonStatuses, nextLesson, useCurrentChapter } from '../features/dashboard/widgets/CurrentCourseLessons';
+
+/** Mirrors how the dashboard uses it: the hook loads, the card renders only when ready. */
+function Harness({ courseId, courseTitle }: { courseId: string; courseTitle: string | null }) {
+  const { state, chapter } = useCurrentChapter(courseId);
+  return state === 'ready' && chapter ? <CurrentCourseLessons courseId={courseId} courseTitle={courseTitle} data={chapter} /> : null;
+}
 
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...rest }: { children: unknown; to: string }) => <a href={String(to)} {...rest}>{children as never}</a>,
@@ -15,6 +21,7 @@ jest.mock('../i18n/I18nContext', () => ({
 
 let mockCourse: Record<string, unknown>;
 let mockLessonsFail = false;
+let mockQuiz: Record<string, unknown> | null = null;
 jest.mock('../features/curriculum/curriculumApi', () => ({
   ...jest.requireActual('../features/curriculum/curriculumApi'),
   fetchStudentCourses: () => Promise.resolve([mockCourse]),
@@ -38,19 +45,21 @@ jest.mock('../features/lessons/lessonsApi', () => ({
             { id: 'b', title: 'Eleven to twenty', completed: false, current: true, xpValue: 10, description: '' },
             { id: 'c', title: 'Tens', completed: false, current: false, xpValue: 10, description: '' },
           ],
-          quiz: chapterId ? null : null,
+          quiz: chapterId ? mockQuiz : null,
         }),
 }));
 
 const OPEN = { courseId: 'c1', locked: false, access: undefined };
-beforeEach(() => { mockCourse = { ...OPEN }; mockLessonsFail = false; });
+beforeEach(() => { mockCourse = { ...OPEN }; mockLessonsFail = false; mockQuiz = null; });
 
 describe('CurrentCourseLessons', () => {
   it("lists the active chapter's lessons with real completion and lock states", async () => {
-    render(<CurrentCourseLessons courseId="c1" courseTitle="Starter English" />);
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
     expect(await screen.findByText('Eleven to twenty')).toBeInTheDocument();
-    expect(screen.getByText('Starter English · Chapter 2: Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Chapter 2: Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Chapter 2 of 3')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /One to ten/ })).toHaveAttribute('href', '/lessons/a');
+    expect(screen.getByText('1/3 lessons')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Eleven to twenty/ })).toHaveAttribute('href', '/lessons/b');
     const locked = screen.getByText('Tens').closest('[role=listitem]');
     expect(locked).toHaveAttribute('aria-disabled', 'true');
@@ -58,23 +67,89 @@ describe('CurrentCourseLessons', () => {
     expect(screen.getByRole('link', { name: 'All chapters' })).toHaveAttribute('href', '/curriculum/c1');
   });
 
+  it('ends the roadmap with the chapter quiz, locked until every lesson is done', async () => {
+    mockQuiz = { assessmentId: 'q1', title: 'Numbers quiz', completed: false, locked: true };
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    expect(await screen.findByText('Numbers quiz')).toBeInTheDocument();
+    expect(screen.getByText('Chapter quiz')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Numbers quiz/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Numbers quiz').closest('[role=listitem]')).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('opens the chapter quiz as the next step once it is unlocked', async () => {
+    mockQuiz = { assessmentId: 'q1', title: 'Numbers quiz', completed: false, locked: false };
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    expect(await screen.findByRole('link', { name: /Numbers quiz/ })).toHaveAttribute('href', '/assessments/q1');
+  });
+
+  it('tapping a locked lesson explains what to finish first', async () => {
+    render(<Harness courseId="c1" courseTitle="Starter English" />);
+    const locked = (await screen.findByText('Tens')).closest('button') as HTMLElement;
+    expect(locked).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(locked);
+    expect(screen.getByRole('status')).toHaveTextContent('Finish Lesson 2 first');
+  });
+
   it('shows nothing for a locked course', async () => {
     mockCourse = { ...OPEN, locked: true };
-    const { container } = render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    const { container } = render(<Harness courseId="c1" courseTitle="X" />);
     await new Promise((r) => setTimeout(r, 50));
     expect(container).toBeEmptyDOMElement();
   });
 
   it('still lists the lessons of an unpaid course', async () => {
     mockCourse = { ...OPEN, access: { hasAccess: false, status: 'none' } };
-    render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    render(<Harness courseId="c1" courseTitle="X" />);
     expect(await screen.findByText('Eleven to twenty')).toBeInTheDocument();
   });
 
   it('hides silently when the backend denies the lessons', async () => {
     mockLessonsFail = true;
-    const { container } = render(<CurrentCourseLessons courseId="c1" courseTitle="X" />);
+    const { container } = render(<Harness courseId="c1" courseTitle="X" />);
     await new Promise((r) => setTimeout(r, 50));
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('what is next in the course', () => {
+  const lesson = (id: string, completed: boolean, current: boolean) => ({ id, title: id, completed, current, xpValue: 0, description: '' }) as never;
+
+  it('picks the marked current lesson, locks the ones after it', () => {
+    const l = [lesson('a', true, false), lesson('b', false, true), lesson('c', false, false)];
+    expect(lessonStatuses(l)).toEqual(['completed', 'current', 'locked']);
+    expect(nextLesson(l)?.id).toBe('b');
+  });
+  it('with no current marker, picks the first open unfinished lesson', () => {
+    const l = [lesson('a', true, false), lesson('b', false, false), lesson('c', false, false)];
+    expect(nextLesson(l)?.id).toBe('b');
+  });
+  it('has nothing next when the chapter is finished', () => {
+    expect(nextLesson([lesson('a', true, false)])).toBeNull();
+  });
+});
+
+describe('RoadmapComplete', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { RoadmapComplete } = require('../features/dashboard/widgets/RoadmapComplete');
+  const course = { courseId: 'c1', title: 'Starter', lessonCount: 12, quizCount: 4 };
+  const next = { courseId: 'c2', title: 'A1.1' };
+
+  it('sends the student to the final exam while it is still open', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: next, finalExam: { assessmentId: 'x1', title: 'Final', unlocked: true, passed: false } }} />);
+    expect(screen.getByText('Course complete')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Take the final exam' })).toHaveAttribute('href', '/assessments/x1');
+    expect(screen.getByRole('link', { name: 'Next: A1.1' })).toHaveAttribute('href', '/curriculum/c2');
+  });
+
+  it('offers the next course once the exam is passed', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: next, finalExam: { assessmentId: 'x1', title: 'Final', unlocked: true, passed: true, score: 88 } }} />);
+    expect(screen.getByText('Final exam passed: 88%')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start next course' })).toHaveAttribute('href', '/curriculum/c2');
+    expect(screen.queryByRole('link', { name: 'Take the final exam' })).not.toBeInTheDocument();
+  });
+
+  it('falls back to browsing courses when there is no next course', () => {
+    render(<RoadmapComplete finished={{ course, nextCourse: null, finalExam: null }} />);
+    expect(screen.getByRole('link', { name: 'Browse courses' })).toHaveAttribute('href', '/curriculum');
   });
 });

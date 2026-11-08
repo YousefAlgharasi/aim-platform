@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { LockIcon } from '../curriculum/CurriculumIcons';
 import { useI18n } from '../../i18n/I18nContext';
 import type { LessonPosition, LessonRouteState } from './LessonPlayerShell';
 
@@ -25,7 +26,7 @@ export function LessonNavigation({ position, courseId }: LessonNavigationProps) 
     <>
       {prev ? (
         <Button variant="secondary" onClick={() => navigate(`/lessons/${prev.id}`, { state })}>
-          {t('← Previous')}
+          {t('Previous')}
         </Button>
       ) : (
         <span />
@@ -38,7 +39,7 @@ export function LessonNavigation({ position, courseId }: LessonNavigationProps) 
           disabled={!canGoNext}
           title={canGoNext ? undefined : t('Complete this lesson to unlock the next one')}
         >
-          {canGoNext ? t('Next lesson →') : t('🔒 Next lesson')}
+          {!canGoNext && <LockIcon className="size-4" />}{t('Next lesson')}
         </Button>
       ) : (
         <Button variant="primary" onClick={() => navigate(courseId ? `/curriculum/${courseId}` : '/curriculum')}>

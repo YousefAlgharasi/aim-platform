@@ -107,8 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     loadUser()
       .then(setUser)
-      .catch(() => {
-        apiClient.setSession(null);
+      .catch((err: { statusCode?: number } | null) => {
+        // Only a rejected session ends it. When the server cannot be reached (offline, restarting) the saved
+        // tokens stay, so the next load signs the student straight back in instead of asking for the password.
+        if (err?.statusCode === 401 || err?.statusCode === 403) apiClient.setSession(null);
         setUser(null);
       })
       .finally(() => setLoading(false));

@@ -28,6 +28,9 @@ import { AdminReleaseNotesController } from './admin-release-notes.controller';
 import { AdminFeatureFlagsController } from './admin-feature-flags.controller';
 import { AdminFeedbackController } from './admin-feedback.controller';
 import { AdminOperationsDashboardController } from './admin-operations-dashboard.controller';
+import { AdminEngagementController } from './admin-engagement.controller';
+import { AdminEngagementService } from './admin-engagement.service';
+import { FeatureFlagsPublicController } from './feature-flags-public.controller';
 
 @Module({
   imports: [DatabaseModule, AuthModule, UsersModule, RolesModule],
@@ -41,6 +44,7 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     ReleaseNotesService,
     OperationalStatusService,
     FeatureFlagService,
+    AdminEngagementService,
     OperationsAuditService,
     OperationsAdminGuard,
     OperationsOwnershipGuard,
@@ -58,6 +62,8 @@ import { AdminOperationsDashboardController } from './admin-operations-dashboard
     AdminMaintenanceController,
     AdminReleaseNotesController,
     AdminFeatureFlagsController,
+    AdminEngagementController,
+    FeatureFlagsPublicController,
     AdminOperationsDashboardController,
   ],
   exports: [

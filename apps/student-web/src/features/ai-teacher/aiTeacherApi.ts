@@ -123,10 +123,11 @@ export const aiTeacherApi = {
   listSessions: () => apiClient.get<ListChatSessionsResult>('/ai-teacher/sessions'),
   getHistory: (sessionId: string) =>
     apiClient.get<GetChatHistoryResult>(`/ai-teacher/sessions/${encodeURIComponent(sessionId)}/messages`),
-  sendMessage: (sessionId: string, message: string) =>
+  sendMessage: (sessionId: string, message: string, idempotencyKey?: string) =>
     apiClient.post<SubmitStudentMessageResult>(
       `/ai-teacher/sessions/${encodeURIComponent(sessionId)}/messages`,
       { message },
+      { idempotencyKey },
     ),
   submitFeedback: (messageId: string, rating: FeedbackRating) =>
     apiClient.post<SubmitFeedbackResult>(`/ai-teacher/messages/${encodeURIComponent(messageId)}/feedback`, {
@@ -200,6 +201,7 @@ export async function streamMessage(
   message: string,
   onChunk: (text: string) => void,
   signal?: AbortSignal,
+  idempotencyKey?: string,
 ): Promise<StreamDoneEvent | null> {
   const token = readAccessToken();
   if (!token) throw new StreamUnauthorizedError();
@@ -213,6 +215,7 @@ export async function streamMessage(
         Accept: 'text/event-stream',
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       },
       body: JSON.stringify({ message }),
       signal,

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { QuestionAudio } from '../placement/PlacementAudio';
@@ -19,7 +19,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
 import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
 
-const SHELL = 'mx-auto w-full max-w-2xl flex flex-col gap-4';
+const SHELL = 'w-full flex flex-col gap-4';
 const LINK_BTN = 'border-0 bg-transparent p-0 font-semibold text-brand-ink underline cursor-pointer';
 
 type SaveState = 'saving' | 'saved' | 'error';
@@ -70,7 +70,6 @@ export function AttemptScreen() {
       setExpiresAt(resumed?.expiresAt ?? null);
       const list = await fetchAttemptQuestions(attemptId);
       setQuestions(list);
-      setCurrent(0);
     } catch (err) {
       if (isErrorCode(err, 'ATTEMPT_NOT_RESUMABLE')) setNotResumable(true);
       else setError(assessmentErrorMessage(err, t('Failed to load this attempt')));
@@ -96,7 +95,11 @@ export function AttemptScreen() {
     if (!value.trim()) return;
     setSaveState((s) => ({ ...s, [linkId]: 'saving' }));
     setSaveError('');
-    const p = submitAssessmentAnswer(attemptId, linkId, value)
+    // Saves for one question go out one after another: a quick second tap must never be overwritten
+    // by a slower response to the first one, or the exam would grade a different answer than the one on screen.
+    const previous = pending.current.get(linkId) ?? Promise.resolve(true);
+    const p: Promise<boolean> = previous
+      .then(() => submitAssessmentAnswer(attemptId, linkId, value))
       .then(() => {
         setSaveState((s) => ({ ...s, [linkId]: 'saved' }));
         return true;
@@ -162,7 +165,7 @@ export function AttemptScreen() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton />;
   if (notResumable) {
     return (
       <div className={SHELL}>
@@ -198,7 +201,7 @@ export function AttemptScreen() {
     <div className={SHELL}>
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+          <span className="text-xs font-semibold text-ink-muted">
             {t('Question {current} of {total} · {answered} answered', { current: formatNumber(current + 1), total: formatNumber(questions.length), answered: formatNumber(answeredCount) })}
           </span>
           {remaining !== null && <TimerPill warning={remaining <= 60}>{formatRemaining(remaining)}</TimerPill>}
@@ -219,10 +222,10 @@ export function AttemptScreen() {
               type="button"
               className={`size-10 rounded-xl text-xs font-bold cursor-pointer transition-all duration-150 ${
                 isCurrent
-                  ? 'bg-brand text-white border-0 shadow-md'
+                  ? 'bg-brand text-white border-0'
                   : answered
                     ? 'bg-success-soft text-success-ink ring-1 ring-success-line border-0'
-                    : 'bg-surface text-ink-muted dark:text-ink-soft ring-1 ring-line border-0 hover:ring-brand-line'
+                    : 'bg-surface text-ink-muted dark:text-ink-soft ring-1 ring-line border-0 hover:ring-line-strong'
               }`}
               onClick={() => setCurrent(i)}
               aria-current={isCurrent ? 'step' : undefined}
@@ -236,7 +239,7 @@ export function AttemptScreen() {
 
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
         <span className={EYEBROW}>{t('Question {n}', { n: formatNumber(current + 1) })}</span>
-        <h2 className="m-0 text-base sm:text-lg font-medium leading-snug text-ink">{question.prompt}</h2>
+        <h2 className="m-0 text-lg font-bold leading-snug text-ink [unicode-bidi:plaintext] sm:text-xl">{question.prompt}</h2>
 
         {question.type === 'listening_choice' && (
           <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
@@ -283,7 +286,7 @@ export function AttemptScreen() {
         </fieldset>
       )}
 
-      <div className="flex gap-3">
+      <div className="sticky bottom-3 z-10 -mx-1 flex gap-3 rounded-2xl bg-page/85 p-1 backdrop-blur-md">
         <Button variant="secondary" size="lg" className="flex-1" onClick={() => setCurrent((c) => c - 1)} disabled={current === 0}>
           {t('Previous')}
         </Button>

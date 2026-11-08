@@ -4,7 +4,7 @@ import { apiClient, getErrorMessage } from '../../api/client';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { AuthLogo, AuthHeader, PasswordToggle, SuccessBadge } from '../../components/auth/AuthParts';
+import { AuthHeader, PasswordToggle, SuccessBadge } from '../../components/auth/AuthParts';
 import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateConfirm, validateNewPassword, type FieldErrors } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
 
@@ -56,14 +56,14 @@ export function ResetPasswordPage() {
   if (done) {
     return (
       <>
-        <div className="my-auto flex flex-col items-center text-center">
+        <div className="flex flex-col items-start text-start">
           <SuccessBadge />
-          <h1 className="text-ink font-extrabold text-3xl tracking-tight m-0">{t('Password Reset!')}</h1>
-          <p className="text-ink-muted text-sm mt-1.5 max-w-[260px] leading-relaxed">
+          <h1 className="lp-display m-0 text-[2.25rem] font-semibold text-ink rtl:text-3xl">{t('Password Reset!')}</h1>
+          <p className="m-0 mt-3 max-w-sm text-base leading-relaxed text-ink-muted">
             {t('Your password has been updated. Sign in with your new password.')}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
+        <Button size="lg" fullWidth className="!rounded-full !tracking-normal" onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
       </>
     );
   }
@@ -71,14 +71,13 @@ export function ResetPasswordPage() {
   if (!recoveryToken) {
     return (
       <>
-        <AuthLogo />
-        <div className="my-auto text-center flex flex-col items-center gap-2">
-          <h1 className="text-ink font-extrabold text-2xl tracking-tight m-0">{t('Invalid reset link')}</h1>
-          <p className="text-ink-muted text-sm leading-relaxed max-w-[280px]">
+        <div className="flex flex-col items-start gap-2 text-start">
+          <h1 className="lp-display m-0 text-[2.25rem] font-semibold text-ink rtl:text-3xl">{t('Invalid reset link')}</h1>
+          <p className="m-0 mt-3 max-w-sm text-base leading-relaxed text-ink-muted">
             {t('This link is missing or has expired. Request a new one.')}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/forgot-password')}>{t('Send a new reset link')}</Button>
+        <Button size="lg" fullWidth className="!rounded-full !tracking-normal" onClick={() => navigate('/forgot-password')}>{t('Send a new reset link')}</Button>
       </>
     );
   }
@@ -90,9 +89,10 @@ export function ResetPasswordPage() {
         title={t('Create a new password')}
         subtitle={t("Choose a strong password you haven't used before.")}
       />
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-8" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
         <Input
+          variant="editorial"
           id="reset-password"
           label={t('New password')}
           type={showPass ? 'text' : 'password'}
@@ -105,6 +105,7 @@ export function ResetPasswordPage() {
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
+          variant="editorial"
           id="reset-confirm"
           label={t('Confirm new password')}
           type={showPass ? 'text' : 'password'}
@@ -116,7 +117,7 @@ export function ResetPasswordPage() {
           autoComplete="new-password"
         />
         <div className="mt-2">
-          <Button type="submit" size="lg" fullWidth disabled={loading}>
+          <Button type="submit" size="lg" fullWidth className="!rounded-full !tracking-normal" disabled={loading}>
             {loading ? t('Resetting…') : t('Reset Password')}
           </Button>
         </div>

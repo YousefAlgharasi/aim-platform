@@ -55,68 +55,75 @@ beforeEach(() => {
 describe('ChapterLessonList winding path', () => {
   it('gives each chapter a labelled section with a numbered heading', async () => {
     renderList();
-    await screen.findByRole('link', { name: 'Hello' });
+    await screen.findByRole('link', { name: /Hello/ });
     const first = screen.getByRole('region', { name: 'Greetings' });
     expect(within(first).getByRole('heading', { name: 'Chapter 1: Greetings' })).toBeInTheDocument();
     const second = screen.getByRole('region', { name: 'Numbers' });
     expect(within(second).getByRole('heading', { name: 'Chapter 2: Numbers' })).toBeInTheDocument();
   });
 
-  it('only fetches lessons for unlocked chapters', async () => {
+  it('loads every chapter, locked ones included, so the whole course is on the path', async () => {
     renderList();
-    await screen.findByRole('link', { name: 'Hello' });
-    expect(mockFetchLessons).toHaveBeenCalledTimes(1);
+    await screen.findAllByRole('link', { name: /Hello/ });
+    expect(mockFetchLessons).toHaveBeenCalledTimes(2);
     expect(mockFetchLessons).toHaveBeenCalledWith('ch1');
+    expect(mockFetchLessons).toHaveBeenCalledWith('ch2');
   });
 
-  it('shows one locked placeholder per lesson (plus the quiz) in a locked chapter, with no fetch', async () => {
+  it('shows a locked chapter\'s real lessons, all locked and not clickable', async () => {
     renderList();
-    await screen.findByRole('link', { name: 'Hello' });
+    await screen.findByRole('link', { name: /Hello/ });
     const second = screen.getByRole('region', { name: 'Numbers' });
+    await within(second).findByText('Good morning');
     const nodes = within(second).getAllByRole('listitem');
-    expect(nodes).toHaveLength(3); // 2 lessons + the chapter quiz
+    expect(nodes).toHaveLength(3);
     nodes.forEach((n) => expect(n).toHaveAttribute('aria-disabled', 'true'));
     expect(within(second).queryByRole('link')).not.toBeInTheDocument();
-    expect(within(second).getByText('Lesson 1')).toBeInTheDocument();
-    expect(within(second).getByText('Lesson 2')).toBeInTheDocument();
+    expect(within(second).getByText('Hello')).toBeInTheDocument();
   });
 
   it('makes finished and current lessons links to the lesson page', async () => {
     renderList();
-    const done = await screen.findByRole('link', { name: 'Hello' });
+    const done = await screen.findByRole('link', { name: /Hello/ });
     expect(done).toHaveAttribute('href', '/lessons/a');
-    expect(done.className).toContain('bg-success'); // finished node is green
-    const current = screen.getByRole('link', { name: 'Good morning' });
+    expect(done.closest('li')).toHaveAttribute('data-status', 'completed'); // finished lesson is marked done
+    expect(done.closest('li')?.querySelector('svg')).toBeTruthy(); // with a check mark in its node
+    const current = screen.getByRole('link', { name: /Good morning/ });
     expect(current).toHaveAttribute('href', '/lessons/b');
-    expect(screen.getByText('Next')).toBeInTheDocument(); // the current node is called out
+    expect(current.closest('li')).toHaveAttribute('data-status', 'current'); // the current node is called out
   });
 
   it('locks every lesson after the current one', async () => {
     renderList();
-    await screen.findByRole('link', { name: 'Hello' });
-    expect(screen.queryByRole('link', { name: 'Goodbye' })).not.toBeInTheDocument();
-    const locked = screen.getByText('Goodbye').closest('[role=listitem]');
+    await screen.findAllByRole('link', { name: /Hello/ });
+    const first = screen.getByRole('region', { name: 'Greetings' });
+    await within(first).findByText('Goodbye');
+    expect(within(first).queryByRole('link', { name: /Goodbye/ })).not.toBeInTheDocument();
+    const locked = within(first).getByText('Goodbye').closest('[role=listitem]');
     expect(locked).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('links an unlocked chapter quiz and locks it until the lessons are done', async () => {
     mockFetchLessons.mockResolvedValue(lessonsResponse({ assessmentId: 'q1', title: 'Greetings quiz', locked: false, completed: false }));
     const { unmount } = renderList();
-    expect(await screen.findByRole('link', { name: 'Greetings quiz' })).toHaveAttribute('href', '/assessments/q1');
+    const first = () => screen.getByRole('region', { name: 'Greetings' });
+    await screen.findAllByRole('link', { name: /Hello/ });
+    expect(within(first()).getByRole('link', { name: /Greetings quiz/ })).toHaveAttribute('href', '/assessments/q1');
     unmount();
 
     mockFetchLessons.mockResolvedValue(lessonsResponse({ assessmentId: 'q1', title: 'Greetings quiz', locked: true, completed: false }));
     renderList();
-    await screen.findByRole('link', { name: 'Hello' });
-    expect(screen.queryByRole('link', { name: 'Greetings quiz' })).not.toBeInTheDocument();
-    const quiz = screen.getByText('Greetings quiz').closest('[role=listitem]');
+    await screen.findAllByRole('link', { name: /Hello/ });
+    await within(first()).findByText('Greetings quiz');
+    expect(within(first()).queryByRole('link', { name: /Greetings quiz/ })).not.toBeInTheDocument();
+    const quiz = within(first()).getByText('Greetings quiz').closest('[role=listitem]');
     expect(quiz).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('keeps a passed chapter quiz open', async () => {
     mockFetchLessons.mockResolvedValue(lessonsResponse({ assessmentId: 'q1', title: 'Greetings quiz', locked: true, completed: true }));
     renderList();
-    expect(await screen.findByRole('link', { name: 'Greetings quiz' })).toHaveAttribute('href', '/assessments/q1');
+    expect(await screen.findByRole('link', { name: /Greetings quiz/ })).toHaveAttribute('href', '/assessments/q1');
   });
 
   it('links the final exam when it is unlocked', async () => {
@@ -127,7 +134,7 @@ describe('ChapterLessonList winding path', () => {
 
   it('keeps the final exam locked and not clickable until every chapter is done', async () => {
     renderList([CH1], { assessmentId: 'ex1', title: 'Final exam: A1', unlocked: false });
-    await screen.findByRole('link', { name: 'Hello' });
+    await screen.findByRole('link', { name: /Hello/ });
     expect(screen.queryByRole('link', { name: 'Final exam: A1' })).not.toBeInTheDocument();
     expect(screen.getByText('Complete every chapter (lessons and quizzes) to unlock the final exam.')).toBeInTheDocument();
   });
@@ -144,7 +151,7 @@ describe('ChapterLessonList winding path', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Network down');
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    expect(await screen.findByRole('link', { name: 'Hello' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Hello/ })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(mockFetchLessons).toHaveBeenCalledTimes(2);
   });
@@ -153,5 +160,39 @@ describe('ChapterLessonList winding path', () => {
     mockFetchLessons.mockResolvedValue({ lessons: [], quiz: null });
     renderList([CH1]);
     expect(await screen.findByText('No lessons published in this chapter yet.')).toBeInTheDocument();
+  });
+
+  it('shows a finished chapter open too, with no way to fold it', async () => {
+    const DONE = chapter({ chapterId: 'done', title: 'Basics', status: 'completed', completedLessonCount: 3, percent: 100 });
+    renderList([DONE, CH1]);
+    await screen.findAllByRole('link', { name: /Hello/ });
+    expect(mockFetchLessons).toHaveBeenCalledWith('done');
+    expect(mockFetchLessons).toHaveBeenCalledWith('ch1');
+    const basics = screen.getByRole('region', { name: 'Basics' });
+    expect(within(basics).getAllByRole('listitem').length).toBeGreaterThan(0);
+    expect(within(basics).queryByRole('button', { expanded: true })).not.toBeInTheDocument();
+    expect(within(basics).queryByRole('button', { expanded: false })).not.toBeInTheDocument();
+  });
+
+  it('counts the chapter quiz as a step: 3 lessons and a quiz read x/4', async () => {
+    mockFetchLessons.mockResolvedValue(lessonsResponse({ assessmentId: 'q1', title: 'Greetings quiz', locked: false, completed: false }));
+    renderList([CH1]);
+    const first = await screen.findByRole('region', { name: 'Greetings' });
+    // 1 of 3 lessons done, quiz not yet: 1/4.
+    expect(await within(first).findByText(/^1\/4/)).toBeInTheDocument();
+  });
+
+  it('adds the passed quiz to the count', async () => {
+    mockFetchLessons.mockResolvedValue(lessonsResponse({ assessmentId: 'q1', title: 'Greetings quiz', locked: false, completed: true }));
+    renderList([chapter({ chapterId: 'ch1', title: 'Greetings', status: 'in_progress', completedLessonCount: 3, lessonCount: 3, quizCount: 1 })]);
+    const first = await screen.findByRole('region', { name: 'Greetings' });
+    expect(await within(first).findByText(/^4\/4/)).toBeInTheDocument();
+  });
+
+  it('counts only lessons for a chapter with no quiz', async () => {
+    mockFetchLessons.mockResolvedValue(lessonsResponse(null));
+    renderList([chapter({ chapterId: 'ch1', title: 'Greetings', status: 'in_progress', completedLessonCount: 1, lessonCount: 3, quizCount: 0 })]);
+    const first = await screen.findByRole('region', { name: 'Greetings' });
+    expect(await within(first).findByText(/^1\/3/)).toBeInTheDocument();
   });
 });

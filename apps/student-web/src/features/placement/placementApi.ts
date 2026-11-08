@@ -219,7 +219,10 @@ export async function fetchPlacementQuestionAudio(questionId: string): Promise<B
 }
 
 export function completePlacementAttempt(attemptId: string): Promise<PlacementAttemptComplete> {
-  return apiClient.post<PlacementAttemptComplete>(`/placement/attempts/${attemptId}/complete`);
+  // One completion per attempt, so the attempt id is a stable key: any retry/double click is de-duplicated.
+  return apiClient.post<PlacementAttemptComplete>(`/placement/attempts/${attemptId}/complete`, undefined, {
+    idempotencyKey: `placement-complete:${attemptId}`,
+  });
 }
 
 export function fetchPlacementResult(attemptId: string): Promise<PlacementResult> {
@@ -310,9 +313,21 @@ export function savePlacementProgress(attemptId: string, progress: PlacementProg
   }
 }
 
+// "Live" = this browser session is actually taking the test (sessionStorage, gone when the tab/app closes).
+// An unfinished attempt that is not live was interrupted (tab/app closed, crash): it restarts from question 1.
+const liveKey = (attemptId: string) => `aim_placement_live_${attemptId}`;
+
+export function isPlacementLive(attemptId: string): boolean {
+  try { return sessionStorage.getItem(liveKey(attemptId)) === '1'; } catch { return true; }
+}
+export function markPlacementLive(attemptId: string) {
+  try { sessionStorage.setItem(liveKey(attemptId), '1'); } catch { /* storage unavailable */ }
+}
+
 export function clearPlacementProgress(attemptId: string) {
   try {
     localStorage.removeItem(progressKey(attemptId));
+    sessionStorage.removeItem(liveKey(attemptId));
   } catch {
     // ignore
   }

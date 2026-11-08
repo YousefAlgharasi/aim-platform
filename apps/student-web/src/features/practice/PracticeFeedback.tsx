@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import type { SessionQuestion, SessionSummary } from './practiceApi';
-import { TrophyIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
 import { linkButton, linkButtonPrimary, questionCard } from './practiceStyles';
 
@@ -42,32 +41,34 @@ export function PracticeFeedback({
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl mx-auto w-full">
-      <div className="flex flex-col items-center text-center pt-2">
-        <div className="w-22 h-22 rounded-3xl bg-gradient-to-br from-warning to-warning flex items-center justify-center text-white shadow-xl shadow-warning/25 rotate-3 mb-5">
-          <TrophyIcon className="size-11 text-white" />
+    <div className="flex w-full flex-col gap-6">
+      <div className="flex flex-col items-center gap-3 pt-2 text-center">
+        <div className="relative grid size-32 place-items-center" role="img" aria-label={t('{pct}% accuracy', { pct: summary.accuracyPercent })}>
+          <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52" fill="none" strokeWidth="8" className="stroke-line-strong" />
+            <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" strokeLinecap="round"
+              className={summary.accuracyPercent >= 70 ? 'stroke-success' : summary.accuracyPercent >= 40 ? 'stroke-warning' : 'stroke-danger'}
+              strokeDasharray={`${(Math.max(0, Math.min(100, summary.accuracyPercent)) / 100) * 326.7} 326.7`} />
+          </svg>
+          <span className="lp-num text-4xl font-semibold tracking-tight text-ink rtl:tracking-normal">{summary.accuracyPercent}%</span>
         </div>
-        <span className="text-warning-ink font-extrabold text-xs uppercase tracking-wider bg-warning-soft px-3 py-1 rounded-full mb-2">
-          {t('Practice complete')}
-        </span>
-        <h1 className="text-ink font-extrabold text-2xl sm:text-3xl tracking-tight m-0">{t('Great job!')}</h1>
-        {lessonTitle && <span className="text-ink-muted text-sm mt-1">{lessonTitle}</span>}
+        <h1 className="lp-display m-0 text-[2rem] font-semibold text-ink sm:text-[2.5rem]">
+          {summary.accuracyPercent >= 70 ? t('Great job!') : t('Good effort!')}
+        </h1>
+        {lessonTitle && <span className="text-sm text-ink-muted [unicode-bidi:plaintext]">{lessonTitle}</span>}
       </div>
 
-      <div className="bg-surface ring-1 ring-line/80 rounded-2xl p-4 flex items-center justify-around shadow-sm">
+      <div className="flex items-center justify-around rounded-2xl bg-surface p-5 ring-1 ring-line">
         <div className="text-center">
-          <span className="text-ink-muted text-[11px] font-extrabold uppercase tracking-wider block mb-1">{t('Score')}</span>
-          <span className="text-brand-ink font-extrabold text-2xl">{summary.correctCount}/{summary.totalAttempts}</span>
+          <span className="mb-1 block text-sm text-ink-muted">{t('Score')}</span>
+          <span className="lp-num text-3xl font-semibold text-ink">{summary.correctCount}/{summary.totalAttempts}</span>
         </div>
-        <div className="w-px h-8 bg-surface-strong" />
+        <div className="h-8 w-px bg-line" />
         <div className="text-center">
-          <span className="text-ink-muted text-[11px] font-extrabold uppercase tracking-wider block mb-1">{t('Accuracy')}</span>
-          <span className="text-success-ink font-extrabold text-2xl">{summary.accuracyPercent}%</span>
+          <span className="mb-1 block text-sm text-ink-muted">{t('To review')}</span>
+          <span className={`lp-num text-3xl font-semibold ${summary.wrongCount > 0 ? 'text-danger-ink' : 'text-success-ink'}`}>{summary.wrongCount}</span>
         </div>
       </div>
-      <p className="text-center text-ink-muted text-sm m-0 -mt-2">
-        {t('{pct}% accuracy · {correct} correct, {wrong} to review', { pct: summary.accuracyPercent, correct: summary.correctCount, wrong: summary.wrongCount })}
-      </p>
 
       {completion === 'saving' && <Banner variant="info">{t('Saving your lesson progress…')}</Banner>}
       {completion === 'saved' && <Banner variant="success">{t('Lesson completed — the next lesson is unlocked.')}</Banner>}
@@ -82,10 +83,10 @@ export function PracticeFeedback({
 
       {summary.attempts.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-ink font-extrabold text-base tracking-tight m-0 px-1">{t('Your answers')}</h2>
+          <h2 className="m-0 text-xl font-semibold tracking-tight text-ink">{t('Your answers')}</h2>
           {summary.attempts.map((attempt, i) => (
             <div key={`${attempt.itemId}-${i}`} className={`${questionCard} flex flex-col gap-3`}>
-              <p className="text-ink font-bold text-sm leading-snug m-0">
+              <p className="m-0 text-base font-semibold leading-snug text-ink">
                 {i + 1}. {byId.get(attempt.itemId)?.stem ?? t('Question')}
               </p>
               <div
@@ -95,7 +96,7 @@ export function PracticeFeedback({
                     : 'bg-danger-soft ring-danger-line text-danger-ink'
                 }`}
               >
-                <p className="font-extrabold text-sm m-0">{attempt.isCorrect ? t('✓ Correct') : t('✗ Incorrect')}</p>
+                <p className="m-0 text-sm font-semibold">{attempt.isCorrect ? t('✓ Correct') : t('✗ Incorrect')}</p>
                 <p className="text-sm m-0 mt-0.5 opacity-90">
                   {t('Your answer: {answer}', { answer: answerText(attempt.itemId, attempt.answerValue) || '—' })}
                 </p>
@@ -106,6 +107,7 @@ export function PracticeFeedback({
       )}
 
       <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+        {summary.wrongCount > 0 && <Link to="/mistakes" className={linkButton}>{t('Retry my mistakes')}</Link>}
         <Button variant="secondary" onClick={onPracticeAgain}>{t('Practice again')}</Button>
         <Link to={`/lessons/${lessonId}`} state={lessonState} className={linkButton}>
           {t('Back to lesson')}

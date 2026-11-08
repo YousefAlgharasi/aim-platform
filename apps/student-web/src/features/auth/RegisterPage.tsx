@@ -5,7 +5,8 @@ import { getErrorMessage } from '../../api/client';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
-import { AuthLogo, AuthHeader, AuthFooterLink, MailBadge, PasswordToggle } from '../../components/auth/AuthParts';
+import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
+import { AuthHeader, AuthFooterLink, MailBadge, PasswordToggle } from '../../components/auth/AuthParts';
 import { collectErrors, focusFirstInvalid, hasErrors, mapApiFieldErrors, validateConfirm, validateEmail, validateNewPassword, validateRequired, type FieldErrors } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
 
@@ -24,7 +25,7 @@ export function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors<'name' | 'email' | 'password' | 'confirm'>>({});
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: FormEvent) {
@@ -68,18 +69,32 @@ export function RegisterPage() {
     }
   }
 
+  // Google creates the account on first use (the backend assigns the student role), so it doubles as sign up.
+  async function handleGoogle(idToken: string) {
+    if (loading) return;
+    setError('');
+    setLoading(true);
+    try {
+      await googleLogin(idToken);
+      navigate('/', { replace: true });
+    } catch (err) {
+      setError(getErrorMessage(err, t('Google sign-in failed')));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (confirmationSent) {
     return (
       <>
-        <AuthLogo />
-        <div className="flex flex-col items-center text-center my-auto">
+        <div className="flex flex-col items-start text-start">
           <MailBadge />
-          <h1 className="text-ink font-extrabold text-2xl tracking-tight m-0 mb-2">{t('Check Your Email')}</h1>
-          <p className="text-ink-muted text-sm leading-relaxed max-w-[280px]">
+          <h1 className="lp-display m-0 text-[2.25rem] font-semibold text-ink rtl:text-3xl">{t('Check Your Email')}</h1>
+          <p className="m-0 mt-3 max-w-sm text-base leading-relaxed text-ink-muted">
             {t('We sent a confirmation link to {email}. Confirm your account, then sign in.', { email })}
           </p>
         </div>
-        <Button size="lg" fullWidth onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
+        <Button size="lg" fullWidth className="!rounded-full !tracking-normal" onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
       </>
     );
   }
@@ -92,9 +107,10 @@ export function RegisterPage() {
         subtitle={t('Takes less than a minute. Enter your details below.')}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-8" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
         <Input
+          variant="editorial"
           id="register-name"
           label={t('Full name')}
           value={name}
@@ -105,6 +121,7 @@ export function RegisterPage() {
           autoComplete="name"
         />
         <Input
+          variant="editorial"
           id="register-email"
           name="email"
           spellCheck={false}
@@ -118,6 +135,7 @@ export function RegisterPage() {
           autoComplete="email"
         />
         <Input
+          variant="editorial"
           id="register-password"
           label={t('Password')}
           type={showPass ? 'text' : 'password'}
@@ -130,6 +148,7 @@ export function RegisterPage() {
           rightSlot={<PasswordToggle shown={showPass} onToggle={() => setShowPass(!showPass)} />}
         />
         <Input
+          variant="editorial"
           id="register-confirm"
           label={t('Confirm password')}
           type={showConfirm ? 'text' : 'password'}
@@ -142,11 +161,13 @@ export function RegisterPage() {
           rightSlot={<PasswordToggle shown={showConfirm} onToggle={() => setShowConfirm(!showConfirm)} />}
         />
         <div className="mt-2">
-          <Button type="submit" size="lg" fullWidth disabled={loading}>
+          <Button type="submit" size="lg" fullWidth className="!rounded-full !tracking-normal" disabled={loading}>
             {loading ? t('Creating account…') : t('Create account')}
           </Button>
         </div>
       </form>
+
+      <GoogleSignInButton onCredential={handleGoogle} disabled={loading} />
       </div>
 
       <AuthFooterLink prompt={t('Already have an account?')} action={t('Log in')} onClick={() => navigate('/login')} />

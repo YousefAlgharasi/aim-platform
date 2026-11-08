@@ -40,6 +40,43 @@ const PRACTICE_XP_LAST_WEEK = `AND (pa.completed_at AT TIME ZONE 'UTC')::date >=
        AND (pa.completed_at AT TIME ZONE 'UTC')::date < date_trunc('week', (now() AT TIME ZONE 'UTC'))::date`;
 const PRACTICE_XP_ON_DAY = `AND (pa.completed_at AT TIME ZONE 'UTC')::date = daily.day`;
 
+/**
+ * XP per student from lessons and Practice, as CTEs (`events`, `totals`). Lesson progress is keyed by the sign-in id
+ * (users.supabase_auth_uid) and practice attempts by users.id, so both are mapped to users.id here.
+ * [since] limits it to events at or after that moment (SQL expression); `reached_at` is when the latest XP arrived,
+ * used to break ties in favour of whoever got there first.
+ */
+const xpTotalsCte = (since?: string): string => `
+  events AS (
+    SELECT u.id AS user_id, l.xp_value::int AS xp, COALESCE(lp.completed_at, lp.updated_at) AS at
+    FROM lesson_progress lp
+    JOIN lessons l ON l.id = lp.lesson_id
+    JOIN users u ON u.supabase_auth_uid = lp.student_id
+    WHERE lp.completed = true ${since ? `AND COALESCE(lp.completed_at, lp.updated_at) >= ${since}` : ''}
+    UNION ALL
+    SELECT pa.student_id AS user_id, pa.xp_awarded AS xp, pa.completed_at AS at
+    FROM practice_attempts pa
+    WHERE pa.xp_awarded > 0 AND pa.completed_at IS NOT NULL ${since ? `AND pa.completed_at >= ${since}` : ''}
+  ),
+  totals AS (
+    SELECT sp.user_id, u.supabase_auth_uid, sp.display_name,
+           COALESCE(SUM(e.xp), 0)::int AS xp, MAX(e.at) AS reached_at
+    FROM student_profiles sp
+    JOIN users u ON u.id = sp.user_id
+    LEFT JOIN events e ON e.user_id = sp.user_id
+    GROUP BY sp.user_id, u.supabase_auth_uid, sp.display_name
+  )`;
+
+/** Monday 00:00 UTC of the current week. */
+const WEEK_START = `(date_trunc('week', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')`;
+
+export interface LeaderboardRow {
+  readonly rank: number;
+  readonly display_name: string | null;
+  readonly xp: number;
+  readonly is_you: boolean;
+}
+
 @Injectable()
 export class EngagementRepository {
   constructor(private readonly db: DatabaseService) {}
@@ -83,12 +120,69 @@ export class EngagementRepository {
          SELECT (graded_at AT TIME ZONE 'UTC')::date::text AS active_date
          FROM assessment_results
          WHERE student_id = $1 AND graded_at IS NOT NULL
+         UNION
+         -- Practice Speaking / Write a Paragraph earn XP, so they keep the streak alive too.
+         SELECT (pa.completed_at AT TIME ZONE 'UTC')::date::text AS active_date
+         FROM practice_attempts pa
+         WHERE pa.student_id IN (SELECT u.id FROM users u WHERE u.id = $1 OR u.supabase_auth_uid = $1)
+           AND pa.completed_at IS NOT NULL
        ) sub
        ORDER BY active_date DESC
        LIMIT $2`,
       [studentId, limit],
     );
     return result.rows.map((row) => row.active_date);
+  }
+
+  /** Dates the student covered with a freeze, newest first. */
+  async findFrozenDates(studentId: string, limit: number): Promise<string[]> {
+    const result = await this.db.query<{ frozen_date: string }>(
+      `SELECT frozen_date::text AS frozen_date FROM streak_freezes
+       WHERE student_id = $1 ORDER BY frozen_date DESC LIMIT $2`,
+      [studentId, limit],
+    );
+    return result.rows.map((row) => row.frozen_date);
+  }
+
+  async countFreezesThisMonth(studentId: string): Promise<number> {
+    const result = await this.db.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM streak_freezes
+       WHERE student_id = $1
+         AND (created_at AT TIME ZONE 'UTC') >= date_trunc('month', now() AT TIME ZONE 'UTC')`,
+      [studentId],
+    );
+    return parseInt(result.rows[0]?.count ?? '0', 10);
+  }
+
+  /**
+   * Record a freeze for [date] only if the monthly allowance is not used up. One statement, so two quick taps
+   * cannot go over the allowance. Returns false when nothing was inserted (allowance used, or date already frozen).
+   */
+  async insertFreezeIfAllowed(studentId: string, date: string, allowance: number): Promise<boolean> {
+    const result = await this.db.query(
+      `INSERT INTO streak_freezes (student_id, frozen_date)
+       SELECT $1::uuid, $2::date
+       WHERE (SELECT COUNT(*) FROM streak_freezes
+              WHERE student_id = $1::uuid
+                AND (created_at AT TIME ZONE 'UTC') >= date_trunc('month', now() AT TIME ZONE 'UTC')) < $3
+       ON CONFLICT (student_id, frozen_date) DO NOTHING`,
+      [studentId, date, allowance],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  /** Practice sessions (speaking / writing) the student finished today (UTC), for the daily practice challenges. */
+  async countPracticeCompletedToday(studentId: string): Promise<{ speaking: number; writing: number }> {
+    const result = await this.db.query<{ kind: string; n: number }>(
+      `SELECT pa.kind, COUNT(*)::int AS n
+       FROM practice_attempts pa
+       WHERE pa.student_id IN (SELECT u.id FROM users u WHERE u.id = $1 OR u.supabase_auth_uid = $1)
+         AND pa.status = 'completed' ${PRACTICE_XP_TODAY}
+       GROUP BY pa.kind`,
+      [studentId],
+    );
+    const by = (kind: string): number => result.rows.find((r) => r.kind === kind)?.n ?? 0;
+    return { speaking: by('speaking'), writing: by('writing') };
   }
 
   async findActiveChallengeTemplates(): Promise<ChallengeTemplateRow[]> {
@@ -190,22 +284,34 @@ export class EngagementRepository {
    */
   async findRankPercentile(studentId: string): Promise<number | null> {
     const result = await this.db.query<{ pct_rank: number }>(
-      `WITH totals AS (
-         SELECT sp.user_id AS student_id,
-                COALESCE(SUM(l.xp_value) FILTER (WHERE lp.completed = true), 0)::int AS total_xp
-         FROM student_profiles sp
-         LEFT JOIN lesson_progress lp ON lp.student_id = sp.user_id
-         LEFT JOIN lessons l ON l.id = lp.lesson_id
-         GROUP BY sp.user_id
-       ),
+      `WITH ${xpTotalsCte()},
        ranked AS (
-         SELECT student_id, PERCENT_RANK() OVER (ORDER BY total_xp DESC) AS pct_rank
+         SELECT supabase_auth_uid, PERCENT_RANK() OVER (ORDER BY xp DESC) AS pct_rank
          FROM totals
        )
-       SELECT pct_rank FROM ranked WHERE student_id = $1`,
+       SELECT pct_rank FROM ranked WHERE supabase_auth_uid = $1`,
       [studentId],
     );
     return result.rows[0]?.pct_rank ?? null;
+  }
+
+  /** The top [limit] students by XP for the period, plus the caller's own row. Only students with XP > 0 are ranked. */
+  async findLeaderboard(studentId: string, period: 'week' | 'all', limit: number): Promise<LeaderboardRow[]> {
+    const result = await this.db.query<LeaderboardRow>(
+      `WITH ${xpTotalsCte(period === 'week' ? WEEK_START : undefined)},
+       ranked AS (
+         SELECT display_name, xp, supabase_auth_uid = $1 AS is_you,
+                ROW_NUMBER() OVER (ORDER BY xp DESC, reached_at ASC NULLS LAST, user_id) AS rank
+         FROM totals
+         WHERE xp > 0
+       )
+       SELECT rank::int AS rank, display_name, xp, is_you
+       FROM ranked
+       WHERE rank <= $2 OR is_you
+       ORDER BY rank`,
+      [studentId, limit],
+    );
+    return result.rows;
   }
 }
 

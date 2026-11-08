@@ -6,18 +6,18 @@ import { PageTitleBar } from '../../components/common/PageTitleBar';
 // Presentation helpers shared by the account-area feature pages (profile, settings,
 // notifications, billing, support, reports). Visual language from design-prototype.
 
-export const h1Cls = 'text-2xl sm:text-3xl font-extrabold tracking-tight text-ink m-0';
-export const subCls = 'text-sm text-ink-muted m-0 leading-relaxed';
-export const h2Cls = 'text-base font-extrabold tracking-tight text-ink m-0';
-export const labelCls = 'text-xs font-bold uppercase tracking-wider text-ink-muted';
-export const bodyCls = 'text-sm text-ink-soft m-0';
+export const h1Cls = 'lp-display m-0 text-[2rem] font-semibold text-ink sm:text-[2.5rem]';
+export const subCls = 'text-base text-ink-muted m-0 leading-relaxed';
+export const h2Cls = 'text-xl font-semibold tracking-tight text-ink m-0';
+export const labelCls = 'text-sm font-medium text-ink';
+export const bodyCls = 'text-base text-ink-soft m-0';
 export const selectCls =
-  'w-full h-[54px] px-4 rounded-[14px] bg-control border-[1.5px] border-line-strong dark:border-line text-[15px] text-ink outline-none focus:border-focus cursor-pointer font-[inherit]';
+  'w-full h-[52px] px-4 rounded-xl bg-transparent border border-line-strong text-base text-ink outline-none focus:border-ink focus:ring-2 focus:ring-brand/30 cursor-pointer font-[inherit]';
 export const textareaCls =
-  'w-full px-4 py-3 rounded-[14px] bg-control border-[1.5px] border-line-strong dark:border-line text-[15px] text-ink outline-none focus:border-focus font-[inherit] placeholder-ink-muted';
+  'w-full px-4 py-3 rounded-xl bg-transparent border border-line-strong text-base text-ink outline-none focus:border-ink focus:ring-2 focus:ring-brand/30 font-[inherit] placeholder-ink-muted';
 export const pillCls =
-  'inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand-soft text-brand-ink';
-export const tableWrapCls = 'rounded-2xl bg-surface ring-1 ring-line shadow-sm overflow-hidden';
+  'inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full ring-1 ring-line-strong text-ink';
+export const tableWrapCls = 'rounded-2xl bg-surface ring-1 ring-line overflow-hidden';
 
 export function ChevronIcon({ className = 'size-4' }: { className?: string }) {
   return (
@@ -36,7 +36,7 @@ export function BackIcon() {
 }
 
 export const backBtnCls =
-  'size-10 shrink-0 rounded-xl flex items-center justify-center bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink transition-colors border-none cursor-pointer no-underline';
+  'size-11 shrink-0 rounded-full flex items-center justify-center bg-transparent ring-1 ring-line-strong text-ink-soft hover:bg-surface-strong hover:text-ink transition-colors border-none cursor-pointer no-underline';
 
 export function BackLink({ to, label = 'Back' }: { to: string; label?: string }) {
   const { t } = useI18n();
@@ -52,11 +52,12 @@ interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
   action?: ReactNode;
+  fallback?: string;
 }
 
 /** Page heading: back arrow + centered title on one line. */
-export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
-  return <PageTitleBar title={title} subtitle={subtitle} action={action} />;
+export function PageHeader({ title, subtitle, action, fallback }: PageHeaderProps) {
+  return <PageTitleBar title={title} subtitle={subtitle} action={action} fallback={fallback} />;
 }
 
 export function SectionTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
@@ -74,7 +75,7 @@ export function Field({ label, htmlFor, error, children }: { label: string; html
       <label htmlFor={htmlFor} className={labelCls}>{label}</label>
       {children}
       {error && (
-        <span id={htmlFor ? `${htmlFor}-error` : undefined} role="alert" className="text-xs text-danger-ink font-medium">
+        <span id={htmlFor ? `${htmlFor}-error` : undefined} role="alert" className="text-sm text-danger-ink font-medium">
           {error}
         </span>
       )}
@@ -87,10 +88,10 @@ export function LinkRow({ to, icon, children }: { to: string; icon?: ReactNode; 
   return (
     <Link
       to={to}
-      className="flex items-center gap-3 px-1 py-3 min-h-[48px] no-underline text-ink text-sm font-semibold hover:text-brand-ink transition-colors"
+      className="flex items-center gap-3 px-1 py-3 min-h-[52px] no-underline text-ink text-base font-medium hover:text-brand-ink transition-colors"
     >
       {icon && (
-        <span className="size-9 rounded-xl bg-brand-soft text-brand-ink flex items-center justify-center shrink-0">
+        <span className="size-9 rounded-full bg-surface-strong text-ink flex items-center justify-center shrink-0">
           {icon}
         </span>
       )}
@@ -115,23 +116,23 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={`relative shrink-0 w-11 h-6 rounded-full border-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${checked ? 'bg-brand dark:ring-1 dark:ring-inset dark:ring-brand-ink' : 'bg-line-strong'}`}
     >
-      <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
+      <span className={`absolute top-0.5 start-0.5 size-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-5 rtl:-translate-x-5' : ''}`} />
     </button>
   );
 }
 
 export const inputCls =
-  'w-full h-[54px] px-4 rounded-[14px] bg-control border-[1.5px] border-line-strong dark:border-line text-[15px] text-ink outline-none focus:border-focus disabled:opacity-50 font-[inherit]';
+  'w-full h-[52px] px-4 rounded-xl bg-transparent border border-line-strong text-base text-ink outline-none focus:border-ink focus:ring-2 focus:ring-brand/30 disabled:opacity-50 font-[inherit]';
 
 export const textLinkCls =
-  'text-sm font-semibold text-brand-ink hover:underline no-underline';
+  'text-sm font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink';
 
 /** Label / value row used in summaries. */
 export function KV({ label, children, strong }: { label: ReactNode; children: ReactNode; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
+    <div className="flex items-center justify-between gap-3 text-base">
       <span className="text-ink-muted">{label}</span>
-      <span className={`text-end ${strong ? 'font-extrabold text-ink' : 'font-semibold text-ink'}`}>{children}</span>
+      <span className={`text-end ${strong ? 'font-semibold text-ink' : 'font-medium text-ink'}`}>{children}</span>
     </div>
   );
 }
@@ -147,7 +148,7 @@ const TONE: Record<Tone, string> = {
 
 export function StatusPill({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode }) {
   return (
-    <span className={`inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${TONE[tone]}`}>
+    <span className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full ${TONE[tone]}`}>
       {children}
     </span>
   );

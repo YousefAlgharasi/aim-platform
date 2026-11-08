@@ -5,6 +5,7 @@ import { BackendConfigModule } from './config/backend-config.module';
 import { CommonModule } from './common/common.module';
 import { ThrottleModule } from './common/throttle/throttle.module';
 import { DatabaseModule } from './database/database.module';
+import { IdempotencyModule } from './common/idempotency/idempotency.module';
 import { FeaturesModule } from './features/features.module';
 import { HealthModule } from './health/health.module';
 
@@ -15,6 +16,7 @@ import { HealthModule } from './health/health.module';
     CommonModule,
     ThrottleModule,
     DatabaseModule,
+    IdempotencyModule,
     HealthModule,
     FeaturesModule,
   ],

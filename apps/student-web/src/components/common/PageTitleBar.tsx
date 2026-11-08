@@ -1,5 +1,10 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { BackButton } from './BackButton';
+import { navItems } from '../../layouts/navItems';
+
+/** Sidebar destinations other than Home: top-level pages, so no back arrow. */
+const TOP_LEVEL = new Set(navItems.map((i) => i.to).filter((to) => to !== '/'));
+const isTopLevel = () => typeof window !== 'undefined' && TOP_LEVEL.has(window.location.pathname.replace(/\/$/, ''));
 
 /**
  * Lets a page's title bar tell the app layout that it already shows a back arrow, so the layout
@@ -9,6 +14,9 @@ interface PageChrome {
   register: () => () => void;
 }
 const PageChromeContext = createContext<PageChrome | null>(null);
+
+/** Pages inside a locked flow (the placement test) provide `true` so no back arrow is shown. */
+export const HideBackContext = createContext(false);
 
 /** Provider for the layout. A module-level component, so its identity is stable across renders. */
 export function PageChromeProvider({ value, children }: { value: PageChrome; children: ReactNode }) {
@@ -40,22 +48,24 @@ interface PageTitleBarProps {
 }
 
 /**
- * Page heading: back arrow at the start, the title centered on the same line, an optional action
- * at the end. The two side columns are equal, so the title stays centered with or without an action.
+ * Page heading: back arrow, then the title (start-aligned, large), with the subtitle beneath and an optional
+ * action at the end.
  */
 export function PageTitleBar({ title, subtitle, meta, action, fallback, titleAs: Title = 'h1' }: PageTitleBarProps) {
   const chrome = useContext(PageChromeContext);
   useEffect(() => chrome?.register(), [chrome]);
+  const hideBack = useContext(HideBackContext);
+  const topLevel = isTopLevel() || hideBack;
 
   return (
     <header className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3">
-        <BackButton fallback={fallback} className="justify-self-start" />
-        <Title className="m-0 text-center text-xl sm:text-2xl font-extrabold tracking-tight leading-tight text-ink">{title}</Title>
-        <div className="justify-self-end">{action}</div>
+      <div className="flex items-center gap-3">
+        {!topLevel && <BackButton fallback={fallback} className="shrink-0" />}
+        <Title className="lp-display m-0 min-w-0 flex-1 text-[2rem] font-semibold text-ink sm:text-[2.5rem]">{title}</Title>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
-      {meta && <div className="flex justify-center">{meta}</div>}
-      {subtitle && <p className="m-0 text-center text-sm leading-relaxed text-ink-muted">{subtitle}</p>}
+      {meta && <div className="flex">{meta}</div>}
+      {subtitle && <p className={`m-0 max-w-2xl text-sm leading-relaxed text-ink-muted ${topLevel ? '' : 'ps-[3.25rem]'}`}>{subtitle}</p>}
     </header>
   );
 }

@@ -1,5 +1,5 @@
 import { EngagementRepository } from './engagement.repository';
-import { EngagementService } from './engagement.service';
+import { EngagementService, shortName } from './engagement.service';
 
 describe('EngagementService', () => {
   const makeRepository = (overrides: Partial<EngagementRepository> = {}) =>
@@ -8,7 +8,12 @@ describe('EngagementService', () => {
       upsertGoal: jest.fn(),
       countLessonsCompletedToday: jest.fn().mockResolvedValue(0),
       findActiveDates: jest.fn().mockResolvedValue([]),
+      findFrozenDates: jest.fn().mockResolvedValue([]),
+      countFreezesThisMonth: jest.fn().mockResolvedValue(0),
+      insertFreezeIfAllowed: jest.fn().mockResolvedValue(true),
       findActiveChallengeTemplates: jest.fn().mockResolvedValue([]),
+      findLeaderboard: jest.fn().mockResolvedValue([]),
+      countPracticeCompletedToday: jest.fn().mockResolvedValue({ speaking: 0, writing: 0 }),
       findXpLevels: jest.fn().mockResolvedValue([
         { level: 1, min_xp: 0 },
         { level: 2, min_xp: 100 },
@@ -36,7 +41,8 @@ describe('EngagementService', () => {
         completedToday: 0,
         streakDays: 0,
       });
-      expect(summary.challenge).toBeNull();
+      expect(summary.streakFreeze).toMatchObject({ allowance: 2, remaining: 2, atRisk: false, canUseNow: false });
+      expect(summary.challenge).toMatchObject({ key: 'daily_goal', targetCount: 1, progressCount: 0, completed: false });
     });
 
     it('computes a consecutive streak ending today', async () => {
@@ -66,38 +72,50 @@ describe('EngagementService', () => {
 
       expect(summary.goal.streakDays).toBe(0);
     });
+  });
 
-    it('deterministically selects the same challenge for the same student and day', async () => {
-      const templates = [
-        { id: '1', key: 'a', title: 'A', description: 'a', challenge_type: 'lessons' as const, target_count: 1 },
-        { id: '2', key: 'b', title: 'B', description: 'b', challenge_type: 'lessons' as const, target_count: 2 },
-      ];
-      const repository = makeRepository({
-        findActiveChallengeTemplates: jest.fn().mockResolvedValue(templates),
-        countLessonsCompletedToday: jest.fn().mockResolvedValue(2),
-      });
-      const service = new EngagementService(repository);
+  describe('daily goal challenge', () => {
+    const service = (goal: number | null, lessonsToday: number) =>
+      new EngagementService(makeRepository({
+        findGoal: jest.fn().mockResolvedValue(goal === null ? null : { student_id: 's', daily_goal_lessons: goal }),
+        countLessonsCompletedToday: jest.fn().mockResolvedValue(lessonsToday),
+      }));
 
-      const first = await service.getSummary('student-1');
-      const second = await service.getSummary('student-1');
-
-      expect(first.challenge?.key).toBe(second.challenge?.key);
+    it('starts at 1 lesson a day when the student has not chosen a goal', async () => {
+      const { challenge } = await service(null, 0).getSummary('student-1');
+      expect(challenge).toMatchObject({ key: 'daily_goal', targetCount: 1, description: 'Complete 1 lesson today.', completed: false });
     });
 
-    it('marks a lessons-type challenge completed once the target is met', async () => {
-      const templates = [
-        { id: '1', key: 'complete_one_lesson', title: 'A', description: 'a', challenge_type: 'lessons' as const, target_count: 1 },
-      ];
-      const repository = makeRepository({
-        findActiveChallengeTemplates: jest.fn().mockResolvedValue(templates),
-        countLessonsCompletedToday: jest.fn().mockResolvedValue(1),
-      });
-      const service = new EngagementService(repository);
+    it('follows the goal the student picked, counting up and completing when it is met', async () => {
+      expect((await service(3, 0).getSummary('student-1')).challenge).toMatchObject({ targetCount: 3, progressCount: 0, description: 'Complete 3 lessons today.', completed: false });
+      expect((await service(3, 2).getSummary('student-1')).challenge).toMatchObject({ progressCount: 2, completed: false });
+      expect((await service(3, 3).getSummary('student-1')).challenge).toMatchObject({ progressCount: 3, completed: true });
+      expect((await service(3, 7).getSummary('student-1')).challenge).toMatchObject({ progressCount: 3, completed: true });
+    });
 
-      const summary = await service.getSummary('student-1');
+    it('is not done just because a streak exists from yesterday', async () => {
+      const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+      const svc = new EngagementService(makeRepository({ findActiveDates: jest.fn().mockResolvedValue([yesterday]) }));
+      expect((await svc.getSummary('student-1')).challenge?.completed).toBe(false);
+    });
+  });
 
-      expect(summary.challenge?.completed).toBe(true);
-      expect(summary.challenge?.progressCount).toBe(1);
+  describe('daily practice challenges', () => {
+    it('always lists the goal, speaking and writing practice, so a day has three', async () => {
+      const summary = await new EngagementService(makeRepository()).getSummary('student-1');
+
+      expect(summary.challenges.map((c) => c.key)).toEqual(['daily_goal', 'practice_speaking', 'practice_writing']);
+      expect(summary.challenge?.key).toBe('daily_goal');
+      expect(summary.challenges.slice(1).every((c) => !c.completed && c.progressCount === 0 && c.targetCount === 1)).toBe(true);
+    });
+
+    it('completes each practice challenge from what the student finished today', async () => {
+      const service = new EngagementService(makeRepository({ countPracticeCompletedToday: jest.fn().mockResolvedValue({ speaking: 2, writing: 0 }) }));
+
+      const [, speaking, writing] = (await service.getSummary('student-1')).challenges;
+
+      expect(speaking).toMatchObject({ key: 'practice_speaking', completed: true, progressCount: 1 });
+      expect(writing).toMatchObject({ key: 'practice_writing', completed: false, progressCount: 0 });
     });
   });
 
@@ -250,6 +268,97 @@ describe('EngagementService', () => {
       const result = await service.updateGoal('student-1', 99);
 
       expect(result.targetLessons).toBe(20);
+    });
+  });
+
+  describe('streak freezes', () => {
+    const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+
+    it('keeps the streak alive across a frozen day without counting it', async () => {
+      // active 3, 2 days ago... yesterday frozen, today not yet done
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2), day(-3), day(-4)]),
+        findFrozenDates: jest.fn().mockResolvedValue([day(-1)]),
+      });
+      const summary = await new EngagementService(repository).getSummary('s');
+      expect(summary.goal.streakDays).toBe(3);
+      expect(summary.streakFreeze.atRisk).toBe(false);
+    });
+
+    it('is at risk when yesterday was missed but the day before was active', async () => {
+      const repository = makeRepository({ findActiveDates: jest.fn().mockResolvedValue([day(-2), day(-3)]) });
+      const summary = await new EngagementService(repository).getSummary('s');
+      expect(summary.goal.streakDays).toBe(0);
+      expect(summary.streakFreeze).toMatchObject({ atRisk: true, canUseNow: true, remaining: 2 });
+    });
+
+    it('cannot be used once the monthly allowance is spent', async () => {
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2)]),
+        countFreezesThisMonth: jest.fn().mockResolvedValue(2),
+      });
+      const service = new EngagementService(repository);
+      expect((await service.getSummary('s')).streakFreeze).toMatchObject({ atRisk: true, canUseNow: false, remaining: 0 });
+      await expect(service.useStreakFreeze('s')).rejects.toMatchObject({ status: 409 });
+      expect(repository.insertFreezeIfAllowed).not.toHaveBeenCalled();
+    });
+
+    it('refuses when the streak is not at risk', async () => {
+      const repository = makeRepository({ findActiveDates: jest.fn().mockResolvedValue([day(0), day(-1)]) });
+      await expect(new EngagementService(repository).useStreakFreeze('s')).rejects.toMatchObject({ status: 400 });
+    });
+
+    it('freezes yesterday when allowed', async () => {
+      const insert = jest.fn().mockResolvedValue(true);
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(-2)]),
+        insertFreezeIfAllowed: insert,
+      });
+      await new EngagementService(repository).useStreakFreeze('s');
+      expect(insert).toHaveBeenCalledWith('s', day(-1), 2);
+    });
+  });
+
+  describe('leaderboard', () => {
+    it('shortens names to first name and last initial, never exposing the full name', () => {
+      expect(shortName('Yousef Ahmed Algharasi')).toBe('Yousef A.');
+      expect(shortName('Y Student')).toBe('Y S.');
+      expect(shortName('محمد القباطي')).toBe('محمد ا.');
+      expect(shortName('Madonna')).toBe('Madonna');
+      expect(shortName('   ')).toBe('Student');
+      expect(shortName(null)).toBe('Student');
+    });
+
+    it('returns the top list in rank order and marks the caller', async () => {
+      const rows = [
+        { rank: 1, display_name: 'Sara Khan', xp: 90, is_you: false },
+        { rank: 2, display_name: 'Y Student', xp: 80, is_you: true },
+      ];
+      const repo = makeRepository({ findLeaderboard: jest.fn().mockResolvedValue(rows) });
+
+      const board = await new EngagementService(repo).getLeaderboard('me', 'week', 5);
+
+      expect(repo.findLeaderboard).toHaveBeenCalledWith('me', 'week', 5);
+      expect(board.period).toBe('week');
+      expect(board.entries.map((e) => [e.rank, e.name, e.xp, e.isYou])).toEqual([[1, 'Sara K.', 90, false], [2, 'Y S.', 80, true]]);
+      expect(board.you).toMatchObject({ rank: 2, xp: 80 });
+    });
+
+    it('shows the caller below the top list when they are outside it', async () => {
+      const rows = [
+        { rank: 1, display_name: 'A One', xp: 50, is_you: false },
+        { rank: 9, display_name: 'Me Myself', xp: 5, is_you: true },
+      ];
+      const board = await new EngagementService(makeRepository({ findLeaderboard: jest.fn().mockResolvedValue(rows) })).getLeaderboard('me', 'all', 1);
+
+      expect(board.entries).toHaveLength(1);
+      expect(board.you).toMatchObject({ rank: 9, name: 'Me M.', isYou: true });
+    });
+
+    it('has no entry for a caller with no XP yet', async () => {
+      const board = await new EngagementService(makeRepository()).getLeaderboard('me', 'week', 5);
+      expect(board.entries).toEqual([]);
+      expect(board.you).toBeNull();
     });
   });
 });

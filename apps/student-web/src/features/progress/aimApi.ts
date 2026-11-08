@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import { skillTitle } from './skillTitles';
 import { t, formatDate as formatLocaleDate, plural } from '../../i18n';
 
 // Read-only AIM outputs. Mirrors Flutter features/aim_results (+ home datasource).
@@ -69,9 +70,23 @@ export async function fetchWeaknessRecords(studentId: string): Promise<WeaknessR
   return data?.weaknessRecords ?? [];
 }
 
+/**
+ * Every practice session adds another schedule row for the same skill, so a skill practised 20 times has 20 rows
+ * (the older ones are superseded). A student has one review per skill: the most recently scheduled one.
+ */
+export function currentReviewPerSkill(entries: ReviewScheduleEntry[]): ReviewScheduleEntry[] {
+  const stamp = (e: ReviewScheduleEntry) => new Date(e.scheduledAt).getTime() || new Date(e.updatedAt).getTime() || 0;
+  const latest = new Map<string, ReviewScheduleEntry>();
+  for (const e of entries) {
+    const seen = latest.get(e.skillId);
+    if (!seen || stamp(e) > stamp(seen)) latest.set(e.skillId, e);
+  }
+  return [...latest.values()];
+}
+
 export async function fetchReviewSchedules(studentId: string): Promise<ReviewScheduleEntry[]> {
   const data = await apiClient.get<{ reviewSchedules?: ReviewScheduleEntry[] } | null>(`${base(studentId)}/review-schedules`);
-  return data?.reviewSchedules ?? [];
+  return currentReviewPerSkill(data?.reviewSchedules ?? []);
 }
 
 export async function fetchRecommendations(studentId: string): Promise<RecommendationEntry[]> {
@@ -105,7 +120,11 @@ export async function fetchAimResults(studentId: string): Promise<AimResults> {
  * exposes no skill display name on these endpoints.
  */
 export function prettifySkillId(skillId: string): string {
-  const last = skillId.split(':').pop() ?? '';
+  // The skill's real title ("Short Vowel Sounds") when the catalogue has it.
+  const known = skillTitle(skillId);
+  if (known) return t(known);
+  // Otherwise tidy up the key: the last part of "en.a1.pho.short_vowels" or "skill:arabic:p1:vocab".
+  const last = skillId.split(/[:.]/).pop() ?? '';
   const label = last
     .split(/[_-]+/)
     .filter(Boolean)

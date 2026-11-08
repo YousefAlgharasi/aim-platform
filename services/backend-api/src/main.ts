@@ -10,6 +10,12 @@ async function bootstrap(): Promise<void> {
   const config = app.get(BackendConfigService);
   const logger = new Logger('Bootstrap');
 
+  // The API sits behind exactly one reverse proxy (nginx). Trust one hop so req.ip is the real
+  // client address taken from X-Forwarded-For; without this every request appears to come from
+  // the proxy and shares a single rate-limit bucket. TRUST_PROXY_HOPS=0 disables it (direct access).
+  const hops = parseInt(process.env.TRUST_PROXY_HOPS ?? '1', 10);
+  app.getHttpAdapter().getInstance().set('trust proxy', Number.isFinite(hops) ? hops : 1);
+
   app.use(helmet());
 
   app.useGlobalPipes(

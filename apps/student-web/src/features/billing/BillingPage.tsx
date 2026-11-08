@@ -1,12 +1,12 @@
+import { DetailSkeleton, InlineSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Banner } from '../../components/common/Banner';
 import { Modal } from '../../components/common/Modal';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -108,7 +108,7 @@ export function BillingPage() {
       .finally(() => setInvoiceLoading(false));
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (error) return <ErrorState message={error} onRetry={fetchBilling} />;
   if (!data) return null;
 
@@ -120,7 +120,7 @@ export function BillingPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t('Billing')} subtitle={t('Your plan, usage and invoices.')} />
+      <PageHeader title={t('Billing')} action={<Link to="/billing/payments" className="text-sm font-bold text-brand-ink no-underline hover:underline">{t('My payments')}</Link>} />
 
       {notice && <Banner variant="success">{notice}</Banner>}
 
@@ -138,11 +138,11 @@ export function BillingPage() {
               return (
                 <div
                   key={sub.id}
-                  className="rounded-2xl p-5 bg-gradient-to-br from-brand to-secondary text-white shadow-md flex flex-col gap-3"
+                  className="hero-panel flex flex-col gap-3"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-extrabold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/20">
+                    <h3 className="text-lg font-semibold tracking-tight m-0">{plan?.name ?? t('Subscription')}</h3>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-black/20">
                       {keyLabel(sub.status)}
                     </span>
                   </div>
@@ -199,12 +199,7 @@ export function BillingPage() {
             <ul className="list-none m-0 p-0 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
               {activeEntitlements.map(e => (
                 <li key={e.id} className="flex items-center gap-2.5 text-sm text-ink-soft">
-                  <span
-                    className={`size-5 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${e.granted ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'}`}
-                    aria-hidden="true"
-                  >
-                    {e.granted ? '✓' : '✕'}
-                  </span>
+                  {e.granted ? <svg className="size-4 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg> : <svg className="size-4 shrink-0 text-danger-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>}
                   <span className="flex-1 min-w-0">{keyLabel(e.featureKey)}</span>
                   {e.usageLimit !== null && (
                     <span className="text-xs font-semibold text-ink-muted">{e.usageCount} / {e.usageLimit}</span>
@@ -229,17 +224,17 @@ export function BillingPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`rounded-2xl p-5 bg-surface shadow-sm flex flex-col gap-3.5 ${
+                  className={`rounded-2xl p-5 bg-surface flex flex-col gap-3.5 ${
                     isCurrent ? 'ring-2 ring-brand-ink' : 'ring-1 ring-line'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-base font-extrabold tracking-tight text-ink m-0">{plan.name}</h3>
+                    <h3 className="text-xl font-semibold tracking-tight text-ink m-0">{plan.name}</h3>
                     {isCurrent && <span className={pillCls}>{t('Current')}</span>}
                   </div>
                   {price ? (
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold tracking-tight text-brand-ink">{formatMoney(price.amount, price.currency)}</span>
+                      <span className="text-3xl font-semibold tracking-tight text-brand-ink">{formatMoney(price.amount, price.currency)}</span>
                       <span className="text-sm text-ink-muted">
                         {price.billingInterval === 'one_time' ? ` ${intervalLabel('one_time')}` : `/${intervalLabel(price.billingInterval)}`}
                       </span>
@@ -252,7 +247,7 @@ export function BillingPage() {
                     <ul className="list-none m-0 p-0 flex flex-col gap-2 flex-1">
                       {features.map(f => (
                         <li key={f} className="flex items-center gap-2.5 text-sm text-ink-soft">
-                          <span className="size-5 rounded-full bg-success-soft text-success-ink flex items-center justify-center text-xs font-extrabold shrink-0" aria-hidden="true">✓</span>
+                          <svg className="size-4 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg>
                           {f}
                         </li>
                       ))}
@@ -293,7 +288,7 @@ export function BillingPage() {
                 >
                   <span>{fmtDate(inv.paidAt ?? inv.periodEnd ?? inv.createdAt)}</span>
                   <span className="flex items-center gap-3">
-                    <span className="font-extrabold">{formatMoney(inv.total, inv.currency)}</span>
+                    <span className="font-semibold">{formatMoney(inv.total, inv.currency)}</span>
                     <StatusPill tone={inv.status === 'paid' ? 'success' : 'warning'}>{keyLabel(inv.status)}</StatusPill>
                     <ChevronIcon className="size-4 text-ink-faint" />
                   </span>
@@ -341,7 +336,7 @@ export function BillingPage() {
 
       <Modal open={invoiceOpen} onClose={() => setInvoiceOpen(false)} title={t('Invoice')}>
         {invoiceLoading ? (
-          <LoadingSpinner />
+          <InlineSkeleton rows={5} />
         ) : invoiceError ? (
           <Banner variant="error">{invoiceError}</Banner>
         ) : invoiceDetail ? (

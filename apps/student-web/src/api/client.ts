@@ -22,6 +22,8 @@ export interface RequestOptions {
   token?: string;
   /** Accept header; JSON by default. */
   accept?: string;
+  /** Sent as `Idempotency-Key` so the server can de-duplicate retries / double clicks of this action. */
+  idempotencyKey?: string;
 }
 
 /** Stored TTS audio is MP3 (about 8x smaller than WAV); endpoints that only have WAV still answer with WAV. */
@@ -54,10 +56,20 @@ function toApiError(body: unknown, status: number, fallback: string): ApiError {
   };
 }
 
+type RefreshOutcome = 'ok' | 'rejected' | 'unavailable';
+
+function networkError(): ApiError {
+  return {
+    code: 'NETWORK_ERROR',
+    statusCode: 0,
+    message: t("Can't reach the server. Check your connection and try again."),
+  };
+}
+
 class ApiClient {
   private baseUrl: string;
   private accessToken: string | null;
-  private refreshInFlight: Promise<boolean> | null = null;
+  private refreshInFlight: Promise<RefreshOutcome> | null = null;
   private sessionExpiredListeners = new Set<() => void>();
 
   constructor(baseUrl: string) {
@@ -92,26 +104,32 @@ class ApiClient {
     return () => this.sessionExpiredListeners.delete(listener);
   }
 
-  private async refresh(): Promise<boolean> {
+  /**
+   * Swap the refresh token for a new session. 'rejected' means the server said no (the session is over);
+   * 'unavailable' means we could not find out (offline, timeout, server restarting), so the session must be kept.
+   */
+  private async refresh(): Promise<RefreshOutcome> {
     if (this.refreshInFlight) return this.refreshInFlight;
     const refreshToken = readStorage(REFRESH_TOKEN_KEY);
-    if (!refreshToken) return false;
+    if (!refreshToken) return 'rejected';
 
-    this.refreshInFlight = (async () => {
+    this.refreshInFlight = (async (): Promise<RefreshOutcome> => {
       try {
         const response = await fetch(`${this.baseUrl}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
         });
-        if (!response.ok) return false;
+        // A server that is down, restarting or overloaded says nothing about the token.
+        if (response.status >= 500 || response.status === 408 || response.status === 429) return 'unavailable';
+        if (!response.ok) return 'rejected';
         const body = await response.json();
         const tokens = body?.data as SessionTokens | undefined;
-        if (!tokens?.accessToken) return false;
+        if (!tokens?.accessToken) return 'rejected';
         this.setSession(tokens);
-        return true;
+        return 'ok';
       } catch {
-        return false;
+        return 'unavailable';
       } finally {
         this.refreshInFlight = null;
       }
@@ -146,23 +164,20 @@ class ApiClient {
     const useAuth = options.auth !== false;
     const token = options.token ?? (useAuth ? this.accessToken : null);
     if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
 
     let response: Response;
     try {
       response = await fetch(`${this.baseUrl}${path}`, { method, headers, body: payload });
     } catch {
-      const networkError: ApiError = {
-        code: 'NETWORK_ERROR',
-        statusCode: 0,
-        message: t("Can't reach the server. Check your connection and try again."),
-      };
-      throw networkError;
+      throw networkError();
     }
 
     if (response.status === 401 && useAuth && !options.token && !isRetry) {
-      if (await this.refresh()) {
-        return this.send(method, path, body, options, true);
-      }
+      const outcome = await this.refresh();
+      if (outcome === 'ok') return this.send(method, path, body, options, true);
+      // Could not reach the server to renew the session: report a connection problem and keep the user signed in.
+      if (outcome === 'unavailable') throw networkError();
       if (this.hasSession()) this.expireSession();
     }
     return response;
@@ -234,4 +249,11 @@ export function getErrorMessage(err: unknown, fallback = 'Something went wrong. 
   // otherwise use the (already localized) caller fallback.
   if (getLocale() === 'ar' && translated === message && !ARABIC_RE.test(message)) return localizedFallback;
   return translated;
+}
+
+/** A fresh opaque key for one user action (reuse the same value when retrying that action). */
+export function newIdempotencyKey(): string {
+  const c = (globalThis as { crypto?: Crypto }).crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  return `k-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }

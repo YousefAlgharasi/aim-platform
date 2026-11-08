@@ -5,7 +5,9 @@
 //
 // Endpoints:
 //   GET /student/engagement/summary — Goal, streak, and today's challenge.
+//   POST /student/engagement/streak-freeze — Cover yesterday so the streak survives.
 //   PUT /student/engagement/goal     — Update the student's daily lesson goal.
+//   GET /student/engagement/leaderboard?period=week|all&limit=5 — Top students by XP.
 //   GET /student/engagement/stats    — Level, XP, badge count, rank, and
 //                                       weekly activity for the Home hero card.
 //
@@ -14,7 +16,7 @@
 //     AuthorizedRole.STUDENT.
 //   - studentId always resolved from the JWT — never from client input.
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SupabaseJwtAuthGuard } from '../../auth/supabase-jwt-auth.guard';
 import { CurrentUser } from '../../auth/current-user.decorator';
@@ -27,6 +29,7 @@ import {
   DailyGoalSummary,
   EngagementStatsResponse,
   EngagementSummaryResponse,
+  LeaderboardResponse,
 } from './engagement.types';
 
 interface UpdateGoalBody {
@@ -56,6 +59,29 @@ export class EngagementController {
   @ApiOkResponse({ description: 'Engagement stats. studentId always from JWT.' })
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<EngagementStatsResponse> {
     return this.engagementService.getStats(user.id);
+  }
+
+  @Get('leaderboard')
+  @ApiOperation({ summary: 'Top students by XP (this week or all time), with the caller\'s own place.' })
+  @ApiOkResponse({ description: 'Leaderboard. Names are first name + last initial; the caller is flagged isYou.' })
+  async getLeaderboard(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('period') period?: string,
+    @Query('limit') limit?: string,
+  ): Promise<LeaderboardResponse> {
+    const parsed = Number.parseInt(limit ?? '', 10);
+    const size = Number.isFinite(parsed) ? Math.min(50, Math.max(1, parsed)) : 5;
+    return this.engagementService.getLeaderboard(user.id, period === 'all' ? 'all' : 'week', size);
+  }
+
+  @Post('streak-freeze')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Use a streak freeze to cover yesterday so the day streak survives (limited per month).",
+  })
+  @ApiOkResponse({ description: 'Fresh engagement summary after the freeze.' })
+  async useStreakFreeze(@CurrentUser() user: AuthenticatedUser): Promise<EngagementSummaryResponse> {
+    return this.engagementService.useStreakFreeze(user.id);
   }
 
   @Put('goal')

@@ -1,3 +1,4 @@
+import { IdempotencyService } from '../../common/idempotency/idempotency.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlacementController } from './placement.controller';
 import { PlacementTestReadService } from './placement-test-read.service';
@@ -68,6 +69,7 @@ describe('PlacementController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PlacementController],
       providers: [
+        { provide: IdempotencyService, useValue: {} },
         { provide: PlacementTestReadService, useValue: mocks.testRead },
         { provide: PlacementAttemptService, useValue: mocks.attemptStart },
         { provide: PlacementSectionsService, useValue: mocks.sections },

@@ -74,6 +74,23 @@
   --p-s-850: 24 34 52;
   --p-s-900: 15 23 42;
 
+  /* Night-study dark ramp: blue-black with real layering (page < surface < elevated). */
+  --p-d-page: 8 10 18;
+  --p-d-sunken: 11 14 24;
+  --p-d-surface: 15 19 32;
+  --p-d-elevated: 21 26 43;
+  --p-d-muted: 26 32 53;
+  --p-d-strong: 37 44 69;
+  --p-d-line: 38 45 70;
+  --p-d-line-subtle: 28 34 54;
+  --p-d-disabled: 24 29 46;
+
+  /* Dark text ramp: a clear step between title, body and label (pure white everywhere flattens the hierarchy). */
+  --p-d-ink: 208 217 232;
+  --p-d-ink-soft: 172 183 205;
+  --p-d-ink-muted: 139 151 178;
+  --p-d-ink-faint: 100 113 142;
+
   /* Brand — primary */
   --p-brand-50: 233 238 254;
   --p-brand-100: 220 228 253;
@@ -217,6 +234,12 @@
   /* Streak flame / rating stars. gold = icon on a surface (3.2:1 on white); gold-on-brand = on the brand gradient. */
   --c-gold: var(--p-gold-600);
   --c-gold-on-brand: var(--p-gold-300);
+
+  /* Elevation: ink-tinted, layered, low alpha. Cards rest on a hairline plus a soft lift. */
+  --shadow-card: 0 1px 2px rgb(20 26 44 / 0.04), 0 8px 24px -12px rgb(40 52 110 / 0.14);
+  --shadow-card-hover: 0 2px 4px rgb(20 26 44 / 0.05), 0 16px 36px -14px rgb(71 98 238 / 0.28);
+  /* Page wash: a quiet brand glow at the top of the viewport. */
+  --page-wash: radial-gradient(1100px 420px at 50% -120px, rgb(71 98 238 / 0.07), transparent 70%);
 }
 
 /* ── 2b. Semantic tokens — DARK ─────────────────────────────────────────────────
@@ -224,26 +247,26 @@
 .dark {
   color-scheme: dark;
 
-  --c-page: var(--p-s-900);
-  --c-surface: var(--p-s-800);
-  --c-surface-muted: var(--p-s-700);
-  --c-surface-sunken: var(--p-s-850);
-  --c-surface-strong: var(--p-s-700);
-  --c-elevated: var(--p-s-900);
-  --c-field: var(--p-s-800);
-  --c-control: var(--p-s-800);
-  --c-overlay: var(--p-s-900);
+  --c-page: var(--p-d-page);
+  --c-surface: var(--p-d-surface);
+  --c-surface-muted: var(--p-d-muted);
+  --c-surface-sunken: var(--p-d-sunken);
+  --c-surface-strong: var(--p-d-strong);
+  --c-elevated: var(--p-d-elevated);
+  --c-field: var(--p-d-sunken);
+  --c-control: var(--p-d-muted);
+  --c-overlay: var(--p-d-page);
 
-  --c-ink: var(--p-s-0);
-  --c-ink-soft: var(--p-s-300);
-  --c-ink-muted: var(--p-s-400);
-  --c-ink-faint: var(--p-s-500);
-  --c-ink-disabled: var(--p-s-500);
+  --c-ink: var(--p-d-ink);
+  --c-ink-soft: var(--p-d-ink-soft);
+  --c-ink-muted: var(--p-d-ink-muted);
+  --c-ink-faint: var(--p-d-ink-faint);
+  --c-ink-disabled: var(--p-d-ink-faint);
   --c-ink-inverse: var(--p-s-900);
   --c-on-brand: var(--p-s-0);
 
-  --c-line: var(--p-s-700);
-  --c-line-subtle: var(--p-s-750);
+  --c-line: var(--p-d-line);
+  --c-line-subtle: var(--p-d-line-subtle);
   --c-line-strong: var(--p-s-500);
 
   --c-brand: var(--p-brand-500);
@@ -263,7 +286,7 @@
   --c-accent-line: var(--p-accent-d-line);
 
   --c-focus: var(--p-brand-300);
-  --c-disabled: var(--p-s-750);
+  --c-disabled: var(--p-d-disabled);
 
   --c-success: var(--p-green-d-solid);
   --c-success-soft: var(--p-green-d-soft);
@@ -284,4 +307,10 @@
 
   --c-gold: var(--p-gold-400);
   --c-gold-on-brand: var(--p-gold-300);
+
+  /* Dark: depth comes from surface steps + a 1px top highlight, not from drop shadows. */
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 12px 32px -18px rgb(0 0 0 / 0.7);
+  --shadow-card-hover: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 18px 40px -16px rgb(71 98 238 / 0.35);
+  --page-wash: radial-gradient(900px 420px at 50% -160px, rgb(99 120 255 / 0.10), transparent 70%),
+    radial-gradient(600px 320px at 100% 0, rgb(132 85 228 / 0.06), transparent 70%);
 }

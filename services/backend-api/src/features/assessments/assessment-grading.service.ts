@@ -41,6 +41,7 @@ import {
   ChoiceRow,
   GradingOutcome,
 } from './assessment-grading.types';
+import { matchesTextAnswer } from './text-answer-matching';
 
 // ---------------------------------------------------------------------------
 // Internal DB row types
@@ -168,14 +169,36 @@ export class AssessmentGradingService {
       correctLabelsByQuestion.get(choice.question_id)!.add(choice.id);
     }
 
+    // Typed-answer questions (fill in the blank) have no choices: their accepted answers live in
+    // question_answers. Only questions without a correct choice are looked up there.
+    const choiceQuestions = new Set(correctChoices.map((c) => c.question_id));
+    const typedQuestionIds = questionIds.filter((id) => !choiceQuestions.has(id));
+    const typedAnswers = new Map<string, unknown[]>();
+    if (typedQuestionIds.length > 0) {
+      const typedResult = await this.db.query<{ question_id: string; value: unknown }>(
+        `SELECT question_id, value
+         FROM question_answers
+         WHERE question_id = ANY($1::uuid[])`,
+        [typedQuestionIds],
+      );
+      for (const row of typedResult.rows) {
+        const list = typedAnswers.get(row.question_id) ?? [];
+        list.push(row.value);
+        typedAnswers.set(row.question_id, list);
+      }
+    }
+
     // -----------------------------------------------------------------------
     // 5. Compute per-answer grading outcomes.
     // -----------------------------------------------------------------------
     const outcomes: GradingOutcome[] = answers.map((answer) => {
       const correctLabels = correctLabelsByQuestion.get(answer.question_id);
+      const typed = typedAnswers.get(answer.question_id);
       const isCorrect = correctLabels
         ? answer.response_value != null && correctLabels.has(answer.response_value)
-        : false;
+        : typed
+          ? matchesTextAnswer(answer.response_value, typed)
+          : false;
       // node-postgres returns NUMERIC columns as strings (to avoid float
       // precision loss), despite AnswerRow.points being typed `number` —
       // coerce explicitly here so the reduce() sums below do real

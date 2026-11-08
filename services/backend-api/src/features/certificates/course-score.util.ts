@@ -1,16 +1,17 @@
 // Course scoring util.
 //
-// 1,000-Point Model for Certificates. Base weights:
-//   - Lesson Practices: 200 points (20%)
-//   - Chapter Quizzes: 200 points (20%)
-//   - Chapter Exams: 200 points (20%)
-//   - Course Final Exam: 400 points (40%)
+// 1,000-Point Model for Certificates (shown to students as a mark out of 100). Base weights:
+//   - Lesson Practices: 200 points (25%)
+//   - Chapter Quizzes: 200 points (25%)
+//   - Course Final Exam: 400 points (50%)
 //
-// Only components the course actually has (and the student actually did)
-// are scored; their weights are scaled up so they still add to 1,000. A
-// course with no chapter exams, for example, scores practice 250 / quizzes
-// 250 / final exam 500. Without this, a perfect student in a course with no
-// chapter exams could never score above 800 (80%).
+// Chapter exams are NOT part of the score: they still appear in the list of
+// assessments, but they neither add to nor lower the mark.
+//
+// Only components the student actually has are scored; their weights are
+// scaled up so they still add to 1,000. A course with no practice attempts,
+// for example, scores quizzes 333 / final exam 667. Without this, a perfect
+// student could never reach 100%.
 //
 // Each assessment counts once, at the student's best attempt — retakes
 // replace a failed try instead of being averaged with it.
@@ -32,7 +33,6 @@ const TOTAL_POINTS = 1000;
 const BASE_WEIGHTS = {
   practice: 200,
   quiz: 200,
-  chapterExam: 200,
   finalExam: 400,
 } as const;
 
@@ -86,25 +86,23 @@ export function computeCourse1000PointBreakdown(
   const quizzes = results.filter((a) => a.type === 'quiz');
   const exams = results.filter((a) => a.type === 'exam');
   let finalExams = exams.filter((a) => a.isFinalExam === true);
-  let chapterExams = exams.filter((a) => a.isFinalExam !== true);
   if (finalExams.length === 0 && exams.length > 0) {
     // Legacy snapshots don't flag the final exam: treat the last exam as final.
     finalExams = exams.slice(-1);
-    chapterExams = exams.slice(0, -1);
   }
+  // Any other exam (a chapter exam) is left out of the score on purpose.
 
   const percents: Record<Component, number | null> = {
     practice:
       practiceAccuracyPercent === null ? null : Math.min(100, Math.max(0, practiceAccuracyPercent)),
     quiz: averagePercent(quizzes),
-    chapterExam: averagePercent(chapterExams),
     finalExam: averagePercent(finalExams),
   };
 
   const present = (Object.keys(BASE_WEIGHTS) as Component[]).filter((c) => percents[c] !== null);
   const presentWeight = present.reduce((sum, c) => sum + BASE_WEIGHTS[c], 0);
 
-  const maxPoints: Record<Component, number> = { practice: 0, quiz: 0, chapterExam: 0, finalExam: 0 };
+  const maxPoints: Record<Component, number> = { practice: 0, quiz: 0, finalExam: 0 };
   let allocated = 0;
   present.forEach((c, i) => {
     const isLast = i === present.length - 1;
@@ -121,12 +119,11 @@ export function computeCourse1000PointBreakdown(
 
   const practicePoints = points('practice');
   const quizPoints = points('quiz');
-  const chapterExamPoints = points('chapterExam');
   const finalExamPoints = points('finalExam');
 
   const totalPoints = Math.min(
     TOTAL_POINTS,
-    Math.max(0, practicePoints + quizPoints + chapterExamPoints + finalExamPoints),
+    Math.max(0, practicePoints + quizPoints + finalExamPoints),
   );
   const overallPercent = present.length === 0 ? 0 : Math.min(100, Math.max(0, Math.round(totalPoints / 10)));
 
@@ -137,9 +134,10 @@ export function computeCourse1000PointBreakdown(
     quizPoints,
     quizMaxPoints: maxPoints.quiz,
     quizAveragePercent: Math.round(percents.quiz ?? 0),
-    chapterExamPoints,
-    chapterExamMaxPoints: maxPoints.chapterExam,
-    chapterExamAveragePercent: Math.round(percents.chapterExam ?? 0),
+    // Chapter exams no longer count. Kept (always 0) so older apps that still read these fields keep working.
+    chapterExamPoints: 0,
+    chapterExamMaxPoints: 0,
+    chapterExamAveragePercent: 0,
     finalExamPoints,
     finalExamMaxPoints: maxPoints.finalExam,
     finalExamPercent: Math.round(percents.finalExam ?? 0),

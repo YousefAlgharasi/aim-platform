@@ -1,7 +1,7 @@
+import { DetailSkeleton } from '../../components/common/Skeleton';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -14,16 +14,12 @@ import {
   type PlacementResult,
 } from './placementApi';
 import { useI18n } from '../../i18n/I18nContext';
-import { Badge, BODY, CARD, H2, PageHeader, type BadgeTone } from './ui';
+import { useAuth } from '../../hooks/useAuth';
+import { cacheSetupDone } from '../start/setupStatus';
+import { ensureStartingCourse } from '../start/enrollStart';
+import { ED_BODY, ED_BTN, ED_H2, ED_SHELL, EdHeader, edRow } from './ed';
 
-const SIGNAL_TONES: Record<string, BadgeTone> = {
-  strong: 'emerald',
-  developing: 'amber',
-  emerging: 'red',
-};
-
-const SHELL = 'mx-auto w-full max-w-3xl flex flex-col gap-6';
-const SECTION_TITLE = 'm-0 px-1 text-xs font-bold uppercase tracking-wider text-ink';
+const SIGNAL_DOT: Record<string, string> = { strong: 'bg-success', developing: 'bg-warning', emerging: 'bg-danger' };
 
 // Same polling policy as Flutter PlacementResultNotifier.
 const MAX_POLL_ATTEMPTS = 10;
@@ -43,6 +39,15 @@ export function PlacementResultPage() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const timer = useRef<number | null>(null);
+  const { user } = useAuth();
+
+  // A result exists, so the test is completed: the dashboard guard does not need to re-check (no extra loader).
+  // The page then stays until the student chooses where to go.
+  useEffect(() => {
+    if (result && user) cacheSetupDone(user.id);
+    // Start the recommended course (if they have none yet) so the dashboard roadmap has lessons to show.
+    if (result) void ensureStartingCourse(result.recommended_course_id);
+  }, [result, user]);
 
   const fetchResult = useCallback((attempt = 1) => {
     if (timer.current !== null) window.clearTimeout(timer.current);
@@ -82,14 +87,14 @@ export function PlacementResultPage() {
     };
   }, [fetchResult]);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <DetailSkeleton />;
   if (pending) {
     return (
-      <div className={`${SHELL} max-w-xl`}>
-        <div className="w-full bg-gradient-to-r from-brand/10 via-secondary/10 to-brand/10 border border-brand-line/60 rounded-2xl p-6 flex flex-col items-center text-center gap-3" role="status">
+      <div className={ED_SHELL}>
+        <div className="flex flex-col gap-4" role="status">
           <LoadingSpinner />
-          <h2 className={H2}>{t('Calculating your level…')}</h2>
-          <p className={BODY}>{t('This usually takes a few seconds.')}</p>
+          <h1 className={ED_H2}>{t('Calculating your level…')}</h1>
+          <p className={ED_BODY}>{t('This usually takes a few seconds.')}</p>
         </div>
       </div>
     );
@@ -102,28 +107,20 @@ export function PlacementResultPage() {
   const weaknesses = [...(result.weakness_map?.weaknesses ?? [])].sort((a, b) => a.priority - b.priority);
   const writing = result.additional_signals?.writing ?? null;
   const speaking = result.additional_signals?.speaking ?? null;
+  const sectionTitle = 'm-0 text-xl font-semibold text-ink';
 
   return (
-    <div className={SHELL}>
-      <PageHeader title={t('Placement Result')} />
+    <div className={ED_SHELL}>
+      <EdHeader title={t('Placement Result')} />
 
-      <div className="bg-gradient-to-b from-brand-soft/60 via-white to-surface-sunken/30 dark:from-surface dark:via-surface dark:to-surface rounded-2xl ring-1 ring-line shadow-sm p-6 flex flex-col items-center text-center gap-3">
-        <div className="relative mb-1">
-          <div className="absolute -inset-3 bg-gradient-to-r from-brand to-secondary rounded-3xl opacity-25 blur-lg" />
-          <div className="relative min-w-24 h-24 px-3 rounded-3xl bg-gradient-to-br from-brand to-secondary flex flex-col items-center justify-center text-white shadow-xl shadow-brand/25">
-            <span className="font-extrabold text-4xl tracking-tight leading-none">{level.code ?? level.label}</span>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-on-brand mt-1">{t('Level')}</span>
-          </div>
-        </div>
-        <h2 className={H2}>{t('Your level')}</h2>
-        {level.code && (
-          <span className="inline-block px-3 py-0.5 rounded-full bg-brand-soft/80 text-brand-ink font-bold text-xs tracking-wider uppercase">
-            {level.label}
-          </span>
-        )}
-        {result.note && <p className={`${BODY} max-w-md`}>{result.note}</p>}
+      {/* The level is the one big thing on this page. */}
+      <section className="border-t border-line pt-6">
+        <p className="m-0 text-sm text-ink-muted">{t('Your level')}</p>
+        <p className="lp-display lp-num m-0 mt-1 text-[clamp(5rem,20vw,9rem)] font-semibold leading-none text-ink">{level.code ?? level.label}</p>
+        {level.code && <p className="m-0 mt-3 text-xl font-medium text-ink-soft">{level.label}</p>}
+        {result.note && <p className={`${ED_BODY} mt-4 max-w-md`}>{result.note}</p>}
         {result.unlocked_course_ids?.length > 0 && (
-          <p className="m-0 text-sm font-semibold text-success-ink">
+          <p className="m-0 mt-4 text-[15px] font-semibold text-success-ink">
             {plural(result.unlocked_course_ids.length, {
               one: t('1 course unlocked for your level.'),
               two: t('2 courses unlocked for your level.'),
@@ -132,73 +129,66 @@ export function PlacementResultPage() {
             })}
           </p>
         )}
-      </div>
+      </section>
 
       {skills.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className={SECTION_TITLE}>{t('Skill summary')}</h2>
-          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-            {skills.map(([code, value]) => (
-              <div key={code} className={`flex items-center justify-between gap-3 px-4 py-3.5 ${CARD}`}>
-                <span className="text-sm font-bold text-ink">{skillLabel(code)}</span>
-                <Badge tone={SIGNAL_TONES[value.signal] ?? 'slate'}>
+          <h2 className={sectionTitle}>{t('Skill summary')}</h2>
+          <ul className="m-0 list-none border-y border-line p-0">
+            {skills.map(([code, value], i) => (
+              <li key={code} className={`flex items-center justify-between gap-3 py-3.5 ${edRow(i)}`}>
+                <span className="text-lg font-medium text-ink">{skillLabel(code)}</span>
+                <span className="inline-flex items-center gap-2 text-[15px] text-ink-soft">
+                  <span aria-hidden className={`size-2 rounded-full ${SIGNAL_DOT[value.signal] ?? 'bg-line-strong'}`} />
                   {SIGNAL_LABELS[value.signal] ? t(SIGNAL_LABELS[value.signal]) : humanize(value.signal)}
-                </Badge>
-              </div>
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       )}
 
       {weaknesses.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className={SECTION_TITLE}>{t('Focus areas')}</h2>
-          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-            {weaknesses.map((w) => (
-              <div key={w.skill_code} className={`flex items-center justify-between gap-3 px-4 py-3.5 ${CARD}`}>
-                <span className="text-sm font-bold text-ink">{skillLabel(w.skill_code)}</span>
-                <Badge tone="indigo">{t('Priority {n}', { n: w.priority })}</Badge>
-              </div>
+          <h2 className={sectionTitle}>{t('Focus areas')}</h2>
+          <ul className="m-0 list-none border-y border-line p-0">
+            {weaknesses.map((w, i) => (
+              <li key={w.skill_code} className={`flex items-center justify-between gap-3 py-3.5 ${edRow(i)}`}>
+                <span className="text-lg font-medium text-ink">{skillLabel(w.skill_code)}</span>
+                <span className="lp-num text-[15px] text-ink-muted">{t('Priority {n}', { n: w.priority })}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       )}
 
       {(writing || speaking) && (
-        <section className="flex flex-col gap-3">
-          <h2 className={SECTION_TITLE}>{t('Writing & speaking feedback')}</h2>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {writing && (
-              <Card>
-                <div className="flex flex-col gap-2">
-                  <Badge tone="indigo">{t('Writing · {score}/10', { score: writing.score })}</Badge>
-                  <p className={BODY}>{writing.feedback}</p>
-                </div>
-              </Card>
-            )}
-            {speaking && (
-              <Card>
-                <div className="flex flex-col gap-2">
-                  <Badge tone="violet">{t('Speaking · {score}/10', { score: speaking.score })}</Badge>
-                  <p className={BODY}>{speaking.feedback}</p>
-                  {speaking.transcript && (
-                    <p className="m-0 border-s-[3px] border-brand-ink bg-surface-muted dark:bg-surface-sunken/60 rounded-e-lg p-3 text-sm italic text-ink-muted">
-                      “{speaking.transcript}”
-                    </p>
-                  )}
-                </div>
-              </Card>
-            )}
-          </div>
+        <section className="flex flex-col gap-4">
+          <h2 className={sectionTitle}>{t('Writing & speaking feedback')}</h2>
+          {writing && (
+            <div className="border-t border-line pt-4">
+              <p className="m-0 text-[15px] font-semibold text-ink">{t('Writing · {score}/10', { score: writing.score })}</p>
+              <p className={`${ED_BODY} mt-1.5`}>{writing.feedback}</p>
+            </div>
+          )}
+          {speaking && (
+            <div className="border-t border-line pt-4">
+              <p className="m-0 text-[15px] font-semibold text-ink">{t('Speaking · {score}/10', { score: speaking.score })}</p>
+              <p className={`${ED_BODY} mt-1.5`}>{speaking.feedback}</p>
+              {speaking.transcript && (
+                <p className="m-0 mt-3 border-s-2 border-line-strong ps-4 text-[15px] italic text-ink-muted">“{speaking.transcript}”</p>
+              )}
+            </div>
+          )}
         </section>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <Link to="/curriculum" className="flex-1">
-          <Button variant="primary" size="lg" fullWidth>{t('Browse courses')}</Button>
+          <Button variant="secondary" size="lg" fullWidth className={ED_BTN}>{t('Browse courses')}</Button>
         </Link>
         <Link to="/dashboard" className="flex-1">
-          <Button variant="secondary" size="lg" fullWidth>{t('Go to Dashboard')}</Button>
+          <Button variant="primary" size="lg" fullWidth className={ED_BTN}>{t('Go to Dashboard')}</Button>
         </Link>
       </div>
     </div>

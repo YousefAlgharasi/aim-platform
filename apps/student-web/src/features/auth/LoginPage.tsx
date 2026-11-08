@@ -72,9 +72,10 @@ export function LoginPage() {
         subtitle={t('Happy to see you again. Enter your email and password to continue.')}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 pt-6" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-8" noValidate>
         {error && <Banner variant="error">{error}</Banner>}
         <Input
+          variant="editorial"
           id="login-email"
           name="email"
           spellCheck={false}
@@ -88,6 +89,7 @@ export function LoginPage() {
           autoComplete="email"
         />
         <Input
+          variant="editorial"
           id="login-password"
           label={t('Password')}
           type={showPass ? 'text' : 'password'}
@@ -104,7 +106,7 @@ export function LoginPage() {
         </div>
 
         <div className="mt-2">
-          <Button type="submit" size="lg" fullWidth disabled={loading}>
+          <Button type="submit" size="lg" fullWidth className="!rounded-full !tracking-normal" disabled={loading}>
             {loading ? t('Signing in…') : t('Sign in')}
           </Button>
         </div>

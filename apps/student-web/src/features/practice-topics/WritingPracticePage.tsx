@@ -5,7 +5,7 @@ import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useI18n } from '../../i18n/I18nContext';
 import { countWords, isPracticeLocked, practiceTopicsApi, type PracticeTopic, type WritingResult } from './practiceTopicsApi';
@@ -69,7 +69,7 @@ export function WritingPracticePage() {
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <QuestionSkeleton />;
   if (locked) {
     return (
       <EmptyState
@@ -86,17 +86,30 @@ export function WritingPracticePage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-3xl w-full mx-auto">
+    <div className="flex flex-col gap-5 w-full">
       <PageTitleBar title={topic.title} subtitle={topic.description} fallback="/practice/writing" />
 
       {!result && (
         <>
-          <div className="flex items-center justify-between text-sm text-ink-muted">
-            <span>{t('{n} words', { n: words })}{topic.minWords ? ` · ${t('at least {n}', { n: topic.minWords })}` : ''}</span>
-            {secondsLeft !== null && <span className="font-bold tabular-nums">{secondsLeft > 0 ? mmss(secondsLeft) : t("Time's up")}</span>}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className={`lp-num font-semibold ${words >= minWords ? 'text-success-ink' : 'text-ink-muted'}`}>
+                {t('{n} words', { n: words })}{topic.minWords ? `, ${t('at least {n}', { n: topic.minWords })}` : ''}
+              </span>
+              {secondsLeft !== null && (
+                <span className={`lp-num rounded-full px-3 py-1 text-sm font-semibold ring-1 ${secondsLeft > 0 && secondsLeft <= 30 ? 'text-danger-ink ring-danger-line' : 'text-ink ring-line-strong'}`}>
+                  {secondsLeft > 0 ? mmss(secondsLeft) : t("Time's up")}
+                </span>
+              )}
+            </div>
+            {topic.minWords ? (
+              <div className="h-2 overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-valuemin={0} aria-valuemax={minWords} aria-valuenow={Math.min(words, minWords)} aria-label={t('Words written')}>
+                <div className={`h-full rounded-full transition-[width] duration-300 ${words >= minWords ? 'bg-success' : 'bg-brand'}`} style={{ width: `${Math.min(100, (words / minWords) * 100)}%` }} />
+              </div>
+            ) : null}
           </div>
           <textarea
-            className="w-full min-h-[240px] rounded-2xl bg-surface ring-1 ring-line focus:ring-brand p-4 text-base text-ink outline-none resize-y"
+            className="w-full min-h-[280px] resize-y rounded-2xl border-0 bg-surface p-5 text-base leading-relaxed text-ink outline-none ring-1 ring-line transition-shadow placeholder:text-ink-muted focus:ring-2 focus:ring-brand"
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={6000}
@@ -113,21 +126,21 @@ export function WritingPracticePage() {
 
       {result && (
         <section className="flex flex-col gap-4" aria-label={t('Your result')}>
-          <div className="rounded-3xl bg-surface ring-1 ring-line p-6 flex flex-col items-center gap-2 text-center">
-            <p className="m-0 text-xs font-bold uppercase tracking-wider text-ink-muted">{t('Your score')}</p>
-            <p className="m-0 text-5xl font-extrabold text-brand-ink">{result.score}<span className="text-xl text-ink-muted">/100</span></p>
-            <div className="w-full max-w-xs h-2.5 rounded-full bg-surface-strong overflow-hidden" role="img" aria-label={`${result.score} / 100`}>
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-surface p-6 text-center ring-1 ring-line sm:p-8">
+            <p className="m-0 text-sm text-ink-muted">{t('Your score')}</p>
+            <p className={`lp-num m-0 text-6xl font-semibold tracking-tight ${result.score >= 70 ? 'text-success-ink' : result.score >= 40 ? 'text-warning-ink' : 'text-danger-ink'}`}>{result.score}<span className="text-xl text-ink-muted">/100</span></p>
+            <div className="w-full max-w-xs h-2 rounded-full bg-ink/10 overflow-hidden" role="img" aria-label={`${result.score} / 100`}>
               <div className="h-full bg-brand rounded-full" style={{ width: `${result.score}%` }} />
             </div>
             {result.xpAwarded > 0
-              ? <span className="rounded-full bg-brand-soft text-brand-ink text-sm font-bold px-3 py-1">{t('+{xp} XP', { xp: result.xpAwarded })}</span>
+              ? <span className="rounded-full px-3 py-1 text-sm font-semibold text-brand-ink ring-1 ring-brand-line">{t('+{xp} XP', { xp: result.xpAwarded })}</span>
               : <span className="text-xs text-ink-muted">{t('You already earned XP for this topic today.')}</span>}
             <p className="m-0 mt-2 text-sm leading-relaxed text-ink-soft max-w-xl">{result.summary}</p>
           </div>
 
           {result.corrections.length > 0 && (
             <div className="flex flex-col gap-2">
-              <h2 className="m-0 text-base font-extrabold text-ink">{t('What to fix')}</h2>
+              <h2 className="m-0 text-xl font-semibold text-ink">{t('What to fix')}</h2>
               <ul className="m-0 p-0 list-none flex flex-col gap-2">
                 {result.corrections.map((c, i) => (
                   <li key={i} className="rounded-2xl bg-surface ring-1 ring-line p-3 text-sm flex flex-col gap-1" dir="auto">
@@ -139,7 +152,7 @@ export function WritingPracticePage() {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="secondary" onClick={() => { setResult(null); setText(''); setSecondsLeft(topic.timeLimitSeconds); }}>{t('Try again')}</Button>
             <Button onClick={() => navigate('/practice/writing')}>{t('More topics')}</Button>
           </div>

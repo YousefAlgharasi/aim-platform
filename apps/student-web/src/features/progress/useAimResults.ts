@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { getErrorMessage } from '../../api/client';
 import { useI18n } from '../../i18n/I18nContext';
 import { fetchAimResults, type AimResults } from './aimApi';
+import { loadSkillTitles } from './skillTitles';
 
 /**
  * Loads all read-only AIM outputs for the signed-in student.
@@ -26,7 +27,9 @@ export function useAimResults() {
     setLoading(true);
     setError('');
     try {
-      setData(await fetchAimResults(studentId));
+      // Skill titles load together with the results, so names never flash as raw keys.
+      const [results] = await Promise.all([fetchAimResults(studentId), loadSkillTitles()]);
+      setData(results);
     } catch (err) {
       setError(getErrorMessage(err, t('Could not load your progress.')));
     } finally {

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nContext';
-import { BackButton } from '../components/common/BackButton';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
 import { fetchEngagementSummary } from '../features/dashboard/dashboardApi';
 import { FlameIcon } from '../components/common/Icons';
-
-const ROOT_PATHS = new Set(['/', '/dashboard']);
 
 /** Unread in-app notifications, refreshed on every navigation so the badge clears after the inbox is read. */
 function useUnreadCount(pathname: string): number {
@@ -42,41 +39,33 @@ function useStreakDays(pathname: string): number | null {
 
 export function TopBar() {
   const { pathname } = useLocation();
-  const showBack = !ROOT_PATHS.has(pathname);
 
   const { t, formatNumber } = useI18n();
   const unread = useUnreadCount(pathname);
   const streakDays = useStreakDays(pathname);
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 h-16 shrink-0 border-b rounded-b-3xl shadow-sm bg-surface/80 border-line-subtle dark:bg-elevated/80">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b backdrop-blur-md bg-page/90 border-line">
       <div className="flex items-center gap-2.5 justify-self-start min-w-0">
-        {showBack && <BackButton />}
-        <div className={`size-8 rounded-xl bg-gradient-to-br from-brand to-secondary items-center justify-center text-white font-black text-xs shadow-md shadow-brand/20 md:hidden ${showBack ? 'hidden min-[420px]:flex' : 'flex'}`} aria-hidden="true">
-          AIM
-        </div>
-        <span className="hidden sm:inline font-extrabold text-sm tracking-tight text-ink md:hidden">{t('AIM English')}</span>
+        <span className="text-xl font-bold leading-none tracking-tight text-ink rtl:tracking-normal md:hidden">AIM</span>
       </div>
 
-      <div className="justify-self-center">
+      <div className="flex items-center gap-2 justify-self-end ms-auto">
         {streakDays != null && (
-          <span
-            role="img"
-            aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
-            title={t('Day streak')}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-sm font-extrabold bg-warning-soft text-warning-ink dark:bg-warning/15"
-          >
-            <FlameIcon className="size-[18px] text-gold fill-gold" />
-            <span aria-hidden="true">{formatNumber(streakDays)}</span>
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2 justify-self-end">
+            <span
+              role="img"
+              aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
+              title={t('Day streak')}
+              className="inline-flex items-center gap-1.5 h-9 px-2 text-sm font-semibold text-ink lp-num"
+            >
+              <FlameIcon className="size-[18px] text-ink" />
+              <span aria-hidden="true">{formatNumber(streakDays)}</span>
+            </span>
+          )}
         <Link
           to="/notifications"
           aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
-          className="relative size-9 rounded-xl flex items-center justify-center no-underline transition-colors bg-control text-ink-soft hover:bg-brand-soft hover:text-brand-ink"
+          className="relative size-10 rounded-full flex items-center justify-center no-underline transition-colors text-ink-soft hover:bg-surface-strong hover:text-ink"
         >
           <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />

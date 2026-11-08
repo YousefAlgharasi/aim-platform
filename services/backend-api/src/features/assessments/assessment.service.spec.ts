@@ -22,6 +22,7 @@ function makeRepo(overrides: Partial<Record<string, jest.Mock>> = {}) {
     ]),
     countQuestionsPerSection: jest.fn().mockResolvedValue(new Map([['s-1', 10]])),
     findEffectiveDeadline: jest.fn().mockResolvedValue(null),
+    findEffectiveDeadlines: jest.fn().mockResolvedValue(new Map()),
     countAttemptsByStudent: jest.fn().mockResolvedValue(0),
     findActiveAttempt: jest.fn().mockResolvedValue(null),
     ...overrides,
@@ -53,14 +54,16 @@ describe('AssessmentService', () => {
     });
     it('returns computed deadlineStatus when deadline exists', async () => {
       const repo = makeRepo({
-        findEffectiveDeadline: jest.fn().mockResolvedValue({
-          id: 'd-1', opens_at: past, closes_at: farFuture,
+        findEffectiveDeadlines: jest.fn().mockResolvedValue(new Map([['a-1', {
+          id: 'd-1', assessment_id: 'a-1', opens_at: past, closes_at: farFuture,
           extended_closes_at: null, late_window_seconds: null, late_penalty_percent: 0, is_active: true,
-        }),
+        }]])),
       });
       const svc = new AssessmentService(repo as any, mockDb as any);
       const results = await svc.listForStudent('stu-1');
       expect(results[0].deadlineStatus).toBe('open');
+      // one batched lookup, not one query per assessment
+      expect(repo.findEffectiveDeadlines).toHaveBeenCalledTimes(1);
     });
     it('response never contains passThreshold or sectionWeight', async () => {
       const svc = new AssessmentService(makeRepo() as any, mockDb as any);
