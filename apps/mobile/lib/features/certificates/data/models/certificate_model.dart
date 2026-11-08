@@ -85,6 +85,7 @@ class CertificateScoreEntryModel {
     required this.maxScore,
     required this.scorePercent,
     required this.passed,
+    this.isFinalExam = false,
   });
 
   final String assessmentId;
@@ -94,6 +95,7 @@ class CertificateScoreEntryModel {
   final int maxScore;
   final int scorePercent;
   final bool passed;
+  final bool isFinalExam;
 
   factory CertificateScoreEntryModel.fromJson(Map<String, dynamic> json) {
     int toInt(dynamic v) {
@@ -110,6 +112,7 @@ class CertificateScoreEntryModel {
       maxScore: toInt(json['maxScore']),
       scorePercent: toInt(json['scorePercent']),
       passed: json['passed'] as bool? ?? false,
+      isFinalExam: json['isFinalExam'] as bool? ?? false,
     );
   }
 }

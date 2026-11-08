@@ -7,6 +7,7 @@ import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/onboarding/data/onboarding_walkthrough_store.dart';
 import 'package:aim_mobile/features/onboarding/logic/provider/onboarding_walkthrough_provider.dart';
 import 'package:aim_mobile/features/shell/ui/pages/main_shell_page.dart';
+import 'package:aim_mobile/features/shell/ui/widgets/app_chrome.dart';
 
 /// Marks the first-time walkthrough as already seen so these navigation
 /// tests aren't blocked by the overlay (that's covered separately in
@@ -31,12 +32,25 @@ class _NoopStore extends OnboardingWalkthroughStore {
 void main() {
   testWidgets('main shell shows primary navigation items via the drawer',
       (tester) async {
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(TestShell(
       overrides: [_walkthroughAlreadySeen],
-      child: const MainShellPage(),
+      child: const AppChrome(location: '/main', child: MainShellPage()),
     ));
 
-    expect(find.byType(BottomNavigationBar), findsNothing);
+    // Phone navigation like the web app: four tabs plus Menu.
+    final bottom = find.descendant(
+      of: find.byType(Scaffold).first,
+      matching: find.byType(InkWell),
+    );
+    expect(bottom, findsWidgets);
+    for (final tab in const ['Dashboard', 'Courses', 'Improve', 'Practice', 'Menu']) {
+      expect(find.text(tab), findsWidgets, reason: tab);
+    }
+    expect(find.text('AIM'), findsWidgets);
 
     Finder inDrawer(String text) => find.descendant(
           of: find.byType(Drawer),
@@ -53,24 +67,45 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    await openDrawer();
-    expect(inDrawer('Home Feed'), findsOneWidget);
-    expect(inDrawer('Chapters & Course'), findsOneWidget);
-    expect(inDrawer('Analytics & Progress'), findsOneWidget);
-    expect(inDrawer('Achievements'), findsOneWidget);
-    expect(inDrawer('Account Settings'), findsOneWidget);
+    // The bottom bar's Menu button opens the slide-in menu.
+    await tester.tap(find.text('Menu').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(Drawer), findsOneWidget);
+    // Same menu as the student web app.
+    for (final label in const [
+      'Dashboard',
+      'Courses',
+      'Improve',
+      'Assessments',
+      'Practice',
+      'AI Teacher',
+      'My words',
+      'My mistakes',
+      'Progress',
+      'Achievements',
+      'Certificates',
+      'Notifications',
+      'Billing',
+      'Support',
+      'Settings',
+    ]) {
+      expect(inDrawer(label), findsOneWidget, reason: label);
+    }
 
-    await tester.tap(inDrawer('Chapters & Course'));
+    expect(inDrawer('Reports'), findsNothing); // Reports was removed.
+
+    await tester.tap(inDrawer('Courses'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    await tester.tap(inDrawer('Analytics & Progress'));
+    await tester.tap(inDrawer('Progress'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     await openDrawer();
-    expect(inDrawer('Home Feed'), findsOneWidget);
+    expect(inDrawer('Dashboard'), findsOneWidget);
   });
 }
 
@@ -91,6 +126,7 @@ class TestShell extends StatelessWidget {
           initialLocation: '/',
           routes: [
             GoRoute(path: '/', builder: (context, state) => child),
+            GoRoute(path: '/main', builder: (context, state) => child),
           ],
           errorBuilder: (context, state) => const SizedBox(),
         ),

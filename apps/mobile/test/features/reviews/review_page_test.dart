@@ -151,8 +151,10 @@ void main() {
 
       expect(find.text('Review'), findsOneWidget);
       expect(find.text('Due now'), findsOneWidget);
-      expect(find.text('Learned'), findsOneWidget);
-      expect(find.text('Streak'), findsOneWidget);
+      expect(find.text('Upcoming'), findsOneWidget);
+      expect(find.text('Skills'), findsOneWidget);
+      // The old placeholder "7d streak" is gone.
+      expect(find.text('7d'), findsNothing);
       expect(find.text('Start Review Session'), findsOneWidget);
       expect(find.text('Greetings'), findsOneWidget);
       expect(find.text('Interval 2d'), findsOneWidget);
@@ -170,8 +172,8 @@ void main() {
 
       expect(find.text('المراجعة'), findsOneWidget);
       expect(find.text('مستحقة الآن'), findsOneWidget);
-      expect(find.text('تم تعلمها'), findsOneWidget);
-      expect(find.text('التتابع'), findsOneWidget);
+      expect(find.text('قادمة'), findsOneWidget);
+      expect(find.text('مهارات'), findsOneWidget);
       expect(find.text('بدء جلسة المراجعة'), findsOneWidget);
       expect(find.text('الفاصل 2 يوم'), findsOneWidget);
       expect(find.text('تكرار #3'), findsOneWidget);

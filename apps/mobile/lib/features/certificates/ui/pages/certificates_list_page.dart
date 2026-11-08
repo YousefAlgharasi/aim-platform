@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
+import '../../../../core/localization/inline_tr.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
@@ -41,7 +42,7 @@ class _CertificatesListPageState extends ConsumerState<CertificatesListPage> {
 
     return Scaffold(
       appBar: AIMTopAppBar(
-        title: l10n.certificatesTitle,
+        title: context.tr('Certificates', 'الشهادات'),
         leading: IconButton(
           icon: Icon(
             isRtl ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
@@ -96,154 +97,82 @@ class _CertificateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final formattedDate =
-        DateFormat.yMMMMd(isRtl ? 'ar' : 'en').format(certificate.issuedAt);
+    final locale = context.isArabic ? 'ar' : 'en';
+    final nf = NumberFormat.decimalPattern(locale);
+    final issued = DateFormat.yMMMMd(locale).format(certificate.issuedAt);
 
-    final totalPts = certificate.totalPoints ??
-        certificate.breakdown?.totalPoints ??
-        (certificate.overallScorePercent != null
-            ? certificate.overallScorePercent! * 10
-            : 0);
-
-    final gradePercent = certificate.overallScorePercent ??
+    final pts = certificate.totalPoints ?? certificate.breakdown?.totalPoints;
+    final pct = certificate.overallScorePercent ??
         certificate.breakdown?.overallPercent ??
-        (totalPts / 10).round();
+        (pts != null ? (pts / 10).round() : null);
 
     return AIMCard(
-      onTap: () {
-        context.push(
-          AppRoutePaths.certificateDetail,
-          extra: certificate,
-        );
-      },
+      onTap: () => context.push(AppRoutePaths.certificateDetail, extra: certificate),
       child: Padding(
         padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Medal / Award Icon
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AimColors.warning500, AimColors.warning600],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.tr('Certificate of completion', 'شهادة إتمام'),
+                    style: AimTextStyles.caption.copyWith(
+                      color: AimColors.primary500,
+                      fontWeight: FontWeight.w600,
                     ),
-                    borderRadius: BorderRadius.circular(AimRadius.lg),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AimColors.warning500.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
                   ),
-                  child: const Icon(
-                    Icons.workspace_premium_rounded,
-                    color: Colors.white,
-                    size: 30,
+                  const SizedBox(height: 2),
+                  Text(
+                    certificate.courseTitle.isEmpty
+                        ? context.tr('Course', 'الدورة')
+                        : certificate.courseTitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodyLg.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.certificateEyebrow,
-                        style: AimTextStyles.caption.copyWith(
-                          color: AimColors.warning700,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        certificate.courseTitle,
-                        style: AimTextStyles.h3.copyWith(
-                          color: surfaces.textPrimary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: AimSpacing.space4),
-                      Text(
-                        l10n.certificatesIssuedOn(formattedDate),
-                        style: AimTextStyles.caption.copyWith(
-                          color: surfaces.textMuted,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 2),
+                  Text(
+                    fill(context.tr('Issued {date}', 'صدرت {date}'), {'date': issued}),
+                    style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: AimSpacing.space16),
-            const Divider(height: 1),
-            const SizedBox(height: AimSpacing.space12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // 1,000-Point System Summary
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.certificateTotalScoreLabel,
-                      style: AimTextStyles.caption.copyWith(
-                        color: surfaces.textMuted,
+            if (pct != null) ...[
+              const SizedBox(width: AimSpacing.space12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AimColors.success500.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      '${nf.format(pct)}%',
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: AimColors.success500,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: AimSpacing.space2),
+                  ),
+                  if (pts != null) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      l10n.certificatePointsOfMax(totalPts, 1000),
-                      style: AimTextStyles.bodyMd.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: surfaces.textPrimary,
-                      ),
+                      '\u2066${nf.format(pts)} / ${nf.format(1000)}\u2069',
+                      style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
                     ),
                   ],
-                ),
-                // Final Grade
-                Container(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AimSpacing.space12,
-                    vertical: AimSpacing.space4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AimColors.success50,
-                    borderRadius: BorderRadius.circular(AimRadius.full),
-                    border: Border.all(color: AimColors.success100),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.check_circle_rounded,
-                        size: 16,
-                        color: AimColors.success600,
-                      ),
-                      const SizedBox(width: AimSpacing.space4),
-                      Text(
-                        l10n.certificatesGrade(gradePercent),
-                        style: AimTextStyles.caption.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AimColors.success700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -258,7 +187,6 @@ class _EmptyCertificatesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
 
     return Center(
@@ -284,7 +212,7 @@ class _EmptyCertificatesView extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.space24),
             Text(
-              l10n.certificatesEmptyTitle,
+              context.tr('No certificates yet', 'لا شهادات بعد'),
               style: AimTextStyles.h3.copyWith(
                 color: surfaces.textPrimary,
               ),
@@ -292,7 +220,7 @@ class _EmptyCertificatesView extends StatelessWidget {
             ),
             const SizedBox(height: AimSpacing.space8),
             Text(
-              l10n.certificatesEmptyDescription,
+              context.tr('Complete a course and pass its final exam to earn your first certificate.', 'أكمل دورة واجتز امتحانها النهائي لتحصل على أول شهادة.'),
               style: AimTextStyles.bodyMd.copyWith(
                 color: surfaces.textMuted,
               ),
@@ -301,7 +229,7 @@ class _EmptyCertificatesView extends StatelessWidget {
             const SizedBox(height: AimSpacing.space24),
             AIMButton(
               onPressed: onExplore,
-              child: Text(l10n.commonStart),
+              child: Text(context.tr('Courses', 'الدورات')),
             ),
           ],
         ),

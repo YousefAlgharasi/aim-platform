@@ -637,13 +637,13 @@ describe('ReviewScheduleReadService — result reads (P5-072)', () => {
 
   it('maps DB row to ReviewScheduleEntry correctly, parsing interval_days float', async () => {
     const svc = new ReviewScheduleReadService(
-      makeMockDb(async () => ({ rows: [makeScheduleRow()], rowCount: 1 })),
+      makeMockDb(async () => ({ rows: [makeScheduleRow({ due_at: '2999-01-01T00:00:00.000Z' })], rowCount: 1 })),
     );
     const { reviewSchedules } = await svc.getReviewSchedulesForStudent(STUDENT_ID);
     expect(reviewSchedules[0]).toMatchObject({
       scheduleId:         SCHEDULE_ID,
       skillId:            SKILL_ID,
-      dueAt:              NOW_ISO,
+      dueAt:              '2999-01-01T00:00:00.000Z',
       intervalDays:       7,
       repetitionCount:    3,
       status:             'pending',

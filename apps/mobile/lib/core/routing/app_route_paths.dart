@@ -54,9 +54,6 @@ class AppRoutePaths {
   // Notification routes
   static const String notificationInbox = '/notifications/inbox';
 
-  // Analytics summary
-  static const String analyticsSummary = '/analytics/summary';
-
   // Achievements
   static const String achievements = '/achievements';
 
@@ -130,6 +127,10 @@ class AppRoutePaths {
   static const String courseClaim = '/courses/claim';
   static const String myCoursePayments = '/billing/my-payments';
   static const String certificateDetail = '/certificates/detail';
+
+  // Menu pages mirrored from the student web app.
+  static const String improve = '/improve';
+  static const String practiceHub = '/practice';
+  static const String vocabulary = '/vocabulary';
+  static const String mistakes = '/mistakes';
 }
-
-

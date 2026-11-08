@@ -109,8 +109,6 @@ class _EndpointTesterPageState extends ConsumerState<EndpointTesterPage> {
     const ApiEndpointDef(category: 'Assessments', name: 'List Assessments', method: 'GET', path: BackendApiPaths.studentAssessments),
     const ApiEndpointDef(category: 'Assessments', name: 'Deadlines', method: 'GET', path: BackendApiPaths.studentAssessmentDeadlines),
 
-    // Analytics
-    const ApiEndpointDef(category: 'Analytics', name: 'Analytics Summary', method: 'GET', path: BackendApiPaths.studentAnalyticsSummary),
 
     // Notifications
     const ApiEndpointDef(category: 'Notifications', name: 'Preferences', method: 'GET', path: BackendApiPaths.notificationPreferences),

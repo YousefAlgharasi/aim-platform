@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:aim_mobile/features/achievements/logic/provider/achievements_provider.dart';
 import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provider.dart';
-import 'package:aim_mobile/features/analytics_summary/logic/provider/analytics_summary_provider.dart';
 import 'package:aim_mobile/features/assessments/logic/provider/assessment_provider.dart';
 import 'package:aim_mobile/features/billing/logic/provider/billing_provider.dart';
 import 'package:aim_mobile/features/certificates/logic/provider/certificates_provider.dart';
@@ -31,7 +30,6 @@ void resetSessionScopedProviders(Ref ref) {
     ..invalidate(currentEnrollmentProvider)
     ..invalidate(learningPathProvider)
     ..invalidate(aimResultsProvider)
-    ..invalidate(analyticsSummaryProvider)
     ..invalidate(assessmentListProvider)
     ..invalidate(nextAssessmentProvider)
     ..invalidate(deadlinesProvider)

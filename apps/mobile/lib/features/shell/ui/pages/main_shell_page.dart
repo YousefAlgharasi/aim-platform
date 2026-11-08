@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
-import '../../../auth/logic/provider/logout_provider.dart';
 import '../../../home/ui/pages/home_page.dart';
 import '../../../lessons/ui/pages/course_list_page.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
@@ -23,9 +20,8 @@ import '../../logic/main_shell_tab_provider.dart';
 
 /// Main shell page — holds the tab [IndexedStack].
 ///
-/// Navigation between tabs is via the [AIMAppDrawer] (opened from the FAB)
-/// only — no bottom tab bar, per product direction (the drawer's MENU
-/// section already covers the same 5 destinations).
+/// The top bar, bottom tab bar and slide-in menu live in [AppChrome], which
+/// wraps this page and every other main page; this page only switches tabs.
 ///
 /// The selected tab is held in [mainShellTabIndexProvider] (rather than
 /// local State) so descendant pages — e.g. Home's "Browse Courses" action —
@@ -62,7 +58,7 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       _blockedByGateCheck = true;
     }
     // Eagerly load the unread notification count so the drawer's
-    // Notifications badge (see _buildDrawer) reflects real data as soon as
+    // Notifications badge reflects real data as soon as
     // the shell mounts, rather than only after some other screen (e.g.
     // Profile's NotificationBellButton) happens to have loaded it first.
     // Deferred via addPostFrameCallback, matching the same pattern already
@@ -143,7 +139,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     }
 
     final selectedIndex = ref.watch(mainShellTabIndexProvider);
-    final l10n = AppLocalizations.of(context);
     final hasSeenWalkthrough = ref.watch(onboardingWalkthroughProvider);
 
     return PopScope(
@@ -156,39 +151,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       child: Stack(
         children: [
           Scaffold(
-          drawer: _buildDrawer(context, ref, selectedIndex),
-          floatingActionButton: Builder(
-            builder: (context) => Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: AimGradients.ai,
-                boxShadow: [
-                  BoxShadow(
-                    color: AimColors.primary500.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                backgroundColor: Colors.transparent,
-                foregroundColor: AimColors.neutral0,
-                elevation: 0,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                tooltip: l10n.shellOpenMenuTooltip,
-                onPressed: () => Scaffold.of(context).openDrawer(),
-                child: const Icon(Icons.notes_rounded, color: Colors.white, size: 24),
-              ),
-            ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          // No bottomNavigationBar: navigation between tabs is handled entirely
-          // by the drawer's MENU section (see _buildDrawer) opened via the FAB
-          // above, per product direction — the bottom tab bar was redundant
-          // with the drawer and has been removed.
           body: _LazyIndexedStack(
             index: selectedIndex,
             children: MainShellPage._screens,
@@ -205,13 +167,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       ],
     ),
   );
-  }
-
-  /// Builds the side navigation drawer: app-branding header, a "MENU"
-  /// section mirroring the 5 bottom-nav tabs, a "MORE" section of
-  /// secondary destinations, a theme toggle, and a sign-out footer.
-  Widget _buildDrawer(BuildContext context, WidgetRef ref, int selectedIndex) {
-    return _AIMAppDrawerWithMore(selectedIndex: selectedIndex);
   }
 }
 
@@ -248,293 +203,6 @@ class _LazyIndexedStackState extends State<_LazyIndexedStack> {
       children: [
         for (var i = 0; i < widget.children.length; i++)
           _built.contains(i) ? widget.children[i] : const SizedBox.shrink(),
-      ],
-    );
-  }
-}
-
-class _AIMAppDrawerWithMore extends ConsumerStatefulWidget {
-  const _AIMAppDrawerWithMore({required this.selectedIndex});
-
-  final int selectedIndex;
-
-  @override
-  ConsumerState<_AIMAppDrawerWithMore> createState() =>
-      _AIMAppDrawerWithMoreState();
-}
-
-class _AIMAppDrawerWithMoreState
-    extends ConsumerState<_AIMAppDrawerWithMore> {
-  bool _isMoreExpanded = false;
-
-  void _selectTab(int index) {
-    context.pop();
-    ref.read(mainShellTabIndexProvider.notifier).state = index;
-  }
-
-  void _navigateTo(String routeName) {
-    context.pop();
-    context.push(routeName);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final selectedIndex = widget.selectedIndex;
-
-    final drawerItems = [
-      AIMDrawerItemData(
-        icon: const Icon(Icons.home_outlined),
-        label: l10n.shellNavHome,
-        selected: selectedIndex == 0,
-        onTap: () => _selectTab(0),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.menu_book_outlined),
-        label: l10n.shellNavLearn,
-        selected: selectedIndex == 1,
-        onTap: () => _selectTab(1),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.bar_chart_outlined),
-        label: l10n.shellNavProgress,
-        selected: selectedIndex == 3,
-        onTap: () => _selectTab(3),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.mic_none_rounded),
-        label: l10n.homeMissionPracticeSpeaking,
-        selected: false,
-        onTap: () => _navigateTo(AppRoutePaths.practiceSpeaking),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.edit_outlined),
-        label: l10n.homeMissionWriteParagraph,
-        selected: false,
-        onTap: () => _navigateTo(AppRoutePaths.practiceWriting),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.emoji_events_outlined),
-        label: l10n.shellAchievements,
-        selected: false,
-        onTap: () => _navigateTo(AppRoutePaths.achievements),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.settings_outlined),
-        label: l10n.settingsTitle,
-        selected: false,
-        onTap: () => _navigateTo(AppRoutePaths.accountSettings),
-      ),
-      AIMDrawerItemData(
-        icon: const Icon(Icons.tune_outlined),
-        label: 'More',
-        selected: selectedIndex == 2,
-        trailing: Icon(
-          _isMoreExpanded
-              ? Icons.keyboard_arrow_up_rounded
-              : Icons.keyboard_arrow_down_rounded,
-          color: AimColors.neutral500,
-        ),
-        onTap: () {
-          setState(() {
-            _isMoreExpanded = !_isMoreExpanded;
-          });
-        },
-      ),
-      if (_isMoreExpanded)
-        AIMDrawerItemData(
-          icon: const Padding(
-            padding: EdgeInsetsDirectional.only(start: 12),
-            child: Icon(Icons.style_outlined, color: AimColors.primary500),
-          ),
-          label: l10n.shellNavReview,
-          selected: selectedIndex == 2,
-          onTap: () => _selectTab(2),
-        ),
-    ];
-
-    return AIMAppDrawer(
-      header: const _AIMDrawerBrandHeader(),
-      items: drawerItems,
-      footer: Consumer(
-        builder: (context, ref, child) {
-          final logoutState = ref.watch(logoutProvider);
-          final isLoggingOut = logoutState.isLoading;
-          final surfaces = aimSurfacesOf(context);
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: isLoggingOut
-                    ? null
-                    : () {
-                        final token =
-                            ref.read(authFlowProvider).accessToken ?? '';
-                        ref.read(logoutProvider.notifier).logout(token);
-                      },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AimSpacing.space8),
-                  child: Text(
-                    'Log Out',
-                    style: AimTextStyles.bodyMd.copyWith(
-                      color: AimColors.error500,
-                      fontWeight: AimFontWeights.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AimSpacing.space4),
-              Text(
-                'AIM Mind Coach v2.4.0',
-                style: AimTextStyles.caption.copyWith(
-                  color: surfaces.textMuted,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// App-branding & profile header shown at the top of the side navigation drawer.
-class _AIMDrawerBrandHeader extends ConsumerWidget {
-  const _AIMDrawerBrandHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
-    final authContextState = ref.watch(authContextProvider);
-
-    final displayName = switch (authContextState) {
-      AppAsyncSuccess(:final data) => data.profile?.displayName ??
-          ((data.user.email != null && data.user.email!.isNotEmpty)
-              ? data.user.email!.split('@').first
-              : AppLocalizations.of(context).commonLearner),
-      _ => AppLocalizations.of(context).commonLearner,
-    };
-
-    final avatarLetter =
-        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A';
-
-    final isParent = switch (authContextState) {
-      AppAsyncSuccess(:final data) => data.hasRole('parent'),
-      _ => false,
-    };
-    final badgeText = isParent ? 'PARENT MEMBER' : 'AIM PLUS MEMBER';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'AIM',
-              style: AimTextStyles.h2.copyWith(
-                color: AimColors.primary500,
-                fontWeight: AimFontWeights.extrabold,
-                fontSize: 22,
-                letterSpacing: -0.5,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.all(AimSpacing.space8),
-                decoration: BoxDecoration(
-                  color: surfaces.surfaceSunken,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close,
-                  size: AimSizes.iconSm,
-                  color: surfaces.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AimSpacing.space16),
-        GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-            ref.read(mainShellTabIndexProvider.notifier).state = 4;
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AimSpacing.space16),
-            decoration: BoxDecoration(
-              color: surfaces.surfaceRaised,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: surfaces.border,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: AimGradients.ai,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    avatarLetter,
-                    style: AimTextStyles.h3.copyWith(
-                      color: AimColors.neutral0,
-                      fontWeight: AimFontWeights.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AimSpacing.componentGap),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: AimTextStyles.bodyLg.copyWith(
-                          color: surfaces.textPrimary,
-                          fontWeight: AimFontWeights.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: soft.primary,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: AimTextStyles.caption.copyWith(
-                            color: soft.onPrimary,
-                            fontWeight: AimFontWeights.extrabold,
-                            fontSize: 10,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

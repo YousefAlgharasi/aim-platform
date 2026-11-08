@@ -34,7 +34,6 @@ import '../../features/billing/ui/pages/pricing_page.dart';
 import '../../features/billing/ui/pages/invoice_history_page.dart';
 import '../../features/ai_teacher/ui/pages/ai_teacher_chat_page.dart';
 import '../../features/notifications/ui/pages/notification_inbox_page.dart';
-import '../../features/analytics_summary/ui/pages/analytics_summary_page.dart';
 import '../../features/achievements/ui/pages/achievements_page.dart';
 import '../../features/shell/ui/pages/main_shell_page.dart';
 import '../../features/dev_tools/ui/pages/endpoint_tester_page.dart';
@@ -73,6 +72,13 @@ import '../../features/certificates/ui/pages/certificates_list_page.dart';
 import '../../features/course_billing/ui/pages/course_claim_page.dart';
 import '../../features/course_billing/ui/pages/my_course_payments_page.dart';
 import '../../features/certificates/ui/pages/certificate_detail_page.dart';
+
+import '../../features/improve/ui/improve_page.dart';
+import '../../features/learner_tools/ui/mistakes_page.dart';
+import '../../features/learner_tools/ui/vocabulary_page.dart';
+import '../../features/practice_hub/ui/practice_hub_page.dart';
+
+import '../../features/shell/ui/widgets/app_chrome.dart';
 
 import 'app_route_paths.dart';
 
@@ -144,31 +150,6 @@ class AppRouter {
           },
         ),
         GoRoute(
-          path: AppRoutePaths.mainShell,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.home,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.learn,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.review,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.progress,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.profile,
-          builder: (context, state) => const MainShellPage(),
-        ),
-        // P6-021: Placement Test flow routes — guarded, backend-driven
-        GoRoute(
           path: AppRoutePaths.placementStart,
           builder: (context, state) => const PlacementStartPage(),
         ),
@@ -197,14 +178,6 @@ class AppRouter {
           builder: (context, state) => const PlacementGatePage(),
         ),
         GoRoute(
-          path: AppRoutePaths.courseChapters,
-          builder: (context, state) => _buildChapterListPage(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.chapterLessons,
-          builder: (context, state) => _buildLessonListPage(state.extra),
-        ),
-        GoRoute(
           path: AppRoutePaths.lessonDetail,
           builder: (context, state) => _buildLessonDetailPage(state.extra),
         ),
@@ -219,18 +192,9 @@ class AppRouter {
             );
           },
         ),
-        // AIM pipeline live wiring: lesson practice (learning session) flow
         GoRoute(
           path: AppRoutePaths.practiceSession,
           builder: (context, state) => _buildPracticeSessionPage(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.assessments,
-          builder: (context, state) => const AssessmentListPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.assessmentDetail,
-          builder: (context, state) => _buildAssessmentDetail(state.extra),
         ),
         GoRoute(
           path: AppRoutePaths.assessmentStart,
@@ -245,199 +209,21 @@ class AppRouter {
           builder: (context, state) => _buildAssessmentSubmit(state.extra),
         ),
         GoRoute(
-          path: AppRoutePaths.assessmentResult,
-          builder: (context, state) => _buildAssessmentResult(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.assessmentResultHistory,
-          builder: (context, state) => _buildResultHistory(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.subscription,
-          builder: (context, state) => const SubscriptionPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.pricing,
-          builder: (context, state) => const PricingPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.invoiceHistory,
-          builder: (context, state) => const InvoiceHistoryPage(),
-        ),
-        GoRoute(
           path: AppRoutePaths.aiTeacherChat,
           builder: (context, state) => _buildAiTeacherChat(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.notificationInbox,
-          builder: (context, state) => const NotificationInboxPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.analyticsSummary,
-          builder: (context, state) => const AnalyticsSummaryPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.achievements,
-          builder: (context, state) => const AchievementsPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.courseClaim,
-          builder: (context, state) {
-            final extra = state.extra is Map ? state.extra as Map : const {};
-            return CourseClaimPage(
-              courseId: (extra['courseId'] ?? state.uri.queryParameters['courseId'] ?? '') as String,
-              courseTitle: (extra['courseTitle'] ?? state.uri.queryParameters['courseTitle'] ?? '') as String,
-            );
-          },
-        ),
-        GoRoute(
-          path: AppRoutePaths.myCoursePayments,
-          builder: (context, state) => const MyCoursePaymentsPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.certificates,
-          builder: (context, state) => const CertificatesListPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.certificateDetail,
-          builder: (context, state) {
-            final cert = state.extra is CertificateModel
-                ? state.extra as CertificateModel
-                : null;
-            final id = state.uri.queryParameters['id'];
-            return CertificateDetailPage(
-              initialCertificate: cert,
-              certificateId: id,
-            );
-          },
         ),
         GoRoute(
           path: AppRoutePaths.endpointTester,
           builder: (context, state) => const EndpointTesterPage(),
         ),
-        // TASK-14: Profile routes
-        GoRoute(
-          path: AppRoutePaths.editProfile,
-          builder: (context, state) => const EditProfilePage(),
-        ),
-        // TASK-14: Progress detail routes
-        GoRoute(
-          path: AppRoutePaths.skillState,
-          builder: (context, state) => const SkillStatePage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.weaknessSummary,
-          builder: (context, state) => const WeaknessSummaryPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.recommendations,
-          builder: (context, state) => const RecommendationsPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.reviewSchedule,
-          builder: (context, state) => const ReviewSchedulePage(),
-        ),
-        // TASK-14: Placement intro route
         GoRoute(
           path: AppRoutePaths.placementIntro,
           builder: (context, state) => const PlacementIntroPage(),
         ),
         GoRoute(
-          path: AppRoutePaths.learningPath,
-          builder: (context, state) => const LearningPathPage(),
-        ),
-        // TASK-14: Assessment deadlines route
-        GoRoute(
-          path: AppRoutePaths.assessmentDeadlines,
-          builder: (context, state) => const DeadlinesPage(),
-        ),
-        // TASK-14: Voice Teacher routes
-        GoRoute(
           path: AppRoutePaths.voiceTeacher,
           builder: (context, state) => _buildVoiceTeacherPage(state.extra),
         ),
-        // Practice Speaking + Write a Paragraph
-        GoRoute(
-          path: AppRoutePaths.practiceSpeaking,
-          builder: (context, state) => const PracticeTopicsPage(kind: 'speaking'),
-        ),
-        GoRoute(
-          path: AppRoutePaths.practiceWriting,
-          builder: (context, state) => const PracticeTopicsPage(kind: 'writing'),
-        ),
-        GoRoute(
-          path: AppRoutePaths.practiceWritingTopic,
-          builder: (context, state) {
-            final topic = state.extra;
-            return topic is PracticeTopic ? WritingPracticePage(topic: topic) : const SplashPage();
-          },
-        ),
-        // TASK-14: AI Teacher routes
-        GoRoute(
-          path: AppRoutePaths.aiTeacherSettings,
-          builder: (context, state) => const AiTeacherSettingsPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.aiTeacherHistory,
-          builder: (context, state) => const AiTeacherSessionHistoryPage(),
-        ),
-        // TASK-14: Notification routes
-        GoRoute(
-          path: AppRoutePaths.notificationPreferences,
-          builder: (context, state) => const NotificationPreferencesPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.reminderSettings,
-          builder: (context, state) => const ReminderSettingsPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.notificationDetail,
-          builder: (context, state) =>
-              _buildNotificationDetailPage(state.extra),
-        ),
-        // TASK-14: Support routes
-        GoRoute(
-          path: AppRoutePaths.helpCenter,
-          builder: (context, state) => const HelpCenterPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.parentHelpCenter,
-          builder: (context, state) => const ParentHelpCenterPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.createTicket,
-          builder: (context, state) => const CreateTicketPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.feedback,
-          builder: (context, state) => const FeedbackPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.ticketList,
-          builder: (context, state) => const TicketListPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.ticketDetail,
-          builder: (context, state) => _buildTicketDetailPage(state.extra),
-        ),
-        GoRoute(
-          path: AppRoutePaths.parentTicketList,
-          builder: (context, state) => const ParentTicketListPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.supportStatus,
-          builder: (context, state) => const StatusPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.releaseNotes,
-          builder: (context, state) => const ReleaseNotesPage(),
-        ),
-        GoRoute(
-          path: AppRoutePaths.releaseNoteDetail,
-          builder: (context, state) =>
-              _buildReleaseNoteDetailPage(state.extra),
-        ),
-        // TASK-14: Billing routes
         GoRoute(
           path: AppRoutePaths.checkoutStart,
           builder: (context, state) => _buildCheckoutStartPage(state.extra),
@@ -446,8 +232,6 @@ class AppRouter {
           path: AppRoutePaths.checkoutStatus,
           builder: (context, state) => _buildCheckoutStatusPage(state.extra),
         ),
-        // TASK-14: Dev Tools — fullscreenDialog to match the debug preview's
-        // original MaterialPageRoute(fullscreenDialog: true) presentation.
         GoRoute(
           path: AppRoutePaths.designSystemPreview,
           pageBuilder: (context, state) => const MaterialPage<void>(
@@ -464,11 +248,241 @@ class AppRouter {
             return VoiceTeacherPage(contextRef: contextRef);
           },
         ),
-        GoRoute(
-          path: AppRoutePaths.accountSettings,
-          builder: (context, state) => const AccountSettingsPage(),
+        // Everything else sits inside the app chrome: top bar, bottom tab bar
+        // and the slide-in menu (see AppChrome).
+        ShellRoute(
+          builder: (context, state, child) =>
+              AppChrome(location: state.uri.path, child: child),
+          routes: [
+          GoRoute(
+            path: AppRoutePaths.mainShell,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.home,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.learn,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.review,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.progress,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.profile,
+            builder: (context, state) => const MainShellPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.courseChapters,
+            builder: (context, state) => _buildChapterListPage(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.chapterLessons,
+            builder: (context, state) => _buildLessonListPage(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.assessments,
+            builder: (context, state) => const AssessmentListPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.assessmentDetail,
+            builder: (context, state) => _buildAssessmentDetail(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.assessmentResult,
+            builder: (context, state) => _buildAssessmentResult(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.assessmentResultHistory,
+            builder: (context, state) => _buildResultHistory(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.subscription,
+            builder: (context, state) => const SubscriptionPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.pricing,
+            builder: (context, state) => const PricingPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.invoiceHistory,
+            builder: (context, state) => const InvoiceHistoryPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.notificationInbox,
+            builder: (context, state) => const NotificationInboxPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.achievements,
+            builder: (context, state) => const AchievementsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.courseClaim,
+            builder: (context, state) {
+              final extra = state.extra is Map ? state.extra as Map : const {};
+              return CourseClaimPage(
+                courseId: (extra['courseId'] ?? state.uri.queryParameters['courseId'] ?? '') as String,
+                courseTitle: (extra['courseTitle'] ?? state.uri.queryParameters['courseTitle'] ?? '') as String,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutePaths.myCoursePayments,
+            builder: (context, state) => const MyCoursePaymentsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.certificates,
+            builder: (context, state) => const CertificatesListPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.certificateDetail,
+            builder: (context, state) {
+              final cert = state.extra is CertificateModel
+                  ? state.extra as CertificateModel
+                  : null;
+              final id = state.uri.queryParameters['id'];
+              return CertificateDetailPage(
+                initialCertificate: cert,
+                certificateId: id,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutePaths.editProfile,
+            builder: (context, state) => const EditProfilePage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.skillState,
+            builder: (context, state) => const SkillStatePage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.weaknessSummary,
+            builder: (context, state) => const WeaknessSummaryPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.recommendations,
+            builder: (context, state) => const RecommendationsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.reviewSchedule,
+            builder: (context, state) => const ReviewSchedulePage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.learningPath,
+            builder: (context, state) => const LearningPathPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.assessmentDeadlines,
+            builder: (context, state) => const DeadlinesPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.practiceSpeaking,
+            builder: (context, state) => const PracticeTopicsPage(kind: 'speaking'),
+          ),
+          GoRoute(
+            path: AppRoutePaths.practiceWriting,
+            builder: (context, state) => const PracticeTopicsPage(kind: 'writing'),
+          ),
+          GoRoute(
+            path: AppRoutePaths.practiceWritingTopic,
+            builder: (context, state) {
+              final topic = state.extra;
+              return topic is PracticeTopic ? WritingPracticePage(topic: topic) : const SplashPage();
+            },
+          ),
+          GoRoute(
+            path: AppRoutePaths.aiTeacherSettings,
+            builder: (context, state) => const AiTeacherSettingsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.aiTeacherHistory,
+            builder: (context, state) => const AiTeacherSessionHistoryPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.notificationPreferences,
+            builder: (context, state) => const NotificationPreferencesPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.reminderSettings,
+            builder: (context, state) => const ReminderSettingsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.notificationDetail,
+            builder: (context, state) =>
+                _buildNotificationDetailPage(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.helpCenter,
+            builder: (context, state) => const HelpCenterPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.parentHelpCenter,
+            builder: (context, state) => const ParentHelpCenterPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.createTicket,
+            builder: (context, state) => const CreateTicketPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.feedback,
+            builder: (context, state) => const FeedbackPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.ticketList,
+            builder: (context, state) => const TicketListPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.ticketDetail,
+            builder: (context, state) => _buildTicketDetailPage(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.parentTicketList,
+            builder: (context, state) => const ParentTicketListPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.supportStatus,
+            builder: (context, state) => const StatusPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.releaseNotes,
+            builder: (context, state) => const ReleaseNotesPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.releaseNoteDetail,
+            builder: (context, state) =>
+                _buildReleaseNoteDetailPage(state.extra),
+          ),
+          GoRoute(
+            path: AppRoutePaths.accountSettings,
+            builder: (context, state) => const AccountSettingsPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.improve,
+            builder: (context, state) => const ImprovePage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.practiceHub,
+            builder: (context, state) => const PracticeHubPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.vocabulary,
+            builder: (context, state) => const VocabularyPage(),
+          ),
+          GoRoute(
+            path: AppRoutePaths.mistakes,
+            builder: (context, state) => MistakesPage(
+              quick: state.uri.queryParameters['quick'] == '1',
+              skill: state.uri.queryParameters['skill'],
+            ),
+          ),
+          ],
         ),
-
       ],
     );
   }
@@ -830,10 +844,13 @@ class AppRouter {
     AppRoutePaths.invoiceHistory,
     AppRoutePaths.aiTeacherChat,
     AppRoutePaths.notificationInbox,
-    AppRoutePaths.analyticsSummary,
     AppRoutePaths.achievements,
     AppRoutePaths.certificates,
     AppRoutePaths.certificateDetail,
+    AppRoutePaths.improve,
+    AppRoutePaths.practiceHub,
+    AppRoutePaths.vocabulary,
+    AppRoutePaths.mistakes,
     // TASK-14: Newly wired-up screens are authenticated-student-facing
     AppRoutePaths.editProfile,
     AppRoutePaths.skillState,
