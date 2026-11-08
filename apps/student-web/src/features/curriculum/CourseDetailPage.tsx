@@ -105,7 +105,7 @@ export function CourseDetailPage() {
 
   return (
     <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
-      <section className="border-t border-line pt-6 lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+      <section className="lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-3">
             <Link to="/curriculum" className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-ink-soft no-underline hover:text-ink"><BookIcon className="size-4" />{t('Courses')}</Link>
@@ -135,7 +135,7 @@ export function CourseDetailPage() {
               <div className="h-full rounded-full bg-brand transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${course.percent}%` }} />
             </div>
           </div>
-          <p className="m-0 text-sm text-ink-muted">
+          <p className="m-0 hidden text-sm text-ink-muted sm:block">
             {[
               totalChapters > 0 ? plural(totalChapters, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: totalChapters }), other: t('{n} chapters', { n: totalChapters }) }) : null,
               course.quizCount > 0 ? plural(course.quizCount, { one: t('1 quiz'), two: t('2 quizzes'), few: t('{n} quizzes', { n: course.quizCount }), other: t('{n} quizzes', { n: course.quizCount }) }) : null,
