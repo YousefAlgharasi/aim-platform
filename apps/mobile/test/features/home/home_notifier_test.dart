@@ -156,6 +156,17 @@ class _FakeHomeRepository implements HomeRepository {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+class _WeaknessFailsRepository extends _FakeHomeRepository {
+  _WeaknessFailsRepository();
+
+  @override
+  Future<List<HomeWeaknessRecordModel>> getWeaknessRecords({
+    required String bearerToken,
+    required String studentId,
+  }) async =>
+      throw const AppException(code: 'SERVER_ERROR', message: 'Error');
+}
+
 void main() {
   ProviderContainer makeContainer({
     bool shouldFail = false,
@@ -210,6 +221,29 @@ void main() {
       final state = c.read(homeProvider);
       expect(state, isA<AppAsyncFailure<HomeData>>());
       expect((state as AppAsyncFailure<HomeData>).code, 'SERVER_ERROR');
+    });
+
+    test('one failing core section degrades only that section', () async {
+      final c = ProviderContainer(
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_WeaknessFailsRepository()),
+        ],
+      );
+      addTearDown(c.dispose);
+
+      await c.read(homeProvider.notifier).load(
+            bearerToken: 'tok',
+            studentId: 'student-1',
+          );
+
+      final state = c.read(homeProvider);
+      expect(state, isA<AppAsyncSuccess<HomeData>>());
+      final data = (state as AppAsyncSuccess<HomeData>).data;
+      expect(data.weaknessRecords, isEmpty);
+      expect(data.skillStates.length, 1);
+      expect(data.recommendations.length, 1);
+      expect(data.hasFailedSections, isTrue);
+      expect(data.isEmpty, isFalse);
     });
 
     test('load emits loading state before resolving', () async {
