@@ -134,9 +134,46 @@ class _AppMenuDrawerState
           final isLoggingOut = logoutState.isLoading;
           final surfaces = aimSurfacesOf(context);
 
+          final mode = ref.watch(themeModeProvider);
+          final isDark = mode == ThemeMode.dark ||
+              (mode == ThemeMode.system &&
+                  Theme.of(context).brightness == Brightness.dark);
+
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Light / dark, as in the web app's menu.
+              InkWell(
+                borderRadius: BorderRadius.circular(AimRadius.md),
+                onTap: () => ref.read(themeModeProvider.notifier).state =
+                    isDark ? ThemeMode.light : ThemeMode.dark,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AimSpacing.space8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isDark ? Icons.nights_stay_outlined : Icons.wb_sunny_outlined,
+                        size: 20,
+                        color: surfaces.textSecondary,
+                      ),
+                      const SizedBox(width: AimSpacing.space12),
+                      Expanded(
+                        child: Text(
+                          isDark
+                              ? context.tr('Dark mode', 'الوضع الداكن')
+                              : context.tr('Light mode', 'الوضع الفاتح'),
+                          style: AimTextStyles.bodyMd.copyWith(color: surfaces.textSecondary),
+                        ),
+                      ),
+                      Switch(
+                        value: isDark,
+                        onChanged: (v) => ref.read(themeModeProvider.notifier).state =
+                            v ? ThemeMode.dark : ThemeMode.light,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               GestureDetector(
                 onTap: isLoggingOut
                     ? null

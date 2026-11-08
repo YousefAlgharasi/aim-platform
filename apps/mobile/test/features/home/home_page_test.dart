@@ -144,30 +144,7 @@ void main() {
       expect(find.byType(HomePage), findsOneWidget);
     });
 
-    testWidgets(
-        'shows a device-local "last updated" label after a load completes while mounted',
-        (tester) async {
-      final notifier = _FakeHomeNotifier(const AppAsyncState.loading());
-      await tester.pumpWidget(
-        _wrap(
-          const HomePage(),
-          overrides: [
-            homeProvider.overrideWith((ref) => notifier),
-          ],
-        ),
-      );
-      await tester.pump();
-
-      expect(find.textContaining('Updated'), findsNothing);
-
-      notifier.emitSuccess(_populated());
-      await tester.pump();
-
-      expect(find.textContaining('Updated'), findsOneWidget);
-    });
-
-    testWidgets(
-        'renders the Top Bar with AIM wordmark',
+    testWidgets('shows the web greeting and date instead of the old header',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -181,8 +158,70 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('AIM'), findsOneWidget);
-      expect(find.text('AIM English'), findsOneWidget);
+      expect(
+        find.textContaining(RegExp(r'^Good (morning|afternoon|evening)')),
+        findsOneWidget,
+      );
+      // The app chrome shows AIM now; the old in-page header is gone.
+      expect(find.text('AIM English'), findsNothing);
+      expect(find.text('Updated just now'), findsNothing);
+    });
+
+    testWidgets('shows the sections in the web order on a phone',
+        (tester) async {
+      tester.view.physicalSize = const Size(900, 6000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        _wrap(
+          const HomePage(),
+          overrides: [
+            homeProvider.overrideWith(
+              (ref) => _FakeHomeNotifier(
+                AppAsyncState.success(
+                  HomeData(
+                    skillStates: _populated().skillStates,
+                    weaknessRecords: _populated().weaknessRecords,
+                    reviewSchedules: _populated().reviewSchedules,
+                    recommendations: _populated().recommendations,
+                    engagementStats: _stats,
+                    goal: const HomeEngagementGoal(
+                      targetLessons: 2,
+                      completedToday: 1,
+                      streakDays: 3,
+                    ),
+                    dailyChallenge: const HomeDailyChallengeModel(
+                      key: 'goal',
+                      title: 'Reach your daily goal',
+                      description: 'Complete 2 lessons today.',
+                      targetCount: 2,
+                      progressCount: 1,
+                      completed: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      double y(String text) => tester.getTopLeft(find.text(text).first).dy;
+      final order = [
+        y('Word of the day'),
+        y('XP level'),
+        y('Top learners'),
+        y('1/2 today'),
+        y('Daily challenge'),
+        y('No activity this week'),
+        y('Upcoming deadlines'),
+      ];
+      for (var i = 1; i < order.length; i++) {
+        expect(order[i], greaterThan(order[i - 1]), reason: 'section $i is out of order');
+      }
+      expect(find.byType(HomeCoursePathSection), findsOneWidget);
     });
 
     testWidgets('shows error state with message', (tester) async {
@@ -248,9 +287,12 @@ void main() {
       expect(find.byType(HomeCoursePathSection), findsOneWidget);
     });
 
-    testWidgets(
-        'renders the welcome card from real engagementStats and active course details',
+    testWidgets('shows the stats tiles from the real engagementStats',
         (tester) async {
+      tester.view.physicalSize = const Size(900, 6000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         _wrap(
           const HomePage(),
@@ -265,13 +307,19 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.textContaining('Hello,'), findsOneWidget);
-      expect(find.textContaining('Level 3'), findsOneWidget);
-      expect(find.textContaining('62%'), findsOneWidget);
+      expect(find.text('XP level'), findsOneWidget);
+      expect(find.text('Total XP'), findsOneWidget);
+      expect(find.text('Badges'), findsOneWidget);
+      expect(find.text('Top 17%'), findsOneWidget);
+      expect(find.text('1,234'), findsOneWidget);
     });
 
-    testWidgets('renders daily missions list and roadmap nodes without error',
+    testWidgets('shows today\'s challenge from the Home load',
         (tester) async {
+      tester.view.physicalSize = const Size(900, 6000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         _wrap(
           const HomePage(),
@@ -302,12 +350,80 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Daily Missions'), findsOneWidget);
+      expect(find.text('Daily challenge'), findsOneWidget);
       expect(find.text('Read a Book'), findsOneWidget);
       // Practice Speaking / Write a Paragraph moved to the menu (they need a started course).
       expect(find.text('Practice Speaking'), findsNothing);
       expect(find.text('Write a Paragraph'), findsNothing);
     });
+
+    for (final loc in const [Locale('en'), Locale('ar')]) {
+      testWidgets('every section fits a small phone (${loc.languageCode})',
+          (tester) async {
+        tester.view.physicalSize = const Size(320, 6000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              homeProvider.overrideWith(
+                (ref) => _FakeHomeNotifier(
+                  AppAsyncState.success(
+                    HomeData(
+                      skillStates: _populated().skillStates,
+                      weaknessRecords: _populated().weaknessRecords,
+                      reviewSchedules: _populated().reviewSchedules,
+                      recommendations: _populated().recommendations,
+                      engagementStats: const HomeEngagementStatsModel(
+                        totalXp: 1234,
+                        xpToday: 40,
+                        level: 3,
+                        nextLevel: 4,
+                        currentLevelMinXp: 300,
+                        nextLevelMinXp: 600,
+                        levelProgressPercent: 62,
+                        badgeCount: 5,
+                        rankPercentile: 17,
+                        weeklyActivity: [
+                          HomeWeeklyActivityDayModel(date: '2026-11-02', xp: 20),
+                          HomeWeeklyActivityDayModel(date: '2026-11-03', xp: 0),
+                          HomeWeeklyActivityDayModel(date: '2026-11-04', xp: 60),
+                        ],
+                        weeklyDeltaPercent: 12,
+                      ),
+                      goal: const HomeEngagementGoal(
+                        targetLessons: 2,
+                        completedToday: 1,
+                        streakDays: 3,
+                      ),
+                      dailyChallenge: const HomeDailyChallengeModel(
+                        key: 'goal',
+                        title: 'Reach your daily goal',
+                        description: 'Complete 2 lessons today.',
+                        targetCount: 2,
+                        progressCount: 1,
+                        completed: false,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light,
+              locale: loc,
+              localizationsDelegates: AppLocale.delegates,
+              supportedLocales: AppLocale.supportedLocales,
+              home: const HomePage(),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(tester.takeException(), isNull);
+      });
+    }
 
     testWidgets('renders without error under RTL directionality', (tester) async {
       await tester.pumpWidget(
