@@ -5,12 +5,11 @@ import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { DetailSkeleton } from '../../components/common/Skeleton';
-import { AcademicIcon, TrophyIcon } from '../../components/common/Icons';
 import { useI18n } from '../../i18n/I18nContext';
 import { LevelBadge } from '../level/LevelBadge';
-import { buildWeakSpots, categoryOf, CATEGORY_LABEL, type Category } from '../improve/ImprovePage';
+import { buildWeakSpots, type WeakSpot, categoryOf, CATEGORY_LABEL, type Category } from '../improve/ImprovePage';
 import { useAimResults } from './useAimResults';
-import { dueLabel, prettifySkillId, toPercent, type SkillStateEntry } from './aimApi';
+import { dueLabel, prettifySkillId, toPercent, type ReviewScheduleEntry, type SkillStateEntry } from './aimApi';
 import * as ui from './ui';
 
 const OPEN_REVIEW = new Set(['due', 'pending', 'rescheduled']);
@@ -50,6 +49,28 @@ function Ring({ percent, size = 128 }: { percent: number; size?: number }) {
   );
 }
 
+export interface NextItem { skillId: string; kind: 'work' | 'review'; href: string; percent: number | null; dueAt: string | null; severity: WeakSpot['severity'] | null }
+
+/** One ordered "do next" list: shaky skills that are also due first, then due reviews, then the other shaky skills. Pure, so it can be tested. */
+export function buildNextItems(spots: WeakSpot[], dueReviews: ReviewScheduleEntry[]): NextItem[] {
+  const dueBySkill = new Map(dueReviews.map((r) => [r.skillId, r]));
+  const work = (s: WeakSpot): NextItem => ({
+    skillId: s.skillId,
+    kind: 'work',
+    href: s.lessonId ? `/practice/lesson/${encodeURIComponent(s.lessonId)}` : '/improve',
+    percent: s.skill ? toPercent(s.skill.masteryScore) : null,
+    dueAt: dueBySkill.get(s.skillId)?.dueAt ?? null,
+    severity: s.severity,
+  });
+  const spotIds = new Set(spots.map((s) => s.skillId));
+  const both = spots.filter((s) => dueBySkill.has(s.skillId)).map(work);
+  const reviewsOnly: NextItem[] = dueReviews
+    .filter((r) => !spotIds.has(r.skillId))
+    .map((r) => ({ skillId: r.skillId, kind: 'review', href: '/progress/reviews', percent: null, dueAt: r.dueAt, severity: null }));
+  const rest = spots.filter((s) => !dueBySkill.has(s.skillId)).map(work);
+  return [...both, ...reviewsOnly, ...rest];
+}
+
 export function ProgressSummary() {
   const { t, plural } = useI18n();
   const { data, loading, error, reload } = useAimResults();
@@ -62,18 +83,27 @@ export function ProgressSummary() {
 
   const { skillStates, reviewSchedules } = data;
   const avg = skillStates.length ? Math.round(skillStates.reduce((n, s) => n + toPercent(s.masteryScore), 0) / skillStates.length) : null;
-  const strong = skillStates.filter((s) => s.masteryScore >= 0.8).length;
   const dueReviews = reviewSchedules
     .filter((r) => OPEN_REVIEW.has(r.status.toLowerCase()))
     .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
   const isEmpty = skillStates.length === 0 && spots.length === 0 && reviewSchedules.length === 0;
 
-  const stat = (value: string | number, label: string) => (
-    <div className="rounded-2xl bg-white/10 p-3">
-      <span className="block text-2xl font-semibold tabular-nums tracking-tight">{value}</span>
-      <span className="text-xs font-semibold text-on-brand">{label}</span>
-    </div>
-  );
+  const items = buildNextItems(spots, dueReviews);
+  const next = items[0];
+  const improving = skillStates
+    .filter((s) => s.masteryTrend === 'improving')
+    .sort((a, b) => b.masteryScore - a.masteryScore)
+    .slice(0, 3);
+
+  const verb = (i: NextItem) => (i.kind === 'review' ? t('Review {skill}', { skill: prettifySkillId(i.skillId) }) : t('Practice {skill}', { skill: prettifySkillId(i.skillId) }));
+  const reason = (i: NextItem) =>
+    i.kind === 'review'
+      ? t('A review is due. A short refresh now helps you remember it.')
+      : i.dueAt
+        ? t('This skill is weak and its review is due.')
+        : i.severity === 'critical'
+          ? t('This is your weakest skill right now.')
+          : t('A little practice here will lift your overall score.');
 
   return (
     <div className="stagger flex flex-col gap-6">
@@ -83,22 +113,56 @@ export function ProgressSummary() {
         <EmptyState title={t('No progress yet')} message={t('Complete lessons and practice to see your skill mastery, weaknesses and review schedule here.')} />
       ) : (
         <>
-          <section className="hero-panel" aria-label={t('Overall mastery')}>
+          <section className="hero-panel" aria-label={t('Your next step')}>
             <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
               {avg !== null ? <Ring percent={avg} /> : null}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2"><LevelBadge tone="onBrand" /></div>
-                <p className="m-0 mt-2 text-xl font-semibold leading-snug sm:text-2xl">{avg !== null ? t('Overall mastery') : t('Not enough data yet')}</p>
-                <p className="m-0 mt-1 text-sm text-on-brand">{t('Based on your lessons, practice and assessments.')}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {stat(skillStates.length, t('Skills tracked'))}
-                  {stat(strong, t('Strong skills'))}
-                  {stat(spots.length, t('To work on'))}
-                  {stat(dueReviews.length, t('Reviews due'))}
+                <p className="m-0 mt-2 text-sm text-on-brand">{avg !== null ? t('Overall mastery {n}%', { n: avg }) : t('Not enough data yet')}</p>
+                <p className="m-0 mt-1 text-xl font-semibold leading-snug [unicode-bidi:plaintext] sm:text-2xl">{next ? verb(next) : t("You're on track")}</p>
+                <p className="m-0 mt-1 max-w-prose text-sm text-on-brand">{next ? reason(next) : t('Nothing is weak or due. Keep going with your course.')}</p>
+                <div className="mt-4">
+                  <Link
+                    to={next ? next.href : '/curriculum'}
+                    className="inline-flex h-12 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none"
+                  >
+                    {next ? (next.kind === 'review' ? t('Review now') : t('Practice now')) : t('Continue learning')}
+                  </Link>
                 </div>
               </div>
             </div>
           </section>
+
+          {improving.length > 0 && (
+            <p className="m-0 px-1 text-sm text-ink-muted">
+              <span className="font-semibold text-success-ink">{t('Going up lately:')}</span>{' '}
+              <span className="[unicode-bidi:plaintext]">{improving.map((s) => prettifySkillId(s.skillId)).join(', ')}</span>
+            </p>
+          )}
+
+          {items.length > 1 && (
+            <section className="flex flex-col gap-3" aria-label={t('Then')}>
+              <div className="flex items-center justify-between px-1">
+                <h2 className={ui.sectionTitle}>{t('Then')}</h2>
+                <Link to="/progress/reviews" className={ui.link}>{t('All reviews')}</Link>
+              </div>
+              <Card>
+                <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                  {items.slice(1, 5).map((i) => (
+                    <li key={i.skillId}>
+                      <Link to={i.href} className="flex items-center justify-between gap-3 rounded-xl bg-surface-sunken p-3 no-underline transition-colors hover:bg-brand-soft motion-reduce:transition-none">
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-bold text-ink [unicode-bidi:plaintext]">{prettifySkillId(i.skillId)}</span>
+                          <span className="block text-xs text-ink-muted">{i.kind === 'review' ? t('Review') : t('Practice')}{i.dueAt ? `, ${dueLabel(i.dueAt)}` : ''}</span>
+                        </span>
+                        {i.percent !== null && <span className="shrink-0 text-xs font-semibold tabular-nums text-danger-ink">{i.percent}%</span>}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </section>
+          )}
 
           <section className="flex flex-col gap-3" aria-label={t('Skills by area')}>
             <div className="flex items-center justify-between px-1">
@@ -129,69 +193,8 @@ export function ProgressSummary() {
               )}
             </Card>
           </section>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section className="flex flex-col gap-3" aria-label={t('Needs attention')}>
-              <div className="flex items-center justify-between px-1">
-                <h2 className={ui.sectionTitle}>{t('Needs attention')}</h2>
-                <Link to="/improve" className={ui.link}>{t('Improve')}</Link>
-              </div>
-              <Card>
-                {spots.length === 0 ? (
-                  <p className={ui.muted}>{t('No open weaknesses. Keep it up!')}</p>
-                ) : (
-                  <ul className="m-0 flex list-none flex-col gap-2 p-0">
-                    {spots.slice(0, 4).map((s) => (
-                      <li key={s.skillId}>
-                        <Link to={s.lessonId ? `/practice/lesson/${encodeURIComponent(s.lessonId)}` : '/improve'} className="flex items-center justify-between gap-3 rounded-xl bg-surface-sunken p-3 no-underline transition-colors hover:bg-brand-soft">
-                          <span className="min-w-0 truncate text-sm font-bold text-ink [unicode-bidi:plaintext]">{prettifySkillId(s.skillId)}</span>
-                          {s.skill && <span className="shrink-0 text-xs font-semibold tabular-nums text-danger-ink">{toPercent(s.skill.masteryScore)}%</span>}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Card>
-            </section>
-
-            <section className="flex flex-col gap-3" aria-label={t('Review schedule')}>
-              <div className="flex items-center justify-between px-1">
-                <h2 className={ui.sectionTitle}>{t('Review schedule')}</h2>
-                <Link to="/progress/reviews" className={ui.link}>{t('View all')}</Link>
-              </div>
-              <Card>
-                {dueReviews.length === 0 ? (
-                  <p className={ui.muted}>{t('Nothing to review right now.')}</p>
-                ) : (
-                  <ul className="m-0 flex list-none flex-col gap-2 p-0">
-                    {dueReviews.slice(0, 4).map((r) => (
-                      <li key={r.scheduleId} className="flex items-center justify-between gap-3 rounded-xl bg-surface-sunken p-3">
-                        <span className="min-w-0 truncate text-sm font-bold text-ink [unicode-bidi:plaintext]">{prettifySkillId(r.skillId)}</span>
-                        <span className="shrink-0 text-xs font-semibold text-ink-muted">{dueLabel(r.dueAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Card>
-            </section>
-          </div>
         </>
       )}
-
-      <section className="flex flex-col gap-3" aria-label={t('More')}>
-        <h2 className={`${ui.sectionTitle} px-1`}>{t('Your record')}</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {[
-            { to: '/achievements', text: 'Achievements', body: 'Badges you have earned', icon: <TrophyIcon className="size-6" /> },
-            { to: '/certificates', text: 'Certificates', body: 'Proof of finished courses', icon: <AcademicIcon className="size-6" /> },
-          ].map((x) => (
-            <Link key={x.to} to={x.to} className="group flex items-center gap-3 rounded-2xl bg-surface p-4 no-underline ring-1 ring-line transition-all hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus motion-reduce:transition-none">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-strong text-ink" aria-hidden="true">{x.icon}</span>
-              <span className="min-w-0"><span className="block text-sm font-semibold text-ink">{t(x.text)}</span><span className="block text-xs text-ink-muted">{t(x.body)}</span></span>
-            </Link>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
