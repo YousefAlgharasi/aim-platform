@@ -159,6 +159,9 @@ class BackendApiPaths {
   // Streak and challenge progress are always backend-computed.
   // ---------------------------------------------------------------------------
 
+  /// GET /student/home — every Home section in one response.
+  static const String studentHome = '/student/home';
+
   static const String engagementSummary = '/student/engagement/summary';
   static const String engagementGoal = '/student/engagement/goal';
 
