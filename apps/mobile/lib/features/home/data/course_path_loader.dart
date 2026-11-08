@@ -53,7 +53,12 @@ class CoursePathLoader {
   }) async {
     try {
       return await _viaCoursePath(bearerToken, courseId);
-    } catch (_) {
+    } catch (e) {
+      // The separate requests are three serial round trips. Only worth trying
+      // when the server answered (e.g. it predates the endpoint). When it did
+      // not answer at all, repeating the same slow server three more times in
+      // a row just adds minutes before the roadmap gives up.
+      if (BackendApiClient.isConnectivityError(e)) rethrow;
       return _viaSeparateEndpoints(bearerToken, courseId);
     }
   }

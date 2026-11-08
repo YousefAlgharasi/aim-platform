@@ -8,6 +8,7 @@ import { DatabaseHealthCheckResult } from './database.types';
 export class DatabaseService implements OnModuleDestroy {
   private readonly logger = new Logger(DatabaseService.name);
   private pool: Pool | null = null;
+  private readonly slowQueryMs = positiveInt(process.env.SLOW_QUERY_MS, 300);
 
   constructor(private readonly backendConfig: BackendConfigService) {}
 
@@ -15,7 +16,19 @@ export class DatabaseService implements OnModuleDestroy {
     text: string,
     values: readonly unknown[] = [],
   ): Promise<QueryResult<T>> {
-    return this.getPool().query<T>(text, [...values]);
+    const startedAt = Date.now();
+    try {
+      return await this.getPool().query<T>(text, [...values]);
+    } finally {
+      const ms = Date.now() - startedAt;
+      if (ms >= this.slowQueryMs) {
+        const pool = this.pool;
+        // The SQL text only (never the values): enough to find the query in the code.
+        this.logger.warn(
+          `SLOW_QUERY ${ms}ms pool(total=${pool?.totalCount ?? 0} idle=${pool?.idleCount ?? 0} waiting=${pool?.waitingCount ?? 0}) ${text.replace(/\s+/g, ' ').trim().slice(0, 160)}`,
+        );
+      }
+    }
   }
 
   async withClient<T>(
@@ -71,7 +84,10 @@ export class DatabaseService implements OnModuleDestroy {
     this.pool = new Pool({
       connectionString,
       max: timeouts.poolMax,
-      idleTimeoutMillis: 30_000,
+      // Keep connections open between requests. Each new connection to a remote database costs
+      // several network round trips (TCP + TLS + login), so closing idle ones after 30 s made the
+      // first requests after a quiet moment slow.
+      idleTimeoutMillis: timeouts.idleTimeoutMs,
       connectionTimeoutMillis: 5_000,
       // Server-side limits so a stuck query or an abandoned transaction can never hold a
       // connection (and, with a pool of 10, the whole API) hostage.
@@ -125,6 +141,7 @@ export class DatabaseService implements OnModuleDestroy {
 }
 
 export interface PoolTimeouts {
+  idleTimeoutMs: number;
   readonly poolMax: number;
   readonly statementTimeoutMs: number;
   readonly idleInTransactionTimeoutMs: number;
@@ -135,10 +152,11 @@ function positiveInt(raw: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-/** DB_POOL_MAX / DB_STATEMENT_TIMEOUT_MS / DB_IDLE_IN_TX_TIMEOUT_MS override the defaults (10 / 30s / 60s). */
+/** DB_POOL_MAX / DB_POOL_IDLE_TIMEOUT_MS / DB_STATEMENT_TIMEOUT_MS / DB_IDLE_IN_TX_TIMEOUT_MS override the defaults (10 / 5min / 30s / 60s). */
 export function readPoolTimeouts(env: NodeJS.ProcessEnv): PoolTimeouts {
   return {
     poolMax: positiveInt(env.DB_POOL_MAX, 10),
+    idleTimeoutMs: positiveInt(env.DB_POOL_IDLE_TIMEOUT_MS, 300_000),
     statementTimeoutMs: positiveInt(env.DB_STATEMENT_TIMEOUT_MS, 30_000),
     idleInTransactionTimeoutMs: positiveInt(env.DB_IDLE_IN_TX_TIMEOUT_MS, 60_000),
   };

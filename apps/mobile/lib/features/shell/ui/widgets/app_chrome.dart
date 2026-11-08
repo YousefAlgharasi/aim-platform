@@ -39,15 +39,27 @@ class _AppChromeState extends ConsumerState<AppChrome> {
   void didUpdateWidget(AppChrome old) {
     super.didUpdateWidget(old);
     if (old.location != widget.location) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadUnread());
+      final leftInbox = old.location == AppRoutePaths.notificationInbox;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _loadUnread(force: leftInbox));
     }
   }
 
-  void _loadUnread() {
+  /// Refreshes the unread count and the streak, but at most once a minute:
+  /// every page change used to send two extra requests, which on a slow
+  /// connection competed with the page the student was actually opening.
+  /// Leaving the notifications page always refreshes, so the badge clears.
+  void _loadUnread({bool force = false}) {
     if (!mounted) return;
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
+    final last = ref.read(chromeLastRefreshProvider);
+    final fresh = last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 60);
+    if (fresh && !force) return;
+    ref.read(chromeLastRefreshProvider.notifier).state = DateTime.now();
     ref.read(notificationUnreadCountProvider.notifier).load(bearerToken: token);
+    ref.invalidate(streakDaysProvider);
   }
 
   @override
@@ -81,7 +93,7 @@ class _AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
-    final streak = ref.watch(streakDaysProvider(location)).valueOrNull;
+    final streak = ref.watch(streakDaysProvider).valueOrNull;
     final unread = switch (ref.watch(notificationUnreadCountProvider)) {
       AppAsyncSuccess(:final data) => data,
       _ => 0,
