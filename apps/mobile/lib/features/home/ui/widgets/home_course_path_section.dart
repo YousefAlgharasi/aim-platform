@@ -154,12 +154,15 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       }
       final levelId = levels.first.id;
 
-      final chapters = await lessonsRepo.getChaptersWithProgress(
-        bearerToken: token,
-        levelId: levelId,
-      );
-      final finalExam =
-          await lessonsRepo.getFinalExamForLevel(bearerToken: token, levelId: levelId);
+      // Chapters and the final exam only need the level id, so fetch them
+      // together instead of one after the other.
+      final (chapters, finalExam) = await (
+        lessonsRepo.getChaptersWithProgress(
+          bearerToken: token,
+          levelId: levelId,
+        ),
+        lessonsRepo.getFinalExamForLevel(bearerToken: token, levelId: levelId),
+      ).wait;
 
       _PathNode? currentChapterIncomplete;
       for (final c in chapters) {
@@ -206,12 +209,14 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       }
 
       final chapterId = currentChapterIncomplete.id;
-      final lessons = await lessonsRepo.getLessonsWithProgress(
-        bearerToken: token,
-        chapterId: chapterId,
-      );
-      final quiz =
-          await lessonsRepo.getChapterQuiz(bearerToken: token, chapterId: chapterId);
+      // Lessons and the chapter quiz are independent of each other.
+      final (lessons, quiz) = await (
+        lessonsRepo.getLessonsWithProgress(
+          bearerToken: token,
+          chapterId: chapterId,
+        ),
+        lessonsRepo.getChapterQuiz(bearerToken: token, chapterId: chapterId),
+      ).wait;
 
       final nodes = <_PathNode>[
         for (final lesson in lessons)
