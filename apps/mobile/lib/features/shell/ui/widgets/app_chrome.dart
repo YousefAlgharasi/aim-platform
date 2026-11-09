@@ -29,6 +29,15 @@ class AppChrome extends ConsumerStatefulWidget {
 }
 
 class _AppChromeState extends ConsumerState<AppChrome> {
+  /// The top-bar requests of the pages inside the frame.
+  final ChromeBarHost _bar = ChromeBarHost();
+
+  @override
+  void dispose() {
+    _bar.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -65,30 +74,72 @@ class _AppChromeState extends ConsumerState<AppChrome> {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
+    final mode = chromeModeFor(widget.location);
+    final hasBottomBar = mode != ChromeBarMode.detail;
+
     return Scaffold(
       backgroundColor: surfaces.background,
       drawer: const AppMenuDrawer(),
-      appBar: _AppTopBar(location: widget.location),
-      // The chrome already handles the top and bottom screen edges, so the
-      // page inside must not add its own safe-area padding a second time.
-      body: MediaQuery.removePadding(
-        context: context,
-        removeTop: true,
-        removeBottom: true,
-        child: widget.child,
+      // The bar's real height is whatever it draws (0 when a page has not
+      // asked for one); the Scaffold lays out the slot from that.
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: ListenableBuilder(
+          listenable: _bar,
+          builder: (context, _) => _AppTopBar(mode: mode, spec: _bar.active),
+        ),
       ),
-      bottomNavigationBar: _BottomTabBar(location: widget.location),
+      body: ListenableBuilder(
+        listenable: _bar,
+        builder: (context, child) {
+          final hasTopBar = mode == ChromeBarMode.root || _bar.active != null;
+          // The frame handles the screen edges it covers, so the page inside
+          // must not add its own safe-area padding there a second time.
+          return MediaQuery.removePadding(
+            context: context,
+            removeTop: hasTopBar,
+            removeBottom: hasBottomBar,
+            child: child!,
+          );
+        },
+        child: AppChromeScope(host: _bar, mode: mode, child: widget.child),
+      ),
+      // Screens you drill into have no tab bar, like a full-screen page.
+      bottomNavigationBar:
+          hasBottomBar ? _BottomTabBar(location: widget.location) : null,
     );
   }
 }
 
-class _AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
-  const _AppTopBar({required this.location});
+/// Where each location sits in the app: which kind of top bar it gets.
+///
+/// - Main screens (the four bottom tabs and the Home tabs): AIM, streak, bell.
+/// - Menu screens (the web menu's pages): back + title + streak + bell.
+/// - Everything else you drill into: back + title.
+ChromeBarMode chromeModeFor(String location) {
+  bool isUnder(String base) => location == base || location.startsWith('$base/');
+  if (isUnder(AppRoutePaths.mainShell) ||
+      location == AppRoutePaths.improve ||
+      location == AppRoutePaths.practiceHub) {
+    return ChromeBarMode.root;
+  }
+  const sections = {
+    AppRoutePaths.assessments,
+    AppRoutePaths.vocabulary,
+    AppRoutePaths.mistakes,
+    AppRoutePaths.achievements,
+    AppRoutePaths.certificates,
+    AppRoutePaths.notificationInbox,
+    AppRoutePaths.subscription,
+    AppRoutePaths.helpCenter,
+    AppRoutePaths.accountSettings,
+  };
+  return sections.contains(location) ? ChromeBarMode.section : ChromeBarMode.detail;
+}
 
-  final String location;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(56);
+/// The streak and the notifications bell, shared by the main and menu bars.
+class _StreakAndBell extends ConsumerWidget {
+  const _StreakAndBell();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,6 +149,162 @@ class _AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
       AppAsyncSuccess(:final data) => data,
       _ => 0,
     };
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (streak != null)
+          Semantics(
+            label: '$streak ${context.tr('Day streak', 'أيام متتالية')}',
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.local_fire_department_outlined,
+                      size: 20, color: surfaces.textPrimary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$streak',
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              tooltip: unread > 0
+                  ? fill(
+                      context.tr('Notifications, {n} unread',
+                          'الإشعارات، {n} غير مقروءة'),
+                      {'n': unread})
+                  : context.tr('Notifications', 'الإشعارات'),
+              icon: Icon(Icons.notifications_none_rounded,
+                  color: surfaces.textSecondary),
+              onPressed: () => context.push(AppRoutePaths.notificationInbox),
+            ),
+            if (unread > 0)
+              PositionedDirectional(
+                top: 4,
+                end: 4,
+                child: IgnorePointer(
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AimColors.error500,
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(color: surfaces.background, width: 2),
+                    ),
+                    child: Text(
+                      unread > 9 ? '9+' : '$unread',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The one top bar of the app frame. Main screens get AIM + streak + bell;
+/// menu and detail screens get back + the page's title (+ the page's actions),
+/// and menu screens keep the streak and bell on the right.
+class _AppTopBar extends ConsumerWidget {
+  const _AppTopBar({required this.mode, required this.spec});
+
+  final ChromeBarMode mode;
+  final ChromeBarSpec? spec;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final surfaces = aimSurfacesOf(context);
+    final s = spec;
+    // A page that draws its own header has not asked for a bar: show none.
+    if (mode != ChromeBarMode.root && s == null) return const SizedBox.shrink();
+
+    final Widget content;
+    if (mode == ChromeBarMode.root) {
+      content = Row(
+        children: [
+          Text(
+            'AIM',
+            style: AimTextStyles.h2.copyWith(
+              color: surfaces.textPrimary,
+              fontWeight: AimFontWeights.bold,
+              fontSize: 22,
+              letterSpacing: context.isArabic ? 0 : -0.5,
+            ),
+          ),
+          const Spacer(),
+          const _StreakAndBell(),
+        ],
+      );
+    } else {
+      final rtl = Directionality.of(context) == TextDirection.rtl;
+      content = Row(
+        children: [
+          IconButton(
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            icon: Icon(
+              rtl ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded,
+              color: surfaces.textPrimary,
+            ),
+            onPressed: () {
+              if (s!.onBack != null) {
+                s.onBack!();
+              } else if (context.canPop()) {
+                context.pop();
+              } else {
+                ref.read(mainShellTabIndexProvider.notifier).state = 0;
+                context.go(AppRoutePaths.mainShell);
+              }
+            },
+          ),
+          Expanded(
+            child: s!.titleWidget ??
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.title ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AimTextStyles.h3.copyWith(
+                        color: surfaces.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (s.subtitle != null && s.subtitle!.isNotEmpty)
+                      Text(
+                        s.subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                      ),
+                  ],
+                ),
+          ),
+          for (final a in s.actions) a,
+          if (mode == ChromeBarMode.section) const _StreakAndBell(),
+        ],
+      );
+    }
 
     return Material(
       color: surfaces.background,
@@ -110,88 +317,11 @@ class _AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
           child: SizedBox(
             height: 56,
             child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text(
-                    'AIM',
-                    style: AimTextStyles.h2.copyWith(
-                      color: surfaces.textPrimary,
-                      fontWeight: AimFontWeights.bold,
-                      fontSize: 22,
-                      letterSpacing: context.isArabic ? 0 : -0.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (streak != null)
-                    Semantics(
-                      label: '$streak ${context.tr('Day streak', 'أيام متتالية')}',
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.only(end: 8),
-                        child: Row(
-                          children: [
-                            Icon(Icons.local_fire_department_outlined,
-                                size: 20, color: surfaces.textPrimary),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$streak',
-                              style: AimTextStyles.bodyMd.copyWith(
-                                color: surfaces.textPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      IconButton(
-                        tooltip: unread > 0
-                            ? fill(
-                                context.tr('Notifications, {n} unread',
-                                    'الإشعارات، {n} غير مقروءة'),
-                                {'n': unread})
-                            : context.tr('Notifications', 'الإشعارات'),
-                        icon: Icon(Icons.notifications_none_rounded,
-                            color: surfaces.textSecondary),
-                        onPressed: () =>
-                            context.push(AppRoutePaths.notificationInbox),
-                      ),
-                      if (unread > 0)
-                        PositionedDirectional(
-                          top: 4,
-                          end: 4,
-                          child: IgnorePointer(
-                            child: Container(
-                              constraints: const BoxConstraints(
-                                  minWidth: 18, minHeight: 18),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: AimColors.error500,
-                                borderRadius: BorderRadius.circular(9),
-                                border: Border.all(
-                                    color: surfaces.background, width: 2),
-                              ),
-                              child: Text(
-                                unread > 9 ? '9+' : '$unread',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+              padding: EdgeInsetsDirectional.only(
+                start: mode == ChromeBarMode.root ? 16 : 4,
+                end: mode == ChromeBarMode.root ? 16 : 8,
               ),
+              child: content,
             ),
           ),
         ),

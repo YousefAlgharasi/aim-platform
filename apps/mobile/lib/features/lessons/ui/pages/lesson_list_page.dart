@@ -39,6 +39,7 @@
 // - EdgeInsets.symmetric mirrors correctly under RTL.
 // - LessonListTile chevron mirrors via Directionality.of(context).
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -203,45 +204,16 @@ class _LessonListHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // App Bar Header matching prototype
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            border: Border(bottom: BorderSide(color: surfaces.border)),
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/lessons/chapters');
-                  }
-                },
-                icon: Icon(Icons.arrow_back_rounded, color: surfaces.textSecondary, size: 22),
-                style: IconButton.styleFrom(
-                  backgroundColor: surfaces.surfaceSunken,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.all(8),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Chapter Lessons',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: surfaces.textPrimary,
-                    letterSpacing: -0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+        // Shown as the app frame's top bar; outside the frame it draws itself.
+        AIMTopAppBar(
+          title: context.tr('Chapter Lessons', 'دروس الفصل'),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/lessons/chapters');
+            }
+          },
         ),
 
         // Section Hero Header matching prototype

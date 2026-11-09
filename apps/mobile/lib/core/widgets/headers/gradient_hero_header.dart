@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../navigation/app_chrome_scope.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/theme.dart';
@@ -53,6 +55,16 @@ class AIMGradientHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A plain title header becomes the app frame's top bar inside the frame.
+    // (A header with overlaid content keeps drawing itself.)
+    final chrome = AppChromeScope.maybeOf(context);
+    if (chrome != null && child == null) {
+      return ChromeBarRegistrar(
+        host: chrome.host,
+        spec: ChromeBarSpec(title: title, subtitle: subtitle),
+      );
+    }
+
     // Without this, the OS paints its default status bar background (dark
     // icons on an opaque strip) above the gradient instead of light icons
     // sitting transparently on it — visible as a seam/border along the top

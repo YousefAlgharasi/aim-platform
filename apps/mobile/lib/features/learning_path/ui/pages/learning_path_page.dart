@@ -147,67 +147,13 @@ class _LearningPathHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: l10n.commonBack,
-              child: InkWell(
-                onTap: () {
-                  if (context.canPop()) context.pop();
-                },
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.learningPathHeaderTitle,
-                    style:
-                        AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-                  ),
-                  Text(
-                    l10n.learningPathHeaderSubtitle,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    // Shown as the app frame's top bar; outside the frame it draws itself.
+    return AIMTopAppBar(
+      title: l10n.learningPathHeaderTitle,
+      subtitle: l10n.learningPathHeaderSubtitle,
+      onBack: () {
+        if (context.canPop()) context.pop();
+      },
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/theme.dart';
 import '../buttons/buttons.dart';
+import 'app_chrome_scope.dart';
 
 class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AIMTopAppBar({
@@ -38,6 +39,24 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inside the app frame there is one top bar for the whole screen: this
+    // bar hands its title and actions to it and draws nothing itself. (The
+    // Scaffold sizes its app-bar slot from what is actually laid out, so a
+    // zero-size bar leaves no gap.)
+    final chrome = AppChromeScope.maybeOf(context);
+    if (chrome != null) {
+      return ChromeBarRegistrar(
+        host: chrome.host,
+        spec: ChromeBarSpec(
+          title: title,
+          titleWidget: titleWidget,
+          subtitle: subtitle,
+          actions: actions,
+          onBack: onBack,
+        ),
+      );
+    }
+
     final surfaces = aimSurfacesOf(context);
     final direction = Directionality.of(context);
     final background = transparent ? Colors.transparent : surfaces.surface;
@@ -84,8 +103,9 @@ class AIMTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       child: SafeArea(
         bottom: false,
-        child: SizedBox(
-          height: preferredSize.height,
+        // At least the usual height; taller when large text needs the room.
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: preferredSize.height),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AimSpacing.space8),
             child: Row(
