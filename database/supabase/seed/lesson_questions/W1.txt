@@ -1,0 +1,165 @@
+#W1.c1.l1
+M|Which sentence is written correctly?|The cat is black.|the cat is black.|The Cat is black|the Cat Is Black.|A sentence starts with a capital letter and ends with a full stop.
+M|Which sentence starts correctly?|Birds can fly.|birds can fly.|bIrds can fly.|birds Can fly.|Only the first letter is capitalized.
+M|Which sentence is correct?|We like pizza.|we like pizza.|We Like Pizza.|we Like pizza.|Capital W only at the start.
+M|Which sentence is correct?|My dog is small.|my dog is small.|my Dog is small.|my dog Is small.|Capital letter at the start.
+M|What is the first thing to check at the beginning of a sentence?|a capital letter|a comma|a number|a question mark|Every sentence starts with a capital letter.
+T|Every sentence begins with a capital letter.|True|This is a basic rule.
+T|"the sun is hot." is written correctly.|False|It should start with a capital: "The sun is hot."
+F|Correct the first word: ___ moon is bright. (Write "the" with a capital letter)|The|The first word of a sentence is capitalized.
+F|Write "she" correctly at the start of a sentence: ___ is my friend.|She|Sentence starts with a capital.
+F|Write "we" correctly at the start of a sentence: ___ are happy.|We|Sentence starts with a capital.
+#W1.c1.l2
+M|Which sentence is written correctly?|My friend Ali lives in Cairo.|my friend ali lives in cairo.|My friend ali lives in cairo.|My Friend Ali Lives In Cairo.|Names of people and cities start with a capital letter.
+M|Which sentence is written correctly?|I am from Egypt.|i am from egypt.|I am from egypt.|i am from Egypt.|"I" and country names are capitalized.
+M|Which word should be capitalized in "my brother tom is tall"?|tom|brother|tall|is|Tom is a name.
+M|Which is correct?|Maria and I are friends.|Maria and i are friends.|maria and I are friends.|maria and i are friends.|"I" and names are capitalized.
+M|Which is correct?|We visited Paris.|we visited paris.|We visited paris.|we Visited Paris.|City names start with a capital.
+T|The word "I" is always capitalized.|True|"I" is always a capital letter.
+T|Country names are written with small letters.|False|Country names start with a capital.
+F|Write correctly: my name is _____ . (anna)|Anna|Names start with a capital.
+F|Write correctly: i like tea. First word: ___|I|"I" is capitalized.
+F|Write correctly: he lives in turkey. Country: ___|Turkey|Country names are capitalized.
+#W1.c1.l3
+M|Which is correct?|I go to school on Monday.|I go to school on monday.|i go to school on Monday.|I go to School on monday.|Days of the week are capitalized.
+M|Which is correct?|My birthday is in March.|My birthday is in march.|my birthday is in March.|My Birthday is in march.|Months are capitalized.
+M|Which word needs a capital letter: "we have english class on friday"?|Friday|class|have|on|Days are capitalized (also "We" and "English").
+M|Which is correct?|I study English on Tuesday.|I study english on tuesday.|I study English on tuesday.|I study english on Tuesday.|Languages and days are capitalized.
+M|Which is correct?|In July we go to Spain.|in july we go to spain.|In july we go to Spain.|In July we go to spain.|Months and countries are capitalized.
+T|Months of the year start with a capital letter in English.|True|January, February...
+T|"sunday" is the correct way to write the day.|False|It should be "Sunday".
+F|Write the day correctly: tuesday → ___|Tuesday|Days are capitalized.
+F|Write the month correctly: april → ___|April|Months are capitalized.
+F|Write the sentence start correctly: ___ is my favorite day. (friday)|Friday|The day is capitalized.
+#W1.c2.l1
+M|Which is a complete sentence?|The bird sings.|The bird|Sings loudly|In the tree|A sentence needs a subject and a verb.
+M|Which is NOT a complete sentence?|The big dog|The dog barks.|I run.|We eat.|"The big dog" has no verb.
+M|Which is a complete sentence?|She reads a book.|She|A book|Reads|It has a subject and a verb.
+M|Which word group has a verb?|Tom plays|The red car|My old house|A blue sky|"Plays" is the verb.
+M|Which is a complete sentence?|Children play.|Children|Happy children|The children|"Children play" has a subject and a verb.
+T|A complete sentence needs a subject and a verb.|True|Example: "Birds fly."
+T|"Under the table" is a complete sentence.|False|It has no subject or verb.
+F|Make a sentence: "The baby ___ ." (sleeps)|sleeps|Add a verb.
+F|Make a sentence: "___ eat lunch." (We)|We|Add a subject.
+F|Add a verb: "Dogs ___ ." (bark / run / play)|bark;run;play;sleep;eat|Any verb works.
+#W1.c2.l2
+M|Which punctuation ends a question?|?|.|!|,|A question ends with a question mark.
+M|Which punctuation ends a normal statement?|.|?|!|,|A statement ends with a full stop.
+M|Which punctuation shows strong feeling?|!|.|,|;|An exclamation mark shows strong feeling.
+M|Which sentence is punctuated correctly?|What is your name?|What is your name.|What is your name!|What is your name,|A question ends with a question mark.
+M|Which sentence is punctuated correctly?|Watch out!|Watch out.|Watch out?|Watch out,|"Watch out!" is a warning.
+T|A question ends with a question mark.|True|Example: "Where are you?"
+T|"I am happy?" is the correct punctuation for a statement.|False|A statement ends with a full stop.
+F|Add the end mark: How old are you ___|?|Questions end with a question mark.
+F|Add the end mark: I like apples ___|.|Statements end with a full stop.
+F|Add the end mark: Stop ___ (a strong command)|!|Strong commands can end with !.
+#W1.c2.l3
+M|Which sentence correctly joins two ideas that are both true?|I like tea and I like coffee.|I like tea but I like coffee.|I like tea or I like coffee.|I like tea so I like coffee.|"And" adds a similar idea.
+M|Which sentence shows a contrast?|I like tea, but I don't like coffee.|I like tea, and I like coffee.|I like tea and coffee.|I like tea so coffee.|"But" shows contrast.
+M|Which word joins two similar ideas?|and|but|because|although|"And" joins similar ideas.
+M|Which word shows two different ideas?|but|and|so|or|"But" shows contrast.
+M|Which sentence is correct?|She is tall, but he is short.|She is tall, and he is short.|She is tall but, he is short.|She is tall, but, he is short.|"But" shows a contrast between tall and short.
+T|We use "but" to show a contrast.|True|Example: "It is small but strong."
+T|"I am hungry and I am tired" is a correct sentence.|True|"And" joins two similar ideas.
+F|I like football, _____ I don't like tennis. (but)|but|The ideas are different.
+F|She has a cat _____ a dog. (and)|and|The ideas add up.
+F|It is sunny, _____ it is cold. (but)|but|Sunny and cold are different.
+#W1.c3.l1
+M|Which sentence is a good way to start a short paragraph about yourself?|My name is Sara and I am twelve years old.|sara twelve.|Name sara I.|Twelve is old sara.|It is a complete, correct sentence.
+M|Which sentence correctly talks about a family?|I have two brothers and one sister.|I has two brothers and one sister.|I have two brother and one sister.|I have two brothers and one sisters.|Correct verb and plural nouns.
+M|Which sentence is written correctly?|My father is a teacher.|my father is a teacher.|My father are a teacher.|My father is teacher a.|Capital letter and "is".
+M|Which sentence gives a name and a city?|My name is Omar and I live in Dubai.|my name Omar live in dubai|Omar Dubai live.|I name Omar Dubai.|Complete and correct.
+M|Which closing sentence works for a short self-introduction?|That is all about me.|Me all that.|About is me all.|All me about.|It is a simple, correct closing.
+T|A short paragraph about yourself should have complete sentences.|True|Each sentence needs a subject and a verb.
+T|We write "i" in lowercase when talking about ourselves.|False|"I" is always capitalized.
+F|My name _____ Nora. (is)|is|"Name" takes "is".
+F|I _____ twelve years old. (am)|am|"I am".
+F|I live _____ Jordan. (in)|in|"Live in + country".
+#W1.c3.l2
+M|Which sentence tells the time you wake up?|I wake up at seven o'clock.|I wakes up at seven o'clock.|I wake at up seven o'clock.|I waking up at seven o'clock.|Correct present simple.
+M|Which sentence is correct?|She eats breakfast at 7:30.|She eat breakfast at 7:30.|She eating breakfast at 7:30.|She eats breakfast on 7:30.|"She" takes "eats".
+M|Which word is used to say what happens first?|First|Last|Later|Finally|"First" starts a sequence.
+M|Which sequence is in order?|First, I wake up. Then I eat breakfast.|First I eat breakfast. Then I wake up.|Then I wake up. First I eat.|Eat breakfast, wake up first.|You wake up before breakfast.
+M|Which sentence is a good ending for a paragraph about your day?|Finally, I go to bed at ten o'clock.|Finally, I goes to bed.|Finally, go bed I.|Bed I ten.|Correct and complete.
+T|We use "then" and "after that" to show the next step.|True|They show order.
+T|"I eats dinner at six" is correct.|False|Say "I eat dinner at six."
+F|I _____ to school at eight. (go)|go|"I go".
+F|My brother _____ up at six. (gets)|gets|"He gets up".
+F|After school, I _____ my homework. (do)|do|"I do my homework".
+#W1.c3.l3
+M|Which sentence says you like something?|I like pizza.|I likes pizza.|I like to pizza.|I liking pizza.|"I like + noun".
+M|Which sentence says you do not like something?|I don't like fish.|I not like fish.|I doesn't like fish.|I no like fish.|"I don't like + noun".
+M|Which sentence is correct?|I like tea, but I don't like coffee.|I like tea, but I not like coffee.|I like tea, and I don't like coffee but.|I likes tea, but I don't like coffee.|Contrast with "but" and correct negative.
+M|She _____ pizza. (like)|likes|like|liking|liked|"She likes".
+M|He _____ like spiders. (not)|doesn't|don't|isn't|not|"He doesn't like".
+T|"I don't like apples" means I do not enjoy apples.|True|"Don't like" shows dislike.
+T|"She like cats" is correct.|False|Say "She likes cats."
+F|I _____ football. It's my favorite sport. (like)|like|"I like football".
+F|She _____ like cold weather. (doesn't)|doesn't|"She doesn't like".
+F|I like cats _____ I don't like dogs. (but)|but|"But" shows contrast.
+#W1.c4.l1
+M|Which is a good greeting for a note to a friend?|Dear Sam,|Sam Dear|Hello sam,|Hey sam|"Dear Sam," is a typical greeting.
+M|Which closing is common for a friendly note?|Love, Anna|Anna love|Goodbye Anna's|Anna dear|"Love, Anna" is a typical closing.
+M|What does a note usually have?|a greeting, a message and a closing|only a closing|only numbers|a recipe|These are the three parts.
+M|Which is the message part?|I'm at the library. See you at 5!|Dear Sam,|Love, Anna|Sam|It is the main content.
+M|Which note is correct?|Dear Mom, I am at Ben's house. Love, Tim|dear mom i am at ben's house love tim|Dear Mom I am at Ben's house Love Tim|Mom dear Ben house Tim|It uses capital letters and punctuation.
+T|A short note usually starts with a greeting like "Dear ...".|True|It is polite and clear.
+T|A note has no closing.|False|A note usually ends with a closing and your name.
+F|_____ Mom, I went to the park. Love, Lily (Dear)|Dear|A common greeting.
+F|Dear Dad, I will be home at six. _____ , Max (Love)|Love;Best wishes;Your son|A friendly closing.
+F|Dear Sam, See you _____ ! (tomorrow / soon)|tomorrow;soon|Any friendly ending works.
+#W1.c4.l2
+M|Which text message is clear and friendly?|Hi Sam! Do you want to play football today?|hi sam play|Football sam today you|you want|It is a complete, friendly question.
+M|Which question makes a plan?|Can we meet at five?|We meet five.|Five meet can.|Meet we?|"Can we meet at five?" is a plan.
+M|Which reply accepts a plan?|Yes, that sounds great!|No idea you.|Great the yes.|That sounds.|A clear, friendly acceptance.
+M|Which sentence declines a plan politely?|Sorry, I can't. Maybe tomorrow?|No. Not.|Can't no.|I not.|Polite and clear.
+M|Which end mark fits a friendly invitation?|?|,|;|:|Invitations are questions.
+T|A text message should still use full sentences and punctuation.|True|It helps the reader understand.
+T|In a text message you should never use a question mark.|False|You should use a question mark for questions.
+F|Hi Tom! Are you free _____ Saturday? (on)|on|"On Saturday".
+F|Let's meet _____ 4 o'clock. (at)|at|"At + time".
+F|Thanks! See you _____ ! (soon)|soon|A friendly ending.
+#W1.c4.l3
+M|Which sentence thanks someone for a gift?|Thank you for the lovely gift.|Thank gift lovely.|Thanks lovely you.|Lovely gift thank.|It is complete and correct.
+M|Which is a good opening for a thank-you note?|Dear Aunt Mary,|aunt mary|Mary aunt|Dear aunt,|It is a polite greeting.
+M|Which sentence gives a reason?|I love the red scarf because it is warm.|Red scarf warm love.|I because scarf.|Warm is red.|It uses "because".
+M|Which closing is polite?|With love, Nora|Nora love with|Nora with|Love nora|It is a polite closing.
+M|What does a thank-you note usually include?|thanks and a reason|only a name|a question|a list of prices|It thanks and explains why.
+T|A thank-you note usually says what you liked about the gift.|True|It gives a reason.
+T|A thank-you note should not include a greeting.|False|It usually starts with a greeting.
+F|Thank you _____ the lovely book. (for)|for|"Thank you for + noun".
+F|I really _____ the sweater. (like / love)|like;love|Express you liked it.
+F|Dear Grandma, thank you for the cake. With _____ , Ben (love)|love|A common closing.
+#W1.c5.l1
+M|Which sentence describes how a person looks?|She has long black hair.|She likes music.|She is from Spain.|She works hard.|It describes appearance.
+M|Which sentence describes personality?|He is kind and funny.|He has brown eyes.|He is tall.|He wears glasses.|Kind and funny describe character.
+M|Which is correct?|My sister is tall and she has curly hair.|My sister are tall and she has curly hair.|My sister is tall and she have curly hair.|My sister tall and she has curly hair.|Correct verbs.
+M|Which word means the opposite of "short" (about people)?|tall|small|thin|young|Tall is the opposite of short.
+M|Which topic sentence starts a paragraph about a friend?|My best friend is Tom.|Tom best friend my.|Best Tom.|Friend is my Tom.|It is a clear, correct sentence.
+T|A good description includes how the person looks and how they behave.|True|Both help the reader imagine the person.
+T|"He has a long hair" is the best way to say it.|False|Say "He has long hair." (hair is uncountable)
+F|My friend _____ brown eyes. (has)|has|"He/She has".
+F|She is very _____ . She helps everyone. (kind)|kind|Helping shows kindness.
+F|He is tall _____ thin. (and)|and|"And" adds information.
+#W1.c5.l2
+M|Which sentence describes a place?|My room is small and bright.|I wake up early.|She is my sister.|Tom plays football.|It describes a room.
+M|Which preposition fits? "There is a bed _____ the corner."|in|on|at|by|"In the corner" is the usual phrase.
+M|Which sentence is correct?|There are two windows in my room.|There is two windows in my room.|There are two window in my room.|There two windows are in my room.|"There are" with plurals.
+M|Which sentence is correct?|There is a big tree in the garden.|There are a big tree in the garden.|There is a big tree on the garden.|There a big tree is in the garden.|"There is" with singular.
+M|Which sentence adds a feeling about the place?|I love my room because it is quiet.|My room has a door.|My room is big.|The room has a bed.|It gives a feeling and a reason.
+T|"There is" is used with singular nouns.|True|Example: "There is a table."
+T|"There is two chairs" is correct.|False|Say "There are two chairs."
+F|There _____ three chairs in my kitchen. (are)|are|Plural noun.
+F|My house is next _____ a park. (to)|to|"Next to".
+F|I love my town _____ it is very beautiful. (because)|because|Gives a reason.
+#W1.c5.l3
+M|Find the mistake: "my brother is tall."|The first word needs a capital letter.|The word "tall" is wrong.|There is no verb.|It needs a question mark.|The sentence starts with a lowercase "my".
+M|Find the mistake: "She like apples."|like → likes|She → Her|apples → apple|No mistake|"She" takes "likes".
+M|Find the mistake: "I live in cairo."|cairo needs a capital letter|live is wrong|in is wrong|No mistake|City names are capitalized.
+M|Find the mistake: "What is your name."|The end mark should be ?|Name is wrong|Your is wrong|No mistake|A question needs a question mark.
+M|Which paragraph is correct?|I am Sara. I live in Dubai. I like tea.|i am sara i live in dubai i like tea|I am sara. I live in dubai.|I am Sara I live in Dubai I like tea|Capitals and full stops are correct.
+T|Editing means checking and fixing mistakes.|True|It improves your writing.
+T|After editing you should keep the capital-letter mistakes.|False|You should fix them.
+F|Correct the verb: He (go) to school. → He ___ to school.|goes|"He goes".
+F|Correct the capital: i am happy. → ___ am happy.|I|"I" is capitalized.
+F|Add the missing end mark: Where do you live ___|?|Question mark.

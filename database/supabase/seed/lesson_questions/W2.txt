@@ -1,0 +1,165 @@
+#W2.c1.l1
+M|A topic sentence:|states the main idea of a paragraph|ends the paragraph|lists every detail|asks a question only|It introduces the main idea.
+M|Which is the best topic sentence for a paragraph about exercise?|Regular exercise has many benefits for health.|I went to the gym on Monday.|Gyms are expensive.|Exercise.|It states a clear main idea.
+M|Which sentence is too narrow for a topic sentence?|I ran 5 km yesterday.|Running improves fitness.|Exercise benefits the body.|Regular activity is important.|It's a single event, not a main idea.
+M|Where is the topic sentence usually placed?|At the beginning of the paragraph|After the conclusion|In the title only|Nowhere|Usually first.
+M|A good topic sentence is:|clear and focused|very long|a question with no answer|unrelated to the paragraph|Focus.
+T|A topic sentence tells the reader what the paragraph is about.|True|Main idea.
+T|A topic sentence should list all examples.|False|Examples come later.
+F|The _____ sentence states the main idea. (topic)|topic|Definition.
+F|Topic sentences usually come at the _____ of a paragraph. (beginning / start)|beginning;start|Position.
+F|A good topic sentence is clear and _____ . (focused)|focused|Quality.
+#W2.c1.l2
+M|Supporting details:|explain or prove the topic sentence|repeat the title|change the topic|end the essay|They support the main idea.
+M|Which is a supporting detail for "Reading improves vocabulary"?|For example, readers meet new words in every chapter.|I like reading.|Books are on shelves.|Libraries are quiet.|It supports the claim.
+M|Which linker introduces an example?|For instance,|However,|In conclusion,|Although,|Example.
+M|How many supporting details are usually enough for a short paragraph?|two or three|none|one hundred|ten|Typical.
+M|Which is NOT a supporting detail?|A joke unrelated to the topic|An example|A fact|An explanation|Irrelevant.
+T|Examples and facts are types of supporting details.|True|Support.
+T|Supporting details can be about a different topic.|False|They must relate.
+F|For _____ , reading helps us learn new words. (example / instance)|example;instance|Example linker.
+F|Supporting details give _____ and evidence. (examples / reasons)|examples;reasons|Support.
+F|A paragraph needs a topic sentence and _____ details. (supporting)|supporting|Structure.
+#W2.c1.l3
+M|Paragraph: "Dogs are loyal pets. They protect their owners. They enjoy walks. My uncle likes fishing." Which sentence does not belong?|My uncle likes fishing.|They protect their owners.|They enjoy walks.|Dogs are loyal pets.|Off topic.
+M|Paragraph: "Sleep is important. It helps memory. It improves mood. Pizza is tasty." Which sentence should be removed?|Pizza is tasty.|It helps memory.|It improves mood.|Sleep is important.|Off topic.
+M|Paragraph unity means:|all sentences support one main idea|all sentences are short|there are many ideas|there is no topic|Unity.
+M|When editing for unity, you:|delete or move unrelated sentences|add more topics|remove the topic sentence|change the title|Edit.
+M|A paragraph about a holiday in Spain should NOT include:|a long description of your car|a description of beaches|a description of food|a description of weather|Irrelevant.
+T|Unrelated sentences reduce paragraph unity.|True|They distract.
+T|A paragraph should contain several different main ideas.|False|One main idea.
+F|A unified paragraph has one main _____ . (idea)|idea|Unity.
+F|Remove sentences that do not _____ the topic. (support / fit / match)|support;fit;match|Editing.
+F|Editing for _____ means removing off-topic sentences. (unity)|unity|Term.
+#W2.c2.l1
+M|Which sentence is formal?|I would like to request an extension.|Can I get more time, mate?|Gimme more time.|Extend it, please?|Formal.
+M|Which sentence is informal?|Hey, thanks a lot!|I am writing to express my gratitude.|I would be grateful.|Thank you for your assistance.|Informal.
+M|Which feature is typical of formal writing?|full forms (do not)|slang|contractions|exclamation marks|Formal features.
+M|Which feature is typical of informal writing?|contractions (don't)|passive constructions|long sentences|complex vocabulary|Informal.
+M|Formal writing avoids:|slang|full sentences|polite phrases|correct grammar|Avoid slang.
+T|Emails to a manager are usually formal.|True|Professional.
+T|Slang is appropriate in a formal report.|False|Avoid it.
+F|"Don't" is a contraction; the full form is "do _____ ." (not)|not|Formal full form.
+F|"Hi!" is informal; "_____ Sir or Madam," is formal. (Dear)|Dear|Formal opening.
+F|"Thanks" is informal; "_____ you" is formal. (Thank)|Thank|Formal.
+#W2.c2.l2
+M|Rewrite formally: "Can you send me the file?"|Could you please send me the file?|Send file.|Give me the file.|Send me file now.|Formal.
+M|Rewrite formally: "I'm sorry I can't come."|I regret that I am unable to attend.|Sorry no come.|Can't come, sorry.|No.|Formal.
+M|Rewrite informally: "I would appreciate your help."|Thanks for your help!|Your assistance is appreciated.|I am grateful.|It would be appreciated.|Informal.
+M|Which is the formal word for "get"?|obtain|grab|catch|snatch|Formal.
+M|Which is the formal word for "buy"?|purchase|get|grab|pick up|Formal.
+T|"Purchase" is more formal than "buy".|True|Register.
+T|"Gonna" is formal.|False|It's informal.
+F|"Kids" (informal) → _____ (formal) (children)|children|Formal.
+F|"Need" (informal) → _____ (formal) (require)|require|Formal.
+F|"Ask" (informal) → _____ (formal) (enquire / inquire / request)|enquire;inquire;request|Formal.
+#W2.c2.l3
+M|You are writing to your best friend. Which register?|informal|formal|legal|academic|Informal.
+M|You are writing a job application. Which register?|formal|informal|slang|text speak|Formal.
+M|You are writing a text message to a classmate. Which is suitable?|See you at 5!|I look forward to meeting you at 17:00.|Kindly attend at five o'clock.|Your presence is requested.|Informal.
+M|You are writing to a teacher about a grade. Which is suitable?|Dear Mr. Smith, I would like to ask about my grade.|Yo, about my grade.|Hey teach, grade?|Hi mate.|Formal.
+M|Register depends on:|audience and purpose|font|colour|length only|Choose by context.
+T|The same message can be written in different registers.|True|Adapt to audience.
+T|You should always use formal language.|False|It depends.
+F|For a CEO, use a _____ register. (formal)|formal|Audience.
+F|For a close friend, an _____ register is fine. (informal)|informal|Audience.
+F|Choose the register according to your _____ . (audience)|audience|Principle.
+#W2.c3.l1
+M|A clear opinion in an introduction looks like:|In my opinion, schools should start later.|Schools exist.|There are schools.|Some people go to school.|States an opinion.
+M|An opinion essay introduction should include:|the topic and your opinion|only the topic|only a joke|only a conclusion|Components.
+M|Which sentence is a clear thesis?|I strongly believe that cities need more parks.|Parks are green.|Cities exist.|I like green.|Opinion.
+M|Which phrase can introduce an opinion?|I firmly believe that|It is a fact that|Last year|Once upon a time|Opinion.
+M|A good introduction often starts with:|a hook|a conclusion|a reference list|a footnote|Hook.
+T|An introduction should state your position.|True|Thesis.
+T|An introduction should be longer than the body.|False|Short.
+F|In my _____ , school uniforms should be optional. (opinion)|opinion|Opinion.
+F|I strongly _____ that homework should be limited. (believe)|believe|Opinion.
+F|The introduction states the topic and your _____ . (opinion)|opinion;position|Purpose.
+#W2.c3.l2
+M|Which sentence gives a reason?|Firstly, exercise improves mood.|Exercise.|Gyms.|People.|Reason.
+M|Which linker introduces a second reason?|Secondly,|Finally,|However,|Although,|Second.
+M|A body paragraph should include:|one reason and an example|only an opinion|only a conclusion|only a quote|Structure.
+M|Which sentence is an example?|For instance, cycling to work reduces stress.|Cycling.|Cycling exists.|Cycle.|Example.
+M|Which sentence links the reason to the opinion?|This is why exercise is essential.|Exercise.|Exercise is.|I did.|Link.
+T|Each body paragraph should focus on one main reason.|True|Clarity.
+T|Body paragraphs should repeat the introduction.|False|They develop it.
+F|_____ , exercise improves health. (Firstly / First)|Firstly;First|Reason 1.
+F|_____ , it reduces stress. (Secondly / Second)|Secondly;Second|Reason 2.
+F|For _____ , cycling to work saves money. (example / instance)|example;instance|Example.
+#W2.c3.l3
+M|A conclusion should:|restate the opinion and summarise reasons|introduce new ideas|ask many questions|end abruptly|Conclusion.
+M|Which phrase starts a conclusion?|In conclusion,|Firstly,|For example,|Meanwhile,|Conclusion.
+M|Which sentence is a good concluding sentence?|In conclusion, schools should start later for students' health.|Schools start.|Later.|So.|Conclusion.
+M|A conclusion should NOT:|add a completely new argument|restate the opinion|summarise reasons|end the essay|Avoid new ideas.
+M|Which order is correct?|Introduction, body, conclusion|Conclusion, body, introduction|Body, introduction, conclusion|Body only|Order.
+T|A conclusion restates the main opinion.|True|Closing.
+T|A conclusion should introduce new evidence.|False|No new ideas.
+F|In _____ , I believe homework should be limited. (conclusion)|conclusion|Linker.
+F|To _____ up, exercise is essential for health. (sum)|sum|Summarising.
+F|The conclusion should _____ your opinion. (restate)|restate|Function.
+#W2.c4.l1
+M|Which greeting is formal?|Dear Mr. Brown,|Hi Brown!|Hey mate,|Yo,|Formal.
+M|Which closing is formal?|Yours sincerely,|See ya,|Cheers,|Later,|Formal.
+M|If you know the name, a formal email ends with:|Yours sincerely|Yours faithfully|Love|Bye|Convention (BrE).
+M|If you don't know the name, a formal email begins with:|Dear Sir or Madam,|Hey,|Hi mate,|Yo,|Formal.
+M|The first paragraph of a formal email usually:|states the purpose|tells a joke|ends the email|lists prices|Purpose.
+T|A formal email has a greeting, a body and a closing.|True|Structure.
+T|A formal email can start with "Hey dude".|False|Informal.
+F|_____ Mr. Lee, I am writing to enquire about the course. (Dear)|Dear|Greeting.
+F|I am _____ to enquire about your services. (writing)|writing|Purpose.
+F|_____ regards, Anna Wells (Best / Kind)|Best;Kind|Closing.
+#W2.c4.l2
+M|Which is the most polite request?|I would be grateful if you could send the details.|Send the details.|Send details now.|You send me details.|Polite.
+M|Which phrase is a polite request?|Would it be possible to extend the deadline?|Extend the deadline.|I want an extension.|Give me time.|Polite.
+M|Which closing sentence is polite?|Thank you in advance for your help.|Do it.|Reply.|Help.|Polite.
+M|Which phrase is formal?|I would appreciate it if you could...|Can you ...|Gimme ...|Help me ...|Formal.
+M|Which verb form follows "I would be grateful if you could..."?|base verb|-ing form|past tense|to-infinitive|Grammar.
+T|"Would it be possible to..." is a polite request.|True|Formal.
+T|"I want you to..." is a polite request in formal writing.|False|Too direct.
+F|I would be _____ if you could reply by Friday. (grateful)|grateful;thankful|Polite.
+F|Would it be _____ to meet next week? (possible)|possible|Polite.
+F|Thank you in _____ . (advance)|advance|Polite closing.
+#W2.c4.l3
+M|Email received: "Please confirm your attendance at the meeting on Monday." Which reply is appropriate?|Dear Ms. Green, Thank you for your email. I confirm that I will attend on Monday.|yeah sure|ok|Monday ok.|Formal reply.
+M|The reply should start by:|thanking the sender|ending|insulting|ignoring|Politeness.
+M|If you can't attend, you can write:|Unfortunately, I will be unable to attend.|Can't.|No.|I won't.|Polite.
+M|Which closing is appropriate?|Kind regards,|Bye,|Later,|See ya,|Formal.
+M|A good reply:|answers all the questions in the email|ignores the questions|is very long|has slang|Complete.
+T|A formal reply should refer to the original email.|True|Context.
+T|A formal reply can use text-message language.|False|Avoid.
+F|Thank you for your _____ . (email / message)|email;message|Opening.
+F|I _____ that I will attend. (confirm)|confirm|Reply.
+F|Kind _____ , Sara (regards)|regards|Closing.
+#W2.c5.l1
+M|Reading improves vocabulary. _____ , it helps with spelling.|In addition|However|Therefore|Although|Addition.
+M|He is clever. _____ , he is hard-working.|Furthermore|However|Instead|Otherwise|Addition.
+M|Which word adds an idea?|Also|But|Although|Unless|Addition.
+M|Which phrase adds a similar point?|In addition,|On the other hand,|Despite this,|Instead,|Addition.
+M|Which is correct?|She is kind. Moreover, she is generous.|She is kind. However, she is generous.|She is kind. Therefore, she is generous.|She is kind. Although, she is generous.|Addition.
+T|"Furthermore" adds information.|True|Addition.
+T|"However" adds a similar idea.|False|It contrasts.
+F|The course is cheap. _____ , it is useful. (Also / Furthermore / In addition)|Also;Furthermore;In addition|Addition.
+F|He is smart. _____ , he is kind. (Moreover / Furthermore)|Moreover;Furthermore|Addition.
+F|She speaks French and Spanish; _____ , she speaks German. (also)|also|Addition.
+#W2.c5.l2
+M|It was raining. _____ , we went out.|However|Therefore|Moreover|Furthermore|Contrast.
+M|He didn't study. _____ , he failed.|As a result|However|Although|In addition|Result.
+M|Which word shows contrast?|however|moreover|in addition|furthermore|Contrast.
+M|Which phrase shows result?|as a result|on the other hand|however|although|Result.
+M|Which is correct?|It was expensive; however, we bought it.|It was expensive; therefore, we didn't buy it, however.|It was expensive however, we bought it.|It was expensive, as a result, we bought it though.|Punctuation.
+T|"As a result" shows a consequence.|True|Result.
+T|"However" shows addition.|False|Contrast.
+F|The test was hard; _____ , most students passed. (however)|however|Contrast.
+F|She trained daily. _____ , she won. (As a result / Therefore)|As a result;Therefore|Result.
+F|The food was cheap. _____ , it wasn't tasty. (However)|However|Contrast.
+#W2.c5.l3
+M|Which paragraph is cohesive?|Exercise is important. First, it improves health. In addition, it reduces stress. Therefore, everyone should exercise.|Exercise. Health. Stress. Everyone.|Exercise important health stress.|First, exercise.|Linked ideas.
+M|Which linker ends the paragraph?|In conclusion,|Firstly,|For example,|Meanwhile,|Conclusion.
+M|Cohesion means:|ideas are linked smoothly|ideas are long|ideas are repeated|ideas are random|Cohesion.
+M|Which sentence uses linking words correctly?|He was tired; however, he finished the work.|He was tired however he finished the work.|He was tired, however, finished the work.|He was tired however, he finished work.|Punctuation.
+M|Too many linking words in one sentence:|make it hard to read|improve it always|are required|are rare|Balance.
+T|Linking words help the reader follow ideas.|True|Cohesion.
+T|You should use a linking word in every clause.|False|Use naturally.
+F|_____ , exercise improves health. (First / Firstly)|First;Firstly|Sequence.
+F|_____ , it reduces stress. (In addition / Moreover / Also)|In addition;Moreover;Also|Addition.
+F|_____ , everyone should exercise. (Therefore / In conclusion)|Therefore;In conclusion|Conclusion.

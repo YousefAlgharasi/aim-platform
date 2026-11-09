@@ -1,0 +1,132 @@
+#STARTER.c1.l1
+M|Which letter comes after A in the alphabet?|B|C|D|Z|The order starts A, B, C.
+M|Which letter comes after M?|N|L|O|P|The order is ... L, M, N, O.
+M|Which letter comes last in the alphabet?|Z|A|X|Y|Z is the 26th and last letter.
+M|How many letters are in the English alphabet?|26|20|24|30|There are 26 letters.
+M|Which of these is a vowel?|E|B|D|F|The vowels are A, E, I, O, U.
+T|The English alphabet has 26 letters.|True|A to Z is 26 letters.
+T|"Q" comes before "P" in the alphabet.|False|P comes before Q.
+F|A, B, C, _____ . (Write the next letter)|D;d|After C comes D.
+F|The letter after X is _____ . (Write the letter)|Y;y|The order is X, Y, Z.
+F|The first letter of the alphabet is _____ . (Write the letter)|A;a|A is the first letter.
+#STARTER.c1.l2
+M|Which word has the short "a" sound, as in "cat"?|bat|bed|sit|hot|"Bat" has the short a sound.
+M|Which word has the short "e" sound, as in "bed"?|ten|cat|sit|cup|"Ten" has the short e sound.
+M|Which word has the short "i" sound, as in "sit"?|pig|pen|hot|cup|"Pig" has the short i sound.
+M|Which word has the short "o" sound, as in "hot"?|dog|pig|cup|bed|"Dog" has the short o sound.
+M|Which word has the short "u" sound, as in "cup"?|sun|pen|dog|sit|"Sun" has the short u sound.
+T|The word "cat" has the short "a" vowel sound.|True|c-a-t has the short a.
+T|The word "bed" has the short "u" vowel sound.|False|"Bed" has the short e sound.
+F|The word "p_n" has the short e sound, as in pen. Write the missing vowel: p_n|e|The word is "pen".
+F|Write the missing vowel: c_p (a drink container)|u|The word is "cup".
+F|Write the missing vowel: h_t (opposite of cold)|o|The word is "hot".
+#STARTER.c1.l3
+M|Which word begins with the "b" sound?|bag|pig|fan|van|"Bag" starts with b.
+M|Which word begins with the "p" sound?|pen|bed|fish|vet|"Pen" starts with p.
+M|Which word begins with the "f" sound?|fish|van|pen|bus|"Fish" starts with f.
+M|Which word begins with the "v" sound?|van|fan|pan|bat|"Van" starts with v.
+M|Which word begins with the "bl" sound?|black|stop|pig|fan|"Black" starts with bl.
+T|"Pat" and "bat" start with different sounds.|True|One starts with p and the other with b.
+T|"Fan" and "van" start with the same sound.|False|F and v are different sounds.
+F|Complete the word with a blend: _ _op (a red sign tells you to do this)|st|The word is "stop", with the blend "st".
+F|Write the first letter: _an (a vehicle that carries goods)|v|The word is "van".
+F|Write the first letter: _ish (an animal that lives in the sea)|f|The word is "fish".
+#STARTER.c2.l1
+M|Which word is the number 0?|zero|one|ten|two|Zero is 0.
+M|Which word is the number 5?|five|four|six|nine|Five is 5.
+M|Which word is the number 8?|eight|seven|nine|ten|Eight is 8.
+M|What number comes after 6?|seven|five|eight|ten|After 6 comes 7.
+M|What number comes before 10?|nine|eight|eleven|seven|Before 10 is 9.
+T|"Three" is the number 3.|True|Three = 3.
+T|"Four" is the number 5.|False|Four is 4.
+F|1, 2, 3, _____ . (Write the next number word)|four|After three comes four.
+F|The number 10 is written as _____ . (word)|ten|10 = ten.
+F|The number 2 is written as _____ . (word)|two|2 = two.
+#STARTER.c2.l2
+M|Which word is the number 11?|eleven|twelve|ten|twenty|Eleven is 11.
+M|Which word is the number 15?|fifteen|fifty|five|fourteen|Fifteen is 15.
+M|Which word is the number 13?|thirteen|thirty|three|twelve|Thirteen is 13.
+M|What number comes after 19?|twenty|eighteen|ten|nine|After 19 comes 20.
+M|Many numbers from 13 to 19 end with:|-teen|-ty|-ing|-ed|Thirteen, fourteen, fifteen ... end with -teen.
+T|"Twelve" is the number 12.|True|Twelve = 12.
+T|"Sixteen" is the number 60.|False|Sixteen is 16.
+F|17 is _____ . (word)|seventeen|17 = seventeen.
+F|20 is _____ . (word)|twenty|20 = twenty.
+F|14 is _____ . (word)|fourteen|14 = fourteen.
+#STARTER.c2.l3
+M|You hear: "seven". Which number is it?|7|6|17|70|Seven is 7.
+M|You hear: "fourteen". Which number is it?|14|4|40|41|Fourteen is 14.
+M|You hear: "nineteen". Which number is it?|19|9|90|91|Nineteen is 19.
+M|You hear: "twelve". Which number is it?|12|2|20|21|Twelve is 12.
+M|You hear: "zero". Which number is it?|0|1|10|2|Zero is 0.
+T|"Thirteen" and "thirty" sound a little the same but are different numbers.|True|13 and 30 are different.
+T|"Eight" is the number 18.|False|Eight is 8; eighteen is 18.
+F|You hear: "ten" . Write the number: 1_ (the missing digit)|0|Ten is 10.
+F|You hear: "sixteen". Write the missing digit: 1_|6|Sixteen is 16.
+F|You hear: "five". Write the digit: _|5|Five is 5.
+#STARTER.c3.l1
+M|What do you say when you meet someone?|Hello|Goodbye|Good night|Thank you|"Hello" is a greeting.
+M|What do you say when you leave?|Goodbye|Hello|Good morning|Please|"Goodbye" is said when leaving.
+M|Which greeting do you use at 8 a.m.?|Good morning|Good evening|Good night|Goodbye|Morning greeting.
+M|Which greeting do you use at 7 p.m.?|Good evening|Good morning|Good afternoon|Hi there|Evening greeting.
+M|Which is a short, friendly way to say hello?|Hi|Goodbye|Sorry|Please|"Hi" is informal hello.
+T|"Bye" is a short way to say goodbye.|True|Bye = goodbye.
+T|You say "Good night" when you wake up in the morning.|False|"Good night" is for going to bed.
+F|At 3 p.m., you say "Good _____ ." (afternoon)|afternoon|Afternoon greeting.
+F|When you wake up you say "Good _____ ." (morning)|morning|Morning greeting.
+F|Hello! — _____ ! (Hi / Hello)|Hi;Hello;hello;hi|Both are greetings.
+#STARTER.c3.l2
+M|How do you say your name?|My name is Ali.|Name Ali I.|Is name my Ali.|Ali name is me.|"My name is ..." is the correct pattern.
+M|How do you ask someone's name?|What is your name?|Where is your name?|When is your name?|Who is name?|"What is your name?" asks for a name.
+M|Which sentence is another way to say your name?|I am Ali.|Ali am I.|Am Ali I.|I Ali am.|"I am + name".
+M|Someone asks: "What is your name?" Your answer is:|My name is Sara.|I am five.|It is blue.|Yes, please.|The answer gives your name.
+M|Which is correct?|My name is Tom.|My name are Tom.|My name am Tom.|My name be Tom.|"Name" is singular, so use "is".
+T|"I am Ana" means "My name is Ana".|True|Both introduce your name.
+T|"What is your name?" asks about your age.|False|It asks about your name.
+F|My _____ is Jo. (name)|name|"My name is ...".
+F|What is your _____ ? (name)|name|"What is your name?"
+F|I _____ Lina. (am)|am|"I am + name".
+#STARTER.c3.l3
+M|A: "Hello! My name is Sam." B: "Hi, Sam. I am Lina. Nice to meet you." What is B's name?|Lina|Sam|Ali|Anna|B says "I am Lina".
+M|A: "Hello! My name is Sam." B: "Hi, Sam. I am Lina. Nice to meet you." What is A's name?|Sam|Lina|Tom|Ben|A says "My name is Sam".
+M|A: "Nice to meet you." What does B say?|Nice to meet you too.|Goodbye.|Thank you.|I am fine.|The polite reply is "Nice to meet you too".
+M|A: "How are you?" B: "I am fine, thank you." How is B?|Fine|Sad|Tired|Hungry|B says "fine".
+M|A: "Goodbye!" What does B say?|Bye!|Hello!|Good morning!|Please!|"Bye" is a reply to goodbye.
+T|In the dialogue, the two people are meeting for the first time.|True|They say "Nice to meet you".
+T|In the dialogue, A and B have the same name.|False|A is Sam and B is Lina.
+F|A: How _____ you? (are)|are|"How are you?"
+F|B: I am fine, thank _____ . (you)|you|"Thank you".
+F|A: Nice to _____ you. (meet)|meet|"Nice to meet you".
+#STARTER.c4.l1
+M|The teacher says "Listen." What do you do?|Use your ears|Write|Open the door|Stand up|"Listen" means pay attention to sounds.
+M|The teacher says "Repeat." What do you do?|Say it again|Sit down|Close the book|Go home|"Repeat" means say again.
+M|The teacher says "Open your book." What do you do?|Open your book|Close your book|Write your name|Stand up|Follow the instruction.
+M|The teacher says "Stand up." What do you do?|Stand|Sit|Write|Sleep|"Stand up" means get on your feet.
+M|The teacher says "Sit down." What do you do?|Sit|Stand|Run|Jump|"Sit down" means sit.
+T|"Write" means to put words on paper.|True|Write = use a pen to make words.
+T|"Close your book" means open it.|False|"Close" means shut it.
+F|"_____ your name, please." (Write)|Write|Teacher asks you to write.
+F|"_____ after me." (Repeat)|Repeat|Say it again.
+F|"Open your _____ ." (book)|book|You open a book.
+#STARTER.c4.l2
+M|Your mother's husband is your:|father|brother|sister|teacher|Mother's husband = father.
+M|Your father's daughter is your:|sister|brother|mother|uncle|Daughter = sister.
+M|Your mother's son (not you) is your:|brother|sister|father|friend|Son = brother.
+M|"Family" means:|a group of related people|a group of friends|a school|a shop|A family is related people.
+M|Which word is a woman in the family?|mother|father|brother|uncle|Mother is female.
+T|"Brother" is a boy in the family.|True|Brother is male.
+T|"Sister" is a man.|False|Sister is a girl or woman.
+F|My mother and father are my _____ . (parents)|parents|Mother and father = parents.
+F|My sister is a _____ . (girl)|girl|Sister is female.
+F|My father's wife is my _____ . (mother)|mother|Mother.
+#STARTER.c4.l3
+M|You get a gift. What do you say?|Thank you.|Sorry.|Goodbye.|No.|"Thank you" shows thanks.
+M|You step on someone's foot. What do you say?|Sorry.|Please.|Thank you.|Yes.|"Sorry" is for mistakes.
+M|You want to get someone's attention politely. What do you say?|Excuse me.|Sorry.|Goodbye.|Thanks.|"Excuse me" gets attention.
+M|You want a glass of water politely. What do you say?|Water, please.|Water, yes.|Water, no.|Water, sorry.|"Please" makes a request polite.
+M|Someone asks "Do you want tea?" You want tea. You say:|Yes, please.|No, thank you.|Sorry.|Goodbye.|"Yes, please" accepts politely.
+T|"Please" is a polite word for asking.|True|Please makes a request polite.
+T|"Yes" means no.|False|Yes means agree.
+F|Can I have some water, _____ ? (please)|please|Please makes it polite.
+F|A: Do you like tea? B: _____ . I like coffee. (No)|No;no|B does not like tea.
+F|You are late. You say "_____ ." (Sorry)|Sorry;sorry|Say sorry for being late.

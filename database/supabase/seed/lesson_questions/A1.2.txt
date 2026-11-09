@@ -1,0 +1,165 @@
+#A1.2.c1.l1
+M|Where do you go to see a doctor when you are very sick?|the hospital|the bank|the park|the school|A hospital is where doctors and nurses treat sick people.
+M|Where do you keep and take out money?|the bank|the park|the library|the hospital|A bank looks after people's money.
+M|Where do children study?|at school|at the bank|at the market|at the hospital|Children study at school.
+M|Where can you play and walk with a dog?|in the park|in the bank|in the hospital|in the store|A park is a green place for walks and play.
+M|Where do you buy clothes and food?|in a store|in a hospital|in a bank|in a school|A store is a place to buy things.
+T|"The bank is near the park" tells us the bank is close to the park.|True|"Near" means close to.
+T|A hospital is a place where you buy bread.|False|You buy bread in a store or bakery.
+F|I read and borrow books at the _____. (library / bank)|library|You borrow books from a library.
+F|The _____ is a place for students and teachers. (school / hospital)|school|Students and teachers are at school.
+F|The bank is _____ the park. They are close to each other. (near / far)|near|"Near" means close.
+#A1.2.c1.l2
+M|You want someone to go in the direction of your left hand. What do you say?|Turn left.|Turn right.|Go back.|Stop here.|"Left" is the opposite of "right".
+M|"Go straight" means:|Do not turn; keep going forward.|Turn around.|Stop.|Turn right.|"Straight" means forward without turning.
+M|The post office is "across from" the bank. Where is it?|On the other side of the street from the bank|Inside the bank|Behind the bank on the same side|Next to the bank on the same side|"Across from" means on the opposite side.
+M|Which sentence gives a direction?|Turn right at the corner.|I like the corner.|The corner is red.|He is at the corner.|"Turn right" is a direction.
+M|The library is "next to" the school. It is:|beside the school|inside the school|far from the school|under the school|"Next to" means beside.
+T|"Turn left" and "turn right" mean the same thing.|False|They are opposite directions.
+T|"Go straight, then turn left" has two steps.|True|Step 1: go straight. Step 2: turn left.
+F|Go _____ for two blocks. (straight / around)|straight|"Go straight" means keep going forward.
+F|Turn _____ at the traffic light. The park is on your right. (right)|right|The park is on your right, so turn right.
+F|The pharmacy is _____ from the bank. It is on the opposite side. (across)|across|"Across from" means on the opposite side.
+#A1.2.c1.l3
+M|Tom: "Excuse me, where is the library?" Anna: "Go straight. Turn left at the bank. The library is next to the park." Where does Anna say to turn left?|At the bank|At the park|At the school|At the library|Anna says "Turn left at the bank".
+M|Tom: "Excuse me, where is the library?" Anna: "Go straight. Turn left at the bank. The library is next to the park." What is the library next to?|The park|The bank|The school|The hospital|Anna says it is next to the park.
+M|Tom: "Excuse me, where is the library?" Anna: "Go straight. Turn left at the bank." What does Tom do first?|He goes straight.|He turns left.|He turns right.|He stops.|The first direction is "Go straight".
+M|Which phrase starts a polite question to a stranger?|Excuse me, where is the library?|Where library?|Library, where?|You, library!|"Excuse me" is a polite way to start.
+M|Anna says "You're welcome." What did Tom probably say before?|Thank you.|Goodbye.|Hello.|I'm sorry.|"You're welcome" answers "Thank you".
+T|In the dialogue, Tom wants to find the library.|True|He asks, "Where is the library?"
+T|In the dialogue, Anna tells Tom to turn right at the bank.|False|She says turn left at the bank.
+F|Excuse me, _____ is the library? (where / who)|where|"Where" asks about a place.
+F|Thank you! — You're _____. (welcome)|welcome|"You're welcome" is the reply to "Thank you".
+F|Go straight, then _____ left at the bank. (turn)|turn|The phrase is "turn left".
+#A1.2.c2.l1
+M|You are at a restaurant. Which sentence is a polite way to order?|I'd like a sandwich, please.|Give me sandwich.|Sandwich now.|I want sandwich.|"I'd like ... please" is polite.
+M|Which phrase is also a polite way to order?|Can I have a coffee, please?|Coffee, quick!|I eat coffee.|Have coffee me.|"Can I have ..., please?" is polite.
+M|What does "I'd like" mean?|I want (politely)|I liked|I do not like|I am like|"I'd like" is short for "I would like".
+M|The waiter asks, "Anything to drink?" What is a good answer?|Yes, a glass of water, please.|Yes, I am a student.|No, I am Tom.|It is on the table.|The answer should name a drink.
+M|At the end of the meal you want to pay. What do you say?|Can I have the bill, please?|I eat the bill.|Bill is a table.|Where is my pizza?|"The bill" is the paper that shows how much to pay.
+T|"I'd like a pizza" is a polite way to order.|True|It uses "would like".
+T|"Please" is not used when you order food.|False|"Please" makes your order polite.
+F|I'd _____ a salad, please. (like)|like|"I'd like" is short for "I would like".
+F|Can I _____ a glass of water, please? (have)|have|The phrase is "Can I have ...?"
+F|Here is the menu. — _____ you. (Thank)|Thank|Say "Thank you" when you get something.
+#A1.2.c2.l2
+M|I have _____ apples in my bag.|some|any|a|an|Use "some" in positive sentences with plural nouns.
+M|We don't have _____ milk.|any|some|a|an|Use "any" in negative sentences.
+M|Do you have _____ bread?|any|some|a|an|Use "any" in most questions.
+M|She wants _____ water.|some|any|an|many|Use "some" in a positive sentence.
+M|There aren't _____ eggs in the fridge.|any|some|a|an|Use "any" after "aren't".
+T|We use "any" in negative sentences.|True|Example: "I don't have any rice."
+T|"I have any oranges" is a correct sentence.|False|Say "I have some oranges."
+F|Would you like _____ tea? (some / any)|some|"Would you like some ...?" is an offer, so use "some".
+F|There isn't _____ sugar. (some / any)|any|Use "any" in negative sentences.
+F|Is there _____ juice? (some / any)|any|Use "any" in questions.
+#A1.2.c2.l3
+M|At the market: "How much are the tomatoes?" "Two dollars a kilo." What are they asking about?|The price|The color|The time|The weather|"How much" asks about price.
+M|Vendor: "Do you want some apples?" What does the vendor offer?|Apples|Bananas|Water|Bread|He offers apples.
+M|Customer: "I'd like some bananas, please." What does the customer want?|Bananas|Apples|Milk|Eggs|She says "some bananas".
+M|Customer: "Do you have any oranges?" Vendor: "Sorry, we don't have any oranges today." Does the vendor have oranges?|No|Yes|Only one|Maybe two|"We don't have any" means none.
+M|Which sentence asks about a thing you might not find at the market?|Do you have any rice?|I have some rice.|We have some rice.|There is some rice.|It is a question, so it uses "any".
+T|"How much is it?" asks for a price.|True|It is the usual price question.
+T|"We have any apples" is correct for a vendor offering apples.|False|Use "some" in positive sentences: "We have some apples."
+F|Customer: How _____ are the carrots? (much / many)|much|"How much are ...?" asks about price.
+F|Vendor: We don't have _____ eggs today. (any)|any|Use "any" in negative sentences.
+F|Customer: I'd like _____ milk, please. (some)|some|Use "some" in a positive request.
+#A1.2.c3.l1
+M|A basketball player is often:|tall|short|tiny|round|Basketball players are usually tall.
+M|The opposite of "old" is:|young|tall|short|happy|Young is the opposite of old.
+M|The opposite of "tall" is:|short|young|big|old|Short is the opposite of tall.
+M|When a person smiles and laughs, they are:|happy|sad|angry|tired|A smile shows happiness.
+M|Which sentence is correct?|She is young and happy.|She are young and happy.|She young and happy.|She is a young and happy.|Use "is" and no "a" before two adjectives alone.
+T|"Tall" and "short" are opposites.|True|One means high, the other low.
+T|A baby is old.|False|A baby is young.
+F|My grandfather is 80. He is _____. (old / young)|old|At 80 he is old.
+F|The boy is only 5. He is _____. (young / old)|young|Five years is young.
+F|The girl is smiling. She is _____. (happy / sad)|happy|Smiling shows she is happy.
+#A1.2.c3.l2
+M|The opposite of "big" is:|small|new|cheap|old|Small is the opposite of big.
+M|The opposite of "new" is:|old|cheap|small|big|Old is the opposite of new.
+M|A car that costs a lot of money is:|expensive|cheap|small|old|"Expensive" means it costs a lot.
+M|A pen that costs very little is:|cheap|expensive|tall|big|"Cheap" means it does not cost much.
+M|Which sentence is in the correct order?|It is a big red ball.|It is a ball big red.|It is a red big ball.|A ball it is big red.|In English the adjectives go before the noun.
+T|"Expensive" and "cheap" are opposites.|True|One means high price, one low price.
+T|"A small elephant" is the opposite of "a big elephant".|True|Small is the opposite of big.
+F|The shirt costs one dollar. It is _____. (cheap / expensive)|cheap|One dollar is a low price.
+F|My phone is brand _____. I bought it yesterday. (new / old)|new|Bought yesterday means it is new.
+F|It is a _____ blue box. It is not big. (small)|small|Not big = small.
+#A1.2.c3.l3
+M|"She is tall. She has long black hair. She wears a red dress." Which picture matches?|A tall woman with long black hair in a red dress|A short girl in a blue coat|A man with short hair|A small dog|The description matches the first one.
+M|"It is big and yellow. It has four wheels. Many children ride it to school." What is it?|A school bus|A bicycle|A bird|A ball|A big yellow vehicle with four wheels for children is a school bus.
+M|"He is young. He has short brown hair and glasses." Which word tells his age?|young|short|brown|glasses|"Young" tells his age.
+M|"It is small and round. It is red. You can eat it." What is it?|An apple|A shoe|A table|A chair|You can eat it, and it is round and red.
+M|You listen: "She is short and happy. She has a blue hat." What color is her hat?|Blue|Red|Green|Black|The description says a blue hat.
+T|"Guess Who" is a game where you describe someone and others guess.|True|You give clues like tall, short, old, young.
+T|The description "It is big and cold. It lives at the North Pole" fits a polar bear.|True|Polar bears are big and live in the Arctic.
+F|"He is not old. He is _____." (young)|young|Not old means young.
+F|"It is not cheap. It is _____." (expensive)|expensive|Not cheap means expensive.
+F|"She is not short. She is _____." (tall)|tall|Not short means tall.
+#A1.2.c4.l1
+M|What day comes after Monday?|Tuesday|Sunday|Wednesday|Friday|The order starts Monday, Tuesday, Wednesday.
+M|What day comes before Friday?|Thursday|Saturday|Wednesday|Sunday|Thursday is the day before Friday.
+M|Which two days make the weekend?|Saturday and Sunday|Monday and Tuesday|Friday and Saturday|Thursday and Friday|Saturday and Sunday are the weekend.
+M|Which sentence is correct?|I go to school on Monday.|I go to school in Monday.|I go to school at Monday.|I go to school Monday on.|Use "on" with days.
+M|How many days are in a week?|seven|five|six|eight|There are seven days in a week.
+T|Wednesday comes before Tuesday.|False|Tuesday comes before Wednesday.
+T|We use "on" before days of the week.|True|Example: on Friday.
+F|The first day of the school week is _____. (Monday)|Monday|Most school weeks start on Monday.
+F|Today is Thursday. Tomorrow is _____. (Friday)|Friday|Friday follows Thursday.
+F|We have English class _____ Tuesday. (on / in)|on|Use "on" with days.
+#A1.2.c4.l2
+M|What month comes after March?|April|February|May|June|The order is January, February, March, April.
+M|Which is the last month of the year?|December|January|November|October|December is the 12th month.
+M|Which sentence is correct?|My birthday is in July.|My birthday is on July.|My birthday is at July.|My birthday July is.|Use "in" with months.
+M|How many months are in a year?|twelve|ten|eleven|thirteen|There are twelve months in a year.
+M|Which month comes first?|January|December|March|June|January starts the year.
+T|February comes after January.|True|January, then February.
+T|"Sepember" is the correct spelling of the ninth month.|False|The correct spelling is "September".
+F|The month before May is _____. (April)|April|April comes right before May.
+F|My birthday is _____ October. (in / on)|in|Use "in" with months.
+F|The month after November is _____. (December)|December|December follows November.
+#A1.2.c4.l3
+M|Which season is the hottest?|summer|winter|spring|autumn|Summer has the hottest weather.
+M|In which season do leaves fall from the trees?|autumn|spring|summer|winter|Leaves fall in autumn (also called fall).
+M|In which season does it often snow?|winter|summer|spring|autumn|Snow usually comes in winter.
+M|In which season do flowers begin to grow?|spring|autumn|winter|summer|Flowers open in spring.
+M|Which sentence is correct?|It is cold in winter.|It is cold on winter.|It is cold at winter.|It cold in winter.|Use "in" with seasons.
+T|There are four seasons in a year.|True|Spring, summer, autumn, winter.
+T|Summer comes after winter and before spring.|False|The order is winter, spring, summer, autumn.
+F|After spring comes _____. (summer)|summer|The order is spring, summer, autumn, winter.
+F|It is very cold and white outside. It is _____. (winter)|winter|Cold and snowy weather is winter.
+F|In the _____, leaves turn red and yellow. (autumn)|autumn|Autumn leaves change color.
+#A1.2.c5.l1
+M|Which sentence says you are able to swim?|I can swim.|I cans swim.|I can to swim.|I can swimming.|After "can" use the base verb.
+M|She _____ cook very well.|can|cans|is can|does can|"Can" has the same form for all subjects.
+M|Which sentence is correct?|He can dance.|He cans dance.|He can dances.|He can to dance.|"Can" + base verb, with no -s.
+M|They _____ play the guitar.|can|cans|are can|to can|Use "can" with "they".
+M|Which sentence is correct?|We can drive.|We can driving.|We can to drive.|We cans drive.|"Can" + base verb.
+T|"Can" is followed by the base form of the verb.|True|Example: "can swim".
+T|"She cans sing" is correct.|False|Say "She can sing."
+F|My brother _____ swim very fast. (can)|can|"Can" does not change.
+F|I can _____ English. (speak)|speak|After "can" use the base verb.
+F|Fish _____ swim. (can)|can|Fish are able to swim.
+#A1.2.c5.l2
+M|Which sentence says you are not able to fly?|I can't fly.|I can fly.|I don't can fly.|I not can fly.|"Can't" means "cannot".
+M|"Cannot" is the same as:|can't|can|could|will|"Can't" is the short form of "cannot".
+M|Birds can fly, but dogs _____ fly.|can't|can|do|are|Dogs are not able to fly.
+M|Which sentence is correct?|She can't drive.|She can't drives.|She doesn't can drive.|She can't to drive.|"Can't" + base verb.
+M|A baby _____ walk.|can't|can|do|is|Most babies cannot walk yet.
+T|"Can't" is short for "cannot".|True|Cannot becomes can't.
+T|"I don't can swim" is correct.|False|Say "I can't swim."
+F|Fish _____ walk. (can't)|can't;cannot|Fish are not able to walk.
+F|I _____ speak Chinese. I only speak English. (can't)|can't;cannot|The speaker is not able to speak Chinese.
+F|He _____ lift this heavy box. (can't)|can't;cannot|The box is too heavy.
+#A1.2.c5.l3
+M|Which question asks about ability?|Can you swim?|Do you swim can?|You can swim?|Are you swim?|"Can you + verb?" asks about ability.
+M|"Can you play the piano?" What is a correct short answer for "yes"?|Yes, I can.|Yes, I do.|Yes, I am.|Yes, I play.|The short answer repeats "can".
+M|"Can you cook?" What is a correct short answer for "no"?|No, I can't.|No, I don't.|No, I'm not.|No, I haven't.|The short answer repeats "can".
+M|Mia: "Can you dance?" Leo: "Yes, I can. Can you?" Mia: "No, I can't, but I can sing." What can Mia do?|She can sing.|She can dance.|She can swim.|She can cook.|Mia says "I can sing".
+M|Mia: "Can you dance?" Leo: "Yes, I can." Who can dance?|Leo|Mia|Both|Nobody|Leo answers yes.
+T|"Can he swim?" is a correct question.|True|"Can" + subject + base verb.
+T|"Does he can swim?" is a correct question.|False|Say "Can he swim?"
+F|_____ you speak French? (Can)|Can|Questions about ability begin with "Can".
+F|Can she drive? — Yes, she _____. (can)|can|Short answer: "Yes, she can."
+F|Can they swim? — No, they _____. (can't;cannot)|can't;cannot|Short negative answer: "No, they can't."

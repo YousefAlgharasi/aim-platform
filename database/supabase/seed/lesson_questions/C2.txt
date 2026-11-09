@@ -1,0 +1,132 @@
+#C2.c1.l1
+M|Which sentence is the most formal?|I would be grateful if you could confirm receipt.|Can you tell me you got it?|Just let me know you got it.|Tell me if it came.|Formal register.
+M|Which sentence is the most casual?|Hey, did that thing arrive?|Kindly confirm delivery.|I would appreciate confirmation of delivery.|Please advise on receipt.|Casual.
+M|A speaker shifts from "Good morning, Professor" to "Hey, Sam!" mid-conversation. This is a:|register shift|grammar mistake|translation|pronunciation change|Register.
+M|Why do native speakers shift register?|To match the person and situation|By accident|To confuse|To save time|Context.
+M|Which phrase signals a move to a more casual tone?|Anyway,|Furthermore,|Henceforth,|Notwithstanding,|Casual marker.
+T|Register can change within one conversation.|True|Depends on audience.
+T|Native speakers use one register for all situations.|False|They shift.
+F|With a professor you say "Good morning"; with a friend you say "_____ !" (Hey / Hi)|Hey;Hi;Hiya|Casual.
+F|"Would you mind _____ the window?" is polite; "Shut the window" is blunt. (closing)|closing|Register.
+F|"I regret to inform you" is _____ ; "Sorry to say" is informal. (formal)|formal|Register.
+#C2.c1.l2
+M|At a job interview, which expression is most appropriate?|I would describe myself as highly motivated.|I'm super keen, mate.|I'm mad about work.|I rock at everything.|Professional.
+M|Among close friends, which expression is natural?|It was a total nightmare, honestly.|The experience was highly adverse.|The occurrence was unfortunate.|It was undesirable.|Casual.
+M|Too many idioms in a formal presentation can:|sound unprofessional|sound sophisticated|be required|be boring|Density.
+M|Which idiom is appropriate in a formal report?|a significant turning point|a piece of cake|a bit of a mess|a nightmare|Formal enough.
+M|Which factor affects idiom choice?|Audience and setting|The weather|The page|The font|Context.
+T|The same idiom may suit a casual chat but not a formal speech.|True|Context.
+T|You should use as many idioms as possible in every context.|False|Moderation.
+F|In a formal email, write "I look _____ to hearing from you." (forward)|forward|Formal.
+F|Among friends, say "It was a total _____ !" (nightmare / disaster)|nightmare;disaster|Casual.
+F|In a report, write "a _____ development." (significant)|significant|Formal.
+#C2.c1.l3
+M|Speaker: "Good morning, everyone. Let's begin. ... Anyway, between us, I think the old plan was a bit of a disaster." What changes?|The speaker becomes more casual.|The speaker becomes more formal.|The speaker leaves.|The speaker thanks people.|Register shift.
+M|"Between us" signals:|a private, informal comment|a formal opening|a question|a conclusion|Informal.
+M|Speaker: "Dear colleagues, I'd like to thank you..." The register is:|formal|casual|rude|slang|Formal.
+M|A native speaker lowers their voice and says "off the record". This signals:|a more informal or private remark|a formal announcement|a joke|a threat|Register shift.
+M|Understanding register shifts helps you:|read the social meaning|count words|translate quickly|speak louder|Pragmatics.
+T|Register shifts can show closeness or distance.|True|Social meaning.
+T|A shift to casual language always means disrespect.|False|It often signals friendliness.
+F|"Off the _____ , I think it was a mistake." (record)|record|Informal signal.
+F|"Dear colleagues" is a _____ opening. (formal)|formal|Register.
+F|"Right, _____ , let's get started." (so / then)|so;then;anyway|Casual transition.
+#C2.c2.l1
+M|"It's a bit chilly in here." could imply:|Please close the window.|The weather is nice.|I like cold.|It's hot.|Indirect request.
+M|"I'm not sure that's the best idea." implies:|I disagree.|I agree.|I'm certain.|I don't know.|Indirect disagreement.
+M|"That's an interesting proposal." (said flatly) may imply:|I'm not convinced.|I love it.|I'll sign now.|I'm confused.|Subtext.
+M|"Some of the staff were late again." implies:|criticism|praise|joy|surprise|Subtext.
+M|Implied meaning is:|meaning beyond the literal words|the dictionary meaning|the spelling|the grammar|Implication.
+T|Indirect statements often carry hidden meaning.|True|Implicature.
+T|Literal meaning is always the full meaning.|False|Context matters.
+F|"Do you have the time?" usually _____ you to tell the time. (asks)|asks;requests|Indirect request.
+F|"It's getting late" may imply "I want to _____ ." (leave / go home)|leave;go home;go|Subtext.
+F|"Interesting" may imply "not _____ ." (convincing / great)|convincing;great;good|Subtext.
+#C2.c2.l2
+M|Which is a British-style understatement for a disaster?|It's not ideal.|It's a catastrophe!|It's the worst ever!|I'm furious!|Understatement.
+M|"Not bad" in British English often means:|quite good|terrible|average|awful|Understatement.
+M|"It's a bit of a problem" may describe:|a serious problem|a tiny issue|no issue|a gift|Understatement.
+M|Understatement is used to:|soften strong reactions|exaggerate|add numbers|lie|Softening.
+M|After a huge win, a British person might say:|Rather pleasing, that.|Absolutely incredible, I'm screaming!|I hate it.|Never again.|Understatement.
+T|Understatement can express strong feelings in a mild way.|True|Rhetorical device.
+T|Understatement means exaggerating.|False|It's the opposite.
+F|After losing everything, he said it was "a _____ inconvenient." (bit / little)|bit;little;tad|Understatement.
+F|"It's not the _____ day I've had," she said after a terrible one. (best)|best;greatest|Understatement.
+F|"We've had _____ better days," he sighed. (had / seen)|seen;had|Understatement.
+#C2.c2.l3
+M|Which sentence conveys the most cautious tone?|It would appear that there may be an error.|There is an error.|There's a mistake.|You made an error.|Cautious.
+M|Which is the most direct?|You must correct this.|You might wish to correct this.|It may be advisable to correct this.|Perhaps this could be corrected.|Direct.
+M|Which phrase is polite and formal?|I would be grateful if you could review this.|Review this.|You review this now.|Do it.|Polite.
+M|Which modal makes a request more tentative?|could|must|will|shall|Tentative.
+M|"It would seem that..." is used to:|soften a statement|make an order|ask a question|end a letter|Soften.
+T|Modals can change the tone of formal writing.|True|Precision.
+T|"Must" is the most tentative modal.|False|It's strong.
+F|"It _____ appear that there is a discrepancy." (would / may / might)|would;may;might|Tentative.
+F|"_____ you kindly confirm the details?" (Could / Would)|Could;Would|Polite request.
+F|"I _____ be grateful for your prompt reply." (would)|would|Polite.
+#C2.c3.l1
+M|"The politician's promise was a house of cards." This is a:|metaphor|simile|fact|question|Metaphor.
+M|"The pilot, a model of calm, shouted in panic." The phrase "a model of calm" is:|ironic|literal|rhyme|alliteration|Irony.
+M|"Her smile was sunshine on a cloudy day." This is a:|metaphor|statement of fact|question|command|Figurative.
+M|Irony means:|saying the opposite of what is meant|saying exactly what is meant|a rhyme|a repeated sound|Irony.
+M|"Time is a thief" is:|a metaphor|a simile|a fact|a question|Metaphor.
+T|Metaphors describe one thing as another.|True|Figurative language.
+T|Irony always means being literal.|False|It involves contrast.
+F|"Time is a _____ ; it steals our days." (thief)|thief|Metaphor.
+F|The "fire-safe" building burnt down; that was _____ . (ironic)|ironic|Irony.
+F|"His words were a knife." This is a _____ . (metaphor)|metaphor|Figurative.
+#C2.c3.l2
+M|"This is our Waterloo" is an:|allusion|simile|statement of weather|question|Allusion to Napoleon's defeat.
+M|"Is this the best we can do?" is a:|rhetorical question|literal question|statement|command|Rhetorical.
+M|A rhetorical question is asked to:|make a point|get information|waste time|tell a story|Persuade.
+M|"He met his Waterloo" means:|He suffered a decisive defeat.|He travelled to Waterloo.|He won.|He retired.|Allusion.
+M|"Who among us hasn't made a mistake?" suggests:|everyone has made mistakes|nobody has|few have|none know|Rhetorical.
+T|An allusion refers indirectly to a known person, event or work.|True|Reference.
+T|A rhetorical question always needs an answer.|False|It's for effect.
+F|"Is that what we want for our _____ ?" (children / future)|children;future;country|Rhetorical.
+F|"He's a real Romeo" is an _____ to Shakespeare. (allusion)|allusion|Allusion.
+F|"Do we really want to repeat the _____ ?" (past / mistake / mistakes)|past;mistake;mistakes|Rhetorical.
+#C2.c3.l3
+M|"Politicians, those paragons of honesty, promised again to cut taxes, as they have done every year." What device is "paragons of honesty"?|irony|simile|alliteration|onomatopoeia|Irony.
+M|"The city was a beast, and it swallowed the newcomers." The city is described as:|a beast|a place|a person|a river|Metaphor.
+M|"Is it too much to ask for some peace?" is:|a rhetorical question|a literal question|a statement|a command|Rhetorical.
+M|An authentic text dense with devices should be read:|for overall meaning and effect|word by word only|ignoring figurative parts|aloud only|Interpretation.
+M|Which clue helps detect irony?|a contrast between words and reality|a rhyme|a date|a name|Contrast.
+T|Writers often combine several devices in a passage.|True|Density.
+T|Figurative language should always be interpreted literally.|False|It is figurative.
+F|"The city swallowed the newcomers." This is a _____ . (metaphor)|metaphor|Figurative.
+F|"Those paragons of honesty" is _____ . (ironic)|ironic|Irony.
+F|"Is it too much to ask?" is a _____ question. (rhetorical)|rhetorical|Device.
+#C2.c4.l1
+M|Speaker: "Well, um, I think — no, actually, what I mean is — the project is, er, behind schedule." What is the speaker's real point?|The project is behind schedule.|The project is finished.|The project is cancelled.|The project is ahead.|Self-corrections hide the main point.
+M|Speaker: "It was, you know, sort of, a difficult time." "You know, sort of" are:|fillers/hedges|key facts|names|dates|Hesitations.
+M|In natural speech, "I mean" is often used to:|clarify or correct|ask a question|end a conversation|greet|Clarification.
+M|Speaker: "I was going to say — well, actually, we agreed in March." What happened?|The speaker corrected themselves.|The speaker left.|The speaker asked a question.|The speaker laughed.|Self-correction.
+M|To extract key points from hesitant speech you should:|focus on content words and ignore fillers|write every word|stop|guess|Strategy.
+T|Natural speech includes hesitations and self-corrections.|True|Unscripted.
+T|Fillers like "um" carry the main meaning.|False|Not usually.
+F|"It was a, um, difficult _____ ." (time / year / period)|time;year;period|Filler context.
+F|"I mean, we _____ agreed to meet in May." (had / already)|had;already|Clarifying.
+F|"So, as I was _____ , the budget is tight." (saying)|saying|Natural speech.
+#C2.c4.l2
+M|Panel: A: "Remote work boosts productivity." B: "Not necessarily; it can isolate staff." C: "Both are true, depending on the role." Who sees both sides?|C|A|B|None|C balances.
+M|In the panel, who is critical of remote work?|B|A|C|Nobody|B points out isolation.
+M|Panel: A: "Remote work boosts productivity." What is A's position?|Supportive|Critical|Neutral|Undecided|A supports it.
+M|C says "depending on the role." This is a:|qualification|refusal|question|joke|Nuance.
+M|To track speakers in a discussion, note:|their position and reasons|their names only|their accents|their clothes|Strategy.
+T|Panel members often interrupt or overlap.|True|Natural discussion.
+T|All panelists always agree.|False|They disagree.
+F|A: "It boosts productivity." B: "Not _____ ; it can isolate staff." (necessarily)|necessarily|Disagreement.
+F|C: "Both are true, _____ on the role." (depending)|depending|Nuance.
+F|B: "I'd _____ with that." (disagree / take issue)|disagree;take issue|Disagreement.
+#C2.c4.l3
+M|The best summary of a long passage includes:|key points and speaker positions|every detail|only the first sentence|only names|Summary.
+M|A summary should be:|concise and accurate|longer than the original|full of opinions|in a different order|Qualities.
+M|Which phrase is useful in a summary?|The speaker argues that|Basically he said|Like I heard|He was like|Reporting.
+M|Which is a good summary of: "A says prices will rise; B says they will fall; C says it's uncertain"?|The speakers disagree about future prices.|Prices will rise.|Prices will fall.|Everyone is certain.|Captures positions.
+M|When summarising, you should avoid:|adding your own opinion|stating main ideas|noting differences|being brief|Neutral.
+T|A summary includes only the key points.|True|Concise.
+T|A summary should copy the original word for word.|False|Paraphrase.
+F|The speaker _____ that prices will rise. (argues / claims / suggests)|argues;claims;suggests|Reporting verb.
+F|In _____ , the speakers disagree on prices. (summary / short)|summary;short|Summarising.
+F|The key _____ is that opinions differ. (point)|point|Summary language.

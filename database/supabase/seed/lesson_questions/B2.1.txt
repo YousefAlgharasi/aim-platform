@@ -1,0 +1,132 @@
+#B2.1.c1.l1
+M|If I _____ a million dollars, I would travel the world.|had|have|will have|would have|Second conditional: If + past simple, would + verb.
+M|If she were taller, she _____ a basketball player.|would be|will be|is|was|Result clause: would + base verb.
+M|Second conditionals talk about:|unreal or unlikely situations|real future plans|past events|habits|They describe hypothetical situations.
+M|Which sentence is correct?|If I were you, I would apologize.|If I was you, I will apologize.|If I am you, I would apologize.|If I were you, I apologize.|"If I were you" is the standard advice form.
+M|Which sentence is a second conditional?|If I lived by the sea, I would swim every day.|If I live by the sea, I will swim every day.|If I had lived by the sea, I would have swum.|If I live by the sea, I swim every day.|If + past simple, would + verb.
+T|In a second conditional, the if-clause uses the past simple.|True|Even though it talks about the present or future.
+T|"If I would have time, I would help" is the standard form.|False|Use "If I had time, I would help."
+F|If I _____ rich, I would buy an island. (be)|were;was|Past simple (were).
+F|She would be happier if she _____ a new job. (have)|had|Past simple.
+F|If they lived closer, we _____ see them more often. (would)|would|Result clause.
+#B2.1.c1.l2
+M|If it rains tomorrow, we _____ the match. (real possibility)|will cancel|would cancel|cancelled|cancel|First conditional.
+M|If I won the lottery, I _____ quit my job. (unlikely)|would|will|do|did|Second conditional.
+M|Which sentence is unlikely or hypothetical?|If I were president, I would lower taxes.|If I see him, I'll tell him.|If it rains, I'll stay in.|If you heat ice, it melts.|"If I were president" is hypothetical.
+M|Which sentence is a real future possibility?|If I finish early, I'll call you.|If I finished early, I would call you.|If I had finished early, I would have called you.|If I were to finish early, I would call you.|First conditional.
+M|The main difference between first and second conditional is:|how likely the situation is|the tense of the main verb only|the number of clauses|punctuation|Real vs unreal.
+T|"If I had wings, I would fly" is a second conditional.|True|Hypothetical.
+T|"If I will see her, I would tell her" is correct.|False|Mixed forms are incorrect.
+F|If I find a wallet, I _____ take it to the police. (real situation)|will|First conditional.
+F|If I found a wallet with a million dollars in it, I _____ be amazed. (hypothetical)|would|Second conditional.
+F|If you _____ harder, you would pass. (study)|studied|Past simple.
+#B2.1.c1.l3
+M|Question: "What would you do if you could live anywhere?" A well-structured answer starts with:|If I could live anywhere, I would...|If I can live anywhere, I will...|If I lived anywhere, I would to...|If I live anywhere, I would...|Second conditional.
+M|A structured answer has:|a point, a reason and an example|only a yes or no|three questions|a story with no point|Point + reason + example.
+M|Which linking phrase introduces a reason?|because|however|although|so that|"Because" introduces a reason.
+M|Which phrase introduces an example?|For instance,|However,|In conclusion,|Meanwhile,|"For instance" gives an example.
+M|Which sentence is a hypothetical answer?|If I had more time, I would learn the piano.|If I have more time, I will learn the piano.|I learn the piano.|I learned the piano.|Second conditional.
+T|In a spoken answer, you should give a reason for your choice.|True|It makes the answer stronger.
+T|"If I would have money, I will travel" is a good second conditional.|False|Use "If I had money, I would travel."
+F|If I could meet anyone, I _____ choose a scientist. (would)|would|Second conditional.
+F|I would live in Japan _____ I love the culture. (because)|because|Reason.
+F|If I were a teacher, I _____ give less homework. (would)|would|Second conditional.
+#B2.1.c2.l1
+M|English _____ in many countries.|is spoken|speaks|is speaking|was spoke|Present passive: is/are + past participle.
+M|These cars _____ in Germany.|are made|make|are making|is made|Present passive plural.
+M|Which sentence is passive?|The letter is written every day.|He writes the letter every day.|He is writing a letter.|He wrote the letter.|"Is written" is passive.
+M|Which sentence focuses on the action, not the doer?|Rice is grown in Asia.|Farmers grow rice in Asia.|Asia grows rice.|People grow rice.|Passive focuses on the action.
+M|Which is correct?|Coffee is produced in Brazil.|Coffee is produce in Brazil.|Coffee produced in Brazil.|Coffee is producing in Brazil.|is + past participle.
+T|The present passive is formed with am/is/are + past participle.|True|Example: "is cleaned".
+T|"The room cleans every day" is a correct passive sentence.|False|Say "The room is cleaned every day."
+F|The shop _____ at 9 a.m. every day. (open — passive)|is opened|Passive.
+F|Many languages _____ in India. (speak — passive)|are spoken|Passive plural.
+F|Paper _____ from trees. (make — passive)|is made|Passive.
+#B2.1.c2.l2
+M|The Eiffel Tower _____ in 1889.|was built|is built|built|was building|Past passive: was/were + past participle.
+M|These pictures _____ by a famous artist.|were painted|are painted|painted|was painted|Plural past passive.
+M|Which sentence is in the past passive?|The window was broken last night.|The window is broken.|Someone broke the window.|The window breaks.|"Was broken".
+M|Which sentence is correct?|The book was written by Orwell.|The book was wrote by Orwell.|The book wrote by Orwell.|The book is wrote by Orwell.|Past participle: written.
+M|Which is correct?|The thieves were arrested yesterday.|The thieves arrested yesterday.|The thieves was arrested yesterday.|The thieves were arrest yesterday.|were + past participle.
+T|The past passive uses was/were + past participle.|True|Example: "was built".
+T|"The house built in 1990" is a complete passive sentence.|False|It lacks "was".
+F|The telephone _____ by Bell. (invent — past passive)|was invented|Past passive.
+F|Millions of tickets _____ last year. (sell — past passive)|were sold|Plural past passive.
+F|This song _____ in 1975. (write — past passive)|was written|Past passive.
+#B2.1.c2.l3
+M|"The suspect was arrested last night." Which is the passive verb?|was arrested|suspect|last|night|"Was arrested" is passive.
+M|"A new bridge will be built next year." The agent (who builds) is:|not mentioned|the government|a company|next year|The agent is omitted.
+M|Rewrite in the passive: "Police found the car."|The car was found by police.|The car found police.|The car is found by police.|Police were found by the car.|Past passive.
+M|Why are passive sentences common in news?|The action is more important than the doer.|They are shorter always.|They are informal.|They are about the future only.|News often focuses on events.
+M|"The museum is visited by thousands every year." Who visits?|Thousands of people|The museum|Nobody|The government|"By thousands".
+T|"Was damaged" in "The roof was damaged" is a passive verb.|True|was + past participle.
+T|In passive sentences, the agent must always be mentioned.|False|It can be omitted.
+F|The award _____ to Maria yesterday. (give — passive)|was given|Past passive.
+F|Thousands of jobs _____ by the new factory. (create — passive)|were created|Past passive plural.
+F|The road _____ next month. (repair — future passive)|will be repaired|Future passive.
+#B2.1.c3.l1
+M|It rained all day. _____ , the match was cancelled.|Therefore|However|Moreover|Although|"Therefore" shows result.
+M|I like the flat. _____ , it is too expensive.|However|Therefore|Moreover|Because|"However" shows contrast.
+M|The hotel is cheap. _____ , it is close to the beach.|Moreover|However|Therefore|Instead|"Moreover" adds information.
+M|Which word shows contrast?|however|moreover|therefore|furthermore|"However" shows contrast.
+M|Which word shows result?|therefore|however|but|although|"Therefore" shows result.
+T|"Moreover" is used to add another point.|True|It's a formal "also".
+T|"However" introduces a similar idea.|False|It introduces contrast.
+F|The test was difficult. _____ , most students passed. (However)|However|Contrast.
+F|The car is fast. _____ , it is safe. (Moreover)|Moreover|Addition.
+F|He didn't study. _____ , he failed. (Therefore)|Therefore|Result.
+#B2.1.c3.l2
+M|The film was long. _____ , it was boring.|In addition|On the other hand|As a result|However|"In addition" adds.
+M|Living in a city is exciting. _____ , it can be noisy.|On the other hand|In addition|As a result|Moreover|"On the other hand" presents contrast.
+M|It was snowing heavily. _____ , the airport closed.|As a result|On the other hand|In addition|However|"As a result" shows consequence.
+M|Which discourse marker presents an opposing point?|On the other hand|In addition|As a result|Furthermore|Opposing view.
+M|Which marker adds a point?|In addition|However|On the other hand|Nevertheless|Adds.
+T|"As a result" introduces a consequence.|True|It signals a result.
+T|"On the other hand" adds a similar point.|False|It presents a contrast.
+F|The job pays well. _____ , it is stressful. (On the other hand)|On the other hand|Contrast.
+F|He trained every day. _____ , he won the race. (As a result)|As a result|Result.
+F|The course is cheap. _____ , it is very useful. (In addition)|In addition|Addition.
+#B2.1.c3.l3
+M|Which sentence uses a discourse marker correctly?|The weather was bad; however, we enjoyed the trip.|The weather was bad however we enjoyed the trip.|The weather was bad, however we enjoyed the trip.|However the weather was bad, we enjoyed.|A semicolon before and comma after "however".
+M|Which paragraph is best linked?|Cars are fast. However, they pollute. Therefore, many cities encourage buses.|Cars are fast. They pollute. Buses.|Cars. However. Pollute.|Fast cars therefore buses.|Good flow with markers.
+M|Which marker is best for the conclusion of a paragraph?|In conclusion,|Moreover,|However,|On the other hand,|"In conclusion" ends.
+M|Which marker fits: "Many people love summer. _____ , some prefer winter."|However|Therefore|As a result|In addition|Contrast.
+M|Using too many markers in one sentence is:|confusing|always better|required|a rule|Use them naturally.
+T|Discourse markers help the reader follow ideas.|True|They connect ideas.
+T|You should use the same marker in every sentence.|False|Vary them.
+F|The book is long. _____ , it is very interesting. (However / Nevertheless)|However;Nevertheless|Contrast.
+F|He is rich. _____ , he is kind. (Moreover / In addition / Furthermore)|Moreover;In addition;Furthermore|Addition.
+F|It was late. _____ , we went home. (Therefore / So / As a result)|Therefore;So;As a result|Result.
+#B2.1.c4.l1
+M|I'd rather _____ at home tonight.|stay|to stay|staying|stayed|"Would rather" + base verb.
+M|She'd prefer _____ tea to coffee.|to drink|drink|drinking|drank|"Would prefer" + to-infinitive.
+M|Which sentence is correct?|I would rather walk than drive.|I would rather to walk than drive.|I would rather walking than drive.|I would rather walk than to drive.|"Would rather" + base verb + than + base verb.
+M|Which sentence is correct?|I'd prefer to leave early.|I'd prefer leave early.|I'd prefer leaving early than.|I'd prefer to leaving early.|"Would prefer" + to + verb.
+M|"Would rather" expresses:|a preference|an obligation|a past habit|a prediction|It states what you prefer.
+T|"Would rather" is followed by the base verb.|True|Example: "I'd rather go."
+T|"I would rather to go" is correct.|False|Say "I'd rather go."
+F|I'd rather _____ a book than watch TV. (read)|read|Base verb.
+F|He'd prefer _____ by train. (travel)|to travel|Would prefer + to.
+F|She _____ rather stay in than go out. (would / 'd)|would;'d|Preference.
+#B2.1.c4.l2
+M|I wish I _____ more free time.|had|have|will have|would have|"I wish + past simple" for present wishes.
+M|I wish I _____ a car.|had|have|has|would have|Past simple.
+M|"I wish I could speak French" means:|I can't speak French now.|I speak French.|I will speak French.|I spoke French.|The wish is about a current lack.
+M|Which sentence is correct?|I wish I were taller.|I wish I am taller.|I wish I will be taller.|I wish I be taller.|"Were" after "wish".
+M|Which sentence expresses a wish about the present?|I wish I lived near the sea.|I wish I live near the sea.|I wish I will live near the sea.|I wish I would live near the sea.|Past simple.
+T|"I wish + past simple" refers to an unreal present situation.|True|Example: "I wish I had a dog."
+T|"I wish I can fly" is correct.|False|Say "I wish I could fly."
+F|I wish I _____ how to cook. (know)|knew|Past simple.
+F|I wish I _____ speak Italian. (can)|could|can → could.
+F|She wishes she _____ a bigger house. (have)|had|Past simple.
+#B2.1.c4.l3
+M|Speaker: "I'd rather live in the countryside than in the city, but I live in a flat in the city. I wish I had a garden." What does the speaker prefer?|Living in the countryside|Living in the city|Travelling|Working|They'd rather live in the countryside.
+M|Speaker: "I wish I had a garden." What does this mean?|The speaker has no garden.|The speaker has a garden.|The speaker sold a garden.|The speaker will build a garden.|A present wish means they don't have it.
+M|"I'd prefer to walk" expresses:|a preference|a regret|a fact|an order|Preference.
+M|Speaker: "I wish I could play the guitar." What can't the speaker do?|Play the guitar|Sing|Dance|Cook|The wish shows inability.
+M|"I'd rather not go" means:|I prefer not to go.|I must go.|I will go.|I went.|It's a preference.
+T|"I wish I were rich" expresses a wish about the present.|True|Unreal present.
+T|"I'd rather" is used to express regret.|False|It expresses preference.
+F|I'd _____ stay home than go to the party. (rather)|rather|Preference.
+F|I wish I _____ more time to read. (had)|had|Present wish.
+F|She'd prefer _____ a quiet holiday. (to have)|to have|Would prefer + to.

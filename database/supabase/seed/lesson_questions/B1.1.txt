@@ -1,0 +1,132 @@
+#B1.1.c1.l1
+M|_____ you ever been to London?|Have|Did|Do|Are|Present perfect questions use "Have you ever + past participle".
+M|I have never _____ sushi.|eaten|ate|eat|eating|Present perfect: have + past participle (eaten).
+M|She has _____ to Italy three times.|been|be|was|being|"Has been to" talks about experience.
+M|Which sentence talks about life experience?|I have visited Japan.|I visited Japan last year.|I am visiting Japan.|I will visit Japan.|The present perfect with no time word expresses experience.
+M|What is the past participle of "see"?|seen|saw|seed|seeing|See – saw – seen.
+T|We use the present perfect to talk about experiences up to now.|True|Example: "I have lived in three cities."
+T|"Have you ever went to Paris?" is correct.|False|Use the past participle: "Have you ever been to Paris?"
+F|Have you ever _____ a horse? (ride)|ridden|Ride – rode – ridden.
+F|She _____ never tried Chinese food. (has)|has|"She has never ...".
+F|We have _____ that movie twice. (see)|seen|See – saw – seen.
+#B1.1.c1.l2
+M|I _____ to Spain last summer.|went|have been|have gone|go|"Last summer" is a finished time: past simple.
+M|I _____ Paris three times in my life.|have visited|visited|visit|am visiting|No specific time: present perfect.
+M|Which sentence is correct?|I saw that film yesterday.|I have seen that film yesterday.|I have saw that film yesterday.|I see that film yesterday.|"Yesterday" needs the past simple.
+M|Which sentence is correct?|She has lived here since 2015.|She lived here since 2015.|She has live here since 2015.|She lives here since 2015.|"Since" goes with the present perfect.
+M|When do we use the past simple instead of the present perfect?|When we say exactly when something happened|When we talk about life experience|When we talk about the future|When we use "ever"|Specific finished times use the past simple.
+T|"In 2019" is a time expression used with the past simple.|True|A specific finished time uses the past simple.
+T|"I have lost my keys last night" is correct.|False|Use the past simple with "last night": "I lost my keys last night."
+F|I _____ my homework an hour ago. (finish)|finished|"An hour ago" needs the past simple.
+F|Have you ever _____ a marathon? (run)|run|Run – ran – run.
+F|They _____ married in 2010. (get)|got|"In 2010" needs the past simple.
+#B1.1.c1.l3
+M|"I have lived in three countries. I was born in Brazil, and I moved to Canada in 2010." Which sentence uses the present perfect?|I have lived in three countries.|I was born in Brazil.|I moved to Canada in 2010.|None|"Have lived" is the present perfect.
+M|"I have lived in three countries. I was born in Brazil, and I moved to Canada in 2010." When did the speaker move to Canada?|In 2010|Last year|In the future|Never|It is stated: 2010.
+M|"I've never been on a plane, but I've traveled by train across Europe." Has the speaker flown?|No|Yes|Maybe|Often|"I've never been on a plane" means no.
+M|"She has worked as a nurse for ten years." How long has she been a nurse?|Ten years|Ten months|One year|Not stated|The text says ten years.
+M|Which question asks about life experience?|Have you ever tried skiing?|Did you ski yesterday?|Do you ski now?|Will you ski tomorrow?|"Have you ever" asks about experience.
+T|"I've" is the short form of "I have".|True|I have = I've.
+T|"I've been to Japan in 2018" is correct.|False|Say "I went to Japan in 2018."
+F|"I _____ never seen snow," said Carlos. (have)|have|Present perfect: have never seen.
+F|"We _____ to that restaurant twice." (have been)|have been;'ve been|Experience up to now.
+F|"She _____ lived in Rome since 2020." (has)|has|"Since 2020" → present perfect.
+#B1.1.c2.l1
+M|If it rains tomorrow, I _____ at home.|will stay|stay|would stay|stayed|First conditional: If + present, will + verb.
+M|If you study hard, you _____ the exam.|will pass|passed|would pass|pass|First conditional result: will + verb.
+M|If she _____ late, we will start without her.|is|will be|would be|was|The if-clause uses the present simple.
+M|Which sentence is a correct first conditional?|If I see him, I will tell him.|If I will see him, I tell him.|If I saw him, I will tell him.|If I see him, I would tell him.|If + present simple, will + base verb.
+M|First conditionals talk about:|real, possible future situations|unreal situations|past events|habits|They describe real future possibilities.
+T|In a first conditional, the "if" clause uses the present simple.|True|Example: "If it rains ..."
+T|"If it will rain, we will cancel" is correct.|False|Use the present simple after "if": "If it rains, we will cancel."
+F|If I _____ time, I will call you. (have)|have|Present simple after if.
+F|If he doesn't hurry, he _____ miss the bus. (will)|will|Result clause uses will.
+F|They will be happy if we _____ on time. (arrive)|arrive|Present simple after if.
+#B1.1.c2.l2
+M|"What will you do if you win the lottery?" This question is about:|a real possibility|something impossible|the past|a habit|It asks about a possible future.
+M|A: "What will you do if it rains?" B: "_____ "|I will stay home.|I would stay home.|I stayed home.|I am staying home.|The answer uses will.
+M|Which question is correct?|What will you do if you miss the bus?|What would you do if you miss the bus?|What will you do if you will miss the bus?|What do you if you miss the bus?|"What will you do if + present?"
+M|Which answer is correct for "What will you do if you feel sick?"|If I feel sick, I'll go to the doctor.|If I will feel sick, I go to the doctor.|If I felt sick, I'll go to the doctor.|If I feel sick, I went to the doctor.|If + present, will + verb.
+M|"If it's sunny, we'll go to the beach." What happens if it's not sunny?|We probably won't go to the beach.|We will go anyway.|We will go twice.|Nothing is decided.|The condition is not met.
+T|"What will you do if..." questions use the first conditional.|True|They ask about real future possibilities.
+T|"What will you do if you will be late?" is correct.|False|Use present simple: "...if you are late?"
+F|What will you do if you _____ your wallet? (lose)|lose|Present simple after if.
+F|If I get the job, I _____ buy a new car. (will)|will|Will in the result clause.
+F|What _____ you do if it rains? (will)|will|First conditional question.
+#B1.1.c2.l3
+M|"If I have enough money, I'll go on holiday in July." What does the speaker need?|Enough money|A new job|More time|A passport only|The condition is having enough money.
+M|"If the weather is good, we'll have a picnic." What is the condition?|Good weather|Having a picnic|Staying home|Eating|The if clause is the condition.
+M|Which sentence is correct for a plan that depends on time?|If I finish early, I'll meet you.|If I finished early, I'll meet you.|If I will finish early, I meet you.|If I finish early, I met you.|If + present, will + verb.
+M|Which word can replace "if not" in a first conditional?|unless|until|although|because|"Unless" means "if not".
+M|"I won't go unless you come." means:|I'll go only if you come.|I'll go if you don't come.|I'll go anyway.|I won't ever go.|"Unless" = "if not".
+T|"Unless" means "if not".|True|Example: "Unless you hurry = If you don't hurry".
+T|In "If I'm free, I'll call you", "I'll call you" is the condition.|False|"If I'm free" is the condition.
+F|If it _____ tomorrow, we will cancel the trip. (snow)|snows|Present simple after if.
+F|I'll lend you the book if you _____ it back. (bring)|bring|Present simple after if.
+F|She won't come _____ you invite her. (unless)|unless|"Unless" = "if not".
+#B1.1.c3.l1
+M|A person who teaches students is a:|teacher|nurse|chef|driver|A teacher teaches.
+M|A person who cooks in a restaurant is a:|chef|nurse|pilot|doctor|A chef cooks.
+M|A person who takes care of sick people in a hospital (not a doctor) is a:|nurse|chef|driver|farmer|A nurse looks after patients.
+M|A person who drives a bus is a:|driver|pilot|waiter|plumber|A bus driver drives.
+M|A person who designs buildings is an:|architect|electrician|waiter|accountant|Architects design buildings.
+T|An engineer designs or builds machines, roads or systems.|True|Engineers solve technical problems.
+T|A pilot repairs cars.|False|A pilot flies planes; a mechanic repairs cars.
+F|A person who fixes cars is a _____ . (mechanic)|mechanic|Mechanics fix cars.
+F|A person who writes news stories is a _____ . (journalist)|journalist|Journalists write news.
+F|A person who looks after people's teeth is a _____ . (dentist)|dentist|Dentists treat teeth.
+#B1.1.c3.l2
+M|"I work as a nurse. I take care of patients and give them medicine." What is the speaker's job?|nurse|teacher|driver|chef|The text says nurse.
+M|Which phrase describes a goal for the future?|I want to become an engineer.|I became an engineer.|I am an engineer now.|I was an engineer.|"Want to become" expresses a goal.
+M|Which phrase explains why someone chose a job?|I chose it because I love helping people.|I chose it yesterday.|It is on Main Street.|It is a big job.|"Because" gives a reason.
+M|"I am responsible for training new staff." This describes:|a duty|a hobby|a holiday|a salary|"Responsible for" lists duties.
+M|Which sentence is correct?|My dream is to become a doctor.|My dream is become a doctor.|My dream become a doctor.|My dream is becoming doctor.|"To become" after "is".
+T|"Responsibilities" are the duties of a job.|True|They are what you must do at work.
+T|"Salary" means the place where you work.|False|Salary is the money you earn.
+F|I would like to _____ a pilot someday. (become)|become|"Would like to become".
+F|She works _____ a teacher. (as)|as|"Work as + job".
+F|I chose this career _____ I enjoy helping people. (because)|because|Reason.
+#B1.1.c3.l3
+M|Interviewer: "Tell me about yourself." This question asks you to:|introduce yourself briefly|give a long story|say goodbye|ask a question|It invites a short introduction.
+M|Interviewer: "Why do you want this job?" The best answer starts with:|I'm interested because...|I don't know.|Because money.|Maybe.|A clear reason is best.
+M|Which phrase talks about strengths?|I'm good at working in a team.|I am late.|I don't like work.|I forgot.|It names a strength.
+M|At the end of an interview you can say:|Thank you for your time.|See you never.|Whatever.|Goodbye, boss.|It is polite.
+M|"What are your strengths?" asks about:|things you do well|things you dislike|your address|your age|Strengths are your good qualities.
+T|In an interview you should answer politely and clearly.|True|It makes a good impression.
+T|It is a good idea to be late for an interview.|False|You should arrive on time.
+F|I have five years of _____ in marketing. (experience)|experience|Experience is time in a field.
+F|I'm very good _____ solving problems. (at)|at|"Good at + -ing".
+F|Thank you for _____ me this interview. (giving)|giving|"Thank you for + -ing".
+#B1.1.c4.l1
+M|Someone who gives presents to others and likes sharing is:|generous|stubborn|shy|lazy|Generous people give freely.
+M|Someone who always tells the truth is:|honest|lazy|rude|selfish|Honest people tell the truth.
+M|Someone who does not change their mind easily is:|stubborn|friendly|patient|generous|Stubborn = refuses to change.
+M|Someone who stays calm while waiting is:|patient|impatient|rude|lazy|Patient people wait calmly.
+M|Someone who is nice to everybody is:|friendly|selfish|shy|rude|Friendly people are warm.
+T|"Selfish" means thinking only about yourself.|True|It is the opposite of generous.
+T|"Shy" means very loud and confident.|False|Shy people are quiet and nervous around others.
+F|My brother never wants to share. He is very _____ . (selfish)|selfish|He thinks only of himself.
+F|She doesn't like parties and is quiet in groups. She is _____ . (shy)|shy|Quiet around others.
+F|He works hard every day. He is not _____ . (lazy)|lazy|Lazy is the opposite of hard-working.
+#B1.1.c4.l2
+M|Which phrase gives an opinion?|In my opinion, he is kind.|He is kind.|He was kind.|He will be kind.|"In my opinion" signals an opinion.
+M|Which is another way to say "I think she is friendly"?|I believe she is friendly.|I know she was friendly.|She friendly is I.|I friendly she.|"I believe" ≈ "I think".
+M|Which sentence is polite when giving a negative opinion?|I think he can be a bit stubborn.|He is a terrible person.|He is stupid.|I hate him.|Hedging and "can be" are polite.
+M|"What do you think of Anna?" is asking for:|your opinion|her address|her age|her job|It asks for an opinion.
+M|Which answer to "What do you think of Anna?" is correct?|I think she's very generous.|She think very generous.|I thinks she is generous.|Think generous her.|Correct grammar and opinion.
+T|"I think" and "I believe" can introduce an opinion.|True|They are similar.
+T|"In my opinion" is used for facts.|False|It introduces an opinion.
+F|_____ my opinion, he is a great leader. (In)|In|"In my opinion".
+F|I _____ she is very honest. (think / believe)|think;believe|Introduce an opinion.
+F|What do you _____ of him? (think)|think|"What do you think of ...?"
+#B1.1.c4.l3
+M|Which sentence is a good topic sentence for a character sketch?|My neighbor, Mr. Lee, is a kind and patient man.|Mr. Lee lives on Elm Street.|Mr. Lee is 60.|I like the street.|It states the main idea about character.
+M|Which sentence gives evidence of kindness?|He always helps people carry their bags.|He is tall.|He has a car.|He lives alone.|It shows kind behavior.
+M|Which sentence gives an opinion about the person?|In my opinion, he is the best neighbor.|He lives next door.|He is 60.|He has a dog.|It states an opinion.
+M|Which linking word adds one more detail?|Also|But|Because|Although|"Also" adds information.
+M|A good concluding sentence for the sketch is:|That is why I admire him.|He has a car.|Next door.|Dog.|It wraps up the opinion.
+T|A character sketch describes a person's personality.|True|It focuses on traits.
+T|A character sketch should only list physical features.|False|It focuses on personality.
+F|He is very _____ . He always tells the truth. (honest)|honest|Telling the truth = honest.
+F|In my _____ , she is the kindest person I know. (opinion)|opinion|"In my opinion".
+F|She never gets angry; she is _____ . (patient)|patient|Calm and tolerant.

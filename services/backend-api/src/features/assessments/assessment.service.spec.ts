@@ -201,8 +201,17 @@ describe('AssessmentService', () => {
 
   describe('getDetail', () => {
     it('returns sections with questionCount', async () => {
-      const svc = new AssessmentService(makeRepo() as any, mockDb as any);
+      const db = { query: jest.fn().mockResolvedValue({ rows: [{ max_attempts: 2, time_limit_seconds: 900, count: '10' }] }) };
+      const svc = new AssessmentService(makeRepo() as any, db as any);
       const detail = await svc.getDetail('a-1', 'stu-1');
+      expect(detail.sections[0].questionCount).toBe(10);
+    });
+    it('reports the per-attempt draw size, not the whole pool', async () => {
+      const db = { query: jest.fn().mockResolvedValue({ rows: [{ max_attempts: 2, time_limit_seconds: 900, count: '40', questions_per_attempt: null }] }) };
+      const repo = makeRepo({ countQuestionsPerSection: jest.fn().mockResolvedValue(new Map([['s-1', 40]])) });
+      const svc = new AssessmentService(repo as any, db as any);
+      const detail = await svc.getDetail('a-1', 'stu-1');
+      expect(detail.questionCount).toBe(10); // quiz default draw
       expect(detail.sections[0].questionCount).toBe(10);
     });
     it('applies the per-type attempt default when no settings row exists', async () => {
