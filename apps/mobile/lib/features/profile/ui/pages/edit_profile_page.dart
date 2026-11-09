@@ -313,98 +313,28 @@ class _EditProfileGradientHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: AimSizes.topBarHeight,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AimSpacing.space8,
-            ),
-            child: Row(
-              children: [
-                Semantics(
-                  button: true,
-                  label: l10n?.editProfileBack ?? 'Back',
-                  child: InkWell(
-                    onTap: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go(AppRoutePaths.mainShell);
-                      }
-                    },
-                    customBorder: const CircleBorder(),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AimColors.neutral0.withValues(alpha: 0.18),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(AimSpacing.space12),
-                        child: Icon(
-                          Directionality.of(context) == TextDirection.rtl
-                              ? Icons.chevron_right_rounded
-                              : Icons.chevron_left_rounded,
-                          size: AimSizes.iconMd,
-                          color: AimColors.neutral0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: AimSpacing.space8,
-                    ),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: Text(
-                        l10n?.editProfileTitle ?? 'Edit profile',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: AimTextStyles.h3.copyWith(
-                          color: AimColors.neutral0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: AimSizes.touchTarget,
-                  child: TextButton(
-                    onPressed: canSave ? onSave : null,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AimColors.neutral0,
-                      disabledForegroundColor:
-                          AimColors.neutral0.withValues(alpha: 0.4),
-                    ),
-                    child: isSubmitting
-                        ? const SizedBox(
-                            width: AimSizes.iconMd,
-                            height: AimSizes.iconMd,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AimColors.neutral0,
-                            ),
-                          )
-                        : Text(
-                            l10n?.editProfileSave ?? 'Save',
-                            style: AimTextStyles.button.copyWith(
-                              color: AimColors.neutral0,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    // Shown as the app frame's top bar; outside the frame it draws itself.
+    return AIMTopAppBar(
+      title: l10n?.editProfileTitle ?? 'Edit profile',
+      onBack: () {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutePaths.mainShell);
+        }
+      },
+      actions: [
+        TextButton(
+          onPressed: canSave ? onSave : null,
+          child: isSubmitting
+              ? const SizedBox(
+                  width: AimSizes.iconMd,
+                  height: AimSizes.iconMd,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n?.editProfileSave ?? 'Save'),
         ),
-      ),
+      ],
     );
   }
 }

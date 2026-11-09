@@ -88,51 +88,22 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     final state = ref.watch(chaptersProvider);
 
     final colorScheme = Theme.of(context).colorScheme;
-    final surfaces = aimSurfacesOf(context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // App Bar Header (Back button + Course Title matching Image 1 from prototype)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: surfaces.surface,
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go('/main');
-                      }
-                    },
-                    icon: Icon(Icons.arrow_back_rounded, color: surfaces.textPrimary, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: surfaces.surfaceSunken,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const AimBrandLogo(size: 34, fontSize: 10, borderRadius: 10),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.courseTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                        letterSpacing: -0.3,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+            // Shown as the app frame's top bar; outside the frame it draws itself.
+            AIMTopAppBar(
+              title: widget.courseTitle,
+              onBack: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/main');
+                }
+              },
             ),
 
             Expanded(

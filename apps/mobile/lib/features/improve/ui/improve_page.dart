@@ -123,14 +123,29 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
     return Scaffold(
-      appBar: AIMTopAppBar(title: context.tr('Improve', 'تحسين')),
-      body: SafeArea(
-        top: false,
-        child: switch (state) {
-          AppAsyncFailure(:final message) => AIMFullScreenError(message: message, onRetry: _load),
-          AppAsyncSuccess(:final data) => _content(context, data),
-          _ => AIMFullScreenLoading(semanticLabel: context.tr('Loading', 'جارٍ التحميل')),
-        },
+      body: Column(
+        children: [
+          // A main screen: the heading sits under the app frame's AIM bar.
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.space16,
+              AimSpacing.screenPaddingMobile,
+              0,
+            ),
+            child: PageTitleBar(title: context.tr('Improve', 'تحسين')),
+          ),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: switch (state) {
+                AppAsyncFailure(:final message) => AIMFullScreenError(message: message, onRetry: _load),
+                AppAsyncSuccess(:final data) => _content(context, data),
+                _ => AIMFullScreenLoading(semanticLabel: context.tr('Loading', 'جارٍ التحميل')),
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

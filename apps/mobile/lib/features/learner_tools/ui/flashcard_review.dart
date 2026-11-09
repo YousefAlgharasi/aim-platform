@@ -137,6 +137,8 @@ class _FlashcardReviewPageState extends ConsumerState<FlashcardReviewPage> {
         title: cards == null || cards.isEmpty || _index >= cards.length
             ? context.tr('My words', 'كلماتي')
             : '${_index + 1} / ${cards.length}',
+        // This page is pushed on the frame's own navigator, not by the router.
+        onBack: () => Navigator.of(context).pop(),
       ),
       body: SafeArea(top: false, child: body),
     );

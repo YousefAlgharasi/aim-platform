@@ -36,7 +36,6 @@ class PracticeHubPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AIMTopAppBar(title: context.tr('Practice', 'تدرّب')),
       body: SafeArea(
         top: false,
         child: RefreshIndicator(
@@ -47,6 +46,9 @@ class PracticeHubPage extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
             children: [
+              // A main screen: the heading sits under the app frame's AIM bar.
+              PageTitleBar(title: context.tr('Practice', 'تدرّب')),
+              const SizedBox(height: AimSpacing.sectionGap),
               Container(
                 padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
                 decoration: BoxDecoration(

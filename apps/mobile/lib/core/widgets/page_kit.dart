@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/theme.dart';
+import 'navigation/app_chrome_scope.dart';
 
 /// Building blocks for the pages that use the same layout as the student web
 /// app: a large title with a back arrow, a gradient "hero" panel, filter pills
@@ -25,8 +26,23 @@ class PageTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // On menu and detail screens the app frame's single top bar shows the
+    // title (and the action); only main screens draw the big heading here.
+    final chrome = AppChromeScope.maybeOf(context);
+    if (chrome != null && chrome.mode != ChromeBarMode.root) {
+      return ChromeBarRegistrar(
+        host: chrome.host,
+        spec: ChromeBarSpec(
+          title: title,
+          subtitle: subtitle,
+          actions: action == null ? const [] : [action!],
+        ),
+      );
+    }
+    final inFrame = chrome != null;
+
     final surfaces = aimSurfacesOf(context);
-    final canPop = _canPop(context);
+    final canPop = !inFrame && _canPop(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
 
     return Column(

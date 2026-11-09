@@ -14,6 +14,7 @@
 // "Pause" again, unlike the mockup) — that's the functionally correct
 // action for a paused schedule, kept over pixel-matching the mockup.
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -183,53 +184,12 @@ class _ReminderSettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.space16,
-      ),
-      decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Semantics(
-              button: true,
-              label: 'Back',
-              child: InkWell(
-                onTap: () {
-                  if (context.canPop()) context.pop();
-                },
-                customBorder: const CircleBorder(),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AimColors.neutral0.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AimSpacing.space12),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_right_rounded
-                          : Icons.chevron_left_rounded,
-                      size: AimSizes.iconMd,
-                      color: AimColors.neutral0,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AimSpacing.space12),
-            Text(
-              'Reminders',
-              style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-            ),
-          ],
-        ),
-      ),
+    // Shown as the app frame's top bar; outside the frame it draws itself.
+    return AIMTopAppBar(
+      title: context.tr('Reminders', 'التذكيرات'),
+      onBack: () {
+        if (context.canPop()) context.pop();
+      },
     );
   }
 }

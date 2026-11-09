@@ -469,54 +469,8 @@ class _SettingsTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    return Container(
-      decoration: BoxDecoration(
-        color: surfaces.surface.withValues(alpha: 0.9),
-        border: Border(bottom: BorderSide(color: surfaces.border)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        AimSpacing.space20 + MediaQuery.paddingOf(context).left,
-        MediaQuery.paddingOf(context).top + AimSpacing.space8,
-        AimSpacing.space20 + MediaQuery.paddingOf(context).right,
-        AimSpacing.space12,
-      ),
-      child: Row(
-        children: [
-          Material(
-            color: surfaces.surfaceSunken,
-            borderRadius: AimRadius.borderMd,
-            child: InkWell(
-              borderRadius: AimRadius.borderMd,
-              onTap: onBack,
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  isRtl
-                      ? Icons.arrow_forward_rounded
-                      : Icons.arrow_back_rounded,
-                  size: 20,
-                  color: surfaces.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AimTextStyles.bodyMd.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          _Avatar(initial: initial, size: 36),
-        ],
-      ),
-    );
+    // Shown as the app frame's top bar; outside the frame it draws itself.
+    return AIMTopAppBar(title: title, onBack: onBack);
   }
 }
 
