@@ -1,6 +1,28 @@
 // Saved words, mistakes retry, onboarding, journey, search, landing page, offline, display settings, receipts.
 export const learner: Record<string, string> = {
   // Words & flashcards
+  // Vocabulary library
+  'Level': 'المستوى',
+  'Browse words with their Arabic meaning, listen to how they sound and save the ones you want to learn.': 'تصفّح الكلمات مع معناها بالعربية، واستمع إلى نطقها، واحفظ ما تريد تعلّمه.',
+  'Search words': 'ابحث عن كلمة',
+  'Listen to {word}': 'استمع إلى {word}',
+  'Save {word} to My words': 'احفظ {word} في كلماتي',
+  'Remove {word} from My words': 'أزل {word} من كلماتي',
+  'Could not load the vocabulary': 'تعذّر تحميل المفردات',
+  'Could not play the audio': 'تعذّر تشغيل الصوت',
+  'Could not update your saved words': 'تعذّر تحديث كلماتك المحفوظة',
+  'No words found': 'لم يتم العثور على كلمات',
+  'Try another level or search.': 'جرّب مستوى آخر أو بحثًا مختلفًا.',
+  'Showing {shown} of {total} words': 'عرض {shown} من {total} كلمة',
+  'Show more words': 'عرض المزيد من الكلمات',
+  'noun': 'اسم',
+  'verb': 'فعل',
+  'adjective': 'صفة',
+  'adverb': 'ظرف',
+  'preposition': 'حرف جر',
+  'conjunction': 'أداة ربط',
+  'pronoun': 'ضمير',
+  'phrase': 'عبارة',
   'My words': 'كلماتي',
   'Words you saved while learning, ready to review.': 'كلمات حفظتها أثناء التعلم، جاهزة للمراجعة.',
   'Today’s review': 'مراجعة اليوم',

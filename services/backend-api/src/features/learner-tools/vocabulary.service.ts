@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 
-export const WORD_SOURCES = ['manual', 'chat', 'lesson', 'voice'] as const;
+export const WORD_SOURCES = ['manual', 'chat', 'lesson', 'voice', 'library'] as const;
 /** Leitner schedule: days until the next review for each box (index = box - 1). A miss drops back to box 1. */
 export const BOX_INTERVAL_DAYS = [0, 1, 3, 7, 14, 30] as const;
 export const MAX_BOX = BOX_INTERVAL_DAYS.length;

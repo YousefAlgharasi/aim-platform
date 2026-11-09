@@ -107,6 +107,12 @@ class PracticeHubPage extends ConsumerWidget {
               const SizedBox(height: AimSpacing.space12),
               _GroupTitle(context.tr('Remember and fix', 'تذكّر وأصلح')),
               _ModeCard(
+                icon: Icons.menu_book_outlined,
+                title: context.tr('Vocabulary', 'المفردات'),
+                body: context.tr('Browse words with Arabic meanings, listen and save them.', 'تصفّح الكلمات بمعانيها العربية، واستمع إليها واحفظها.'),
+                onTap: () => context.push(AppRoutePaths.vocabularyLibrary),
+              ),
+              _ModeCard(
                 icon: Icons.lightbulb_outline_rounded,
                 title: context.tr('My words', 'كلماتي'),
                 body: context.tr('Review the words you saved with spaced flashcards.', 'راجع كلماتك المحفوظة ببطاقات متباعدة.'),

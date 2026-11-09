@@ -76,6 +76,7 @@ import '../../features/certificates/ui/pages/certificate_detail_page.dart';
 import '../../features/home/ui/pages/leaderboard_page.dart';
 import '../../features/improve/ui/improve_page.dart';
 import '../../features/learner_tools/ui/mistakes_page.dart';
+import '../../features/learner_tools/ui/vocabulary_library_page.dart';
 import '../../features/learner_tools/ui/vocabulary_page.dart';
 import '../../features/practice_hub/ui/practice_hub_page.dart';
 
@@ -476,6 +477,10 @@ class AppRouter {
             builder: (context, state) => const VocabularyPage(),
           ),
           GoRoute(
+            path: AppRoutePaths.vocabularyLibrary,
+            builder: (context, state) => const VocabularyLibraryPage(),
+          ),
+          GoRoute(
             path: AppRoutePaths.leaderboard,
             builder: (context, state) => const LeaderboardPage(),
           ),
@@ -855,6 +860,7 @@ class AppRouter {
     AppRoutePaths.improve,
     AppRoutePaths.practiceHub,
     AppRoutePaths.vocabulary,
+    AppRoutePaths.vocabularyLibrary,
     AppRoutePaths.mistakes,
     AppRoutePaths.leaderboard,
     // TASK-14: Newly wired-up screens are authenticated-student-facing

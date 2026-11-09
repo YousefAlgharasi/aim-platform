@@ -89,6 +89,8 @@ class _AppMenuDrawerState
             context.push(AppRoutePaths.aiTeacherChat,
                 extra: const {'contextRef': 'general'});
           }),
+          item(Icons.menu_book_outlined, 'Vocabulary', 'المفردات',
+              onTap: () => _navigateTo(AppRoutePaths.vocabularyLibrary)),
           item(Icons.lightbulb_outline_rounded, 'My words', 'كلماتي',
               onTap: () => _navigateTo(AppRoutePaths.vocabulary)),
           item(Icons.refresh_rounded, 'My mistakes', 'أخطائي',
