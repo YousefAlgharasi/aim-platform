@@ -79,6 +79,11 @@ void main() {
     await _settle(tester);
 
     expect(find.text('AIM'), findsOneWidget);
+    // One tap to the Dashboard (AIM) and one to the Profile (avatar).
+    Finder labelled(String label) => find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == label);
+    expect(labelled('Dashboard'), findsWidgets); // AIM + the tab
+    expect(labelled('Profile'), findsOneWidget);
     expect(find.text('Improve'), findsWidgets); // heading + tab label
     expect(find.byIcon(Icons.arrow_back_rounded), findsNothing);
     expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);

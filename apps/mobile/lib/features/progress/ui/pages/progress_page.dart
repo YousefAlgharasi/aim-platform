@@ -114,7 +114,6 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
     final aimState = ref.watch(aimResultsProvider);
     final homeState = ref.watch(homeProvider);
     final colorScheme = Theme.of(context).colorScheme;
-    final surfaces = aimSurfacesOf(context);
 
     // Combining two providers' async states for one top-level switch:
     // - aimResultsProvider is PRIMARY — every count on this hub (skill
@@ -137,55 +136,13 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // App Bar Header matching prototype
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: surfaces.surface,
-                border: Border(bottom: BorderSide(color: surfaces.border)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).progressTitle,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: surfaces.textPrimary,
-                            letterSpacing: -0.4,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          AppLocalizations.of(context).progressSubtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: surfaces.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const AimQuickThemeToggle(size: 36, iconSize: 18),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 22),
-                      ),
-                    ],
-                  ),
-                ],
+            // A main screen: the heading sits under the app frame's AIM bar
+            // (the light/dark switch lives in the menu).
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 8),
+              child: PageTitleBar(
+                title: AppLocalizations.of(context).progressTitle,
+                subtitle: AppLocalizations.of(context).progressSubtitle,
               ),
             ),
             Expanded(

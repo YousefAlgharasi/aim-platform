@@ -6,6 +6,7 @@ import '../../../../core/localization/inline_tr.dart';
 import '../../../../core/routing/app_route_paths.dart';
 import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
+import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
 import '../../logic/main_shell_tab_provider.dart';
@@ -221,6 +222,50 @@ class _StreakAndBell extends ConsumerWidget {
   }
 }
 
+/// Your avatar: one tap opens your Profile.
+class _ProfileAvatar extends ConsumerWidget {
+  const _ProfileAvatar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final initial = switch (ref.watch(authContextProvider)) {
+      AppAsyncSuccess(:final data) =>
+        (data.profile?.displayName ?? data.user.email ?? '').trim(),
+      _ => '',
+    };
+    final letter = initial.isEmpty ? '?' : String.fromCharCode(initial.runes.first).toUpperCase();
+
+    return Semantics(
+      button: true,
+      label: context.tr('Profile', 'الملف الشخصي'),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () {
+          ref.read(mainShellTabIndexProvider.notifier).state = 4;
+          context.go(AppRoutePaths.mainShell);
+        },
+        child: Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            gradient: AimGradients.ai,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            letter,
+            style: AimTextStyles.label.copyWith(
+              color: AimColors.neutral0,
+              fontWeight: AimFontWeights.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The one top bar of the app frame. Main screens get AIM + streak + bell;
 /// menu and detail screens get back + the page's title (+ the page's actions),
 /// and menu screens keep the streak and bell on the right.
@@ -241,17 +286,34 @@ class _AppTopBar extends ConsumerWidget {
     if (mode == ChromeBarMode.root) {
       content = Row(
         children: [
-          Text(
-            'AIM',
-            style: AimTextStyles.h2.copyWith(
-              color: surfaces.textPrimary,
-              fontWeight: AimFontWeights.bold,
-              fontSize: 22,
-              letterSpacing: context.isArabic ? 0 : -0.5,
+          // One tap from anywhere on a main screen back to the Dashboard.
+          Semantics(
+            button: true,
+            label: context.tr('Dashboard', 'لوحة التحكم'),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                ref.read(mainShellTabIndexProvider.notifier).state = 0;
+                context.go(AppRoutePaths.mainShell);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Text(
+                  'AIM',
+                  style: AimTextStyles.h2.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: AimFontWeights.bold,
+                    fontSize: 22,
+                    letterSpacing: context.isArabic ? 0 : -0.5,
+                  ),
+                ),
+              ),
             ),
           ),
           const Spacer(),
           const _StreakAndBell(),
+          const SizedBox(width: 4),
+          const _ProfileAvatar(),
         ],
       );
     } else {

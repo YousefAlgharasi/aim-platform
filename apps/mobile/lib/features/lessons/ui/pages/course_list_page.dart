@@ -8,10 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
-import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
@@ -215,98 +213,35 @@ class _CourseListContentState extends State<_CourseListContent> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // Top Header Row matching Figma prototype (AIM logo + Title + Avatar)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Consumer(
-                    builder: (context, ref, child) {
-                      return GestureDetector(
-                        onTap: () {
-                          if (context.canPop()) {
-                            context.pop();
-                          } else {
-                            ref.read(mainShellTabIndexProvider.notifier).state = 0;
-                          }
-                        },
-                        child: const AimBrandLogo(size: 38, fontSize: 11, borderRadius: 12),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    l10n.lessonsCoursesPageTitle,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: surfaces.textPrimary,
-                      letterSpacing: -0.3,
+          // A main screen: the heading sits under the app frame's AIM bar
+          // (logo, avatar and the light/dark switch live in the frame).
+          PageTitleBar(
+            title: l10n.lessonsCoursesPageTitle,
+            action: headerLevel.isEmpty
+                ? null
+                : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
                     ),
-                  ),
-                ],
-              ),
-
-              // Level Badge or User Avatar
-              Row(
-                children: [
-                  if (headerLevel.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      margin: const EdgeInsetsDirectional.only(end: 10),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: 3,
-                            backgroundColor: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.lessonsLevelBadge(headerLevel),
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  const AimQuickThemeToggle(size: 34, iconSize: 18),
-                  const SizedBox(width: 8),
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final authState = ref.watch(authContextProvider);
-                      final initial = switch (authState) {
-                        AppAsyncSuccess(:final data) =>
-                          (data.profile?.displayName ?? data.user.email ?? 'A')[0].toUpperCase(),
-                        _ => 'A',
-                      };
-                      return CircleAvatar(
-                        radius: 17,
-                        backgroundColor: AimColors.primary400,
-                        child: Text(
-                          initial,
-                          style: const TextStyle(
-                            color: Colors.white,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(radius: 3, backgroundColor: colorScheme.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          l10n.lessonsLevelBadge(headerLevel),
+                          style: TextStyle(
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            color: colorScheme.primary,
                           ),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ],
           ),
 
           const SizedBox(height: 20),

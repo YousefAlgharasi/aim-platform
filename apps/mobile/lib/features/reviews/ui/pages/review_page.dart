@@ -89,102 +89,22 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
         );
   }
 
-  bool _canPop(BuildContext context) {
-    try {
-      return context.canPop();
-    } catch (_) {
-      return ModalRoute.of(context)?.canPop ?? false;
-    }
-  }
-
-  void _handlePop(BuildContext context) {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    } else {
-      try {
-        if (context.canPop()) context.pop();
-      } catch (_) {}
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aimResultsProvider);
-    final surfaces = aimSurfacesOf(context);
-    final colorScheme = Theme.of(context).colorScheme;
     final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // App Bar Header matching prototype
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                color: surfaces.surface,
-                border: Border(bottom: BorderSide(color: surfaces.border)),
-              ),
-              child: Row(
-                children: [
-                  if (_canPop(context)) ...[
-                    GestureDetector(
-                      onTap: () => _handlePop(context),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        margin: const EdgeInsetsDirectional.only(end: 12),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: surfaces.surfaceSunken,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          isRtl
-                              ? Icons.arrow_forward_rounded
-                              : Icons.arrow_back_rounded,
-                          size: 20,
-                          color: surfaces.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n?.reviewsTitle ?? 'Review',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: surfaces.textPrimary,
-                            letterSpacing: -0.4,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          l10n?.reviewsSpacedRepetitionDue ??
-                              'Spaced-repetition flashcards due today',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: surfaces.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.style_rounded, color: colorScheme.primary, size: 22),
-                  ),
-                ],
+            // A main screen: the heading sits under the app frame's AIM bar.
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 20, 8),
+              child: PageTitleBar(
+                title: l10n?.reviewsTitle ?? 'Review',
+                subtitle: l10n?.reviewsSpacedRepetitionDue ??
+                    'Spaced-repetition flashcards due today',
               ),
             ),
             Expanded(
