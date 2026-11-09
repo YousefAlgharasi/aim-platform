@@ -132,6 +132,7 @@ class AppRoutePaths {
   static const String improve = '/improve';
   static const String practiceHub = '/practice';
   static const String vocabulary = '/vocabulary';
+  static const String vocabularyLibrary = '/vocabulary-library';
   static const String mistakes = '/mistakes';
   static const String leaderboard = '/leaderboard';
 }

@@ -1,0 +1,149 @@
+# level|word|part of speech|Arabic translation of the word|English example sentence
+beginner|apple|noun|تفاحة|I eat an apple every day.
+beginner|book|noun|كتاب|She reads a book at night.
+beginner|water|noun|ماء|Please give me a glass of water.
+beginner|friend|noun|صديق|He is my best friend.
+beginner|family|noun|عائلة|My family lives in Cairo.
+beginner|house|noun|منزل|Their house is near the park.
+beginner|school|noun|مدرسة|The children walk to school.
+beginner|teacher|noun|معلم|My teacher is very kind.
+beginner|morning|noun|صباح|I drink tea in the morning.
+beginner|night|noun|ليل|The stars are bright at night.
+beginner|food|noun|طعام|The food here is delicious.
+beginner|bread|noun|خبز|We buy fresh bread every day.
+beginner|milk|noun|حليب|The baby drinks milk.
+beginner|car|noun|سيارة|My father drives a red car.
+beginner|dog|noun|كلب|The dog runs in the garden.
+beginner|cat|noun|قطة|The cat sleeps on the sofa.
+beginner|happy|adjective|سعيد|I am happy to see you.
+beginner|sad|adjective|حزين|He feels sad today.
+beginner|big|adjective|كبير|They have a big garden.
+beginner|small|adjective|صغير|It is a small room.
+beginner|hot|adjective|حار|The tea is too hot.
+beginner|cold|adjective|بارد|The water is very cold.
+beginner|new|adjective|جديد|I bought a new phone.
+beginner|old|adjective|قديم|This is an old building.
+beginner|good|adjective|جيد|That is a good idea.
+beginner|beautiful|adjective|جميل|What a beautiful day!
+beginner|easy|adjective|سهل|The test was easy.
+beginner|difficult|adjective|صعب|This question is difficult.
+beginner|eat|verb|يأكل|We eat dinner at seven.
+beginner|drink|verb|يشرب|I drink coffee in the morning.
+beginner|sleep|verb|ينام|Babies sleep a lot.
+beginner|walk|verb|يمشي|I walk to work.
+beginner|run|verb|يركض|He runs in the park.
+beginner|read|verb|يقرأ|She likes to read stories.
+beginner|write|verb|يكتب|Please write your name here.
+beginner|speak|verb|يتحدث|Can you speak English?
+beginner|listen|verb|يستمع|Listen to the teacher.
+beginner|open|verb|يفتح|Please open the window.
+beginner|close|verb|يغلق|Close the door, please.
+beginner|buy|verb|يشتري|I want to buy some milk.
+beginner|help|verb|يساعد|Can you help me?
+beginner|love|verb|يحب|I love my country.
+beginner|want|verb|يريد|He wants a glass of juice.
+beginner|today|adverb|اليوم|Today is Monday.
+beginner|tomorrow|adverb|غدًا|We travel tomorrow.
+beginner|always|adverb|دائمًا|She always smiles.
+beginner|never|adverb|أبدًا|I never drink coffee at night.
+beginner|here|adverb|هنا|Please sit here.
+beginner|there|adverb|هناك|The bank is over there.
+beginner|please|phrase|من فضلك|Please sit down.
+intermediate|borrow|verb|يستعير|Can I borrow your pen?
+intermediate|lend|verb|يُقرض|Could you lend me some money?
+intermediate|improve|verb|يحسّن|I want to improve my English.
+intermediate|decide|verb|يقرّر|We decided to stay at home.
+intermediate|explain|verb|يشرح|Can you explain this word to me?
+intermediate|suggest|verb|يقترح|I suggest we leave early.
+intermediate|prefer|verb|يفضّل|I prefer tea to coffee.
+intermediate|expect|verb|يتوقع|We expect good weather tomorrow.
+intermediate|manage|verb|يتدبّر أمره|She managed to finish on time.
+intermediate|invite|verb|يدعو|They invited us to dinner.
+intermediate|reply|verb|يردّ|Please reply to my email.
+intermediate|recommend|verb|يوصي|Can you recommend a good restaurant?
+intermediate|avoid|verb|يتجنّب|You should avoid fast food.
+intermediate|realize|verb|يدرك|I realized I had left my keys at home.
+intermediate|join|verb|ينضم|Would you like to join us?
+intermediate|collect|verb|يجمع|He collects old coins.
+intermediate|provide|verb|يوفّر|The hotel provides free breakfast.
+intermediate|reliable|adjective|موثوق|He is a reliable friend.
+intermediate|comfortable|adjective|مريح|This chair is very comfortable.
+intermediate|popular|adjective|شائع|Football is popular in my country.
+intermediate|available|adjective|متاح|Is this seat available?
+intermediate|necessary|adjective|ضروري|It is necessary to wear a seatbelt.
+intermediate|dangerous|adjective|خطير|Swimming here is dangerous.
+intermediate|curious|adjective|فضولي|Children are curious about everything.
+intermediate|patient|adjective|صبور|The nurse is very patient.
+intermediate|honest|adjective|صادق|An honest person tells the truth.
+intermediate|generous|adjective|كريم|She is generous with her time.
+intermediate|nervous|adjective|متوتر|I feel nervous before exams.
+intermediate|opportunity|noun|فرصة|This job is a great opportunity.
+intermediate|experience|noun|خبرة|She has ten years of experience.
+intermediate|advice|noun|نصيحة|Thank you for your advice.
+intermediate|schedule|noun|جدول زمني|My schedule is full on Monday.
+intermediate|delay|noun|تأخير|There was a delay at the airport.
+intermediate|journey|noun|رحلة|The journey took two hours.
+intermediate|neighbour|noun|جار|My neighbour is very kind.
+intermediate|salary|noun|راتب|He receives his salary every month.
+intermediate|habit|noun|عادة|Reading is a good habit.
+intermediate|result|noun|نتيجة|We are waiting for the exam results.
+intermediate|reason|noun|سبب|What is the reason for the delay?
+intermediate|knowledge|noun|معرفة|Knowledge is power.
+intermediate|environment|noun|بيئة|We must protect the environment.
+intermediate|health|noun|صحة|Good health is important.
+intermediate|suddenly|adverb|فجأة|Suddenly, the lights went out.
+intermediate|usually|adverb|عادةً|I usually wake up at six.
+intermediate|quickly|adverb|بسرعة|He ate quickly and left.
+intermediate|carefully|adverb|بعناية|Please drive carefully.
+intermediate|especially|adverb|خصوصًا|I love fruit, especially mangoes.
+intermediate|although|conjunction|رغم أن|Although it was raining, we went out.
+intermediate|however|adverb|لكن|I like the flat. However, it is too expensive.
+intermediate|instead|adverb|بدلًا من ذلك|There was no bus, so we walked instead.
+advanced|achieve|verb|يحقّق|She worked hard to achieve her goal.
+advanced|consider|verb|يأخذ في الاعتبار|Consider all the options before you choose.
+advanced|maintain|verb|يحافظ على|It is important to maintain a healthy routine.
+advanced|rely|verb|يعتمد|You can rely on me.
+advanced|acquire|verb|يكتسب|She acquired new skills at university.
+advanced|attempt|verb|يحاول|He attempted to climb the mountain.
+advanced|contribute|verb|يساهم|Everyone can contribute to the project.
+advanced|demonstrate|verb|يُظهر|The experiment demonstrates the idea clearly.
+advanced|emphasize|verb|يؤكّد على|The teacher emphasized the importance of practice.
+advanced|establish|verb|يؤسّس|They established the company in 1998.
+advanced|estimate|verb|يُقدّر|Experts estimate that prices will rise.
+advanced|overcome|verb|يتغلّب على|She wants to overcome her fear of public speaking.
+advanced|persuade|verb|يُقنع|He persuaded me to join the team.
+advanced|postpone|verb|يؤجّل|The meeting was postponed until Friday.
+advanced|struggle|verb|يكافح|Many students struggle with grammar.
+advanced|reluctant|adjective|متردد|She was reluctant to speak in public.
+advanced|essential|adjective|أساسي|Water is essential for life.
+advanced|significant|adjective|مهم|There was a significant change in the results.
+advanced|sufficient|adjective|كافٍ|We don't have sufficient time.
+advanced|ambitious|adjective|طموح|He is an ambitious young engineer.
+advanced|flexible|adjective|مرن|My working hours are flexible.
+advanced|reasonable|adjective|معقول|The price seems reasonable.
+advanced|genuine|adjective|حقيقي|It is a genuine leather bag.
+advanced|inevitable|adjective|لا مفرّ منه|Change is inevitable.
+advanced|ethical|adjective|أخلاقي|It is not ethical to copy other people's work.
+advanced|obvious|adjective|واضح|The answer is obvious.
+advanced|challenge|noun|تحدٍّ|Learning a language is a big challenge.
+advanced|achievement|noun|إنجاز|Graduating was her greatest achievement.
+advanced|assumption|noun|افتراض|You should not make assumptions.
+advanced|behaviour|noun|سلوك|The teacher praised the children's behaviour.
+advanced|benefit|noun|فائدة|Exercise has many health benefits.
+advanced|consequence|noun|عاقبة|Every action has a consequence.
+advanced|criticism|noun|نقد|He accepted the criticism calmly.
+advanced|evidence|noun|دليل|There is no evidence to support this idea.
+advanced|influence|noun|تأثير|Parents have a strong influence on children.
+advanced|priority|noun|أولوية|Safety is our top priority.
+advanced|responsibility|noun|مسؤولية|Taking care of a pet is a big responsibility.
+advanced|solution|noun|حل|We need to find a solution to this problem.
+advanced|approach|noun|أسلوب|A new approach to teaching can help.
+advanced|attitude|noun|موقف|A positive attitude helps you learn.
+advanced|resource|noun|مورد|Water is a precious resource.
+advanced|nevertheless|adverb|ومع ذلك|It was raining; nevertheless, we went out.
+advanced|furthermore|adverb|علاوة على ذلك|The plan is cheap; furthermore, it is safe.
+advanced|therefore|adverb|لذلك|He was ill; therefore, he stayed home.
+advanced|gradually|adverb|تدريجيًا|Gradually, her English improved.
+advanced|definitely|adverb|بالتأكيد|I will definitely come to the party.
+advanced|approximately|adverb|تقريبًا|The trip takes approximately two hours.
+advanced|whereas|conjunction|بينما|He likes tea, whereas she prefers coffee.

@@ -1,7 +1,7 @@
 import { apiClient } from '../../api/client';
 
 // ── Saved words ──────────────────────────────────────────────────────────────
-export type WordSource = 'manual' | 'chat' | 'lesson' | 'voice';
+export type WordSource = 'manual' | 'chat' | 'lesson' | 'voice' | 'library';
 export interface SavedWord {
   id: string; word: string; meaning: string | null; context: string | null; source: WordSource;
   box: number; nextReviewAt: string; timesCorrect: number; timesWrong: number; createdAt: string;
@@ -14,6 +14,26 @@ export const vocabularyApi = {
   due: () => apiClient.get<{ cards: SavedWord[] }>('/vocabulary/review'),
   review: (id: string, correct: boolean) =>
     apiClient.post<SavedWord>(`/vocabulary/${encodeURIComponent(id)}/review`, { correct }),
+};
+
+// ── Vocabulary library ───────────────────────────────────────────────────────
+export type VocabLevel = 'beginner' | 'intermediate' | 'advanced';
+export interface LibraryWord {
+  id: string; word: string; translationAr: string; exampleSentence: string;
+  partOfSpeech: string | null; level: VocabLevel; saved: boolean;
+}
+export const vocabularyLibraryApi = {
+  list: (params: { level?: VocabLevel; q?: string; limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params.level) qs.set('level', params.level);
+    if (params.q) qs.set('q', params.q);
+    qs.set('limit', String(params.limit ?? 24));
+    qs.set('offset', String(params.offset ?? 0));
+    return apiClient.get<{ words: LibraryWord[]; total: number; limit: number; offset: number }>(`/vocabulary-library?${qs}`);
+  },
+  save: (id: string) => apiClient.post<{ saved: true }>(`/vocabulary-library/${encodeURIComponent(id)}/save`, {}),
+  unsave: (id: string) => apiClient.delete<{ saved: false }>(`/vocabulary-library/${encodeURIComponent(id)}/save`),
+  audio: (id: string) => apiClient.getBlob(`/vocabulary-library/${encodeURIComponent(id)}/audio`),
 };
 
 // ── Study plan (onboarding) ──────────────────────────────────────────────────

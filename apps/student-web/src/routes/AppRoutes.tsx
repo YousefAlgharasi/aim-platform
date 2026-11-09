@@ -1,5 +1,6 @@
 import { LandingPage } from '../features/landing/LandingPage';
 import { VocabularyPage } from '../features/learner/VocabularyPage';
+import { VocabularyLibraryPage } from '../features/learner/VocabularyLibraryPage';
 import { MistakesPage } from '../features/learner/MistakesPage';
 import { LevelProvider } from '../features/level/LevelContext';
 import { PracticeHubPage } from '../features/practice-hub/PracticeHubPage';
@@ -91,6 +92,7 @@ export function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/vocabulary-library" element={<VocabularyLibraryPage />} />
         <Route path="/mistakes" element={<MistakesPage />} />
         <Route path="/practice" element={<PracticeHubPage />} />
         <Route path="/improve" element={<ImprovePage />} />

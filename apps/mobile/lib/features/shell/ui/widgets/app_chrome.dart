@@ -127,6 +127,7 @@ ChromeBarMode chromeModeFor(String location) {
   const sections = {
     AppRoutePaths.assessments,
     AppRoutePaths.vocabulary,
+    AppRoutePaths.vocabularyLibrary,
     AppRoutePaths.mistakes,
     AppRoutePaths.achievements,
     AppRoutePaths.certificates,

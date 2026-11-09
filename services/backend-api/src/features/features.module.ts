@@ -32,6 +32,7 @@ import { OperationsModule } from './operations/operations.module';
 import { AppVersionModule } from './app-version/app-version.module';
 import { CourseBillingModule } from './course-billing/course-billing.module';
 import { PracticeModule } from './practice/practice.module';
+import { VocabularyLibraryModule } from './vocabulary-library/vocabulary-library.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { PracticeModule } from './practice/practice.module';
     AppVersionModule,
     CourseBillingModule,
     PracticeModule,
+    VocabularyLibraryModule,
   ],
   exports: [
     AuthModule,

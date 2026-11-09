@@ -84,6 +84,7 @@ export const navSections: NavSection[] = [
     items: [
       { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
       { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
+      { to: '/vocabulary-library', label: 'Vocabulary', icon: icon(BookIcon) },
       { to: '/vocabulary', label: 'My words', icon: icon(LightbulbIcon) },
       { to: '/mistakes', label: 'My mistakes', icon: icon(RetryIcon) },
     ],

@@ -43,6 +43,57 @@ class VocabularyList {
   final int dueCount;
 }
 
+/// A word from the vocabulary library (`GET /vocabulary-library`).
+class LibraryWord {
+  const LibraryWord({
+    required this.id,
+    required this.word,
+    required this.translationAr,
+    required this.exampleSentence,
+    required this.level,
+    required this.saved,
+    this.partOfSpeech,
+  });
+
+  final String id;
+  final String word;
+
+  /// Arabic translation of the word only (not the sentence).
+  final String translationAr;
+  final String exampleSentence;
+  final String? partOfSpeech;
+
+  /// `beginner`, `intermediate` or `advanced`.
+  final String level;
+  final bool saved;
+
+  LibraryWord copyWith({bool? saved}) => LibraryWord(
+        id: id,
+        word: word,
+        translationAr: translationAr,
+        exampleSentence: exampleSentence,
+        level: level,
+        partOfSpeech: partOfSpeech,
+        saved: saved ?? this.saved,
+      );
+
+  factory LibraryWord.fromJson(Map<String, dynamic> j) => LibraryWord(
+        id: j['id']?.toString() ?? '',
+        word: j['word']?.toString() ?? '',
+        translationAr: j['translationAr']?.toString() ?? '',
+        exampleSentence: j['exampleSentence']?.toString() ?? '',
+        partOfSpeech: j['partOfSpeech'] as String?,
+        level: j['level']?.toString() ?? 'beginner',
+        saved: j['saved'] == true,
+      );
+}
+
+class LibraryPage {
+  const LibraryPage({required this.words, required this.total});
+  final List<LibraryWord> words;
+  final int total;
+}
+
 class MistakeOption {
   const MistakeOption({required this.id, required this.text});
   final String id;
@@ -140,6 +191,53 @@ class LearnerToolsApi {
       decodeData: (json) => json,
     );
   }
+
+  /// One page of the vocabulary library. [level] is `beginner`, `intermediate`
+  /// or `advanced`; null means every level.
+  Future<LibraryPage> listLibrary({
+    String? level,
+    String? query,
+    int limit = 24,
+    int offset = 0,
+  }) async {
+    final r = await _client.get<LibraryPage>(
+      '/vocabulary-library',
+      queryParameters: {
+        if (level != null) 'level': level,
+        if (query != null && query.isNotEmpty) 'q': query,
+        'limit': '$limit',
+        'offset': '$offset',
+      },
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        final words = (m['words'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(LibraryWord.fromJson)
+            .toList();
+        return LibraryPage(words: words, total: (m['total'] as num?)?.round() ?? words.length);
+      },
+    );
+    return r.data!;
+  }
+
+  Future<void> saveLibraryWord(String id) async {
+    await _client.post<Object?>(
+      '/vocabulary-library/${Uri.encodeComponent(id)}/save',
+      body: const <String, Object?>{},
+      decodeData: (json) => json,
+    );
+  }
+
+  Future<void> unsaveLibraryWord(String id) async {
+    await _client.delete<Object?>(
+      '/vocabulary-library/${Uri.encodeComponent(id)}/save',
+      decodeData: (json) => json,
+    );
+  }
+
+  /// Spoken pronunciation of a library word (audio bytes).
+  Future<List<int>> libraryWordAudio(String id) =>
+      _client.getBytes('/vocabulary-library/${Uri.encodeComponent(id)}/audio');
 
   Future<void> removeWord(String id) async {
     await _client.delete<Object?>(
