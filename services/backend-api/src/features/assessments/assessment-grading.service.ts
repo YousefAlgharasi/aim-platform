@@ -131,7 +131,11 @@ export class AssessmentGradingService {
        LEFT JOIN assessment_attempt_answers aaa
          ON aaa.assessment_question_link_id = aq.id
         AND aaa.attempt_id = $1
-       WHERE aq.assessment_id = $2`,
+       WHERE aq.assessment_id = $2
+         AND (
+           NOT EXISTS (SELECT 1 FROM assessment_attempt_questions d WHERE d.attempt_id = $1)
+           OR aq.id IN (SELECT d.assessment_question_link_id FROM assessment_attempt_questions d WHERE d.attempt_id = $1)
+         )`,
       [attemptId, attempt.assessment_id],
     );
 

@@ -1,0 +1,132 @@
+#B1+.c1.l1
+M|If you heat ice, it _____ .|melts|will melt|would melt|melted|Zero conditional: If + present, present.
+M|If you mix red and blue, you _____ purple.|get|will get|would get|got|General truth: present simple in both clauses.
+M|Which sentence is a zero conditional?|If you freeze water, it turns to ice.|If you freeze water, it will turn to ice tomorrow.|If you froze water, it would turn to ice.|If you had frozen water, it would have turned to ice.|Zero conditional states a general truth.
+M|Which is correct?|If it rains, the streets get wet.|If it rains, the streets will get wet always.|If it rained, the streets get wet.|If it rains, the streets got wet.|Both clauses in the present simple.
+M|Zero conditionals are used for:|facts and general truths|unreal situations|past regrets|one-time future events|They state things that are always true.
+T|In a zero conditional, both clauses use the present simple.|True|If + present simple, present simple.
+T|"If you heat water to 100°C, it will boil" is a zero conditional.|False|A zero conditional uses the present in both clauses: "it boils".
+F|If you press this button, the machine _____ . (stop)|stops|Present simple.
+F|Plants die if they _____ water. (not get)|don't get|Present simple negative.
+F|If people don't sleep enough, they _____ tired. (feel)|feel|General truth.
+#B1+.c1.l2
+M|Which sentence is first conditional (a specific future possibility)?|If it rains tomorrow, I'll stay home.|If it rains, the grass gets wet.|If it rained, I would stay home.|If it had rained, I would have stayed home.|Specific future event: first conditional.
+M|Which sentence is zero conditional (always true)?|If you cool water to 0°C, it freezes.|If it freezes tonight, the pipes will burst.|If it froze, the pipes would burst.|If it had frozen, the pipes would have burst.|A scientific fact: zero conditional.
+M|Choose the correct form: "If I _____ the bus, I'll be late."|miss|will miss|missed|would miss|First conditional: if + present.
+M|Choose the correct form: "If you leave butter in the sun, it _____ ."|melts|will melt tomorrow|would melt|melted|General truth: zero conditional.
+M|What's the difference between zero and first conditionals?|Zero is for facts; first is for specific future possibilities.|There is no difference.|First is for the past.|Zero is for unreal situations.|Zero = always true; first = one possible future event.
+T|"If I see him tomorrow, I'll tell him" is a first conditional.|True|It talks about a specific future possibility.
+T|"If you drop a glass, it will break" always describes a one-time future event.|False|It can be a general truth.
+F|If you _____ vegetables, you stay healthy. (eat — general truth)|eat|Zero conditional: present simple.
+F|If the weather is good tomorrow, we _____ to the beach. (go — plan)|will go;'ll go|First conditional result.
+F|If I _____ rich, I'll buy you a house. (become)|become|If + present simple.
+#B1+.c1.l3
+M|Which question asks for a fact (zero conditional)?|What happens if you heat water?|What will happen if I fail?|What would happen if I won?|What would have happened if I had won?|It asks about a general truth.
+M|Which question asks for a future possibility?|What will you do if you miss the train?|What happens if you miss a train?|What would you do if you missed the train?|What did you do if you missed the train?|First conditional question.
+M|A good structured answer to "What happens if you don't sleep?" is:|If you don't sleep, you feel tired.|If you don't sleep, you will be tired tomorrow only.|If you didn't sleep, you would be tired.|If you hadn't slept, you would have been tired.|Zero conditional for a general fact.
+M|A good structured answer to "What will you do if it rains tomorrow?" is:|If it rains, I'll stay home.|If it rains, I stay home usually.|If it rained, I would stay home.|If it rains, I stayed home.|First conditional.
+M|To organize a spoken answer, you can use:|a statement, a reason and an example|only one word|a list of numbers|a question only|Structure helps clarity.
+T|In a spoken answer, you can combine a general truth and a specific possibility.|True|Use both conditionals.
+T|A first conditional is used for facts that are always true.|False|That is the zero conditional.
+F|If you heat butter, it _____ . (melt)|melts|General truth.
+F|If I pass the exam, I _____ celebrate. (will)|will|First conditional.
+F|If you don't water plants, they _____ . (die)|die|General truth.
+#B1+.c2.l1
+M|Direct: "I am tired," she said. Reported: She said that she _____ tired.|was|is|will be|has been|Backshift: am → was.
+M|Direct: "I will help you," he said. Reported: He said that he _____ help me.|would|will|can|did|Backshift: will → would.
+M|Direct: "We live in Rome," they said. Reported: They said that they _____ in Rome.|lived|live|have lived|will live|Backshift: present → past.
+M|Direct: "I have finished," she said. Reported: She said that she _____ finished.|had|has|have|was|Backshift: present perfect → past perfect.
+M|Which is correct?|He said that he was busy.|He said that he is busy yesterday.|He said that he will be busy.|He said that he be busy.|Backshift: is → was.
+T|In reported speech, the verb usually moves one tense back.|True|Backshift.
+T|"She said that she is happy" is always wrong.|False|It can be correct if the situation is still true, but backshift is the standard form.
+F|"I like pizza," he said. → He said he _____ pizza. (like)|liked|Backshift.
+F|"I can swim," she said. → She said she _____ swim. (can)|could|can → could.
+F|"I am working," he said. → He said he _____ working. (be)|was|am → was.
+#B1+.c2.l2
+M|Direct: "I love my job," Tom said. Reported: Tom said that _____ loved _____ job.|he / his|I / my|he / my|I / his|Pronouns change to match the speaker.
+M|Direct: "I will call you tomorrow," she said. Reported: She said she would call me _____ .|the next day|tomorrow|yesterday|today|tomorrow → the next day.
+M|Direct: "We met today," they said. Reported: They said that they had met _____ .|that day|today|tomorrow|yesterday|today → that day.
+M|Direct: "I saw him yesterday," she said. Reported: She said she had seen him _____ .|the day before|yesterday|tomorrow|today|yesterday → the day before.
+M|Direct: "I am here," he said. Reported: He said he was _____ .|there|here|now|this|here → there.
+T|"Now" often changes to "then" in reported speech.|True|Time words shift.
+T|"This" never changes in reported speech.|False|It often changes to "that".
+F|"I'll see you next week," she said. → She said she would see me the _____ week. (following / next)|following;next|next week → the following week.
+F|"I bought it last month," he said. → He said he had bought it the _____ month. (before / previous)|before;previous|last month → the month before.
+F|"This is my car," he said. → He said _____ was his car. (that)|that|this → that.
+#B1+.c2.l3
+M|You hear: "I'm going to Paris on Friday," said Carla. Which report is correct?|Carla said she was going to Paris on Friday.|Carla said she is going to Paris on Friday.|Carla said I am going to Paris.|Carla said that she goes to Paris.|Backshift: am going → was going.
+M|You hear: "I can't come to the party," said Mark. Which report is correct?|Mark said he couldn't come to the party.|Mark said he can't come.|Mark said I couldn't come.|Mark said he not come.|can't → couldn't.
+M|You hear: "We have finished the project," they said. Which report is correct?|They said that they had finished the project.|They said that they have finished the project.|They said that we had finished.|They said they finish the project.|Present perfect → past perfect.
+M|Which verb is the most common reporting verb?|said|decided|forget|run|"Said" is common.
+M|Which is correct?|She told me that she was tired.|She told that she was tired.|She said me that she was tired.|She told me she is tired yesterday.|"Told" needs an object (me).
+T|"Told" is followed by a person: "She told me ..."|True|"Say" does not need a person.
+T|"He said me that he was busy" is correct.|False|Use "told me" or "said that".
+F|She _____ me that she was busy. (tell)|told|"Told me".
+F|He _____ that he would come. (say)|said|"Said that".
+F|They said they _____ coming the next day. (be)|were|Reported past continuous.
+#B1+.c3.l1
+M|I can't do this puzzle. I'm going to _____ .|give up|give in|give out|give on|"Give up" = stop trying.
+M|Can you help me? I'm _____ my keys.|looking for|looking at|looking up|looking after|"Look for" = search.
+M|Please _____ the lights when you leave.|turn off|turn on|turn up|turn into|"Turn off" = switch off.
+M|I need to _____ what time the train leaves.|find out|find on|find up|find at|"Find out" = discover information.
+M|Which sentence is correct?|Turn the TV off, please.|Turn the TV of, please.|Turn off the TV of, please.|Turn up TV off.|Phrasal verb with object: "turn the TV off" or "turn off the TV".
+T|"Look for" means to search for something.|True|Example: "I'm looking for my phone."
+T|"Give up" means to continue trying.|False|It means to stop trying.
+F|It's dark. Please _____ the light. (turn on)|turn on|Switch the light on.
+F|I'm trying to _____ the answer. (find out)|find out|Discover.
+F|Don't _____ ! You can do it. (give up)|give up|Stop trying.
+#B1+.c3.l2
+M|I'll _____ you at the station at 6.|pick up|pick on|pick out|pick off|"Pick up" = collect someone.
+M|Don't _____ your homework until tomorrow.|put off|put on|put up|put out|"Put off" = delay.
+M|I _____ well with my colleagues.|get along|get on up|get out|get off|"Get along" = have a good relationship.
+M|I _____ an old friend at the supermarket yesterday.|ran into|ran up|ran out|ran off|"Run into" = meet by chance.
+M|Which sentence is correct?|She put off the meeting.|She put the meeting of.|She put up the meeting.|She put on the meeting off.|"Put off the meeting" = postpone.
+T|"Get along" means to have a good relationship.|True|Example: "We get along well."
+T|"Run into" means to run fast.|False|It means to meet unexpectedly.
+F|Let's not _____ the decision any longer. (put off)|put off|Delay.
+F|I always _____ my sister at the airport. (pick up)|pick up|Collect.
+F|We _____ well. We never argue. (get along)|get along|Good relationship.
+#B1+.c3.l3
+M|Which sentence tells about a week with phrasal verbs?|On Monday I woke up early and looked for my keys.|On Monday I woke early looked for keys.|Monday woke up I.|On Monday early.|Complete and natural.
+M|Which phrase means to wake from sleep?|wake up|wake on|wake at|wake with|"Wake up".
+M|Which phrase means to leave the house to go out?|go out|go up|go in|go on|"Go out".
+M|Which phrase means to return to a place you were?|come back|come up|come off|come at|"Come back".
+M|Which phrase means to start doing something regularly (like a hobby)?|take up|take off|take in|take on|"Take up a hobby".
+T|"Take up" can mean to begin a hobby.|True|Example: "I took up painting."
+T|"Switch off" means to turn something on.|False|It means to turn off.
+F|I _____ at seven every day. (wake up)|wake up|Phrasal verb.
+F|On Friday I _____ with friends. (go out)|go out|Socialize.
+F|She decided to _____ yoga. (take up)|take up|Begin as a hobby.
+#B1+.c4.l1
+M|The man _____ lives next door is a doctor.|who|which|whose|where|"Who" is for people.
+M|The book _____ I bought is interesting.|that|who|whose|where|"That" refers to things.
+M|The car _____ is parked outside is mine.|which|who|whose|whom|"Which" refers to things.
+M|Which sentence is correct?|The woman who called you is my boss.|The woman which called you is my boss.|The woman whose called you is my boss.|The woman where called you is my boss.|"Who" for people.
+M|Defining relative clauses give:|essential information to identify the noun|extra information in commas|an opinion|a question|They identify which person/thing.
+T|We can use "that" for people and things in defining relative clauses.|True|"That" works for both (informal for people).
+T|"The man which lives next door" is the best choice.|False|Use "who" for people.
+F|The girl _____ won the race is my cousin. (who)|who;that|Person.
+F|This is the phone _____ I lost. (that / which)|that;which|Thing.
+F|The shop _____ sells bread is closed. (that / which)|that;which|Thing.
+#B1+.c4.l2
+M|That's the restaurant _____ we had dinner last night.|where|who|whose|which|"Where" refers to a place.
+M|I know a girl _____ father is a pilot.|whose|who|where|which|"Whose" shows possession.
+M|This is the town _____ I grew up.|where|whose|who|that|"Where" for places.
+M|The man _____ car was stolen called the police.|whose|who|where|which|"Whose" = his.
+M|Which sentence is correct?|That's the school where I studied.|That's the school whose I studied.|That's the school who I studied.|That's the school what I studied.|"Where" is for places.
+T|"Whose" shows possession.|True|Example: "the man whose car..."
+T|"Where" refers to a person.|False|It refers to a place.
+F|That's the hotel _____ we stayed. (where)|where|Place.
+F|She's the teacher _____ class I enjoy most. (whose)|whose|Possession.
+F|The café _____ we met is closed now. (where)|where|Place.
+#B1+.c4.l3
+M|Which sentence correctly describes a person?|She is a teacher who loves her job.|She is a teacher which loves her job.|She is a teacher whose loves her job.|She is a teacher where loves her job.|"Who" for people.
+M|Which sentence correctly describes a place?|This is the park where we play football.|This is the park who we play football.|This is the park whose we play football.|This is the park what we play football.|"Where" for places.
+M|Which sentence is best to describe a person's possession?|He is the man whose dog barks all night.|He is the man who dog barks all night.|He is the man where dog barks all night.|He is the man which dog barks all night.|"Whose" shows possession.
+M|Which sentence combines two ideas?|I met a man who works in Paris.|I met a man. Works in Paris.|Man who Paris.|Works Paris man.|One sentence with a clause.
+M|A relative clause comes:|right after the noun it describes|at the start of the text|at the end of the paragraph|before the verb of another sentence|It follows its noun.
+T|Relative clauses can make descriptions more detailed.|True|They add information.
+T|A relative clause always starts with "and".|False|It starts with who, that, which, where or whose.
+F|My neighbour is a nurse _____ works at night. (who)|who|Person.
+F|This is the shop _____ I bought my shoes. (where)|where|Place.
+F|He's the boy _____ mother is a singer. (whose)|whose|Possession.

@@ -1,0 +1,132 @@
+#B2+.c1.l1
+M|If I had taken that job, I _____ in London now.|would be living|would have lived|will live|lived|Mixed conditional: past condition, present result.
+M|If she had studied medicine, she _____ a doctor now.|would be|would have been|will be|was|Past condition → present result.
+M|Which sentence is a mixed conditional (past → present)?|If I had saved more, I would be rich now.|If I save more, I will be rich.|If I saved more, I would be rich.|If I had saved more, I would have been rich.|If + past perfect, would + base verb.
+M|"If we had left earlier, we wouldn't be stuck here now." The result is about:|the present|the past|the future|a habit|Present result.
+M|Which is correct?|If he had listened, he would know the answer.|If he listened, he would have known the answer.|If he had listened, he will know.|If he has listened, he would know.|Mixed form.
+T|In this mixed conditional, the if-clause is about the past and the result is about the present.|True|If + past perfect, would + base verb.
+T|"If I would have studied, I would be fluent" is standard English.|False|Use "If I had studied, I would be fluent."
+F|If I had learned Spanish at school, I _____ it now. (speak — would)|would speak|Present result.
+F|If they had invested in 2010, they _____ millionaires today. (be — would)|would be|Present result.
+F|If she hadn't moved abroad, she _____ near her family now. (live — would)|would live|Present result.
+#B2+.c1.l2
+M|If I _____ so shy, I would have asked her out.|weren't|hadn't been|wasn't being|won't be|Present trait, past result: If + past simple.
+M|If he were more careful, he _____ the glass.|wouldn't have broken|wouldn't break|won't break|didn't break|Past result.
+M|Which sentence is a mixed conditional (present → past)?|If I were braver, I would have asked for a raise.|If I had been braver, I would ask for a raise.|If I am braver, I will ask for a raise.|If I were braver, I would ask for a raise.|If + past simple, would have + past participle.
+M|"If she weren't afraid of flying, she would have visited us." The condition is about:|her general nature now|a past event only|the future|a rule|Present/general condition.
+M|Which is correct?|If I were rich, I would have bought that house.|If I was rich, I would bought that house.|If I am rich, I would have bought that house.|If I were rich, I would buy that house yesterday.|Correct mixed form.
+T|In this mixed conditional, the if-clause is about a general or present situation and the result is in the past.|True|If + past simple, would have + past participle.
+T|"If I were taller, I would have been a model" is grammatically impossible.|False|It's a valid mixed conditional.
+F|If I _____ more confident, I would have applied for the job. (be)|were;was|Past simple.
+F|If he were a better driver, he _____ the accident. (avoid — would have)|would have avoided|Past result.
+F|If she weren't so busy, she _____ to the party. (come — would have)|would have come|Past result.
+#B2+.c1.l3
+M|"If I had taken the other path, my life would be completely different now." What does the speaker imply?|They did not take the other path.|They took the other path.|They will take the other path.|They never had a choice.|Unreal past.
+M|A good structure for a spoken story is:|situation, decision, result|only a result|only a question|random facts|Clear structure.
+M|Which sentence links a past decision to a present result?|If I had accepted, I would be abroad now.|I accept, I am abroad.|If I accept, I will be abroad.|I accepted abroad.|Mixed conditional.
+M|Which phrase introduces a hypothetical past event?|If I had...|When I...|Because I...|While I...|"If I had..."
+M|Which linking word shows contrast?|But|And|So|Because|Contrast.
+T|Mixed conditionals link a past event to a present situation.|True|One of the forms.
+T|Mixed conditionals only talk about the future.|False|They mix past and present.
+F|If I _____ chosen medicine, I would be a doctor now. (have)|had|Past perfect.
+F|If I hadn't moved here, I _____ my husband. (not meet — wouldn't)|wouldn't have met|Third conditional.
+F|If I _____ the offer, I would be living abroad. (accept — had)|had accepted|Past perfect.
+#B2+.c2.l1
+M|I _____ an old photo while cleaning the attic.|came across|came up|came off|came on|"Come across" = find by chance.
+M|She has _____ a lot of changes recently.|gone through|gone over|gone on|gone off|"Go through" = experience.
+M|Which meaning matches "come across"?|find by chance|arrive at|become popular|go away|Find unexpectedly.
+M|Which meaning matches "go through"?|experience|exit|travel by|finish|Experience (often difficult).
+M|Which is correct?|I came across your article.|I came your article across.|I came across of your article.|I came across to your article.|Inseparable phrasal verb.
+T|"Come across" can mean to find something by chance.|True|Example: "I came across my old diary."
+T|"Go through" always means to walk through a door.|False|It can mean to experience.
+F|While tidying, I _____ my old school books. (come across)|came across|Found by chance.
+F|She is _____ a difficult time. (go through)|going through|Experience.
+F|We _____ the contract carefully before signing. (go through)|went through|Check/read in detail.
+#B2+.c2.l2
+M|The police will _____ the robbery.|look into|look after|look up|look out|"Look into" = investigate.
+M|I can't _____ the noise any longer.|put up with|put off|put on|put out|"Put up with" = tolerate.
+M|Which meaning matches "look into"?|investigate|watch|search for|look after|Investigate.
+M|Which meaning matches "put up with"?|tolerate|support|delay|build|Tolerate.
+M|Which is correct?|I won't put up with this behaviour.|I won't put up this behaviour with.|I won't put with up this behaviour.|I won't put up with to this behaviour.|Inseparable.
+T|"Look into" means to investigate.|True|Example: "We'll look into it."
+T|"Put up with" means to enjoy.|False|It means to tolerate.
+F|The manager promised to _____ the complaint. (look into)|look into|Investigate.
+F|I can't _____ his rudeness anymore. (put up with)|put up with|Tolerate.
+F|The council is _____ the problem of litter. (look into)|looking into|Investigate.
+#B2+.c2.l3
+M|"I came across an old friend yesterday." What happened?|They met by chance.|They planned to meet.|They argued.|They called.|Unplanned meeting.
+M|"I can't put up with the heat." The speaker:|can't tolerate the heat.|loves the heat.|builds the heat.|delays the heat.|Tolerate.
+M|"The police are looking into it." The police are:|investigating|ignoring|leaving|watching TV|Investigating.
+M|Which context shows "go through"?|She went through a hard time after the accident.|She went through the door and sat.|She goes to school.|She went away.|Experience.
+M|When you hear a phrasal verb you don't know, you can:|use the context to guess|stop listening|translate each word|ignore it|Context helps.
+T|The meaning of a phrasal verb is often not the sum of its parts.|True|Idiomatic.
+T|Phrasal verbs always have a literal meaning.|False|Many are idiomatic.
+F|I _____ an old letter in a drawer. (came across)|came across|Found by chance.
+F|The company is _____ the cause of the accident. (looking into)|looking into|Investigate.
+F|He can't _____ noisy neighbours. (put up with)|put up with|Tolerate.
+#B2+.c3.l1
+M|You _____ see a doctor. It's good advice. (almost identical, slightly formal)|ought to|used to|have to|am to|"Ought to" ≈ "should".
+M|Which is more common in everyday English?|should|ought to|shall|needn't|"Should" is more common.
+M|Which sentence is correct?|You ought to apologise.|You ought apologise.|You ought apologising.|You ought to apologising.|"Ought to" + base verb.
+M|Which is the negative form?|You ought not to go.|You ought to not going.|You don't ought to go.|You ought don't go.|"Ought not to".
+M|"Should" and "ought to" both express:|advice|certainty|habit|ability|Advice.
+T|"Ought to" is slightly more formal than "should".|True|Both give advice.
+T|"Ought to" is followed by a verb in the -ing form.|False|Base verb after "to".
+F|You _____ to see a dentist. It's been two years. (ought)|ought|Advice.
+F|He _____ not to have said that. (ought)|ought|Negative.
+F|We _____ to leave now if we want to arrive on time. (ought / should)|ought;should|Advice.
+#B2+.c3.l2
+M|Which sentence suggests a slightly better chance of rain than "might" or "could"?|It may rain tomorrow.|It might rain tomorrow.|It could rain tomorrow.|It can't rain tomorrow.|"May" is considered slightly more likely than "might" or "could".
+M|Which is the least certain?|It might rain.|It may rain.|It will rain.|It must rain.|"Might" is less likely.
+M|"It could be dangerous" means:|It's possible that it's dangerous.|It is dangerous.|It was dangerous.|It will be dangerous.|Possibility.
+M|Which is correct?|She may be at home.|She may at home be.|She may is at home.|She may to be at home.|Modal + base verb.
+M|Which sentence expresses the highest certainty?|It must be true.|It could be true.|It may be true.|It might be true.|"Must" = near certainty.
+T|"May", "might" and "could" all express possibility.|True|Different degrees.
+T|"Might" is stronger than "will".|False|"Will" is certain.
+F|We _____ go to the beach if it's sunny. (might / may / could)|might;may;could|Possibility.
+F|He _____ be late — the traffic is terrible. (might / may / could)|might;may;could|Possibility.
+F|That _____ be true, but I'm not sure. (might / may / could)|might;may;could|Possibility.
+#B2+.c3.l3
+M|Your friend asks if you'll come tonight. You're 50% sure. Best response:|I might come.|I will come.|I must come.|I can't come.|"Might" for uncertainty.
+M|You are giving strong advice. Best modal:|You should leave now.|You might leave now.|You could leave now.|You may leave now.|"Should" = advice.
+M|You are 95% sure it's true. Best modal:|It must be true.|It might be true.|It could be true.|It may be true.|"Must" = strong certainty.
+M|A formal request is best made with:|May I come in?|Can I come in?|Do I come in?|I come in?|"May I" is formal.
+M|You are sure it's impossible. Best modal:|That can't be true.|That might not be true.|That may not be true.|That could be true.|"Can't" = impossible.
+T|Choosing the right modal depends on certainty and formality.|True|Different modals convey different degrees.
+T|All modal verbs mean exactly the same.|False|Their meanings differ.
+F|Excuse me, _____ I borrow your pen? (may / could)|may;could|Polite request.
+F|He _____ be tired; he's been working all day. (must)|must|Strong deduction.
+F|You _____ not smoke here. It's forbidden. (must)|must|Prohibition.
+#B2+.c4.l1
+M|Which is a clear position statement?|I strongly believe that homework should be limited.|Homework.|Is homework good?|Many students have homework.|States a position.
+M|Which sentence gives a reason?|Firstly, too much homework causes stress.|Homework exists.|Students do homework.|Do you like homework?|"Firstly" introduces a reason.
+M|Which phrase introduces evidence?|According to a recent study,|Maybe,|Perhaps,|Always,|Evidence from a source.
+M|A good argument includes:|a position, reasons and evidence|only an opinion|only questions|only statistics|Complete structure.
+M|Which linking phrase concludes an argument?|In conclusion,|Meanwhile,|By the way,|On the other hand,|Conclusion.
+T|An argument should include supporting evidence.|True|It makes the argument stronger.
+T|An argument is stronger without any reasons.|False|Reasons support the position.
+F|_____ , I believe cities should have more green space. (Overall / In my view)|Overall;In my view|Position.
+F|One reason is that parks improve _____ health. (mental / physical)|mental;physical|Evidence.
+F|For _____ , a study found that people who walk in parks are happier. (example / instance)|example;instance|Example.
+#B2+.c4.l2
+M|"I see your point, but..." is used to:|acknowledge and respond to a counterargument|end a conversation|start an argument|ask for help|Polite response.
+M|"That may be true; however..." introduces:|a counterargument|a greeting|a question|a conclusion|Contrast.
+M|Which is a respectful way to disagree?|I understand your concern, but I think...|You're wrong.|That's silly.|No way.|Respectful.
+M|Which phrase concedes part of the opponent's point?|You're right that it's expensive, but...|You're completely wrong.|I hate that.|Never.|Partial concession.
+M|After acknowledging a view, you should:|give your own counterpoint|stop talking|change the topic|insult them|Counterpoint.
+T|Acknowledging the opposing view can make your argument stronger.|True|Shows fairness.
+T|In debate, you should never say "I see your point".|False|It's useful.
+F|I see your _____ , but I think differently. (point)|point|Acknowledge.
+F|That may be true; _____ , the evidence suggests otherwise. (however)|however|Contrast.
+F|You have a good point; _____ , I disagree. (nevertheless / however)|nevertheless;however|Contrast.
+#B2+.c4.l3
+M|Speaker A: "Public transport should be free." Speaker B: "That's costly." Speaker A: "In the long run it saves money." What is A's rebuttal?|It saves money in the long run.|It's costly.|Public transport is slow.|Nobody uses it.|A answers the objection.
+M|Speaker B says "That's costly." This is a:|counterargument|greeting|conclusion|question|Opposing point.
+M|A rebuttal is:|a response to a counterargument|an introduction|a question|a joke|Response.
+M|Which speaker supports free transport?|A|B|Both|Neither|A proposes it.
+M|"In the long run" means:|over a long period|immediately|never|yesterday|Long-term.
+T|In a debate, each speaker responds to the other's points.|True|Argument and rebuttal.
+T|A rebuttal supports the opponent's point.|False|It answers it.
+F|Speaker A: "I _____ that public transport should be free." (believe / think)|believe;think|Position.
+F|Speaker B: "It would be too _____ for the government." (expensive / costly)|expensive;costly|Counterpoint.
+F|Speaker A: "However, it would _____ pollution." (reduce)|reduce|Rebuttal.

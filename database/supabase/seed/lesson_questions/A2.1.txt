@@ -1,0 +1,132 @@
+#A2.1.c1.l1
+M|Yesterday I _____ to the park.|walked|walk|walking|walks|Yesterday is the past, and the regular past ends in -ed.
+M|She _____ her homework last night.|finished|finish|finishes|finishing|Add -ed to make the regular past: finished.
+M|They _____ football on Saturday.|played|play|plays|playing|Regular past: play + ed.
+M|What is the past simple of "study"?|studied|studyed|studed|studies|Consonant + y changes to -ied.
+M|What is the past simple of "stop"?|stopped|stoped|stopt|stoping|One-syllable verbs with a short vowel double the final consonant.
+T|The past simple of regular verbs ends in -ed.|True|Example: work → worked.
+T|"He walk to school yesterday" is correct.|False|Say "He walked to school yesterday."
+F|We _____ TV last night. (watch)|watched|Add -ed: watched.
+F|My mother _____ dinner yesterday. (cook)|cooked|Add -ed: cooked.
+F|I _____ English at school last year. (study)|studied|Consonant + y → -ied.
+#A2.1.c1.l2
+M|What is the past simple of "go"?|went|goed|gone|going|"Go" is irregular: go → went.
+M|What is the past simple of "see"?|saw|seed|seen|sawed|"See" is irregular: see → saw.
+M|What is the past simple of "eat"?|ate|eated|eaten|eats|"Eat" is irregular: eat → ate.
+M|What is the past simple of "have"?|had|haved|has|having|"Have" is irregular: have → had.
+M|Which sentence is correct?|I went to the market yesterday.|I goed to the market yesterday.|I gone to the market yesterday.|I go to the market yesterday.|Use the irregular past "went".
+T|"Buyed" is the past simple of "buy".|False|The past of "buy" is "bought".
+T|"Ate" is the past simple of "eat".|True|Eat → ate.
+F|Last week she _____ a beautiful bird. (see)|saw|The past of "see" is "saw".
+F|We _____ pizza for dinner yesterday. (have)|had|The past of "have" is "had".
+F|He _____ to school by bus yesterday. (go)|went|The past of "go" is "went".
+#A2.1.c1.l3
+M|"When I was a child, I lived in a small village. I played with my friends every day and I walked to school." What did the speaker do every day?|Played with friends|Went to the cinema|Worked in an office|Traveled abroad|The speaker played with friends every day.
+M|"When I was a child, I lived in a small village." Where did the speaker live?|In a small village|In a big city|In another country|On a farm far away|The text says a small village.
+M|Which sentence is about a childhood memory?|I had a red bike when I was seven.|I have a red bike now.|I will buy a red bike.|I am buying a red bike.|"Had ... when I was seven" talks about the past.
+M|Which time expression fits the past simple?|when I was ten|next year|right now|every Sunday|"When I was ten" refers to a finished time.
+M|Which question asks about the past?|Where did you live as a child?|Where do you live?|Where will you live?|Where are you living?|"Did" shows a past-time question.
+T|The past simple is used to talk about finished past events.|True|It describes completed actions in the past.
+T|"I live in a small village when I was a child" is correct.|False|Say "I lived in a small village when I was a child."
+F|When I was young, I _____ with my grandmother. (live)|lived|Add -ed: lived.
+F|We _____ to the beach every summer. (go)|went|The past of "go" is "went".
+F|My brother _____ a toy car for his birthday. (get)|got|The past of "get" is "got".
+#A2.1.c2.l1
+M|You want to know the price of a single T-shirt. You ask:|How much is this T-shirt?|How many is this T-shirt?|How much are this T-shirt?|How much is it T-shirt?|Use "How much is" with a singular noun.
+M|You want to know the price of two shoes. You ask:|How much are these shoes?|How much is these shoes?|How many is these shoes?|How much shoes are?|Use "How much are" with plural nouns.
+M|"It's ten dollars" answers:|How much is it?|What time is it?|Where is it?|Who is it?|"How much" asks the price.
+M|Which word means money in coins and paper?|cash|price|bag|receipt|Cash is physical money.
+M|Which word is the paper you get after paying?|receipt|cash|wallet|coin|A receipt shows what you paid.
+T|"How much are these socks?" is a correct question.|True|"Socks" is plural, so use "are".
+T|"How much is these socks?" is a correct question.|False|Use "are" with plural nouns.
+F|How _____ is this book? It's five dollars. (much / many)|much|Use "How much" for price.
+F|How much _____ these apples? (are / is)|are|"Apples" is plural.
+F|It costs twenty _____. (dollars / dollar)|dollars|Amounts over one take the plural.
+#A2.1.c2.l2
+M|Which is the most polite way to ask for help?|Could you help me, please?|Help me.|You help me now.|Help!|"Could you ... please?" is polite.
+M|Which request is polite?|Would you mind opening the door?|Open the door!|Door open now.|You open the door.|"Would you mind + -ing?" is polite.
+M|Complete: "Would you mind _____ the bag?"|carrying|carry|to carry|carries|After "Would you mind" use the -ing form.
+M|Which sentence is correct?|Could you show me another size?|Could you to show me another size?|Could you showing me another size?|Could you shows me another size?|"Could you" + base verb.
+M|A customer says "Could you give me a discount?" What is the customer doing?|Making a polite request|Giving an order|Saying goodbye|Complaining|"Could you...?" makes a request.
+T|After "Could you" we use the base form of the verb.|True|Example: "Could you help me?"
+T|"Would you mind to wait?" is correct.|False|Say "Would you mind waiting?"
+F|Could you _____ me the price, please? (tell)|tell|After "Could you" use the base verb.
+F|Would you mind _____ a bag for me? (get)|getting|After "mind" use -ing.
+F|Excuse me, _____ you help me find a coat? (could)|could|"Could you ...?" is a polite request.
+#A2.1.c2.l3
+M|Customer: "I'm looking for a jacket." Clerk: "What size are you?" Customer: "Medium." What does the clerk ask about?|Size|Color|Price|Time|"What size are you?" asks about size.
+M|Customer: "Can I try this on?" Clerk: "Of course. The fitting room is over there." What does the customer want to do?|Wear the item to check the fit|Pay for the item|Return the item|Clean the item|"Try on" means wear it to see if it fits.
+M|Clerk: "That's forty dollars." Customer: "Here you are." What is the customer doing?|Paying|Asking the price|Returning the item|Choosing a size|"Here you are" is said when handing over money.
+M|Which phrase can a customer use to say a price is too high?|It's too expensive.|It's too cheap.|It's perfect.|It's free.|"Too expensive" means the price is high.
+M|Which sentence asks about a different color?|Do you have this in blue?|Do you have this in forty?|Do you have this at noon?|Do you have this and me?|It asks if the item comes in blue.
+T|"Do you have this in a larger size?" asks for a bigger size.|True|"Larger" means bigger.
+T|"Can I try this on?" means "Can I buy this later?"|False|It means "Can I wear it to test the fit?"
+F|Can I _____ this shirt on? (try)|try|The phrase is "try on".
+F|How would you like to _____ ? Cash or card? (pay)|pay|"Pay" is the verb for giving money.
+F|It's too _____ . It costs a lot of money. (expensive)|expensive|A high price is expensive.
+#A2.1.c3.l1
+M|The sun is shining and there are no clouds. The weather is:|sunny|rainy|snowy|foggy|"Sunny" means bright sun.
+M|Water is falling from the sky. It is:|raining|snowing|windy|sunny|Rain is water from the sky.
+M|You see white flakes falling from the sky. It is:|snowing|raining|sunny|hot|Snow falls in white flakes.
+M|What do you ask to find out about the weather?|What's the weather like?|What's the weather for?|Who's the weather?|How is the weather like?|"What's the weather like?" is the standard question.
+M|The sky is grey and full of clouds. It is:|cloudy|sunny|windy|clear|"Cloudy" means full of clouds.
+T|"It's windy" means there is a lot of wind.|True|"Windy" means there is wind.
+T|"It's sunny" means it is raining.|False|"Sunny" means bright sun.
+F|It is very _____ today; I need my sunglasses. (sunny)|sunny|Sunglasses are for sunny weather.
+F|Take an umbrella; it is _____. (raining)|raining|An umbrella is for rain.
+F|What's the weather _____ today? (like)|like|The question is "What's the weather like?"
+#A2.1.c3.l2
+M|In which season is it usually very hot?|summer|winter|spring|autumn|Summer is the hottest season.
+M|In which season does it usually snow?|winter|summer|spring|autumn|Snow usually falls in winter.
+M|In spring, the weather is often:|mild and rainy|freezing|extremely hot|always snowy|Spring is mild with some rain.
+M|In many countries, autumn is:|cool and windy|very hot|snowy all day|dry and hot|Autumn is cool, often windy.
+M|Which sentence is correct?|It is often rainy in spring.|It is rainy often in spring.|It often is rainy in spring.|It rainy is often in spring.|The adverb "often" goes after "is".
+T|Winter is usually the coldest season in the north.|True|Many northern countries are coldest in winter.
+T|Summer is usually the coldest season.|False|Summer is the warmest season.
+F|In _____, it snows and the days are short. (winter)|winter|Snow and short days are typical of winter.
+F|People go to the beach in _____. (summer)|summer|The beach is popular in hot summer weather.
+F|Leaves fall from the trees in _____. (autumn)|autumn|Leaves fall in autumn.
+#A2.1.c3.l3
+M|Forecaster: "Tomorrow will be sunny in the morning, with clouds in the afternoon. The temperature will be 24 degrees." What is the weather in the morning?|Sunny|Cloudy|Rainy|Snowy|The forecast says sunny in the morning.
+M|Forecaster: "Tomorrow will be sunny in the morning, with clouds in the afternoon. The temperature will be 24 degrees." What is the temperature?|24 degrees|14 degrees|42 degrees|4 degrees|The forecast says 24 degrees.
+M|Forecaster: "On Friday it will rain all day and it will be windy." What should you take on Friday?|An umbrella|Sunglasses|Shorts|Sunscreen|You need an umbrella for rain.
+M|Forecaster: "Saturday will be cold, with some snow in the north." Where will it snow?|In the north|In the south|In the east|Everywhere|Snow is in the north.
+M|"The weather will be mild." What does "mild" mean?|Not too hot and not too cold|Very hot|Very cold|Wet|Mild is a pleasant, moderate temperature.
+T|"Forecast" means a prediction of the weather.|True|A weather forecast says what the weather will be.
+T|"It will be sunny all day" means no rain.|True|Sunny all day suggests clear skies.
+F|The weather _____ says it will rain tomorrow. (forecast)|forecast|A weather forecast predicts the weather.
+F|Tomorrow it _____ be cold. (will)|will|"Will" is used for predictions.
+F|Temperatures will be around ten _____ . (degrees)|degrees|We measure temperature in degrees.
+#A2.1.c4.l1
+M|I'm going to _____ my grandmother next week.|visit|visiting|visited|visits|After "going to" use the base verb.
+M|She is going to _____ a new car.|buy|buys|buying|bought|"Going to" + base verb.
+M|They _____ going to travel to Spain.|are|is|am|be|Use "are" with "they".
+M|Which sentence talks about a plan?|I'm going to study tonight.|I studied last night.|I study every night.|I am studying hard.|"Going to" expresses a plan for the future.
+M|Which question asks about someone's plans?|What are you going to do tomorrow?|What did you do tomorrow?|What do you going tomorrow?|What you going to do?|The pattern is "What are you going to + verb?"
+T|"Going to" is used for plans we have already made.|True|Example: "I'm going to see a movie tonight."
+T|"He going to travel" is correct.|False|Say "He is going to travel."
+F|We are going to _____ a picnic on Sunday. (have)|have|After "going to" use the base verb.
+F|I'm _____ to learn Spanish next year. (going)|going|The pattern is "be going to".
+F|She _____ going to cook dinner tonight. (is)|is|Use "is" with "she".
+#A2.1.c4.l2
+M|Look at the black clouds! I think it _____ rain.|will|did|was|is|"Will" can express a prediction.
+M|The phone is ringing. I _____ answer it.|will|am going to|did|was|"Will" is used for quick decisions.
+M|Which sentence is a prediction?|I think it will snow tomorrow.|I snowed yesterday.|I am snowing.|It snows every day.|"I think it will" is a prediction.
+M|Which is correct?|She will help you.|She wills help you.|She will helps you.|She will to help you.|"Will" + base verb.
+M|"I'm tired. I will go to bed early." This is:|a quick decision|a past event|a habit|a question|The speaker decides at the moment of speaking.
+T|"Will" is followed by the base form of the verb.|True|Example: "It will rain".
+T|"He will goes" is correct.|False|Say "He will go."
+F|It's cold in here. I _____ close the window. (will)|will|A quick decision uses "will".
+F|I think it _____ be sunny tomorrow. (will)|will|A prediction uses "will".
+F|They _____ not come to the party. (will)|will|"Will not" is the negative of "will".
+#A2.1.c4.l3
+M|Which sentence expresses a plan you already made for the weekend?|I'm going to visit my cousin on Saturday.|I'll probably get a cold.|It rained on Saturday.|I visit my cousin every Saturday.|"Going to" is for plans already made.
+M|Which sentence is a spontaneous idea at the moment of speaking?|Oh, it's hot. I'll open a window.|I'm going to open a window at 3 p.m.|I opened a window.|I open a window every day.|A quick decision uses "will".
+M|"This weekend I'm going to play football and, if it rains, I'll stay home." Which verb phrase is a plan?|I'm going to play football|I'll stay home|it rains|play|"I'm going to" expresses the plan.
+M|Which pair of words is used for future plans and predictions?|going to and will|did and was|have and has|can and must|"Going to" and "will" talk about the future.
+M|Which sentence is correct?|We are going to have lunch together.|We are going have lunch together.|We going to have lunch together.|We are go to have lunch together.|The pattern is "be going to + verb".
+T|"I'll" is the short form of "I will".|True|I will → I'll.
+T|"I'm going to" is the short form of "I will".|False|"I'm going to" is not a short form of "I will."
+F|This weekend, I _____ going to visit my aunt. (am)|am|Use "am" with "I".
+F|I think you _____ like this film. (will)|will|Use "will" for a prediction.
+F|We are going to _____ to the beach on Sunday. (go)|go|After "going to" use the base verb.

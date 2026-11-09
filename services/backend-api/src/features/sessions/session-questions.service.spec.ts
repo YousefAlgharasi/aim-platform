@@ -123,17 +123,16 @@ describe('SessionQuestionsService.listQuestionsForLesson', () => {
     expect(result.lessonId).toBe(LESSON_ID);
     expect(result.questions).toHaveLength(1);
     const q = result.questions[0];
-    expect(q).toEqual({
+    expect(q).toMatchObject({
       id: QUESTION_ID,
       type: 'multiple_choice',
       stem: 'He _____ a teacher.',
       difficulty: 'beginner',
       tags: ['a1', 'grammar'],
-      options: [
-        { id: 'choice-1', text: 'is', order: 0 },
-        { id: 'choice-2', text: 'are', order: 1 },
-      ],
     });
+    // Same options, re-numbered 0..n-1 in whatever (shuffled) order they are shown.
+    expect(q.options.map((o) => o.order)).toEqual([0, 1]);
+    expect(q.options.map((o) => o.text).sort()).toEqual(['are', 'is']);
     // Correctness never leaks in any spelling.
     const serialized = JSON.stringify(result);
     expect(serialized).not.toContain('is_correct');
@@ -309,5 +308,72 @@ describe('SessionQuestionsService.resolveItemForAttempt', () => {
     const { service } = makeService(db);
     const resolved = await service.resolveItemForAttempt(QUESTION_ID, 'choice-1');
     expect(resolved.skillIds).toEqual([]);
+  });
+});
+
+describe('SessionQuestionsService random selection', () => {
+  const POOL = Array.from({ length: 12 }, (_, i) => ({
+    id: `q-${i}`, type: 'multiple_choice', difficulty: 'beginner', stem: `Stem ${i}`, tags: [],
+  }));
+  const choicesFor = (ids: string[]) =>
+    ids.flatMap((id) => ['a', 'b', 'c', 'd'].map((t, n) => ({
+      id: `${id}-${t}`, question_id: id, text: t, sort_order: n, is_correct: n === 0,
+    })));
+
+  function dbWith(extra: Array<[string, unknown[]]> = []) {
+    return makeDb([
+      ['FROM learning_sessions', ACTIVE_SESSION_ROW],
+      ['FROM lessons', PUBLISHED_LESSON_ROW],
+      ...extra,
+      ['FROM lesson_questions', POOL],
+      ['FROM question_choices', choicesFor(POOL.map((p) => p.id))],
+    ]);
+  }
+
+  it('draws a limited, duplicate-free set from the lesson pool and stores it', async () => {
+    const db = dbWith();
+    const { service } = makeService(db);
+    const result = await service.listQuestionsForLesson(STUDENT_ID, SESSION_ID, LESSON_ID);
+    expect(result.questions.length).toBeGreaterThanOrEqual(5);
+    expect(result.questions.length).toBeLessThan(POOL.length);
+    expect(new Set(result.questions.map((q) => q.id)).size).toBe(result.questions.length);
+    expect(db.query.mock.calls.some(([sql]) => String(sql).includes('INSERT INTO session_questions'))).toBe(true);
+  });
+
+  it('returns the stored draw on reload instead of drawing again', async () => {
+    const stored = POOL.slice(0, 6);
+    const db = dbWith([['FROM session_questions', stored]]);
+    const { service } = makeService(db);
+    const result = await service.listQuestionsForLesson(STUDENT_ID, SESSION_ID, LESSON_ID);
+    expect(result.questions.map((q) => q.id)).toEqual(stored.map((q) => q.id));
+    expect(db.query.mock.calls.some(([sql]) => String(sql).includes('INSERT INTO session_questions'))).toBe(false);
+  });
+
+  it('shuffles answer order deterministically per session and varies across sessions', async () => {
+    const orders = async (sessionId: string) => {
+      const { service } = makeService(dbWith([['FROM session_questions', POOL.slice(0, 6)]]));
+      const r = await service.listQuestionsForLesson(STUDENT_ID, sessionId, LESSON_ID);
+      return r.questions.map((q) => q.options.map((o) => o.text).join(''));
+    };
+    expect(await orders('s-1')).toEqual(await orders('s-1'));
+    const variants = new Set<string>();
+    for (const s of ['s-1', 's-2', 's-3', 's-4']) variants.add((await orders(s)).join('|'));
+    expect(variants.size).toBeGreaterThan(1);
+  });
+
+  it('keeps True/False in natural order', async () => {
+    const tf = { id: 'tf', type: 'true_false', difficulty: 'beginner', stem: 'T?', tags: [] };
+    const db = makeDb([
+      ['FROM learning_sessions', ACTIVE_SESSION_ROW],
+      ['FROM lessons', PUBLISHED_LESSON_ROW],
+      ['FROM session_questions', [tf]],
+      ['FROM question_choices', [
+        { id: 't', question_id: 'tf', text: 'True', sort_order: 0, is_correct: true },
+        { id: 'f', question_id: 'tf', text: 'False', sort_order: 1, is_correct: false },
+      ]],
+    ]);
+    const { service } = makeService(db);
+    const r = await service.listQuestionsForLesson(STUDENT_ID, SESSION_ID, LESSON_ID);
+    expect(r.questions[0].options.map((o) => o.text)).toEqual(['True', 'False']);
   });
 });

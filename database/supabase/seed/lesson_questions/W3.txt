@@ -1,0 +1,132 @@
+#W3.c1.l1
+M|Which is an arguable thesis?|Governments should ban plastic bags to protect the environment.|Plastic bags are made of plastic.|Many people use plastic bags.|Plastic bags exist.|Debatable.
+M|A strong thesis:|takes a clear, debatable position|states a fact|asks a question|lists topics|Position.
+M|Which is NOT a thesis?|The Earth orbits the Sun.|Schools should teach financial literacy.|Cities must reduce traffic.|Voting should be compulsory.|A fact.
+M|Where is the thesis usually placed?|At the end of the introduction|At the end of the essay|In the title only|In the references|Usual.
+M|A thesis should be:|specific and arguable|vague and obvious|a question|a quote|Quality.
+T|A thesis states the main argument of an essay.|True|Central claim.
+T|A thesis is a fact everyone accepts.|False|It's debatable.
+F|A thesis must be _____ ; people can disagree with it. (arguable / debatable)|arguable;debatable|Quality.
+F|The thesis usually appears at the end of the _____ . (introduction)|introduction|Position.
+F|A good thesis takes a clear _____ . (position / stance)|position;stance|Quality.
+#W3.c1.l2
+M|Which sentence concedes a point?|It is true that remote work can be isolating.|Remote work is great.|Remote work.|Work.|Concession.
+M|Which structure addresses a counterargument?|Concession followed by rebuttal|Rebuttal only|Concession only|Conclusion|Structure.
+M|Which phrase introduces a rebuttal?|Nevertheless,|Furthermore,|For example,|Firstly,|Rebuttal.
+M|Which is a fair way to present an opposing view?|Critics argue that remote work reduces teamwork.|Only fools say remote work reduces teamwork.|Nobody believes in teamwork.|Teamwork is silly.|Fair.
+M|A rebuttal should:|respond with evidence|ignore the argument|insult the opponent|change the topic|Evidence.
+T|Addressing counterarguments strengthens an essay.|True|Credibility.
+T|You should avoid mentioning opposing views.|False|Address them.
+F|Critics _____ that remote work reduces teamwork. (argue / claim / say)|argue;claim;say|Opposing view.
+F|_____ , studies show that teams stay productive. (Nevertheless / However)|Nevertheless;However|Rebuttal.
+F|It is _____ that remote work has drawbacks. (true)|true|Concession.
+#W3.c1.l3
+M|A full argumentative essay typically contains:|introduction with thesis, body paragraphs, counterargument and rebuttal, conclusion|only a conclusion|three questions|a list|Structure.
+M|Which paragraph usually comes just before the conclusion?|The counterargument and rebuttal|The title|The introduction|The references|Typical order.
+M|The conclusion should:|restate the thesis and summarise key points|add a new argument|end with a joke|repeat the introduction word for word|Conclusion.
+M|A topic sentence in a body paragraph:|introduces the paragraph's main point|restates the thesis only|ends the essay|cites the sources|Function.
+M|Which linking phrase signals contrast?|On the other hand,|Moreover,|Therefore,|For instance,|Contrast.
+T|Each body paragraph should support the thesis.|True|Relevance.
+T|An argumentative essay needs no evidence.|False|Needs evidence.
+F|The _____ states the main argument of the essay. (thesis)|thesis|Term.
+F|The _____ summarises the main points. (conclusion)|conclusion|Term.
+F|Body paragraphs need evidence and _____ . (examples / reasons)|examples;reasons|Support.
+#W3.c2.l1
+M|Which sentence is academic?|It is widely recognised that sleep affects performance.|Everybody knows sleep is great.|Sleep is cool.|I think sleep matters.|Academic.
+M|Which word is too informal for academic writing?|kids|children|adolescents|individuals|Informal.
+M|Which phrase is suitable?|a considerable number of|loads of|tons of|a bunch of|Formal.
+M|Academic register avoids:|contractions and slang|evidence|citations|clear structure|Avoid.
+M|Rewrite academically: "Lots of people think..."|Many people believe...|Loads of folks reckon...|Heaps think...|Everybody thinks...|Academic.
+T|Academic writing uses formal vocabulary.|True|Register.
+T|Contractions are standard in academic writing.|False|Avoid them.
+F|"Kids" (informal) → _____ (academic) (children)|children|Formal.
+F|"A lot of" (informal) → _____ (academic) (many / numerous / considerable)|many;numerous;considerable|Formal.
+F|"Get" (informal) → _____ (academic) (obtain / receive)|obtain;receive|Formal.
+#W3.c2.l2
+M|Which claim is appropriately hedged?|Social media may contribute to anxiety.|Social media causes anxiety.|Social media is anxiety.|Social media always ruins mental health.|Hedged.
+M|Which phrase hedges?|appears to|definitely|always|proves|Hedge.
+M|Why hedge claims in an essay?|To avoid overgeneralising|To sound sure|To shorten text|To avoid evidence|Accuracy.
+M|Which sentence is hedged?|The data suggest a possible link.|The data prove a link.|The data show a link.|There is a link.|Hedge.
+M|Which word is a strong absolute (avoid in hedged writing)?|always|often|tends to|may|Absolute.
+T|Hedging language makes claims more precise.|True|Caution.
+T|"Always" is a hedge.|False|It's absolute.
+F|The results _____ to suggest a connection. (appear / seem)|appear;seem|Hedge.
+F|Exercise _____ improve mood. (may / can / might)|may;can;might|Hedge.
+F|It is _____ that costs will rise. (likely / possible)|likely;possible|Hedge.
+#W3.c2.l3
+M|A formal academic essay should maintain:|formal register and hedging throughout|casual tone|slang|contractions|Style.
+M|Which sentence is best for a formal essay?|It could be argued that urban growth has environmental costs.|Cities are bad for nature.|Cities ruin everything.|I hate cities.|Formal and hedged.
+M|Which linking phrase suits a formal essay?|Moreover,|Plus,|Also,|And then,|Formal.
+M|Which is the best way to end a formal essay?|In conclusion, the evidence suggests that policy changes are necessary.|So that's it.|Bye.|That's all.|Formal.
+M|Which thing should be avoided in formal essays?|first-person opinions like "I think"|evidence|topic sentences|paragraphs|Impersonal.
+T|A formal essay uses impersonal style.|True|Objective.
+T|A formal essay should include contractions.|False|Avoid.
+F|It is _____ argued that technology isolates people. (often / widely)|often;widely|Impersonal.
+F|This _____ that further research is required. (suggests / indicates)|suggests;indicates|Hedge.
+F|In _____ , the evidence points to a need for change. (conclusion)|conclusion|Ending.
+#W3.c3.l1
+M|Issue: Should cities ban cars? Perspective A: "Yes, to cut pollution." Perspective B: "No, people need cars." Which perspective is pro-ban?|A|B|Both|Neither|A wants a ban.
+M|A summary of two perspectives is:|accurate and neutral|biased|long|emotional|Neutral.
+M|Which phrase introduces a perspective?|According to some,|Always,|Never,|Suddenly,|Reporting.
+M|Which is a fair summary of both sides?|Some argue for a ban to cut pollution, while others stress the need for cars.|Cars are bad.|Cars are good.|Nobody knows.|Balanced.
+M|To identify perspectives, you look for:|each speaker's position and reasons|the font|the length|the title|Strategy.
+T|A good summary represents each viewpoint fairly.|True|Fairness.
+T|A summary should state only your opinion.|False|Neutral.
+F|_____ to some, cars should be banned in city centres. (According)|According|Reporting.
+F|Others _____ that cars are necessary. (argue / claim / believe)|argue;claim;believe|Opposing view.
+F|There are two main _____ on this issue. (perspectives / viewpoints / views)|perspectives;viewpoints;views|Term.
+#W3.c3.l2
+M|Synthesis means:|combining ideas from several sources into one coherent view|copying one source|listing sources|ignoring sources|Synthesis.
+M|Which sentence synthesises two views?|While A emphasises cost, B highlights safety, suggesting that both factors matter.|A says cost. B says safety.|Cost.|Safety.|Combined.
+M|Which linker shows contrast between sources?|Whereas|Moreover|Therefore|Firstly|Contrast.
+M|A synthesis paragraph should:|link the sources to a clear point|list quotations only|avoid sources|be very short|Linked.
+M|Which phrase shows similarity between sources?|Similarly,|However,|In contrast,|Whereas,|Similarity.
+T|Synthesis compares and combines viewpoints.|True|Integration.
+T|Synthesis is the same as copying quotes.|False|It integrates.
+F|_____ A argues for a ban, B argues against it. (Whereas / While)|Whereas;While|Contrast.
+F|_____ , both authors agree on safety. (Similarly / Likewise)|Similarly;Likewise|Similarity.
+F|Taken _____ , the sources suggest a balanced approach. (together)|together|Synthesis.
+#W3.c3.l3
+M|A synthesis essay should end with:|a reasoned conclusion that integrates the views|a list of sources only|a question|a new unrelated topic|Conclusion.
+M|The thesis of a synthesis essay:|takes a position informed by the sources|ignores the sources|repeats one source|is a question|Position.
+M|Which body paragraph structure works well?|Topic sentence, viewpoint A, viewpoint B, synthesis|Viewpoint only|Conclusion only|Quote only|Structure.
+M|Which phrase signals a conclusion drawn from sources?|Overall, the evidence suggests that|By the way,|For fun,|Randomly,|Concluding.
+M|Which is the best use of a source?|Paraphrase and cite|Copy without citation|Ignore|Invent|Integrity.
+T|A synthesis essay uses multiple sources.|True|Integration.
+T|A synthesis essay uses only one source.|False|Multiple.
+F|Overall, the _____ suggests that policy should be balanced. (evidence)|evidence|Conclusion.
+F|Both sources _____ that safety matters. (agree / argue / suggest)|agree;argue;suggest|Synthesis.
+F|In _____ , the views can be reconciled. (conclusion)|conclusion|Ending.
+#W3.c4.l1
+M|Which sentence is more concise?|We met on Monday.|We met together on the day of Monday.|We did meet on Monday of the week.|We met at a meeting on Monday.|Concise.
+M|Which phrase is redundant?|past history|history|recent history|ancient history|"Past" repeats "history".
+M|Which phrase is redundant?|end result|result|final result|outcome|"End" repeats "result".
+M|Which is the concise version of "due to the fact that"?|because|due|fact|that|Concise.
+M|Cutting wordiness helps readers:|understand faster|read slower|doubt|forget|Clarity.
+T|"Each and every" is redundant.|True|Same meaning.
+T|Longer sentences are always better.|False|Be concise.
+F|"In order to" can be shortened to "_____ ." (to)|to|Concise.
+F|"At this point in time" = "_____ ." (now)|now|Concise.
+F|"Basic fundamentals" → "_____ ." (fundamentals / basics)|fundamentals;basics|Redundant.
+#W3.c4.l2
+M|Choppy text: "The city is big. It is noisy. It is crowded." Which version flows better?|The city is big, noisy and crowded.|The city big noisy crowded.|The city. Big. Noisy.|It big it noisy.|Combined.
+M|Which linking word connects cause and effect?|because|but|and|or|Cause.
+M|Which sentence links two ideas smoothly?|Because it rained, the match was cancelled.|It rained. The match cancelled.|Rain. Match.|Rained match.|Linked.
+M|To improve flow you can:|combine short sentences|add random words|remove punctuation|repeat words|Flow.
+M|A transition word helps:|connect ideas between sentences|replace the topic|end the essay|add slang|Connection.
+T|Combining short sentences can improve flow.|True|Cohesion.
+T|Repeating the same sentence start improves flow.|False|Varied starts help.
+F|The road was icy; _____ , many accidents happened. (consequently / therefore)|consequently;therefore|Link.
+F|He was tired, _____ he kept working. (but / yet)|but;yet|Link.
+F|She is clever _____ hard-working. (and)|and|Link.
+#W3.c4.l3
+M|When editing a final draft, you should check:|cohesion, conciseness, register and argument strength|only spelling|only the title|only the length|Full edit.
+M|Which edit improves conciseness?|Delete repeated phrases|Add filler words|Add random examples|Increase the font|Conciseness.
+M|Which edit improves register?|Replace "kids" with "children"|Add slang|Use contractions|Use emojis|Register.
+M|Which edit strengthens an argument?|Add relevant evidence|Add personal stories only|Remove all examples|Add jokes|Strength.
+M|Reading your draft aloud can help you:|notice awkward phrasing|learn grammar|memorise|translate|Editing technique.
+T|Editing is a separate step from writing a first draft.|True|Revise after drafting.
+T|A final draft needs no editing.|False|Edit it.
+F|Check your draft for cohesion, _____ and register. (conciseness)|conciseness;clarity|Editing.
+F|A polished essay has a clear _____ . (thesis)|thesis|Quality.
+F|Final editing includes proofreading for _____ errors. (grammar / spelling)|grammar;spelling|Editing.

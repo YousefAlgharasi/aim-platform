@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+"""Build seed_09_lesson_questions.sql from the per-level *.txt question files.
+
+Each `#<level>.c<chapter>.l<lesson>` header selects a lesson (by level code, chapter sort_order, lesson sort_order).
+Every question is inserted as a published question_bank row with a deterministic uuid (so the seed is idempotent),
+linked to the lesson (lesson_questions) AND to the lesson's skills (question_skills).
+
+Line formats:
+  M|stem|correct|wrong|wrong|wrong|explanation     multiple choice (2-3 wrong options)
+  T|statement|True or False|explanation             true / false
+  F|stem with _____|accepted;accepted|explanation   fill in the blank (typed answer)
+
+Usage: build_sql.py [out.sql]    (also validates; exits non-zero on problems)
+"""
+import glob, os, re, sys, uuid
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+NS = uuid.UUID('6f1d2c9e-3b7a-4e55-9a1d-0a11c0de0001')
+ADMIN = '00000000-0000-0000-0000-000000000001'
+DIFF = {'STARTER': 'beginner', 'A1.1': 'beginner', 'A1.2': 'beginner', 'W1': 'beginner',
+        'A2.1': 'elementary', 'A2.2': 'elementary',
+        'B1.1': 'intermediate', 'B1.2': 'intermediate', 'B1+': 'intermediate', 'W2': 'intermediate',
+        'B2.1': 'upper_intermediate', 'B2.2': 'upper_intermediate', 'B2+': 'upper_intermediate', 'W3': 'upper_intermediate',
+        'C1.1': 'advanced', 'C1.2': 'advanced', 'C2': 'advanced'}
+
+def q(s):  # SQL string literal
+    return "'" + s.replace("'", "''") + "'"
+
+def parse():
+    lessons = {}  # key -> list of dict
+    errors = []
+    for path in sorted(glob.glob(os.path.join(HERE, '*.txt'))):
+        key = None
+        for n, raw in enumerate(open(path, encoding='utf-8'), 1):
+            line = raw.rstrip('\n')
+            where = f'{os.path.basename(path)}:{n}'
+            if not line.strip() or line.startswith('# '):
+                continue
+            if line.startswith('#'):
+                key = line[1:].strip()
+                lessons.setdefault(key, [])
+                continue
+            if key is None:
+                errors.append(f'{where}: question before any lesson header'); continue
+            parts = line.split('|')
+            while parts and parts[-1] == '':
+                parts.pop()
+            kind = parts[0]
+            try:
+                if kind == 'M':
+                    _, stem, correct, *rest = parts
+                    expl = rest[-1]; wrong = rest[:-1]
+                    if not 2 <= len(wrong) <= 3: raise ValueError('need 2-3 wrong options')
+                    opts = [correct] + wrong
+                    if len({o.strip() for o in opts}) != len(opts): raise ValueError('duplicate options')
+                    lessons[key].append(dict(kind='M', stem=stem, correct=correct, wrong=wrong, expl=expl, where=where))
+                elif kind == 'T':
+                    _, stem, ans, expl = parts
+                    if ans not in ('True', 'False'): raise ValueError('answer must be True/False')
+                    lessons[key].append(dict(kind='T', stem=stem, ans=ans, expl=expl, where=where))
+                elif kind == 'F':
+                    _, stem, acc, expl = parts
+                    if '_' not in stem: raise ValueError('no blank in stem')
+                    vals = [a.strip() for a in acc.split(';') if a.strip()]
+                    if not vals: raise ValueError('no accepted answers')
+                    # A trailing "(hint)" that just spells out an accepted answer gives the answer away: drop it.
+                    m = re.search(r'\s*\(([^()]*)\)\s*$', stem)
+                    if m:
+                        hint = [h.strip().lower() for h in re.split(r'[/;,]', m.group(1)) if h.strip()]
+                        if hint and all(h in {v.lower() for v in vals} for h in hint):
+                            stem = stem[:m.start()].rstrip()
+                    lessons[key].append(dict(kind='F', stem=stem, acc=vals, expl=expl, where=where))
+                else:
+                    raise ValueError('unknown kind')
+            except Exception as e:  # noqa
+                errors.append(f'{where}: {e}: {line[:80]}')
+    return lessons, errors
+
+def main():
+    lessons, errors = parse()
+    seen_stems = {}
+    for key, qs in lessons.items():
+        for x in qs:
+            sig = x.get('correct', x.get('ans', ';'.join(x.get('acc', [])))) + '|' + '/'.join(sorted(x.get('wrong', [])))
+            sk = (x['stem'].strip().lower(), x['kind'], sig.lower())
+            if sk in seen_stems and seen_stems[sk] != key:
+                errors.append(f"{x['where']}: stem also used in lesson {seen_stems[sk]}: {x['stem'][:60]}")
+            if sk in seen_stems and seen_stems[sk] == key:
+                errors.append(f"{x['where']}: duplicate stem in same lesson: {x['stem'][:60]}")
+            seen_stems[sk] = key
+        if len(qs) < 10:
+            errors.append(f'{key}: only {len(qs)} questions (minimum 10)')
+    if errors:
+        print('\n'.join(errors)); sys.exit(1)
+
+    out = ['-- GENERATED by build_sql.py from lesson_questions/*.txt — do not edit by hand.',
+           '-- Lesson-specific practice questions: question_bank + choices/answers + skill links + lesson_questions.',
+           'BEGIN;', '']
+    for key, qs in lessons.items():
+        m = re.match(r'^(.+)\.c(\d+)\.l(\d+)$', key)
+        code, ch, ls = m.group(1), int(m.group(2)), int(m.group(3))
+        diff = DIFF[code]
+        out.append(f'-- {key}: {len(qs)} questions')
+        out.append(f"""CREATE TEMP TABLE IF NOT EXISTS _lesson_target (id uuid);
+TRUNCATE _lesson_target;
+INSERT INTO _lesson_target
+  SELECT l.id FROM lessons l JOIN chapters c ON c.id = l.chapter_id JOIN levels lv ON lv.id = c.level_id
+   WHERE lv.code = {q(code)} AND c.sort_order = {ch} AND l.sort_order = {ls};""")
+        for i, x in enumerate(qs):
+            sig = x.get('correct', x.get('ans', ';'.join(x.get('acc', [])))) + '|' + '/'.join(sorted(x.get('wrong', [])))
+            qid = uuid.uuid5(NS, f"{key}|{x['kind']}|{x['stem']}|{sig}")
+            typ = {'M': 'multiple_choice', 'T': 'true_false', 'F': 'fill_in_the_blank'}[x['kind']]
+            tags = "ARRAY['lesson-practice'," + q(code.lower()) + "]"
+            out.append(f"""INSERT INTO question_bank (id, type, stem, difficulty, explanation, tags, status, created_by)
+  SELECT {q(str(qid))}, {q(typ)}, {q(x['stem'])}, {q(diff)}, {q(x['expl'])}, {tags}, 'published', {q(ADMIN)}
+   WHERE EXISTS (SELECT 1 FROM _lesson_target) ON CONFLICT (id) DO NOTHING;""")
+            if x['kind'] == 'M':
+                opts = [(x['correct'], True)] + [(w, False) for w in x['wrong']]
+                # stored in a fixed order; the backend shuffles per session/attempt
+                for n, (t, ok) in enumerate(opts):
+                    cid = uuid.uuid5(NS, f"{qid}|choice|{n}")
+                    out.append(f"INSERT INTO question_choices (id, question_id, text, is_correct, sort_order) SELECT {q(str(cid))}, {q(str(qid))}, {q(t)}, {'true' if ok else 'false'}, {n} WHERE EXISTS (SELECT 1 FROM question_bank WHERE id = {q(str(qid))}) ON CONFLICT (id) DO NOTHING;")
+            elif x['kind'] == 'T':
+                for n, (t, ok) in enumerate([('True', x['ans'] == 'True'), ('False', x['ans'] == 'False')]):
+                    cid = uuid.uuid5(NS, f"{qid}|choice|{n}")
+                    out.append(f"INSERT INTO question_choices (id, question_id, text, is_correct, sort_order) SELECT {q(str(cid))}, {q(str(qid))}, {q(t)}, {'true' if ok else 'false'}, {n} WHERE EXISTS (SELECT 1 FROM question_bank WHERE id = {q(str(qid))}) ON CONFLICT (id) DO NOTHING;")
+            else:
+                vals = ','.join('"' + a.replace('\\', '\\\\').replace('"', '\\"') + '"' for a in x['acc'])
+                val = '{"blanks": [{"position": 1, "accepted_values": [' + vals + ']}], "case_sensitive": false}'
+                out.append(f"INSERT INTO question_answers (question_id, answer_type, value) SELECT {q(str(qid))}, 'fill_blank', {q(val)}::jsonb WHERE EXISTS (SELECT 1 FROM question_bank WHERE id = {q(str(qid))}) ON CONFLICT (question_id) DO NOTHING;")
+            out.append(f"INSERT INTO lesson_questions (lesson_id, question_id, sort_order) SELECT t.id, {q(str(qid))}, {i} FROM _lesson_target t WHERE EXISTS (SELECT 1 FROM question_bank WHERE id = {q(str(qid))}) ON CONFLICT DO NOTHING;")
+            out.append(f"INSERT INTO question_skills (question_id, skill_id, is_primary) SELECT {q(str(qid))}, ls.skill_id, (row_number() OVER (ORDER BY ls.skill_id) = 1) FROM lesson_skills ls JOIN _lesson_target t ON t.id = ls.lesson_id WHERE EXISTS (SELECT 1 FROM question_bank WHERE id = {q(str(qid))}) ON CONFLICT DO NOTHING;")
+        out.append('')
+    out += ['DROP TABLE IF EXISTS _lesson_target;', 'COMMIT;']
+    dest = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, '..', 'seed_09_lesson_questions.sql')
+    open(dest, 'w', encoding='utf-8').write('\n'.join(out) + '\n')
+    total = sum(len(v) for v in lessons.values())
+    print(f'{len(lessons)} lessons, {total} questions -> {os.path.normpath(dest)}')
+
+if __name__ == '__main__':
+    main()

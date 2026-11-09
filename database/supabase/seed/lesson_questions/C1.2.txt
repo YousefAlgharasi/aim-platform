@@ -1,0 +1,132 @@
+#C1.2.c1.l1
+M|Which sentence is the most diplomatically hedged?|It could be argued that the policy has been somewhat ineffective.|The policy is a failure.|The policy is bad.|The policy never works.|Hedged.
+M|Which phrase softens a claim?|to a certain extent|undoubtedly|without question|certainly|Softener.
+M|"Seemingly" suggests:|it appears to be so|it is certainly so|it is never so|it is always so|Appearance.
+M|Which is the most tentative?|The results seem to suggest a link.|The results prove a link.|The results show a link.|There is a link.|Tentative.
+M|Why use nuanced hedges?|To avoid overstating a claim|To sound sure|To lengthen text|To avoid evidence|Precision.
+T|"Arguably" can introduce a claim that can be defended but is not certain.|True|Hedge.
+T|"Undoubtedly" is a hedging device.|False|It's an intensifier.
+F|The plan is, _____ , the most practical option. (arguably)|arguably|Hedge.
+F|It _____ be argued that costs are too high. (could)|could;can;may|Hedge.
+F|To a _____ extent, the report is accurate. (certain)|certain|Hedge.
+#C1.2.c1.l2
+M|Which is the most diplomatic disagreement?|I take your point, although I would suggest an alternative.|You're wrong.|That's a bad idea.|No.|Diplomatic.
+M|"That said, one might question..." introduces:|a mild challenge|a strong insult|a greeting|a conclusion|Challenge.
+M|Which phrase softens "You're wrong"?|I see it slightly differently.|Wrong.|Absolutely not.|Never.|Soft.
+M|Which response is professional?|With respect, I'm not convinced that will work.|That won't work.|That's silly.|No way.|Professional.
+M|"I take your point" means:|I understand your view.|I agree completely.|I take it away.|I don't care.|Acknowledgment.
+T|Diplomatic disagreement acknowledges the other view first.|True|Politeness.
+T|In professional contexts, "That's nonsense" is recommended.|False|It's rude.
+F|I _____ your point, although I would add one concern. (take)|take|Acknowledge.
+F|That _____ , one might question the timeline. (said)|said|"That said".
+F|With _____ , I'm not sure that is feasible. (respect)|respect|Polite.
+#C1.2.c1.l3
+M|Speaker A: "We should launch next month." Speaker B: "I take your point, although I wonder whether the team has enough time." What is B's real position?|B doubts the timeline.|B fully agrees.|B refuses to work.|B wants a longer meeting.|B hedges disagreement.
+M|Speaker B says "I wonder whether the team has enough time." B is:|politely raising a concern|asking about holidays|agreeing|ending the meeting|Concern.
+M|"That said" is used to:|introduce a contrasting point|end a meeting|greet|thank|Contrast.
+M|"Although I take your point" signals:|partial agreement|full agreement|full refusal|a joke|Partial.
+M|The real position behind hedged language can be found by:|noticing the contrast after the softener|ignoring the first words|reading only the first word|counting words|Look at the but/although.
+T|Hedged language can hide a real disagreement.|True|Diplomatic.
+T|"I take your point" always means total agreement.|False|It acknowledges.
+F|I take your point, _____ I have a concern. (although)|although;but|Contrast.
+F|B: "I _____ whether we have the budget." (wonder)|wonder|Hedged doubt.
+F|That _____ , the idea has potential. (said)|said|"That said".
+#C1.2.c2.l1
+M|"The committee proposed two plans. The former is cheaper; the latter is faster." "The former" refers to:|the first plan|the second plan|the committee|both|Former = first.
+M|"The latter" refers to:|the second of two|the first of two|the last of three|both|Latter = second.
+M|"Such a decision" refers back to:|a decision just mentioned|a future decision|a rule|a person|Reference.
+M|"This" at the start of a sentence usually refers to:|the idea in the previous sentence|the next sentence|the writer|the title|Reference.
+M|Which reference device links paragraphs?|This trend|Table|Page|Title|Reference.
+T|Reference words help avoid repetition.|True|Cohesion.
+T|"The former" refers to the more recent of two items.|False|It refers to the first mentioned.
+F|"Two solutions were proposed. _____ was expensive." (The former)|The former;The first|Reference.
+F|"_____ a situation is rare." (Such)|Such|Reference.
+F|"Rising prices upset many people. _____ trend continues." (This)|This|Reference.
+#C1.2.c2.l2
+M|Which linking device adds information at the start of a sentence?|Furthermore,|However,|Nevertheless,|In contrast,|Addition.
+M|"That being said," is used to:|introduce a contrasting idea|end a text|start a story|list items|Contrast.
+M|"This notwithstanding" means:|despite this|because of this|after this|before this|Despite.
+M|Which linking device shows result?|Consequently,|However,|Nevertheless,|On the contrary,|Result.
+M|Why vary linking devices?|To avoid repetition|To confuse readers|To lengthen text|To avoid ideas|Variety.
+T|Using the same linker repeatedly can make writing monotonous.|True|Variation.
+T|"Furthermore" shows contrast.|False|It adds.
+F|The data are clear. _____ , the sample was small. (However / That being said / Nevertheless)|However;That being said;Nevertheless|Contrast.
+F|Costs rose; _____ , sales fell. (consequently / as a result)|consequently;as a result|Result.
+F|The plan is expensive. _____ , it is effective. (Nevertheless / However)|Nevertheless;However|Contrast.
+#C1.2.c2.l3
+M|Which opening sentence best starts a cohesive text on remote work?|Remote work has changed how many people organise their working lives.|Remote work. People.|I like remote work.|Work remote good.|Clear topic.
+M|Which sentence best links to the previous paragraph?|This shift has had mixed consequences.|Next paragraph.|Another idea.|New.|Reference with "This shift".
+M|Which concluding linker fits?|Overall,|Moreover,|Firstly,|By contrast,|Conclusion.
+M|Cohesion is created by:|reference and linking devices|longer words|more paragraphs|italics|Cohesion.
+M|A cohesive three-paragraph text has:|introduction, development, conclusion|three random paragraphs|only a conclusion|three questions|Structure.
+T|Each paragraph should connect to the one before.|True|Flow.
+T|Cohesive writing avoids all linking words.|False|It uses them.
+F|Remote work has benefits. _____ , it has drawbacks. (However / On the other hand)|However;On the other hand|Contrast.
+F|_____ , remote work is here to stay. (Overall / In conclusion)|Overall;In conclusion|Conclusion.
+F|_____ shift has changed many offices. (This)|This|Reference.
+#C1.2.c3.l1
+M|"Back to square one" means:|return to the beginning|go forward|find a square|win|Idiom.
+M|"Cost an arm and a leg" means:|be very expensive|hurt someone|be cheap|break a limb|Idiom.
+M|"A blessing in disguise" is:|something bad that turns out good|a disguise|a prayer|a gift|Idiom.
+M|"To be on the same page" means:|to agree or understand each other|to read together|to be on a book|to turn pages|Idiom.
+M|"The ball is in your court" means:|it's your turn to act|you play tennis|you won|it's out|Idiom.
+T|"Cost an arm and a leg" means "be very expensive".|True|Idiom.
+T|"On the same page" literally means reading a book.|False|It means agreeing.
+F|That car costs an arm and a _____ . (leg)|leg|Idiom.
+F|We were back to square _____ after the failure. (one)|one|Idiom.
+F|Losing the job was a blessing in _____ . (disguise)|disguise|Idiom.
+#C1.2.c3.l2
+M|Which phrase is suitable in a semi-formal email?|I'd like to touch base with you next week.|I'd like to chat you up next week.|Let's hang out.|What's up dude?|Semi-formal.
+M|Which phrase is too informal for professional writing?|It's a piece of cake.|We have reached a consensus.|The project is on track.|We'll follow up.|Too informal.
+M|"Bring to the table" in a meeting means:|contribute|carry a table|eat|argue|Idiom.
+M|Which collocation is suitable in business writing?|meet a deadline|catch a deadline|get a deadline up|do a deadline|Collocation.
+M|Which is better for formal writing?|We will address the matter promptly.|We'll sort it out ASAP.|We'll fix it quick.|We'll do it fast.|Formal.
+T|Some idioms are too informal for professional writing.|True|Register.
+T|All idioms are suitable for formal writing.|False|Choose carefully.
+F|Please let me know if you can _____ the deadline. (meet)|meet|Collocation.
+F|We need to _____ a decision by Friday. (make)|make|Collocation.
+F|I'll _____ up with you next week. (follow)|follow|Collocation.
+#C1.2.c3.l3
+M|Speaker: "We're running out of time, so let's cut to the chase." What does "cut to the chase" mean?|get to the main point|run faster|end the meeting|start a chase|Idiom.
+M|Speaker: "It's a long shot, but we might win." "A long shot" means:|an unlikely possibility|a long photograph|a tall man|a long drink|Idiom.
+M|Speaker: "She's the best, hands down." "Hands down" means:|easily or without doubt|with hands|sadly|slowly|Idiom.
+M|Speaker: "We're all in the same boat." means:|we share the same situation|we are on a boat|we are lost|we are rich|Idiom.
+M|When you hear fast native speech with idioms, you should:|focus on overall meaning|translate every word|stop listening|read a dictionary|Strategy.
+T|Understanding the general meaning is important when idioms are dense.|True|Gist.
+T|You must understand every idiom to follow native speech.|False|Gist is enough.
+F|Let's cut to the _____ . (chase)|chase|Idiom.
+F|It's a long _____ , but let's try. (shot)|shot|Idiom.
+F|We're all in the same _____ . (boat)|boat|Idiom.
+#C1.2.c4.l1
+M|Which is a rhetorical question?|Who wouldn't want a better future for their children?|What time is it?|Where is the station?|How old are you?|Persuasive effect.
+M|Which technique appeals to shared values?|We all want safe streets for our families.|The street is long.|I live on a street.|Streets exist.|Shared values.
+M|Which is a strong but measured claim?|The evidence strongly suggests that early education pays off.|Education is perfect.|Education never works.|Education is whatever.|Measured.
+M|Persuasive speeches often use:|rhetorical questions and emotional appeals|only numbers|no structure|only jokes|Techniques.
+M|Which technique is "rule of three"?|Faster, cheaper, better|Fast|Fast and cheap|Fast or slow|Three items.
+T|Rhetorical questions are asked for effect, not for answers.|True|Persuasion.
+T|Persuasion uses no evidence.|False|It uses evidence.
+F|Who wouldn't want a better _____ ? (life / future)|life;future|Rhetorical question.
+F|We all want what is best for our _____ . (children / families)|children;families|Shared values.
+F|Education is the key to a better _____ . (future)|future|Persuasive.
+#C1.2.c4.l2
+M|"Some may say it's too expensive, but..." is used to:|anticipate and rebut an objection|apologise|greet|end a speech|Rebuttal.
+M|Which phrase introduces a rebuttal with evidence?|However, the evidence suggests otherwise.|Anyway.|Maybe.|Whatever.|Rebuttal.
+M|Anticipating counterarguments:|strengthens your argument|weakens your argument|is unnecessary|is rude|Prepares.
+M|Which rebuttal is persuasive?|While it costs money, studies show it saves more in the long run.|It's cheap.|No.|You're wrong.|Evidence-based.
+M|Which structure is best?|Objection, concession, rebuttal|Rebuttal only|Objection only|Greeting|Structure.
+T|A rebuttal answers a counterargument.|True|Response.
+T|Ignoring counterarguments makes your speech stronger.|False|Address them.
+F|Some may say it's costly; _____ , the evidence suggests otherwise. (however)|however|Rebuttal.
+F|It's true that it costs money; _____ , it saves more. (nevertheless / however)|nevertheless;however|Concession then rebuttal.
+F|Critics _____ that it is too slow. (argue / claim / say)|argue;claim;say|Objection.
+#C1.2.c4.l3
+M|A persuasive speech should begin with:|a clear position|a joke only|an apology|a question about weather|Position.
+M|A persuasive speech should end with:|a call to action|a random fact|a list of names|nothing|Call to action.
+M|Which sentence is a call to action?|Let us act now to protect our planet.|The planet is round.|Plants are green.|It rains.|Call to action.
+M|Which element answers critics?|The rebuttal|The greeting|The title|The date|Rebuttal.
+M|Which is the best order?|Position, reasons, rebuttal, conclusion|Conclusion, rebuttal, position|Rebuttal only|Random|Structure.
+T|A persuasive speech should have a clear structure.|True|Position, reasons, rebuttal, conclusion.
+T|A persuasive speech does not need a conclusion.|False|It needs one.
+F|Let us _____ now to protect our environment. (act)|act|Call to action.
+F|Some argue it is too late; _____ , we can still make a difference. (however)|however|Rebuttal.
+F|In _____ , we must act together. (conclusion)|conclusion|Ending.

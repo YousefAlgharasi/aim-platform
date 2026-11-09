@@ -14,6 +14,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AssessmentRepository } from './assessment.repository';
+import { orderOptionsForAttempt } from './attempt-question-selection';
 
 export interface DeliveredOption {
   readonly id: string;
@@ -38,6 +39,8 @@ interface QuestionRow {
   question_id: string;
   question_type: string;
   prompt: string;
+  randomize_options?: boolean;
+  has_draw?: boolean;
 }
 
 interface OptionRow {
@@ -70,23 +73,40 @@ export class QuestionDeliveryService {
     if (!attempt || attempt.student_id !== studentId) {
       throw new NotFoundException(`Assessment attempt not found`);
     }
-    return this.getQuestionsForAssessment(attempt.assessment_id);
+    return this.getQuestionsForAssessment(attempt.assessment_id, attemptId);
   }
 
-  async getQuestionsForAssessment(assessmentId: string): Promise<DeliveredQuestion[]> {
+  /**
+   * [attemptId] given: only the questions drawn for that attempt, in the attempt's order, with the
+   * answer order shuffled when the assessment's randomize_options is on. Attempts that predate random
+   * selection (no stored draw) fall back to the whole assessment in its fixed order.
+   */
+  async getQuestionsForAssessment(
+    assessmentId: string,
+    attemptId?: string,
+  ): Promise<DeliveredQuestion[]> {
     const qRes = await this.db.query<QuestionRow>(
       `SELECT
          aq.id        AS link_id,
          aq.section_id,
-         aq.\"order\"   AS link_order,
+         COALESCE(aaq.position, aq."order") AS link_order,
          q.id         AS question_id,
          q.type       AS question_type,
-         q.stem       AS prompt
+         q.stem       AS prompt,
+         COALESCE((SELECT st.randomize_options FROM assessment_settings st
+                    WHERE st.assessment_id = aq.assessment_id), true) AS randomize_options,
+         EXISTS (SELECT 1 FROM assessment_attempt_questions d WHERE d.attempt_id = $2::uuid) AS has_draw
        FROM assessment_questions aq
        JOIN question_bank q ON q.id = aq.question_id
+       LEFT JOIN assessment_attempt_questions aaq
+         ON aaq.assessment_question_link_id = aq.id AND aaq.attempt_id = $2::uuid
        WHERE aq.assessment_id = $1
-       ORDER BY aq.\"order\" ASC`,
-      [assessmentId],
+         AND (
+           NOT EXISTS (SELECT 1 FROM assessment_attempt_questions d WHERE d.attempt_id = $2::uuid)
+           OR aaq.attempt_id IS NOT NULL
+         )
+       ORDER BY COALESCE(aaq.position, aq."order") ASC`,
+      [assessmentId, attemptId ?? null],
     );
 
     if (qRes.rows.length === 0) {
@@ -103,15 +123,28 @@ export class QuestionDeliveryService {
       [questionIds],
     );
 
-    const optionsByQuestion = new Map<string, DeliveredOption[]>();
+    const rawByQuestion = new Map<string, OptionRow[]>();
     for (const o of optRes.rows) {
-      const list = optionsByQuestion.get(o.question_id) ?? [];
-      list.push({
-        id: o.id,
-        label: OPTION_LABELS[list.length] ?? String(list.length + 1),
-        text: o.text,
-      });
-      optionsByQuestion.set(o.question_id, list);
+      const list = rawByQuestion.get(o.question_id) ?? [];
+      list.push(o);
+      rawByQuestion.set(o.question_id, list);
+    }
+
+    // Order (optionally shuffled per attempt) first, THEN label A, B, C… so labels follow what is shown.
+    const optionsByQuestion = new Map<string, DeliveredOption[]>();
+    const typeById = new Map(qRes.rows.map((r) => [r.question_id, r.question_type]));
+    for (const [questionId, raw] of rawByQuestion) {
+      const ordered = orderOptionsForAttempt(
+        attemptId ?? assessmentId,
+        questionId,
+        raw,
+        !!(qRes.rows[0]?.has_draw && qRes.rows[0]?.randomize_options),
+        typeById.get(questionId) === 'true_false',
+      );
+      optionsByQuestion.set(
+        questionId,
+        ordered.map((o, i) => ({ id: o.id, label: OPTION_LABELS[i] ?? String(i + 1), text: o.text })),
+      );
     }
 
     return qRes.rows.map(q => ({

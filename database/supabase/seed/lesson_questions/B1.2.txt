@@ -1,0 +1,132 @@
+#B1.2.c1.l1
+M|I _____ TV when the lights went out.|was watching|watched|am watching|have watched|Background action in the past: past continuous.
+M|They _____ in the garden at 5 p.m. yesterday.|were playing|played|are playing|play|Action in progress at a past time: past continuous.
+M|Which is the correct form?|She was reading a book.|She were reading a book.|She was read a book.|She is reading a book yesterday.|was + -ing.
+M|Which is the correct form?|We were walking home.|We was walking home.|We were walk home.|We walking home.|were + -ing with we.
+M|The past continuous is formed with:|was/were + verb-ing|had + past participle|will + verb|have + past participle|Past continuous = was/were + -ing.
+T|"I was cooking dinner at 7 p.m." describes an action in progress at 7 p.m.|True|Past continuous.
+T|"They was sleeping" is correct.|False|Say "They were sleeping."
+F|At nine o'clock last night, I _____ my homework. (do)|was doing|Past continuous: was doing.
+F|It _____ raining when we left. (be)|was|"It was raining".
+F|The children _____ in the park at that time. (play)|were playing|Past continuous: were playing.
+#B1.2.c1.l2
+M|I _____ when the phone rang.|was sleeping|slept|am sleeping|sleep|Longer action: past continuous; the shorter action interrupts.
+M|She was cooking when he _____ .|arrived|was arriving|arrives|has arrived|The short action uses past simple.
+M|While we _____ , it started to rain.|were walking|walked|walk|have walked|Longer background action: past continuous.
+M|Which sentence is correct?|I was reading when she called.|I read when she was calling.|I was reading when she was calling.|I am reading when she called.|Longer action continuous + short action past simple.
+M|Which action is interrupted? "He was driving when the car stopped."|driving|stopped|both|neither|Driving was in progress.
+T|In "I was eating when she called," the phone call interrupted the eating.|True|Eating was in progress.
+T|We use the past continuous for short, sudden actions.|False|Short sudden actions use the past simple.
+F|I _____ a shower when the lights went out. (take)|was taking|Longer action in progress.
+F|When I opened the door, the baby _____ . (cry)|was crying|Action in progress.
+F|He fell while he _____ down the stairs. (run)|was running|Action in progress.
+#B1.2.c1.l3
+M|"It was a rainy night. I was walking home when I heard a strange noise." What was the speaker doing?|Walking home|Cooking|Sleeping|Driving|The text says "was walking home".
+M|"It was a rainy night. I was walking home when I heard a strange noise." What happened suddenly?|Heard a noise|Started to walk|Went to bed|Cooked dinner|"Heard" is the sudden action.
+M|"While she was reading, her sister came in." What was she doing?|Reading|Cooking|Sleeping|Running|Longer action: reading.
+M|Which word often introduces a long background action?|while|suddenly|then|when (before a short action)|"While" introduces an ongoing action.
+M|Which tense do we use for the main events in a story?|past simple|present perfect|future|present simple|Main events use past simple.
+T|In a story, the past continuous sets the scene.|True|It describes background.
+T|The past simple is used to describe background scenes.|False|The past continuous does.
+F|It was dark and the wind _____ strongly. (blow)|was blowing|Background scene.
+F|Suddenly, a dog _____ out of the bushes. (jump)|jumped|Sudden event: past simple.
+F|We _____ dinner when the guests arrived. (have)|were having|Action in progress.
+#B1.2.c2.l1
+M|You need this document to travel abroad.|passport|ticket|suitcase|menu|A passport is needed for international travel.
+M|The bags you take on a trip are your:|luggage|itinerary|passport|ticket|Luggage = bags.
+M|A plan that lists places and times for a trip is an:|itinerary|passport|visa|fare|An itinerary is a travel plan.
+M|You must buy this to travel by plane or train.|ticket|passport|suitcase|map|A ticket allows you to travel.
+M|A place where you stay overnight on a trip is a:|hotel|airport|passport|ticket|A hotel is accommodation.
+T|A "visa" is permission to enter a country.|True|Many countries require a visa.
+T|"Luggage" is the money you pay for a flight.|False|It is your bags.
+F|I packed my _____ and went to the airport. (luggage / suitcase)|luggage;suitcase|Both are things you pack.
+F|Don't forget your _____ at the border. (passport)|passport|It identifies you.
+F|The _____ shows where we will go each day. (itinerary)|itinerary|It's a plan of the trip.
+#B1.2.c2.l2
+M|In many countries, you should _____ your shoes before entering a house.|take off|put on|turn off|give up|In many places people remove shoes indoors.
+M|Which word means "polite behavior in society"?|etiquette|luggage|itinerary|passport|Etiquette = rules of polite behavior.
+M|A "custom" is:|a traditional way of doing something|a type of food|a flight|a ticket|Customs are traditions.
+M|Which sentence compares two cultures?|In Japan people bow, while in Spain they kiss on the cheek.|Japan is far.|Spain is nice.|People bow.|It compares greetings in two places.
+M|"It is considered rude to be late in Germany." This means:|Most Germans think lateness is impolite.|Everybody is late.|Germany is rude.|Lateness is required.|"Considered rude" describes social views.
+T|"Etiquette" refers to polite social rules.|True|Examples: table manners.
+T|All countries have exactly the same customs.|False|Customs differ.
+F|In some cultures, it is _____ to tip the waiter. (customary / usual)|customary;usual|It is normal there.
+F|It is polite to _____ your host for dinner. (thank)|thank|Showing thanks is polite.
+F|In my country, it is _____ to greet people with a handshake. (common)|common|It is a typical custom.
+#B1.2.c2.l3
+M|Announcement: "Flight BA215 to London is now boarding at gate 12." Which gate?|Gate 12|Gate 215|Gate 2|Gate 5|The announcement says gate 12.
+M|Announcement: "Flight BA215 to London is now boarding at gate 12." What is happening?|Passengers are getting on the plane.|The flight is canceled.|The flight is landing.|The gate is closed.|"Boarding" means getting on.
+M|Announcement: "Flight 330 to Madrid is delayed by one hour." What does "delayed" mean?|It will leave later than planned.|It left early.|It is canceled.|It arrives first.|Delayed = later than scheduled.
+M|Announcement: "Passengers must show their passport at check-in." Where should they show it?|At check-in|At the gate only|In the plane|At the shop|The announcement says at check-in.
+M|"Baggage claim" is where you:|collect your luggage after a flight|buy a ticket|board the plane|pass security|You pick up bags there.
+T|"Departures" is where flights leave from.|True|Departures = leaving.
+T|"Arrivals" is where passengers board planes.|False|Arrivals is where passengers land and exit.
+F|Please go to gate 7 for _____ . (boarding)|boarding|Getting on the plane.
+F|Flight 22 has been _____ because of bad weather. (canceled / cancelled)|canceled;cancelled|It will not fly.
+F|Collect your bags at the baggage _____ . (claim)|claim|Baggage claim.
+#B1.2.c3.l1
+M|You _____ wear a seatbelt in a car. It's the law.|must|can|might|may|"Must" expresses strong obligation.
+M|I _____ get up early tomorrow; I have an exam.|have to|can|may|might|"Have to" shows an external obligation.
+M|Which means "it is not necessary"?|You don't have to come.|You must not come.|You can't come.|You shouldn't come.|"Don't have to" = not necessary.
+M|Which means "it is forbidden"?|You mustn't smoke here.|You don't have to smoke here.|You can smoke here.|You might smoke here.|"Mustn't" = forbidden.
+M|Which sentence is correct?|She has to work on Saturday.|She have to work on Saturday.|She must to work on Saturday.|She has work on Saturday.|"Has to" with she.
+T|"Must not" and "don't have to" mean the same.|False|Mustn't = forbidden; don't have to = not necessary.
+T|"Must" is followed by the base form of the verb.|True|Example: "You must stop."
+F|Drivers _____ stop at a red light. (must)|must|Strong rule.
+F|We _____ to wear uniforms at school. (have)|have|"Have to".
+F|You _____ park here; it's forbidden. (mustn't)|mustn't;must not|It is not allowed.
+#B1.2.c3.l2
+M|You look tired. You _____ go to bed early.|should|must|can|might|"Should" gives advice.
+M|You _____ eat so much sugar. It's bad for you.|shouldn't|mustn't|can't|don't have to|"Shouldn't" gives negative advice.
+M|Which sentence gives advice?|You should see a doctor.|You are a doctor.|You saw a doctor.|You have a doctor.|"Should" gives advice.
+M|Which is correct?|He should study more.|He should to study more.|He shoulds study more.|He should studying more.|"Should" + base verb.
+M|"Should" is _____ than "must".|weaker|stronger|the same|more formal|"Should" is advice, "must" is obligation.
+T|"Should" is used to give advice.|True|Example: "You should rest."
+T|"You should to go" is correct.|False|Say "You should go."
+F|If you have a headache, you _____ take a rest. (should)|should|Advice.
+F|You _____ drink more water. (should)|should|Advice.
+F|He _____ watch so much TV. It's bad for his eyes. (shouldn't)|shouldn't|Negative advice.
+#B1.2.c3.l3
+M|"All employees must wear ID badges." This is:|a rule|advice|an offer|a suggestion|"Must" shows a rule.
+M|"You should take a break every hour." This is:|advice|a rule|a law|an order|"Should" gives advice.
+M|Which sentence is a workplace rule?|You must arrive before 9 a.m.|You should arrive before 9 a.m.|You can arrive before 9 a.m.|You might arrive before 9 a.m.|"Must" is a rule.
+M|Which sentence is workplace advice?|You should ask for help if you need it.|You must ask for help.|You have to ask for help.|You can't ask for help.|"Should" is advice.
+M|Which sentence expresses something not necessary?|You don't have to work on Sundays.|You mustn't work on Sundays.|You should work on Sundays.|You can't work on Sundays.|"Don't have to" = not required.
+T|"Must" is stronger than "should".|True|Must = obligation, should = advice.
+T|"You don't have to wear a tie" means ties are forbidden.|False|It means ties are optional.
+F|Employees _____ clock in at 8 a.m. It's a company rule. (must / have to)|must;have to|Rule.
+F|You _____ drink coffee all day. It isn't healthy. (shouldn't)|shouldn't|Advice.
+F|You _____ bring your lunch; there's a canteen. (don't have to)|don't have to|Not necessary.
+#B1.2.c4.l1
+M|Which phrase introduces an opinion?|In my opinion,|By the way,|Last year,|On Monday,|"In my opinion" is used for opinions.
+M|Which phrase is NOT an opinion phrase?|It is a fact that|I believe|I think|In my view|"It is a fact that" introduces facts.
+M|Which sentence expresses an opinion?|I believe that exercise is important.|Exercise is on Tuesday.|He exercises daily.|The gym is open.|"I believe" = opinion.
+M|Which sentence is correct?|I think it's a good idea.|I think it's a good ideas.|I thinks it's a good idea.|I think its a good idea.|Correct grammar.
+M|Which phrase can start a polite opinion?|From my point of view,|Shut up,|You are wrong,|Everyone knows,|"From my point of view" is neutral and polite.
+T|"I believe" and "I think" are common ways to give an opinion.|True|They are standard phrases.
+T|Opinions are always facts.|False|Opinions are personal views.
+F|_____ my opinion, homework should be shorter. (In)|In|"In my opinion".
+F|I _____ that everyone should learn a second language. (believe / think)|believe;think|Introduces an opinion.
+F|From my point of _____ , the city is too noisy. (view)|view|"From my point of view".
+#B1.2.c4.l2
+M|A: "I think cats are better than dogs." B: "I agree." What does B mean?|B has the same opinion.|B disagrees.|B is not sure.|B doesn't care.|"I agree" = same opinion.
+M|Which phrase expresses polite disagreement?|I'm not sure I agree.|You are wrong.|That's stupid.|No way.|It is soft and polite.
+M|Which phrase agrees strongly?|I completely agree.|I'm not sure.|I disagree.|Maybe not.|"Completely agree" is strong agreement.
+M|Which phrase is another way to say "I disagree" politely?|I see it differently.|I hate that.|That's wrong.|No.|It's polite.
+M|Which response agrees with "It's a beautiful day"?|That's true.|I disagree.|Not at all.|I don't think so.|"That's true" agrees.
+T|"I see it differently" is a polite way to disagree.|True|It softens the disagreement.
+T|"You're completely wrong" is the politest way to disagree.|False|It's too direct.
+F|A: Homework is useful. B: I _____ . It helps me learn. (agree)|agree|B has the same opinion.
+F|I'm _____ sure I agree with you. (not)|not|Softened disagreement.
+F|That's a good _____ , but I think differently. (point)|point|Polite way to disagree.
+#B1.2.c4.l3
+M|Ana: "I think students should wear uniforms. It makes everyone equal." Ben: "I don't agree. Uniforms stop people from expressing themselves." Who is for uniforms?|Ana|Ben|Both|Neither|Ana thinks students should wear uniforms.
+M|Ana: "I think students should wear uniforms. It makes everyone equal." Ben: "I don't agree. Uniforms stop people from expressing themselves." Why does Ben disagree?|Uniforms stop self-expression.|Uniforms are expensive.|Uniforms are old.|Uniforms are comfortable.|Ben says uniforms stop people from expressing themselves.
+M|Ana says uniforms make everyone equal. This is her:|reason|disagreement|question|joke|It supports her opinion.
+M|Which word signals disagreement?|However|Moreover|Also|In addition|"However" introduces a contrast.
+M|Ben says "I don't agree." This is:|disagreement|agreement|a question|a greeting|It rejects Ana's view.
+T|In the debate, Ana and Ben have different opinions.|True|One agrees, the other disagrees.
+T|Ben agrees that uniforms make everyone equal.|False|He disagrees.
+F|Ana: I _____ that uniforms are a good idea. (think / believe)|think;believe|Introduces opinion.
+F|Ben: I'm sorry, but I _____ agree. (don't / do not)|don't;do not|Disagreement.
+F|Uniforms make everyone _____ . (equal)|equal|From Ana's argument.

@@ -249,8 +249,14 @@ export class AssessmentFeedbackService {
            JOIN question_bank q ON q.id = aq.question_id
            LEFT JOIN assessment_attempt_answers aaa
              ON aaa.assessment_question_link_id = aq.id AND aaa.attempt_id = $2
+           LEFT JOIN assessment_attempt_questions aaq
+             ON aaq.assessment_question_link_id = aq.id AND aaq.attempt_id = $2
            WHERE aq.assessment_id = $1
-           ORDER BY aq."order" ASC`,
+             AND (
+               NOT EXISTS (SELECT 1 FROM assessment_attempt_questions d WHERE d.attempt_id = $2)
+               OR aaq.attempt_id IS NOT NULL
+             )
+           ORDER BY COALESCE(aaq.position, aq."order") ASC`,
           [attempt.assessment_id, attemptId],
         )
       : { rows: [] as ReviewQuestionRow[] };

@@ -45,6 +45,7 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
+import { pickPreferringUnseen, seededRandom, shuffled } from '../../common/random/random-selection';
 import { LessonProgressService } from '../lessons/lesson-progress.service';
 import {
   AttemptAnswerFormat,
@@ -161,6 +162,14 @@ const DIFFICULTY_BY_LABEL: Record<string, AttemptDifficultyLevel> = {
   expert: 4,
 };
 
+/**
+ * How many questions one practice session asks: at least 7 and at most 12, growing with the lesson's
+ * pool (about half of it) so bigger lessons get a longer practice. A pool smaller than this is used whole.
+ */
+export function sessionQuestionCount(poolSize: number): number {
+  return Math.min(12, Math.max(7, Math.ceil(poolSize / 2)));
+}
+
 const DEFAULT_PRESENTED_DIFFICULTY: AttemptDifficultyLevel = 2;
 
 @Injectable()
@@ -194,36 +203,137 @@ export class SessionQuestionsService {
     await this.lessonProgress.assertCourseUnlockedForLesson(studentId, lessonId);
     await this.assertPublishedLesson(lessonId);
 
-    const questionsResult = await this.db.query<QuestionRow & { created_at: string }>(
-      `SELECT DISTINCT qb.id, qb.type, qb.difficulty, qb.stem, qb.tags, qb.created_at
-         FROM lesson_skills ls
-         JOIN skills s ON s.id = ls.skill_id
-         JOIN question_skills qs ON qs.skill_id = s.id
-         JOIN question_bank qb ON qb.id = qs.question_id
-        WHERE ls.lesson_id = $1
-          AND qb.status = 'published'
-        ORDER BY qb.created_at ASC, qb.id ASC`,
-      [lessonId],
-    );
-
-    const questionIds = questionsResult.rows.map((q) => q.id);
-    const choicesByQuestion = await this.fetchChoices(questionIds);
+    const rows = await this.selectSessionQuestions(studentId, sessionId, lessonId);
+    const choicesByQuestion = await this.fetchChoices(rows.map((q) => q.id));
 
     return {
       lessonId,
-      questions: questionsResult.rows.map((q) => ({
+      questions: rows.map((q) => ({
         id: q.id,
         type: q.type,
         stem: q.stem,
         difficulty: q.difficulty,
         tags: this.extractTags(q.tags),
-        options: (choicesByQuestion.get(q.id) ?? []).map((c, index) => ({
-          id: c.id,
-          text: c.text,
-          order: c.sort_order ?? index,
-        })),
+        options: this.presentOptions(sessionId, q, choicesByQuestion.get(q.id) ?? []),
       })),
     };
+  }
+
+  /**
+   * The questions of this session, in presentation order.
+   *
+   * First call for a (session, lesson): draw a fresh random set from the lesson's pool, preferring
+   * questions this student has not answered before (then the least recently answered), and store it.
+   * Later calls (reload / resume) return the stored set so the student never sees it change mid-session.
+   */
+  private async selectSessionQuestions(
+    studentId: string,
+    sessionId: string,
+    lessonId: string,
+  ): Promise<QuestionRow[]> {
+    const stored = await this.loadStoredSessionQuestions(sessionId, lessonId);
+    if (stored.length > 0) return stored;
+
+    const pool = await this.loadLessonPool(lessonId);
+    if (pool.length === 0) return [];
+
+    const seenAt = await this.loadSeenAt(
+      studentId,
+      pool.map((q) => q.id),
+    );
+    const drawn = pickPreferringUnseen(pool, sessionQuestionCount(pool.length), seenAt);
+
+    // ON CONFLICT: two concurrent first requests must settle on the same set.
+    await this.db.query(
+      `INSERT INTO session_questions (session_id, lesson_id, question_id, position)
+       SELECT $1, $2, x.question_id, x.position
+         FROM unnest($3::uuid[], $4::int[]) AS x(question_id, position)
+       ON CONFLICT DO NOTHING`,
+      [sessionId, lessonId, drawn.map((q) => q.id), drawn.map((_, i) => i)],
+    );
+    const settled = await this.loadStoredSessionQuestions(sessionId, lessonId);
+    return settled.length > 0 ? settled : drawn;
+  }
+
+  private async loadStoredSessionQuestions(
+    sessionId: string,
+    lessonId: string,
+  ): Promise<QuestionRow[]> {
+    const result = await this.db.query<QuestionRow>(
+      `SELECT qb.id, qb.type, qb.difficulty, qb.stem, qb.tags
+         FROM session_questions sq
+         JOIN question_bank qb ON qb.id = sq.question_id
+        WHERE sq.session_id = $1 AND sq.lesson_id = $2 AND qb.status = 'published'
+        ORDER BY sq.position ASC`,
+      [sessionId, lessonId],
+    );
+    return result.rows;
+  }
+
+  /**
+   * Every published question a student can be asked in a lesson:
+   *   - the lesson's own questions (lesson_questions), plus
+   *   - skill-linked questions (lesson_skills -> question_skills) that no other lesson has claimed,
+   *     so lessons that merely share a skill do not hand each other's questions around.
+   * De-duplicated by question id and by identical stem text.
+   */
+  private async loadLessonPool(lessonId: string): Promise<QuestionRow[]> {
+    const result = await this.db.query<QuestionRow>(
+      `SELECT DISTINCT ON (lower(btrim(qb.stem)), qb.type) qb.id, qb.type, qb.difficulty, qb.stem, qb.tags
+         FROM question_bank qb
+        WHERE qb.status = 'published'
+          AND (
+            qb.id IN (SELECT lq.question_id FROM lesson_questions lq WHERE lq.lesson_id = $1)
+            OR (
+              qb.id IN (
+                SELECT qs.question_id
+                  FROM lesson_skills ls
+                  JOIN question_skills qs ON qs.skill_id = ls.skill_id
+                 WHERE ls.lesson_id = $1
+              )
+              AND NOT EXISTS (SELECT 1 FROM lesson_questions other WHERE other.question_id = qb.id)
+            )
+          )
+        ORDER BY lower(btrim(qb.stem)), qb.type, qb.id`,
+      [lessonId],
+    );
+    return result.rows;
+  }
+
+  /** question id -> last time (epoch ms) this student answered it in lesson practice. */
+  private async loadSeenAt(
+    studentId: string,
+    questionIds: readonly string[],
+  ): Promise<Map<string, number>> {
+    const result = await this.db.query<{ item_id: string; last_seen: string | Date }>(
+      `SELECT item_id, MAX(submitted_at) AS last_seen
+         FROM answers
+        WHERE student_id = $1 AND item_id = ANY($2::uuid[])
+        GROUP BY item_id`,
+      [studentId, questionIds],
+    );
+    const seen = new Map<string, number>();
+    for (const row of result.rows) {
+      seen.set(row.item_id, new Date(row.last_seen).getTime());
+    }
+    return seen;
+  }
+
+  /**
+   * Options in a per-session random order. The shuffle is seeded by session + question so a reload shows
+   * the same order, and `order` is re-numbered to the shuffled position because both clients render
+   * options sorted by `order`. True/False keeps its natural "True, False" order.
+   */
+  private presentOptions(
+    sessionId: string,
+    question: QuestionRow,
+    choices: readonly ChoiceRow[],
+  ): DeliveredSessionOption[] {
+    const ordered =
+      question.type === 'true_false'
+        ? choices
+        : shuffled(choices, seededRandom(`${sessionId}:${question.id}`));
+    return ordered.map((c, index) => ({ id: c.id, text: c.text, order: index }));
   }
 
   /**

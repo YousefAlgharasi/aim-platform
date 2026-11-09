@@ -28,6 +28,7 @@ import {
   attemptNotFound, attemptNotOwned, attemptInvalid, deadlineBlocksSubmission,
 } from './assessment-errors';
 import { resolveMaxAttempts } from './assessment-policy';
+import { drawAttemptQuestions } from './attempt-question-selection';
 
 export interface StartAttemptResult {
   readonly attemptId: string;
@@ -142,6 +143,9 @@ export class AttemptLifecycleService {
     const attempt = await this.repo.createAttempt(
       assessmentId, studentId, currentCount + 1, expiresAt,
     );
+
+    // 6. Draw this attempt's own random question set from the assessment's pool.
+    await drawAttemptQuestions(this.db, attempt.id, assessmentId, studentId);
 
     this.logger.log(`Started attempt ${attempt.id} for student ${studentId}`);
 

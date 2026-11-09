@@ -1,0 +1,166 @@
+# Format: M|stem|correct|wrong|wrong|wrong|explanation   T|statement|True or False|explanation   F|stem with _____|accepted;accepted|explanation
+#A1.1.c1.l1
+M|I _____ a student.|am|is|are|be|Use "am" only with "I".
+M|You _____ a teacher.|are|am|is|be|Use "are" with "you".
+M|She _____ from Spain.|is|am|are|be|Use "is" with he, she and it.
+M|Which sentence is correct?|We are friends.|We is friends.|We am friends.|We be friends.|"We" goes with "are".
+M|Which sentence uses "to be" correctly?|They are happy.|They is happy.|They am happy.|They be happy.|Use "are" with "they".
+T|"He are my brother" is a correct sentence.|False|"He" needs "is": "He is my brother."
+T|"I am Ana" is a correct sentence.|True|"I" goes with "am".
+F|It _____ a pen. (to be)|is|"It" goes with "is".
+F|My friends _____ in the park. (to be)|are|"Friends" is plural, so use "are".
+F|I _____ ready. (to be)|am|Use "am" with "I".
+#A1.1.c1.l2
+M|What is a good way to say your name?|My name is Sara.|My name am Sara.|I name is Sara.|Name my is Sara.|The correct pattern is "My name is ...".
+M|Which sentence tells where you are from?|I am from Brazil.|I from Brazil am.|I is from Brazil.|I are from Brazil.|Use "I am from + country".
+M|What do you say when you meet someone for the first time?|Nice to meet you.|See you later.|Good night.|Thank you very much.|"Nice to meet you" is the greeting for a first meeting.
+M|Which greeting is best in the morning?|Good morning.|Good night.|Good evening.|Good afternoon.|"Good morning" is used before noon.
+M|Which sentence is correct?|She is from Japan.|She are from Japan.|She am from Japan.|She from Japan.|"She" goes with "is".
+T|"Good night" is a greeting for the morning.|False|"Good night" is said at the end of the day.
+T|"Hello, I am Tom" is a correct introduction.|True|It uses "Hello" and "I am" correctly.
+F|Hello, my name _____ Maria. (to be)|is|"Name" is singular, so use "is".
+F|I am _____ Egypt. (from / at)|from|We say "I am from + country".
+F|Nice to _____ you. (meet / see)|meet|The phrase is "Nice to meet you".
+#A1.1.c1.l3
+M|Ali says: "Hi, I am Ali. What is your name?" What is the best answer?|Hi Ali, I am Lina.|I am fine, thank you.|Yes, I am.|It is Monday.|The question asks for a name.
+M|Lina says "Nice to meet you." What is a good reply?|Nice to meet you too.|Goodbye.|I am eight.|It is red.|We answer "Nice to meet you" with "Nice to meet you too".
+M|"Are you a new student?" Which answer is correct?|Yes, I am.|Yes, I is.|Yes, I are.|Yes, I be.|The short answer uses "I am".
+M|Which question asks for a name?|What is your name?|Where is your name?|How old is your name?|Who is name?|"What is your name?" asks for a name.
+M|Which question asks where someone is from?|Where are you from?|What are you from?|Who are you from?|When are you from?|"Where" asks about a place.
+T|When two classmates meet, they can say "Nice to meet you."|True|It is a polite first-meeting phrase.
+T|"Where are you from?" asks for a person's age.|False|It asks about the country or city, not age.
+F|A: What _____ your name? B: My name is Sam. (to be)|is|"What is your name?" is the standard question.
+F|A: _____ are you from? B: I am from Italy. (Where / Who)|Where|"Where" asks about a place.
+F|A: Are you a student? B: Yes, I _____. (to be)|am|The short answer is "Yes, I am".
+#A1.1.c2.l1
+M|This is _____ mother. (I)|my|me|I|mine|"My" is the possessive adjective for "I".
+M|Ali has a sister. _____ name is Dina. (she)|Her|His|Their|My|"Her" belongs to "she".
+M|Tom has a brother. This is _____ brother. (he)|his|her|their|its|"His" belongs to "he".
+M|We love _____ grandmother. (we)|our|my|your|their|"Our" belongs to "we".
+M|They live with _____ parents. (they)|their|his|our|her|"Their" belongs to "they".
+T|"Her" is a possessive adjective for a girl or woman.|True|"Her" shows that something belongs to a female person.
+T|"My brother is a doctor" means the brother belongs to the speaker.|True|"My" shows the speaker's family member.
+F|You are my friend. _____ name is Omar. (you)|your|"Your" belongs to "you".
+F|The boy has a dog. _____ dog is small. (he)|his|"His" belongs to "he".
+F|Sara and I love _____ family. (we)|our|"Our" belongs to "we".
+#A1.1.c2.l2
+M|"I am not" can be shortened to:|I'm not|I amn't|I isn't|I aren't|"I am not" becomes "I'm not". There is no "amn't".
+M|He _____ a teacher. He is a doctor.|isn't|aren't|am not|not|"He isn't" is the negative of "he is".
+M|They _____ at home today.|aren't|isn't|am not|doesn't|"They aren't" is the negative of "they are".
+M|Which sentence is correct?|She isn't my sister.|She aren't my sister.|She am not my sister.|She not is my sister.|"Isn't" goes with he, she and it.
+M|Which sentence is correct?|You aren't late.|You isn't late.|You am not late.|You not late.|"Aren't" goes with you, we and they.
+T|"I amn't tired" is correct English.|False|Say "I'm not tired" or "I am not tired".
+T|"We aren't students" means we are not students.|True|"Aren't" is short for "are not".
+F|My brother _____ a student. He is a teacher. (is not)|isn't;is not|"Is not" can be shortened to "isn't".
+F|The books _____ on the table. They are on the chair. (are not)|aren't;are not|"Are not" can be shortened to "aren't".
+F|I _____ hungry. I'm full. (am not)|am not;'m not;m not|Use "am not" or "I'm not" with "I".
+#A1.1.c2.l3
+M|This is my uncle. He is my father's brother. Who is he to me?|My uncle|My cousin|My grandfather|My nephew|Your father's brother is your uncle.
+M|Your uncle's daughter is your:|cousin|sister|aunt|niece|The child of your uncle or aunt is your cousin.
+M|Your mother's mother is your:|grandmother|aunt|sister|cousin|The mother of your mother is your grandmother.
+M|Which sentence is correct?|She isn't my sister, she is my cousin.|She isn't my sister, she am my cousin.|She aren't my sister, she is my cousin.|She isn't me sister, she is my cousin.|The negative "isn't" and the possessive "my" are both used correctly.
+M|Which sentence is correct?|Their names are Ben and Jo.|Their name are Ben and Jo.|Theirs names are Ben and Jo.|There names are Ben and Jo.|"Names" is plural, so use "are", and "Their" shows possession.
+T|"Parents" means mother and father.|True|Your parents are your mother and father.|
+T|"My brother is a girl" is a logical sentence.|False|A brother is a boy or man.
+F|My father's father is my _____. (grandfather / uncle)|grandfather|The father of your father is your grandfather.
+F|My mother and father are my _____. (parents / children)|parents|Mother and father together are parents.
+F|He _____ my brother. He is my cousin. (is not)|isn't;is not|Use the negative "isn't" to correct a wrong idea.
+#A1.1.c3.l1
+M|Which is correct?|a pen|an pen|a pens|an pens|"Pen" starts with a consonant sound, so use "a".
+M|Which is correct?|an apple|a apple|an apples|a apples|"Apple" starts with a vowel sound, so use "an".
+M|Which is correct?|an orange|a orange|an oranges|a oranges|"Orange" starts with a vowel sound, so use "an".
+M|Which is correct?|a book|an book|an books|a books|"Book" starts with a consonant sound, so use "a".
+M|Which is correct?|an umbrella|a umbrella|an umbrellas|a umbrellas|"Umbrella" starts with a vowel sound, so use "an".
+T|We use "an" before words that start with a vowel sound.|True|Examples: an egg, an idea, an ant.
+T|"A elephant" is correct.|False|"Elephant" starts with a vowel sound, so say "an elephant".
+F|This is _____ egg. (a / an)|an|"Egg" starts with a vowel sound.
+F|I have _____ chair. (a / an)|a|"Chair" starts with a consonant sound.
+F|She has _____ ice cream. (a / an)|an|"Ice" starts with a vowel sound.
+#A1.1.c3.l2
+M|What color is the sky on a sunny day?|blue|red|black|green|The sky is usually blue on a sunny day.
+M|What color is a banana?|yellow|purple|blue|white|A ripe banana is yellow.
+M|What color is grass?|green|red|black|pink|Grass is green.
+M|How many sides does a triangle have?|three|four|two|five|A triangle has three sides.
+M|Which shape is round?|circle|square|triangle|rectangle|A circle is round.
+T|A square has four equal sides.|True|All four sides of a square are the same length.
+T|Snow is usually black.|False|Snow is white.
+F|A ball is the shape of a _____. (circle / square)|circle|A ball is round, like a circle.
+F|Red and yellow make _____. (orange / blue)|orange|Mixing red and yellow gives orange.
+F|A door is often the shape of a _____. (rectangle / circle)|rectangle|A door is long and has four sides.
+#A1.1.c3.l3
+M|The book is _____ the table. It is on top of it.|on|in|under|between|"On" means touching the top of something.
+M|The cat is _____ the box. It is inside it.|in|on|under|next to|"In" means inside.
+M|The shoes are _____ the bed. They are below it.|under|on|in|between|"Under" means below.
+M|The bank is _____ the school and the park. It is in the middle of them.|between|under|on|in|"Between" means in the middle of two things.
+M|The lamp is _____ the sofa. They are side by side.|next to|under|in|on|"Next to" means beside.
+T|"Under the table" means below the table.|True|"Under" means below.
+T|"The pen is in the desk" means the pen is on top of the desk.|False|"In" means inside; on top is "on".
+F|The bird is _____ the tree. It is sitting on a branch inside the tree. (in / under)|in|The bird is inside the tree.
+F|Where is my bag? It is _____ the chair, on the floor. (under / on)|under|The bag is below the chair.
+F|The cinema is _____ the bank. They are side by side. (next to / in)|next to|"Next to" means beside.
+#A1.1.c4.l1
+M|I _____ up at seven o'clock every day.|wake|wakes|waking|woke|With "I" the present simple verb has no -s.
+M|She _____ breakfast at eight.|eats|eat|eating|eaten|With "she" add -s: "eats".
+M|They _____ to school by bus.|go|goes|going|gone|With "they" use the base verb "go".
+M|He _____ in an office.|works|work|working|worked|With "he" add -s: "works".
+M|Which sentence is correct?|We study English every day.|We studies English every day.|We studying English every day.|We is study English every day.|With "we" use the base verb.
+T|In the present simple, "he" and "she" take a verb with -s.|True|Example: "He plays", "she reads".
+T|"I eats lunch at noon" is correct.|False|With "I" use "eat": "I eat lunch at noon."
+F|My sister _____ to school every day. (go)|goes|"Go" becomes "goes" with "she".
+F|I _____ TV in the evening. (watch)|watch|With "I" use the base verb.
+F|Tom _____ his teeth every morning. (brush)|brushes|Verbs ending in -sh add -es.
+#A1.1.c4.l2
+M|You want to open the window. What do you ask?|Can I open the window?|I can open the window?|Can open I the window?|Do I can open the window?|The pattern is "Can I + verb ...?".
+M|Which question asks for permission?|Can I sit here?|I sit here can?|Sit can I here?|Can sit I here?|"Can I ...?" asks for permission.
+M|Which is a polite way to ask to use a pen?|Can I use your pen, please?|Give me your pen.|I use your pen.|Your pen, now.|"Can I ... please?" is polite.
+M|A student says: "Can I go to the bathroom?" What is the student doing?|Asking for permission|Giving an order|Saying goodbye|Describing a picture|The student asks if it is allowed.
+M|Which short answer means "Yes, you may"?|Yes, you can.|Yes, you do.|Yes, you are.|Yes, you have.|The answer to "Can I ...?" is "Yes, you can."
+T|After "Can I" we use the base form of the verb.|True|Example: "Can I help you?"
+T|"Can I to go home?" is correct.|False|Do not use "to" after "can": "Can I go home?"
+F|_____ I ask a question? (Can / Do)|Can|Use "Can I ...?" to ask permission.
+F|Can I _____ some water, please? (have)|have|After "Can I" use the base verb.
+F|Can I _____ the door? (close / closing)|close|After "can" use the base verb "close".
+#A1.1.c4.l3
+M|Tom: "I wake up at 6:30. I eat breakfast at 7:00. I go to school at 8:00." When does Tom eat breakfast?|At 7:00|At 6:30|At 8:00|At 9:00|The text says he eats breakfast at 7:00.
+M|Tom: "I wake up at 6:30. I eat breakfast at 7:00. I go to school at 8:00." What does Tom do first?|He wakes up.|He eats breakfast.|He goes to school.|He sleeps.|He wakes up at 6:30, before everything else.
+M|Anna: "I work from nine to five. I eat lunch at noon." When does Anna eat lunch?|At noon|At nine|At five|At night|"Noon" is twelve o'clock.
+M|Anna: "I work from nine to five." How long does Anna work?|Eight hours|Five hours|Nine hours|Four hours|From nine to five is eight hours.
+M|Ben: "I play football on Saturday. I rest on Sunday." What does Ben do on Sunday?|He rests.|He plays football.|He goes to school.|He works.|He rests on Sunday.
+T|A daily schedule shows what you do at different times of the day.|True|It lists activities and times.
+T|"At 7:00" is a time expression.|True|"At" + time tells when something happens.
+F|Mia gets up _____ six o'clock. (at / on)|at|Use "at" with clock times.
+F|We have lunch _____ noon. (at / in)|at|Use "at" with "noon".
+F|Sam goes to bed _____ 10:00 p.m. (at / on)|at|Use "at" with clock times.
+#A1.1.c5.l1
+M|Which number is 20 + 1?|twenty-one|twelve|twenty-two|two-one|21 is "twenty-one".
+M|Which number is 40?|forty|fourteen|fifty|four|"Forty" is 40. Note the spelling: no "u" in "forty".
+M|What number comes after thirty-nine?|forty|thirty-ten|fifty|thirteen|After 39 comes 40.
+M|Which is the biggest number?|one hundred|ninety|eighty|seventy|100 is bigger than 90, 80 and 70.
+M|Which number is 15?|fifteen|fifty|fourteen|five|"Fifteen" is 15; "fifty" is 50.
+T|"Thirteen" and "thirty" are the same number.|False|Thirteen is 13 and thirty is 30.
+T|50 is "fifty".|True|"Fifty" is the word for 50.
+F|Write the word for 60 (s...): s_____|sixty|60 is "sixty".
+F|10, 20, 30, _____ . (Write the word for 40)|forty|Counting by tens: ten, twenty, thirty, forty.
+F|90 is _____. (Write the word)|ninety|90 is "ninety".
+#A1.1.c5.l2
+M|Which one is a drink?|water|bread|rice|apple|Water is a drink.
+M|Which one is a food made from flour?|bread|milk|coffee|water|Bread is made from flour.
+M|Which one is a fruit?|banana|rice|milk|bread|A banana is a fruit.
+M|What do we usually drink in the morning to wake up?|coffee|rice|bread|soup|Many people drink coffee in the morning.
+M|Which word means "white drink from cows"?|milk|juice|tea|coffee|Milk comes from cows.
+T|Rice is a drink.|False|Rice is a food.
+T|Carrots and potatoes are vegetables.|True|They grow in the ground and are vegetables.
+F|An apple is a _____. (fruit / drink)|fruit|Apples are fruit.
+F|I eat _____ and vegetables every day. (fruit / water)|fruit|"Fruit" is the food that goes with "vegetables".
+F|I drink a glass of _____ every morning. (milk / bread)|milk|You drink milk; you eat bread.
+#A1.1.c5.l3
+M|Which word is spelled correctly?|friend|freind|frend|friand|The correct spelling is "friend".
+M|Which sentence starts correctly?|My name is Anna.|my name is Anna.|my Name is Anna.|My name is anna.|A sentence starts with a capital letter, and names have capitals too.
+M|Which sentence ends correctly?|I like apples.|I like apples|I like apples,|I like apples:|A statement ends with a full stop.
+M|Which word is spelled correctly?|because|becouse|becuase|becase|The correct spelling is "because".
+M|Which is the correct way to write the number 14 as a word?|fourteen|forteen|fourten|fouteen|The correct spelling is "fourteen".
+T|The word "I" is always written with a capital letter.|True|"I" is always a capital letter in English.
+T|Names of people start with a small letter.|False|Names start with a capital letter.
+F|Copy the word: tea_ _ _ _ (teacher)|teacher|The word is "teacher".
+F|Write the missing letter: b_ok (a word for something you read)|o|The word is "book".
+F|Copy the word: s_ _ _ _ l (a place to learn)|school|The word is "school".

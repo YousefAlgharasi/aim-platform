@@ -18,7 +18,7 @@ import { AssessmentRepository } from './assessment.repository';
 import { AssessmentDeadlineService, DeadlineStatusResult } from './assessment-deadline.service';
 import { isChapterLessonsComplete, isCourseChaptersComplete } from './assessment-chapter-gate.util';
 import { AssessmentErrorCode } from './assessment-errors';
-import { resolveMaxAttempts } from './assessment-policy';
+import { resolveMaxAttempts, resolveQuestionsPerAttempt } from './assessment-policy';
 
 // Inlined until P10-020 merges
 type DeadlineStatus = 'upcoming' | 'open' | 'closed' | 'missed' | 'late' | 'extended' | 'expired';
@@ -171,8 +171,8 @@ export class AssessmentService {
     const sections = await this.repo.findSectionsByAssessment(assessmentId);
     const countMap = await this.repo.countQuestionsPerSection(assessmentId);
 
-    const settings = await this.db.query<{ max_attempts: number; time_limit_seconds: number | null }>(
-      `SELECT max_attempts, time_limit_seconds FROM assessment_settings WHERE assessment_id = $1`,
+    const settings = await this.db.query<{ max_attempts: number; time_limit_seconds: number | null; questions_per_attempt: number | null }>(
+      `SELECT max_attempts, time_limit_seconds, questions_per_attempt FROM assessment_settings WHERE assessment_id = $1`,
       [assessmentId],
     );
     const s = settings.rows[0];
@@ -194,6 +194,11 @@ export class AssessmentService {
       ),
     ]);
 
+    const totalQuestions = Math.min(
+      parseInt(questionCount.rows[0]?.count ?? '0', 10),
+      resolveQuestionsPerAttempt(assessment.type, s?.questions_per_attempt),
+    );
+
     const blockedReason = await this.resolveStartBlock(
       assessment, studentId, attemptsUsed, maxAttempts, activeAttempt !== null,
     );
@@ -205,10 +210,10 @@ export class AssessmentService {
       title: assessment.title, description: assessment.description,
       sections: sections.map((sec) => ({
         id: sec.id, title: sec.title, order: sec.order,
-        questionCount: countMap.get(sec.id) ?? 0,
+        questionCount: Math.min(countMap.get(sec.id) ?? 0, totalQuestions),
         // weight is NOT included here — backend-only
       })),
-      questionCount: parseInt(questionCount.rows[0]?.count ?? '0', 10),
+      questionCount: totalQuestions,
       maxAttempts,
       timeLimitSeconds: s?.time_limit_seconds ?? null,
       attemptsUsed,

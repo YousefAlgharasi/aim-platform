@@ -1,0 +1,132 @@
+#C1.1.c1.l1
+M|Never _____ such a beautiful sunset.|have I seen|I have seen|I saw|did I saw|Negative adverbial at the start → inversion.
+M|Rarely _____ she complain about work.|does|she does|do|is|Inversion with auxiliary.
+M|Under no circumstances _____ you open this door.|should|you should|are|do|Inversion after negative adverbial.
+M|Which sentence is correct?|Hardly had we arrived when it started to rain.|Hardly we had arrived when it started to rain.|Hardly had arrived we when it started to rain.|Hardly we arrived when it started to rain.|"Hardly had + subject + past participle".
+M|Which sentence is an example of inversion?|Little did he know the truth.|He did little know the truth.|He knew little the truth.|Little he knew did the truth.|Auxiliary before subject.
+T|Inversion puts the auxiliary verb before the subject.|True|Example: "Never have I felt ..."
+T|"Never I have felt so happy" is correct.|False|Use "Never have I felt so happy".
+F|Seldom _____ we eat out. (do)|do|Inversion.
+F|Not until yesterday _____ I realize the truth. (did)|did|Inversion.
+F|No sooner had we left _____ it started raining. (than)|than|"No sooner ... than".
+#C1.1.c1.l2
+M|Not only _____ she win the race, but she also broke the record.|did|does|was|has|Inversion after "not only".
+M|Not only is he intelligent, _____ he is also kind.|but|and|so|because|"Not only ... but also".
+M|Which sentence is correct?|Not only did he forget, but he also lied.|Not only he forgot, but he also lied.|Not only forgot he, but also lied.|Not only did he forgot, but he also lied.|Inversion + base verb.
+M|Which phrase has the same meaning as "Not only A but also B"?|Both A and B|Neither A nor B|Either A or B|A instead of B|Addition.
+M|Which sentence is emphatic?|Not only was the food great, but the service was excellent too.|The food was great and the service was good.|The food and service were fine.|It was nice.|Inverted emphasis.
+T|After "Not only" at the start of a sentence, the auxiliary comes before the subject.|True|Inversion.
+T|"Not only she sings, but also dances" is the standard formal form.|False|Use "Not only does she sing, but she also dances."
+F|Not only _____ he late, but he also forgot the documents. (be — was)|was|Inversion.
+F|Not only _____ the company lose money, but it also lost clients. (did)|did|Inversion.
+F|Not only has she finished, _____ she has also checked it twice. (but)|but|Not only ... but.
+#C1.1.c1.l3
+M|Which sentence uses a cleft structure?|It was John who called me.|John called me.|John, calling me.|Calling me was John.|"It was ... who".
+M|Which sentence is emphatic with "do"?|I do care about you.|I care about you.|I am caring about you.|I will care about you.|Emphatic "do".
+M|"She did warn us" means:|She really warned us.|She didn't warn us.|She may warn us.|She was warned.|Emphatic.
+M|Which is a cleft sentence emphasizing the place?|It was in Paris that we met.|We met in Paris.|In Paris we met.|Paris was where met.|It was ... that.
+M|Which sentence emphasises the reason?|It was because of the rain that we stayed in.|We stayed in because of rain.|The rain made us stay.|Rain, we stayed.|Cleft.
+T|"It was Maria who solved the problem" focuses on Maria.|True|Cleft sentence.
+T|Emphatic "do" can be used in negative sentences.|False|It's used in positive sentences.
+F|I _____ love this song! (do)|do|Emphatic.
+F|It was my sister _____ called me yesterday. (who)|who;that|Cleft.
+F|It was last year _____ we moved here. (that / when)|that;when|Cleft.
+#C1.1.c2.l1
+M|"You hit the nail on the head" means:|You were exactly right.|You were wrong.|You broke something.|You worked hard.|Idiom for accuracy.
+M|"Once in a blue moon" means:|very rarely|every day|often|never|Rarely.
+M|"To cut corners" means:|to do something in the cheapest or quickest way, often badly|to build a corner|to cut paper|to save time wisely|Idiom.
+M|"It's a piece of cake" means:|It's very easy.|It's delicious.|It's expensive.|It's small.|Easy.
+M|"Break the ice" means:|start a conversation in a social situation|break something frozen|stop talking|make a mistake|Start conversation.
+T|"Once in a blue moon" means "very often".|False|Very rarely.
+T|"Hit the nail on the head" means to describe something exactly right.|True|Accurate.
+F|We only see each other once in a _____ moon. (blue)|blue|Idiom.
+F|She really hit the _____ on the head with her answer. (nail)|nail|Idiom.
+F|The builders _____ corners and the roof leaked. (cut)|cut|Idiom.
+#C1.1.c2.l2
+M|Which is the natural collocation?|make a decision|do a decision|take a decision up|create a decision|"Make a decision".
+M|Which is the natural collocation?|heavy rain|strong rain|big rain|tall rain|"Heavy rain".
+M|Which is the natural collocation?|strong coffee|heavy coffee|big coffee|tall coffee|"Strong coffee".
+M|Which is the natural collocation?|do homework|make homework|take homework|have homework out|"Do homework".
+M|Which is the natural collocation?|take a risk|make a risk|do a risk|have a risk out|"Take a risk".
+T|"Do" and "make" are used with different nouns.|True|Collocations.
+T|"Strong rain" is the most natural collocation.|False|"Heavy rain".
+F|She wants to _____ a difference in the world. (make)|make|Collocation.
+F|He _____ a mistake in the report. (made)|made|Collocation.
+F|We need to _____ a break. (take)|take|Collocation.
+#C1.1.c2.l3
+M|"It's raining cats and dogs." means:|It's raining very hard.|Animals are falling.|It's a light drizzle.|It stopped raining.|Idiom.
+M|"I'm under the weather" means:|I feel ill.|I'm outside.|I'm happy.|I'm cold.|Idiom.
+M|"Let's call it a day" means:|Let's stop working.|Let's phone him.|Let's start again.|Let's plan a day.|Idiom.
+M|Which context helps you guess an idiom?|The sentences around it|The font|The page number|The speaker's name|Context.
+M|"A: Did you pass? B: Barely. It was a close call." What does "a close call" mean?|A narrow escape|A phone call|An easy test|A failure|Idiom.
+T|You can often guess an idiom from the context.|True|Context clues.
+T|Idioms should always be interpreted literally.|False|They're figurative.
+F|I can't come. I'm feeling a bit under the _____ . (weather)|weather|Idiom.
+F|It's late. Let's call it a _____ . (day)|day|Idiom.
+F|It was a close _____ , but we made the train. (call)|call|Idiom.
+#C1.1.c3.l1
+M|Which sentence is more academic?|It is widely believed that exercise improves health.|I think exercise is good.|Exercise is good, I think.|Everybody says exercise is great.|Impersonal.
+M|Which phrase is impersonal?|It can be argued that|I think that|I feel that|You know that|Impersonal.
+M|Which phrase is less suitable for academic writing?|I reckon|It is suggested|The results indicate|Evidence suggests|Informal.
+M|Rewrite: "I think the plan failed." (impersonal)|It appears that the plan failed.|I believe the plan failed.|The plan failed, I think.|My view is it failed.|Impersonal.
+M|Why is impersonal style used in academic writing?|It sounds objective.|It is shorter.|It is more friendly.|It is required in speaking.|Objectivity.
+T|Academic writing often avoids "I think".|True|More objective.
+T|Academic writing should include slang.|False|Use formal register.
+F|_____ is often argued that technology isolates people. (It)|It|Impersonal.
+F|This _____ that further research is necessary. (suggests)|suggests|Impersonal.
+F|It is _____ known that sleep affects memory. (well / widely)|well;widely|Formal.
+#C1.1.c3.l2
+M|Which sentence is hedged?|Technology may contribute to isolation.|Technology causes isolation.|Technology is isolation.|Technology isolates everyone.|"May" hedges.
+M|Which phrase hedges a claim?|tends to|always|never|definitely|Hedge.
+M|Which phrase is a hedge?|arguably|certainly|undoubtedly|obviously|Hedge.
+M|"To some extent" means:|partly|completely|never|always|Partly.
+M|Why do we hedge claims?|To avoid overgeneralising|To sound confident|To lengthen text|To avoid evidence|Careful.
+T|"Tends to" is a hedging expression.|True|Softens.
+T|"Always" is a hedging expression.|False|It's absolute.
+F|Social media _____ to reduce face-to-face contact. (tends)|tends|Hedge.
+F|This is, _____ , the best approach. (arguably)|arguably|Hedge.
+F|The results _____ that the method is effective. (suggest)|suggest|Hedge.
+#C1.1.c3.l3
+M|Which sentence is best in a formal academic paragraph?|It could be argued that urbanisation has contributed to stress.|Cities are stressful, I guess.|Cities, stress is high.|People hate cities.|Hedged and impersonal.
+M|Which is the best topic sentence?|Urbanisation may have a significant impact on mental health.|I want to talk about cities.|Cities are cool.|Mental health is bad.|Clear, formal topic sentence.
+M|Which supporting sentence is best?|Studies suggest that noise levels in cities tend to increase stress.|Noise is annoying.|I hate noise.|Noise exists.|Evidence + hedge.
+M|Which linking phrase suits a formal paragraph?|Furthermore,|Plus,|Also,|And then,|Formal.
+M|Which concluding sentence is best?|Therefore, it appears that urban planning should prioritise quiet spaces.|So yeah, quiet spaces.|I think quiet is good.|Quiet.|Formal, hedged.
+T|A formal paragraph should have a clear topic sentence.|True|Main idea.
+T|Hedging reduces the quality of a formal paragraph.|False|It improves precision.
+F|It is _____ that urbanisation affects well-being. (argued)|argued|Impersonal.
+F|This may _____ to higher stress levels. (lead)|lead|Hedge.
+F|_____ , further research is needed. (Therefore)|Therefore|Formal link.
+#C1.1.c4.l1
+M|_____ you need any help, please contact us.|Should|Would|Might|Did|Inverted first conditional: Should you need...
+M|_____ I to accept the offer, I would move abroad.|Were|Had|Should|Did|Inverted second conditional: Were I to...
+M|Which sentence is a formal inverted conditional?|Should you require assistance, please call.|If you require assistance, call.|You require assistance, so call.|Assistance, call.|"Should you" replaces "If you".
+M|"Were I to leave, I would miss you" means:|If I left, I would miss you.|I left.|I will leave.|I didn't leave.|Hypothetical.
+M|Which is correct?|Should anything go wrong, call me.|Should anything goes wrong, call me.|Should anything went wrong, call me.|Should anything going wrong, call me.|Base verb.
+T|"Should you need help" is a formal alternative to "If you need help".|True|Formal inversion.
+T|"Were I to" is used for real future plans.|False|It's hypothetical.
+F|_____ you require further information, please contact us. (Should)|Should|Inversion.
+F|_____ I to win the lottery, I would travel. (Were)|Were|Inversion.
+F|Should you _____ any questions, ask me. (have)|have|Base verb.
+#C1.1.c4.l2
+M|_____ it not been for your help, I would have failed.|Had|Would|If|Were|"Had it not been for".
+M|_____ I known, I would have called you.|Had|Would|Were|Should|"Had I known".
+M|Which sentence is correct?|Had she studied, she would have passed.|Had she studies, she would have passed.|Had she study, she would have passed.|Had studied she, she would have passed.|Past participle.
+M|"Had it not been for the rain" means:|If it hadn't been for the rain|If it isn't for the rain|Because of the rain|Although the rain|Condition.
+M|Inversion in third conditionals is:|formal|informal|slang|not allowed|Formal.
+T|"Had I known" means "If I had known".|True|Inverted third conditional.
+T|"Had I know" is correct.|False|"Had I known".
+F|_____ they left earlier, they would have caught the train. (Had)|Had|Inversion.
+F|Had it _____ been for his advice, I would have made a mistake. (not)|not|"Had it not been for".
+F|Had we _____ the risks, we would never have agreed. (known)|known|Past participle.
+#C1.1.c4.l3
+M|Which is the best formal opening for a letter?|Should you require any further information, please do not hesitate to contact us.|If you want info, call us.|Info, call us.|Ask us.|Formal.
+M|Which sentence is the most formal?|Were the proposal to be accepted, we would proceed immediately.|If they accept the proposal, we proceed.|If the proposal accepted, we go.|Accept, we proceed.|Inverted.
+M|Which sentence expresses regret formally?|Had we anticipated the delay, we would have informed you.|If we anticipated the delay, we informed you.|We didn't tell you.|Delay.|Formal third conditional.
+M|Which phrase can start a formal reflective piece?|Had I known then what I know now,|If I knew,|When I knew,|I know,|Reflective.
+M|Which complex conditional is appropriate in formal writing?|Should circumstances change, we will notify you.|If it change, we tell.|If change, notify.|Circumstances change.|Formal.
+T|Inverted conditionals add formality.|True|Formal tone.
+T|Inverted conditionals are common in casual speech.|False|They're formal.
+F|_____ you require assistance, please contact the office. (Should)|Should|Inversion.
+F|_____ it not been for the storm, we would have arrived on time. (Had)|Had|Inversion.
+F|_____ the proposal to be rejected, we would reconsider. (Were)|Were|Inversion.

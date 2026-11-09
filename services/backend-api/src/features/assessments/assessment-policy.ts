@@ -23,3 +23,32 @@ export function resolveMaxAttempts(type: string, configured: number | null | und
   if (typeof configured === 'number' && configured >= 1) return configured;
   return DEFAULT_MAX_ATTEMPTS[type] ?? FALLBACK_MAX_ATTEMPTS;
 }
+
+/**
+ * How many questions one attempt draws from the assessment's pool when no questions_per_attempt is
+ * configured. A pool smaller than this is used whole. Quizzes stay short; final exams are longer.
+ */
+const DEFAULT_QUESTIONS_PER_ATTEMPT: Record<string, number> = {
+  quiz: 10,
+  exam: 25,
+};
+
+const FALLBACK_QUESTIONS_PER_ATTEMPT = 10;
+
+export function resolveQuestionsPerAttempt(type: string, configured: number | null | undefined): number {
+  if (typeof configured === 'number' && configured >= 1) return configured;
+  return DEFAULT_QUESTIONS_PER_ATTEMPT[type] ?? FALLBACK_QUESTIONS_PER_ATTEMPT;
+}
+
+/**
+ * Question and answer order are randomised per attempt unless an admin explicitly turned it off on the
+ * assessment's settings row. No settings row = randomised.
+ */
+export function resolveRandomization(
+  settings: { randomize_questions?: boolean | null; randomize_options?: boolean | null } | undefined,
+): { questions: boolean; options: boolean } {
+  return {
+    questions: settings?.randomize_questions ?? true,
+    options: settings?.randomize_options ?? true,
+  };
+}

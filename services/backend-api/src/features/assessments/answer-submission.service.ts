@@ -80,6 +80,17 @@ export class AnswerSubmissionService {
       throw new BadRequestException('QUESTION_NOT_IN_ASSESSMENT');
     }
 
+    // 2b. When the attempt has its own random draw, the question must be one it was dealt.
+    const dealt = await this.db.query<{ in_draw: boolean; has_draw: boolean }>(
+      `SELECT EXISTS (SELECT 1 FROM assessment_attempt_questions
+                       WHERE attempt_id = $1 AND assessment_question_link_id = $2) AS in_draw,
+              EXISTS (SELECT 1 FROM assessment_attempt_questions WHERE attempt_id = $1) AS has_draw`,
+      [input.attemptId, input.assessmentQuestionLinkId],
+    );
+    if (dealt.rows[0]?.has_draw && !dealt.rows[0].in_draw) {
+      throw new BadRequestException('QUESTION_NOT_IN_ATTEMPT');
+    }
+
     // 3. Validate responseValue — non-empty, no correctness fields injected.
     if (!input.responseValue?.trim()) {
       throw new BadRequestException('responseValue must not be empty');

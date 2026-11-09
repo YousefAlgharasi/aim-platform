@@ -1,0 +1,132 @@
+#A2.2.c1.l1
+M|We use our eyes to:|see|hear|smell|taste|Eyes are for seeing.
+M|We use our ears to:|hear|see|smell|walk|Ears are for hearing.
+M|Which part of the body do we use to walk?|legs|arms|ears|eyes|We walk with our legs.
+M|Which body part is in the middle of the body and holds food?|stomach|head|hand|foot|The stomach is in the middle of the body.
+M|Which body part do we use to write?|hand|foot|knee|ear|We write with our hand.
+T|A person has two arms.|True|Most people have two arms.
+T|We hear with our nose.|False|We smell with our nose and hear with our ears.
+F|We smell with our _____. (nose)|nose|The nose is for smelling.
+F|We put shoes on our _____. (feet)|feet|Shoes go on the feet.
+F|The _____ is on top of the body. (head)|head|The head is at the top.
+#A2.2.c1.l2
+M|You have a pain in your head. You say:|I have a headache.|I have a stomach.|I have a fever head.|I am headache.|"Have a headache" is correct.
+M|Your body is very hot and you feel unwell. You may have:|a fever|a bag|an umbrella|a shoe|A fever means a high body temperature.
+M|You are sneezing and have a runny nose. You have:|a cold|a stomachache|a toothache|a backache|Sneezing and runny nose are signs of a cold.
+M|Which sentence is correct?|I have a sore throat.|I am a sore throat.|I has a sore throat.|I have sore throat a.|"Have" goes with "I".
+M|Which sentence is correct?|She has a stomachache.|She have a stomachache.|She is a stomachache.|She has stomachache a.|"Has" goes with "she".
+T|"I have a toothache" means my tooth hurts.|True|"Ache" means pain.
+T|"He have a cold" is correct.|False|Say "He has a cold."
+F|My head hurts. I have a _____. (headache)|headache|Pain in the head is a headache.
+F|She is sick. She _____ a fever. (has)|has|"She" goes with "has".
+F|My tooth hurts. I have a _____. (toothache)|toothache|Pain in a tooth is a toothache.
+#A2.2.c1.l3
+M|Doctor: "What's the matter?" Patient: "I have a bad cough and a sore throat." What are the patient's symptoms?|A cough and a sore throat|A headache and a fever|A broken arm|A toothache|Those are the symptoms the patient lists.
+M|Doctor: "You should rest and drink a lot of water." What advice does the doctor give?|Rest and drink water|Run every day|Eat a lot of sugar|Go to work|The doctor says rest and drink water.
+M|Doctor: "Take this medicine twice a day." How often should the patient take the medicine?|Two times a day|Once a week|Every hour|Three times a day|"Twice" means two times.
+M|Which question does a doctor ask a patient?|What's the matter?|What's the weather?|Where is the bank?|How much is it?|It asks about the patient's problem.
+M|"How long have you felt like this?" asks about:|the time the problem started|the patient's age|the doctor's name|the weather|It asks about duration.
+T|"What's the matter?" is a way to ask what the problem is.|True|It means "What's wrong?"
+T|A doctor usually works in a bank.|False|A doctor works in a clinic or hospital.
+F|I don't feel well. I have a _____. (cough / fever)|cough;fever|Either is a possible symptom.
+F|You should drink lots of _____ . (water)|water|Doctors often advise drinking water.
+F|Take the medicine _____ a day. (twice)|twice|"Twice a day" means two times.
+#A2.2.c2.l1
+M|An elephant is _____ than a dog.|bigger|big|biggest|more big|One-syllable adjective + -er: bigger.
+M|A cheetah is _____ than a horse.|faster|fast|fastest|more fast|Short adjective + -er: faster.
+M|This book is _____ than that one.|more interesting|interestinger|most interesting|more interest|Long adjectives use "more".
+M|Which sentence is correct?|My bag is heavier than yours.|My bag is more heavy than yours.|My bag is heavy than yours.|My bag is heavyer than yours.|y → -ier: heavier.
+M|Which sentence is correct?|Tom is taller than Sam.|Tom is taller that Sam.|Tom is tall than Sam.|Tom is more tall than Sam.|Comparatives use "than".
+T|We use "than" after a comparative adjective.|True|Example: "taller than".
+T|"More beautiful" is the comparative of "beautiful".|True|Long adjectives use "more".
+F|Winter is _____ than autumn. (cold)|colder|Short adjective + -er: colder.
+F|A car is _____ than a bicycle. (fast)|faster|Short adjective + -er: faster.
+F|Math is _____ than history for me. (difficult)|more difficult|Long adjectives use "more".
+#A2.2.c2.l2
+M|Mount Everest is _____ mountain in the world.|the highest|higher|the higher|the most high|Superlative: the + adjective + -est.
+M|She is _____ student in the class.|the best|the better|the goodest|the most good|"Good" has an irregular superlative: best.
+M|This is _____ interesting book I have read.|the most|the more|the much|more|Long adjectives use "the most".
+M|Which sentence is correct?|It is the biggest city in the country.|It is the most big city in the country.|It is the bigger city in the country.|It is biggest city in the country.|Superlative: the biggest.
+M|What is the superlative of "bad"?|worst|baddest|worse|most bad|"Bad" has an irregular superlative: worst.
+T|We use "the" before a superlative adjective.|True|Example: the tallest.
+T|"The most tall" is the superlative of "tall".|False|The superlative is "the tallest".
+F|Russia is _____ country in the world. (big)|the biggest|Short adjective: the + biggest.
+F|January is _____ month of the year. (cold, in the north)|the coldest|Short adjective: the + coldest.
+F|This is _____ delicious cake I have ever eaten. (the most)|the most|Long adjective: the most delicious.
+#A2.2.c2.l3
+M|Tokyo is bigger than London. Cairo is bigger than London, but Tokyo is the biggest. Which city is the smallest?|London|Tokyo|Cairo|Not stated|London is smaller than both of the other two cities.
+M|Which sentence correctly compares two cities?|My city is quieter than the capital.|My city is quiet than the capital.|My city is the quieter than the capital.|My city is more quiet the capital.|Comparative + than.
+M|Which sentence correctly describes the best place in a group?|It is the most beautiful beach in the country.|It is more beautiful beach in the country.|It is the most beautiful than other beaches.|It is the beautiful beach in the country.|Superlative: the most + adjective.
+M|"The city is bigger than the village, but the capital is the biggest." How many places are compared?|Three|Two|One|Four|City, village and capital.
+M|Which word often follows a comparative?|than|the|of|an|Comparatives are followed by "than".
+T|"Cheaper" is a comparative.|True|Cheap + -er.
+T|"The cheapest" is a comparative.|False|It is a superlative.
+F|Public transport is _____ than taxis. (cheap)|cheaper|Short adjective + -er.
+F|The metro is _____ way to travel in my city. (the fastest)|the fastest|Short adjective superlative: the fastest.
+F|This street is _____ than that one. (noisy)|noisier|y → -ier.
+#A2.2.c3.l1
+M|On a menu, which part is the first course?|starter|dessert|bill|tip|The starter is the first course.
+M|Which part of a meal is sweet and usually last?|dessert|starter|main course|soup|Dessert is sweet and comes last.
+M|The main dish of a meal is called the:|main course|starter|dessert|snack|The main course is the biggest dish.
+M|Prices on a menu tell you:|how much each dish costs|which chef cooked it|the weather|the time|Prices show costs.
+M|A vegetarian dish has:|no meat|only meat|only fish|no vegetables|Vegetarians do not eat meat.
+T|A menu lists the food and drinks a restaurant serves.|True|A menu is a list of food.
+T|Dessert is usually served before the main course.|False|Dessert is usually served last.
+F|I'd like a salad as a _____. (starter)|starter|Salad is often a starter.
+F|The _____ shows what you have to pay. (bill)|bill|The bill shows the total price.
+F|For _____, I'll have chocolate cake. (dessert)|dessert|Cake is a dessert.
+#A2.2.c3.l2
+M|The waiter asks, "Are you ready to order?" A polite answer is:|Yes, I'll have the soup, please.|Yes, I'm a soup.|The soup, me.|I'll have soup the.|"I'll have ..." is a polite order.
+M|You want to see the menu. You say:|Could we see the menu, please?|Menu give me.|I menu now.|See menu we.|"Could we...?" is polite.
+M|At the end of the meal you ask for the bill with:|Could we get the bill, please?|Bill me.|I bill the waiter.|Bill, now.|It is polite and correct.
+M|Which phrase offers a choice of drinks?|Would you like tea or coffee?|Tea you like?|You tea coffee?|Drink to you?|"Would you like ... or ...?" offers a choice.
+M|"I'll have the chicken, please." What does the speaker do?|Orders a dish|Asks for the bill|Complains|Says goodbye|"I'll have ..." is an order.
+T|"Could we get the bill?" is a polite way to ask for the bill.|True|"Could we ...?" is polite.
+T|"Give me the menu" is the politest way to ask for it.|False|"Could we see the menu, please?" is more polite.
+F|I'll _____ the fish and chips, please. (have)|have|"I'll have" is a common ordering phrase.
+F|Could we _____ the menu, please? (see)|see|"Could we see the menu?"
+F|Could we get the _____ , please? We are ready to pay. (bill)|bill|The bill is the paper with the total.
+#A2.2.c3.l3
+M|Waiter: "Are you ready to order?" Man: "I'll have the soup." Woman: "And I'll have the fish." What does the man order?|Soup|Fish|Pizza|Salad|The man orders soup.
+M|Man: "I'll have the soup." Woman: "I'll have the fish and a glass of water." What does the woman drink?|Water|Juice|Coffee|Tea|She orders a glass of water.
+M|Waiter: "Would you like dessert?" Man: "No, thank you. Just the bill." What does the man want?|The bill|Dessert|Another drink|The menu|He says "just the bill".
+M|Waiter: "Is everything OK?" Woman: "Yes, it's delicious." How does the woman feel about the food?|She likes it.|She doesn't like it.|She is angry.|She is hungry.|"Delicious" is very positive.
+M|Who takes the order at a restaurant?|the waiter|the doctor|the driver|the teacher|A waiter takes orders.
+T|The couple ordered fish and soup in the dialogue.|True|The man had soup and the woman had fish.
+T|The man ordered dessert in the dialogue.|False|He said "No, thank you."
+F|Waiter: Are you ready to _____ ? (order)|order|"Ready to order?" is a standard question.
+F|Man: Could we have the _____ , please? (bill)|bill|The bill is at the end of the meal.
+F|Woman: The soup is _____ . It's very tasty. (delicious)|delicious|"Delicious" means very tasty.
+#A2.2.c4.l1
+M|"Go past the bank and turn left at the corner." What should you do first?|Go past the bank|Turn left|Stop at the corner|Enter the bank|The first instruction is "Go past the bank".
+M|"Walk two blocks" means:|Walk past two street sections|Walk for two hours|Walk to block two|Walk two kilometers|A block is the section of street between two crossings.
+M|"It's at the corner of Main Street and Park Avenue." The place is:|where the two streets meet|far from both streets|inside a park|on a different street|"Corner of" means where the streets meet.
+M|Which phrase means "on the opposite side"?|across from|next to|behind|between|"Across from" means opposite.
+M|Which direction phrase is for going beyond a place?|past|until|beside|under|"Go past" means go beyond.
+T|"Go straight for three blocks" means to keep walking in the same direction.|True|"Straight" means no turns.
+T|"Past the school" means "before the school".|False|It means "beyond the school".
+F|Go _____ the bank, then turn right. (past)|past|"Go past" means go beyond.
+F|Walk two _____ and turn left. (blocks)|blocks|A block is a section of street.
+F|The cafe is _____ from the library. It's on the other side. (across)|across|"Across from" means opposite.
+#A2.2.c4.l2
+M|On a map, "north" is usually:|at the top|at the bottom|on the left|on the right|North is usually at the top.
+M|If you walk from the station to the park, going east then north, you first walk to the:|east|west|south|north|The route says east first.
+M|Which tool shows streets, buildings and parks?|a map|a clock|a ticket|a menu|Maps show places.
+M|"The museum is east of the library." Where is the museum?|To the right of the library on the map|To the left of the library|Above the library|Below the library|East is to the right on a standard map.
+M|Which sentence describes a route?|Go north for two blocks, then turn left.|The bank is very big.|I like maps.|Maps are paper.|It gives steps to follow.
+T|On most maps, south is at the bottom.|True|North is at the top and south at the bottom.
+T|"Turn around" means keep going straight.|False|"Turn around" means face the opposite direction.
+F|On the map, the post office is _____ of the bank. (east / west)|east;west|Either answer can be correct depending on the map.
+F|Walk _____ for two blocks, then turn right. (straight)|straight|Straight means no turning.
+F|Use a _____ to find your way in a new city. (map)|map|A map helps you find places.
+#A2.2.c4.l3
+M|Tourist: "Excuse me, we're lost. How do we get to the museum?" Local: "Go straight for two blocks, then turn right." What do the tourists want to find?|The museum|The airport|The hospital|The market|They ask how to get to the museum.
+M|Local: "Go straight for two blocks, then turn right." How many blocks should the tourists go straight?|Two|Three|One|Four|The local says two blocks.
+M|Tourist: "Sorry, could you repeat that?" What does the tourist want?|The directions again|The price|A coffee|A taxi|"Repeat" means say again.
+M|"We're lost" means:|We don't know where we are.|We are happy.|We are late.|We are hungry.|"Lost" means not knowing the way.
+M|Which phrase can you use when you do not understand?|Could you say that again, please?|Yes, of course.|I understand perfectly.|Never mind.|It asks for repetition.
+T|"Turn right at the corner" is a direction.|True|It tells you which way to turn.
+T|The tourists already know where the museum is.|False|They ask for directions.
+F|Excuse me, I'm _____. Can you help me? (lost)|lost|"Lost" means unsure of the way.
+F|Go straight, then turn _____ at the traffic light. (right / left)|right;left|Either direction can be correct.
+F|Thank you so much! — You're _____. (welcome)|welcome|"You're welcome" is the reply to thanks.

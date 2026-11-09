@@ -1,0 +1,132 @@
+#B2.2.c1.l1
+M|If I _____ harder, I would have passed the exam.|had studied|studied|study|would study|Third conditional: If + past perfect.
+M|If she had left earlier, she _____ the train.|would have caught|would catch|will catch|caught|Result: would have + past participle.
+M|Third conditionals talk about:|unreal past situations|real future situations|general facts|present habits|They imagine a different past.
+M|Which sentence is correct?|If I had known, I would have helped.|If I knew, I would have helped.|If I had known, I would help.|If I have known, I would have helped.|If + past perfect, would have + past participle.
+M|Which sentence is a third conditional?|If he had called, I would have answered.|If he calls, I will answer.|If he called, I would answer.|If he calls, I answer.|Past unreal.
+T|In a third conditional, the if-clause uses the past perfect.|True|had + past participle.
+T|"If I would have known, I would have helped" is standard.|False|Use "had known".
+F|If they _____ the map, they wouldn't have got lost. (read)|had read|Past perfect.
+F|We would have won if we _____ harder. (play)|had played|Past perfect.
+F|If it hadn't rained, the match _____ cancelled. (not be)|wouldn't have been|Third conditional result.
+#B2.2.c1.l2
+M|"I wish I had saved more money" expresses:|regret about the past|a future plan|a general fact|a present habit|Regret.
+M|If I had listened to my parents, I _____ that mistake.|wouldn't have made|won't make|didn't make|wouldn't make|Third conditional.
+M|Which sentence expresses regret?|If I had taken that job, my life would have been different.|If I take that job, my life will be different.|If I took that job, my life would be different.|I take the job.|Third conditional.
+M|Which is correct?|If I had gone to bed earlier, I wouldn't be tired now.|If I went to bed earlier, I wouldn't have been tired.|If I had gone to bed earlier, I won't be tired.|If I go to bed earlier, I wouldn't be tired.|Mixed conditional correct form.
+M|"I should have" expresses:|regret or criticism about the past|a present habit|a future plan|a certainty|"Should have" = regret.
+T|Third conditionals can express regrets.|True|They imagine different past decisions.
+T|"If I had took the bus, I would have arrived on time" is correct.|False|Use "taken".
+F|If I _____ more carefully, I wouldn't have failed. (study)|had studied|Past perfect.
+F|I _____ have bought it if I had known the price. (wouldn't)|wouldn't|Third conditional.
+F|If he _____ the doctor earlier, he would have recovered sooner. (see)|had seen|Past perfect.
+#B2.2.c1.l3
+M|Speaker: "If I had accepted the job in Dubai, I would have moved there." What did the speaker do?|Refused the job|Accepted the job|Moved to Dubai|Visited Dubai|The speaker didn't accept the job.
+M|Speaker: "If we had left earlier, we wouldn't have missed the flight." What happened?|They missed the flight.|They caught the flight.|They left early.|They cancelled the flight.|They didn't leave early.
+M|Speaker: "If she hadn't lost the key, she would have got inside." Did she get inside?|No|Yes|Sometimes|Not stated|She lost the key.
+M|A third conditional describes:|a different past that did not happen|a real future|a general truth|a present habit|Unreal past.
+M|Which sentence matches "She didn't study, so she failed"?|If she had studied, she wouldn't have failed.|If she studies, she won't fail.|If she studied, she wouldn't fail.|If she had studied, she wouldn't fail.|Correct third conditional.
+T|"If it had snowed, we would have skied" means it didn't snow.|True|The condition didn't happen.
+T|"If I had won, I would have been happy" means I won.|False|It means I didn't win.
+F|If he _____ the alarm, he would have woken up. (hear)|had heard|Past perfect.
+F|They _____ have won if they had trained. (would)|would|Third conditional.
+F|If I _____ known, I would have told you. (have)|had|Past perfect.
+#B2.2.c2.l1
+M|Direct: "Are you ready?" Reported: She asked me _____ I was ready.|if|that|what|which|Yes/no questions use "if" or "whether".
+M|Direct: "Do you like coffee?" Reported: He asked me _____ coffee.|if I liked|do I like|that I like|did I like|Statement order, backshift.
+M|Direct: "Is it raining?" Reported: He asked whether it _____ raining.|was|is|were|be|Backshift.
+M|Which sentence is correct?|She asked if I was tired.|She asked was I tired.|She asked if was I tired.|She asked that I was tired.|Statement word order after "if".
+M|In reported questions, we:|use statement word order|keep the question word order|always use "that"|add a question mark|No inversion.
+T|Reported yes/no questions use "if" or "whether".|True|Example: "She asked if I was hungry."
+T|"He asked me did I like it" is correct.|False|Use "if I liked it".
+F|"Can you swim?" → He asked me _____ I could swim. (if / whether)|if;whether|Yes/no question.
+F|"Are you coming?" → She asked if I _____ coming. (be)|was|Backshift.
+F|"Did you call him?" → She asked if I _____ him. (call — past perfect)|had called|Backshift.
+#B2.2.c2.l2
+M|Direct: "Where do you live?" Reported: He asked me where I _____ .|lived|live|do I live|did I live|Statement order + backshift.
+M|Direct: "What are you doing?" Reported: She asked me what I _____ .|was doing|am doing|do I do|did I do|Statement order + backshift.
+M|Direct: "Why are you late?" Reported: He asked me why I _____ late.|was|am|were|be|Backshift.
+M|Which is correct?|She asked where he lived.|She asked where did he live.|She asked where he does live.|She asked where lived he.|Statement order.
+M|Which is correct?|They asked me when the meeting started.|They asked me when did the meeting start.|They asked me when started the meeting.|They asked me when the meeting does start.|Statement order.
+T|In reported wh- questions, we keep the question word.|True|Example: where, why.
+T|We use "if" in reported wh- questions.|False|We use the wh- word.
+F|"Where is the station?" → She asked where the station _____ . (be)|was|Backshift.
+F|"What time does it start?" → He asked what time it _____ . (start)|started|Backshift.
+F|"Why did you leave?" → She asked why I _____ . (leave — past perfect)|had left|Backshift.
+#B2.2.c2.l3
+M|Direct: "Wait here." Reported: She told me _____ there.|to wait|wait|waiting|that wait|told + object + to + verb.
+M|Direct: "Don't touch it." Reported: He told me _____ it.|not to touch|to not touching|don't touch|not touching|Negative command.
+M|Direct: "Please help me." Reported: She asked me _____ her.|to help|help|helping|that I help|asked + object + to + verb.
+M|Which is correct?|The teacher told us to be quiet.|The teacher told us be quiet.|The teacher told us that be quiet.|The teacher told that we be quiet.|told + object + to + verb.
+M|Which is correct?|He asked her not to be late.|He asked her to not be late.|He asked her don't be late.|He asked her not being late.|asked + object + not to + verb.
+T|Reported commands use "told/asked + object + to + verb".|True|Example: "She told me to wait."
+T|"She told me that wait" is correct.|False|Use "to wait".
+F|"Open the window," he said. → He told me _____ the window. (open)|to open|told + to + verb.
+F|"Don't be late," she said. → She told us _____ be late. (not to)|not to|Negative.
+F|"Please sit down," he said. → He asked me _____ down. (sit)|to sit|asked + to.
+#B2.2.c3.l1
+M|He's been working for 12 hours. He _____ be exhausted.|must|can't|might|shouldn't|"Must" = confident deduction.
+M|She has a new car and a big house. She _____ be rich.|must|can't|couldn't|shouldn't|Strong deduction.
+M|The lights are on. They _____ be at home.|must|can't|shouldn't|don't|Strong deduction.
+M|Which sentence expresses a strong logical deduction?|He must be tired.|He should be tired.|He may be tired.|He was tired.|"Must" = strong deduction.
+M|"She must be a doctor" means:|I'm almost sure she is a doctor.|She has to be a doctor.|She wants to be a doctor.|She was a doctor.|Deduction.
+T|"Must" can show a confident deduction.|True|Example: "It must be late."
+T|"Must" always means obligation.|False|It can also be a deduction.
+F|You've been traveling all day. You _____ be tired. (must)|must|Deduction.
+F|The phone is ringing. It _____ be Tom. (must)|must|Deduction.
+F|He works at a hospital. He _____ be a doctor or a nurse. (must)|must|Deduction.
+#B2.2.c3.l2
+M|That _____ be true! He told me the opposite.|can't|must|might|shall|"Can't" = certain it's false.
+M|He's late. He _____ be stuck in traffic.|might|can't|mustn't|shouldn't|"Might" = possible.
+M|She _____ be at home — I saw her leave an hour ago.|can't|must|might|will|Certain it's false.
+M|Which expresses less certainty?|It might rain.|It must rain.|It can't rain.|It will rain.|"Might" = possible.
+M|Which means "I'm sure it's NOT true"?|It can't be true.|It might be true.|It could be true.|It must be true.|"Can't" = impossible.
+T|"Could" and "might" show possibility.|True|Not certain.
+T|"Can't" is used when you are sure something is false.|True|Strong negative deduction.
+F|He _____ be a student; he's 45. (can't)|can't|Negative deduction.
+F|It _____ be Anna's bag, but I'm not sure. (might / could)|might;could|Possibility.
+F|That _____ be right! Check again. (can't)|can't|Disbelief.
+#B2.2.c3.l3
+M|"She must have left early" means:|I'm sure she left early.|She had to leave early.|She might leave early.|She will leave early.|Past deduction.
+M|"He can't have forgotten" means:|I'm sure he didn't forget.|He might forget.|He mustn't forget.|He didn't have to forget.|Negative past deduction.
+M|"They might have missed the bus" means:|Maybe they missed the bus.|They must miss the bus.|They can't miss the bus.|They will miss the bus.|Possibility.
+M|Which is correct?|She must have been tired.|She must been tired.|She must be been tired.|She must have be tired.|must + have + past participle.
+M|Which is correct?|He may have taken the wrong road.|He may has taken the wrong road.|He may have took the wrong road.|He may taking the wrong road.|may + have + past participle.
+T|"Must have + past participle" is used for past deductions.|True|Example: "must have gone".
+T|"Can't have" means it was possible.|False|It means impossible.
+F|The streets are wet. It _____ have rained. (must)|must|Past deduction.
+F|He _____ have seen us — he didn't wave. (can't)|can't|Negative past deduction.
+F|I don't know where she is. She _____ have gone home. (might)|might|Possibility.
+#B2.2.c4.l1
+M|My sister, _____ lives in Paris, is a designer.|who|which|that|whose|Non-defining clause for a person.
+M|The Eiffel Tower, _____ was built in 1889, is famous.|which|who|that|whose|Non-defining clause for a thing (no "that").
+M|Which sentence is correct?|My car, which is red, is new.|My car which is red, is new.|My car, that is red, is new.|My car, who is red, is new.|Commas and "which".
+M|Non-defining relative clauses add:|extra non-essential information|essential information|a question|a condition|Extra.
+M|Which pronoun can't be used in non-defining clauses?|that|who|which|whose|"That" is not used.
+T|Non-defining clauses are separated by commas.|True|Example: "My mother, who is 60, ..."
+T|We can use "that" in non-defining clauses.|False|Use who or which.
+F|London, _____ is the capital of England, is huge. (which)|which|Thing.
+F|Mr. Lee, _____ I met yesterday, is a doctor. (who / whom)|who;whom|Person.
+F|My brother, _____ lives in Canada, is a pilot. (who)|who|Person.
+#B2.2.c4.l2
+M|The students _____ passed the exam were happy. (only some students)|who|, who|, which|, whose|Defining: no commas.
+M|The students, _____ passed the exam, were happy. (all of them)|who|that|which|whose|Non-defining: commas + who.
+M|Which sentence implies there are other students?|The students who studied passed.|The students, who studied, passed.|The students who, studied passed.|The students, who studied passed.|Defining clause restricts the noun.
+M|Which sentence gives extra information?|My house, which is old, is for sale.|My house which is old is for sale.|The house that is old is for sale.|The old house is for sale.|Commas = extra.
+M|Defining clauses:|have no commas|have commas|are always optional|always start with "which"|No commas.
+T|Removing a defining clause changes the meaning.|True|It's essential.
+T|Non-defining clauses are essential for meaning.|False|They add extra info.
+F|The book _____ is on the table is mine. (that / which)|that;which|Defining.
+F|My teacher, _____ is very kind, helped me. (who)|who|Non-defining.
+F|Paris, _____ I visited last year, is lovely. (which)|which|Non-defining.
+#B2.2.c4.l3
+M|Which sentence correctly adds extra detail?|My uncle, who is a pilot, lives in Spain.|My uncle who is a pilot, lives in Spain.|My uncle, that is a pilot, lives in Spain.|My uncle who is a pilot lives, in Spain.|Commas and "who".
+M|Which sentence is best in a descriptive paragraph?|The village, which has 200 people, is very quiet.|The village which has 200 people is very quiet,.|The village, who has 200 people, is quiet.|The village, that has 200 people, is quiet.|Correct punctuation.
+M|Which sentence correctly includes place information?|We visited Rome, where my parents met.|We visited Rome where, my parents met.|We visited Rome, which my parents met.|We visited Rome, that my parents met.|"Where" for place.
+M|Which sentence correctly includes possession?|My neighbour, whose dog barks all night, is rude.|My neighbour, who dog barks all night, is rude.|My neighbour, which dog barks, is rude.|My neighbour whose, dog barks, is rude.|"Whose" shows possession.
+M|Where do commas go in a non-defining clause?|Before and after it|Only before it|Only after it|Nowhere|Both sides.
+T|Non-defining clauses help add detail to descriptions.|True|Extra info.
+T|You must never use commas with relative clauses.|False|Non-defining clauses need commas.
+F|Spain, _____ capital is Madrid, is popular with tourists. (whose)|whose|Possession.
+F|My friend, _____ lives next door, is a nurse. (who)|who|Person.
+F|The Nile, _____ is very long, flows through Egypt. (which)|which|Thing.
