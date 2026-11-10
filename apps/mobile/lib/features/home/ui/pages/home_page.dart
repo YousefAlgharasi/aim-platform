@@ -192,7 +192,11 @@ class _HomeContent extends ConsumerWidget {
             hasFailedSections: data.hasFailedSections,
             onRetry: onRefresh,
           ),
-          // The same order the web uses on a phone.
+          DailyGoalCard(
+            goal: data.goal,
+            xpToday: data.engagementStats?.xpToday,
+          ),
+          gap,
           const WordOfDayCard(),
           gap,
           const HomeCoursePathSection(),
@@ -200,8 +204,6 @@ class _HomeContent extends ConsumerWidget {
           StatsGrid(stats: data.engagementStats),
           gap,
           const LeaderboardCard(),
-          gap,
-          DailyGoalCard(goal: data.goal),
           gap,
           ChallengesCard(fallback: data.dailyChallenge),
           if (data.dailyChallenge != null) gap,

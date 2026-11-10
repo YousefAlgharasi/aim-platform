@@ -781,21 +781,14 @@ class _RingPainter extends CustomPainter {
       old.fraction != fraction || old.track != track || old.fill != fill;
 }
 
-String _count(BuildContext context, int n, String enOne, String enMany, String arOne,
-    String arTwo, String arFew, String arMany) {
-  final nf = NumberFormat.decimalPattern(context.isArabic ? 'ar' : 'en');
-  if (!context.isArabic) return '${nf.format(n)} ${n == 1 ? enOne : enMany}';
-  if (n == 1) return arOne;
-  if (n == 2) return arTwo;
-  if (n >= 3 && n <= 10) return '${nf.format(n)} $arFew';
-  return '${nf.format(n)} $arMany';
-}
-
 /// Today's lesson goal as a ring, with the day streak and streak freezes.
 class DailyGoalCard extends ConsumerWidget {
-  const DailyGoalCard({super.key, required this.goal});
+  const DailyGoalCard({super.key, required this.goal, this.xpToday});
 
   final HomeEngagementGoal? goal;
+
+  /// XP earned today, straight from the backend stats (null while unknown).
+  final int? xpToday;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -818,88 +811,182 @@ class DailyGoalCard extends ConsumerWidget {
     final met = g.completedToday >= target;
     final fraction = (g.completedToday / target).clamp(0.0, 1.0);
     final nf = NumberFormat.decimalPattern(context.isArabic ? 'ar' : 'en');
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ringColor = met ? AimColors.success500 : AimColors.primary500;
 
-    return AIMCard(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
-        child: Column(
+    Widget stat(IconData icon, Color iconColor, String value, String label) {
+      return Expanded(
+        child: Row(
           children: [
-            Semantics(
-              label: context.tr('Daily goal progress', 'تقدّم الهدف اليومي'),
-              value: '${(fraction * 100).round()}%',
-              child: SizedBox(
-                width: 136,
-                height: 136,
-                child: CustomPaint(
-                  painter: _RingPainter(
-                    fraction: fraction,
-                    track: surfaces.surfaceSunken,
-                    fill: met ? AimColors.success500 : AimColors.primary500,
-                  ),
-                  child: Center(
-                    child: Text.rich(
-                      TextSpan(
-                        text: nf.format(g.completedToday),
-                        style: AimTextStyles.h1.copyWith(color: surfaces.textPrimary, fontSize: 34),
-                        children: [
-                          TextSpan(
-                            text: '/${nf.format(target)}',
-                            style: AimTextStyles.bodyLg.copyWith(color: surfaces.textMuted),
-                          ),
-                        ],
-                      ),
-                      textDirection: TextDirection.ltr,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AimSpacing.space12),
-            Text(
-              met
-                  ? context.tr('Goal met today', 'تم تحقيق الهدف اليوم')
-                  : fill(context.tr('{done}/{total} today', '{done}/{total} اليوم'),
-                      {'done': nf.format(g.completedToday), 'total': nf.format(target)}),
-              style: AimTextStyles.bodyLg.copyWith(
-                color: surfaces.textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              fill(context.tr('Daily goal: {lessons}', 'الهدف اليومي: {lessons}'), {
-                'lessons': _count(context, target, 'lesson', 'lessons', 'درس واحد', 'درسان', 'دروس', 'درسًا'),
-              }),
-              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-            ),
-            const SizedBox(height: AimSpacing.space12),
-            Divider(height: 1, color: surfaces.divider),
-            const SizedBox(height: AimSpacing.space12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.local_fire_department_outlined, size: 20, color: surfaces.textPrimary),
-                    const SizedBox(width: 6),
-                    Text(
-                      _count(context, g.streakDays, 'Day', 'Days', 'يوم', 'يومان', 'أيام', 'يومًا'),
-                      style: AimTextStyles.bodyMd.copyWith(
-                        color: surfaces.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                if (freeze != null)
+            Icon(icon, size: 22, color: iconColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    '❄ ${fill(context.tr('{n} freezes left', 'تبقّى {n} تجميد'), {'n': nf.format(freeze.remaining)})}',
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.h3.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
                   ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: surfaces.border),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.primary500.withValues(alpha: dark ? 0.18 : 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header strip in the brand blue, like the Word of the Day card.
+          Container(
+            padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.space16, vertical: 10),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: AlignmentDirectional.centerStart,
+                end: AlignmentDirectional.centerEnd,
+                colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.track_changes_rounded, size: 18, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    context.tr("Today's goal", 'هدف اليوم'),
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Text(
+                  fill(context.tr('{done} / {total} lessons', '{done} / {total} دروس'),
+                      {'done': nf.format(g.completedToday), 'total': nf.format(target)}),
+                  style: AimTextStyles.bodySm.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Semantics(
+                      label: context.tr('Daily goal progress', 'تقدّم الهدف اليومي'),
+                      value: '${(fraction * 100).round()}%',
+                      child: SizedBox(
+                        width: 84,
+                        height: 84,
+                        child: CustomPaint(
+                          painter: _RingPainter(
+                            fraction: fraction,
+                            track: surfaces.surfaceSunken,
+                            fill: ringColor,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${(fraction * 100).round()}%',
+                              textDirection: TextDirection.ltr,
+                              style: AimTextStyles.h3.copyWith(
+                                color: surfaces.textPrimary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AimSpacing.space16),
+                    stat(
+                      Icons.local_fire_department_rounded,
+                      const Color(0xFFF97316),
+                      nf.format(g.streakDays),
+                      context.tr('Day streak', 'أيام متتالية'),
+                    ),
+                    Container(width: 1, height: 44, color: surfaces.divider),
+                    const SizedBox(width: AimSpacing.space12),
+                    stat(
+                      Icons.star_rounded,
+                      const Color(0xFFF59E0B),
+                      nf.format(xpToday ?? 0),
+                      context.tr('XP earned', 'نقاط اليوم'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.space12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AimSpacing.space12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: ringColor.withValues(alpha: dark ? 0.18 : 0.10),
+                    borderRadius: BorderRadius.circular(AimRadius.md),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          met
+                              ? context.tr("Great job! You've completed your goal.",
+                                  'أحسنت! أكملت هدفك اليوم.')
+                              : context.tr('Keep going, you are close to your goal.',
+                                  'واصل، أنت قريب من هدفك.'),
+                          style: AimTextStyles.bodySm.copyWith(
+                            color: surfaces.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (freeze != null)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 8),
+                          child: Text(
+                            '❄ ${nf.format(freeze.remaining)}',
+                            style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
