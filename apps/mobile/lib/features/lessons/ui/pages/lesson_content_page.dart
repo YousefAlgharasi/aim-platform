@@ -118,10 +118,10 @@ class _StepsState extends State<_Steps> {
     if (ex == null && detail.hasNoContent) {
       return AIMEmptyState(
         icon: const Icon(Icons.menu_book_outlined),
-        title: context.tr('No content yet', 'لا يوجد محتوى بعد'),
+        title: context.tr('There is no content for this lesson yet', 'لا يوجد محتوى لهذا الدرس بعد'),
         subtitle: context.tr(
-          "This lesson doesn't have any published content steps yet. You can still practice its questions.",
-          'لا يحتوي هذا الدرس على خطوات محتوى منشورة بعد. يمكنك مع ذلك التدرب على أسئلته.',
+          'You can still practice its questions.',
+          'يمكنك مع ذلك التدرب على أسئلته.',
         ),
       );
     }
