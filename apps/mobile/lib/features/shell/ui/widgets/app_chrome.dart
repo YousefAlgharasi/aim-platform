@@ -413,7 +413,7 @@ class _BottomTabBar extends ConsumerWidget {
       required bool selected,
       required VoidCallback onTap,
     }) {
-      final color = selected ? surfaces.textPrimary : surfaces.textMuted;
+      final color = selected ? AimColors.primary500 : surfaces.textMuted;
       return Expanded(
         child: InkWell(
           onTap: onTap,
@@ -451,16 +451,28 @@ class _BottomTabBar extends ConsumerWidget {
       context.go(AppRoutePaths.mainShell);
     }
 
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: surfaces.background,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: surfaces.border)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            children: [
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 12, 10),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: dark ? const Color(0xFF111A2E) : Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: dark ? 0.45 : 0.10),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
               item(
                 icon: Icons.home_outlined,
                 label: context.tr('Dashboard', 'لوحة التحكم'),
@@ -494,7 +506,8 @@ class _BottomTabBar extends ConsumerWidget {
                   onTap: () => Scaffold.of(ctx).openDrawer(),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
