@@ -77,16 +77,6 @@ List<_WeakSpot> _buildWeakSpots(AimResultsData data) {
   return spots;
 }
 
-String _prettify(String skillId) {
-  final last = skillId.split(':').last;
-  final words = last
-      .split(RegExp(r'[_\-]+'))
-      .where((w) => w.isNotEmpty)
-      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
-  final label = words.join(' ');
-  return label.isEmpty ? skillId : label;
-}
-
 /// Improve — where the student is weak and how to fix it.
 /// Mirrors the web app's "Improve" page.
 class ImprovePage extends ConsumerStatefulWidget {
@@ -97,6 +87,8 @@ class ImprovePage extends ConsumerStatefulWidget {
 }
 
 class _ImprovePageState extends ConsumerState<ImprovePage> {
+  bool _showAll = false;
+
   @override
   void initState() {
     super.initState();
@@ -153,6 +145,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
   Widget _content(BuildContext context, AimResultsData data) {
     final surfaces = aimSurfacesOf(context);
     final mistakes = ref.watch(mistakesProvider(null)).valueOrNull;
+    final titles = ref.watch(skillTitlesProvider).valueOrNull ?? const <String, String>{};
     final spots = _buildWeakSpots(data);
     final fixed = data.weaknessRecords.where((w) => w.status.toLowerCase() == 'resolved').toList();
     final dueReviews = data.reviewSchedules.where((r) {
@@ -172,66 +165,88 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
         children: [
           _Hero(
             top: top,
+            topName: top == null ? '' : skillName(titles, top.skillId),
             toWorkOn: spots.length,
-            mistakes: mistakes?.total,
-            reviewsDue: dueReviews.length,
-            fixed: fixed.length,
             onPractice: () => top?.lessonId != null
                 ? _practice(top!.lessonId!)
                 : _findLesson(),
           ),
-          if (mistakeCount > 0 || dueReviews.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            AIMCard(
-              onTap: () => context.push('${AppRoutePaths.mistakes}?quick=1'),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.tr('5-minute fix session', 'جلسة إصلاح لخمس دقائق'),
-                            style: AimTextStyles.bodyLg.copyWith(
-                              color: surfaces.textPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            mistakeCount > 0
-                                ? context.tr(
-                                    'Up to 5 questions you got wrong, picked for you. The fastest way to turn a mistake into a point.',
-                                    'حتى 5 أسئلة أخطأت فيها، اخترناها لك. أسرع طريقة لتحويل الخطأ إلى نقطة.',
-                                  )
-                                : context.tr(
-                                    'A few quick questions to keep your weak spots from coming back.',
-                                    'بعض الأسئلة السريعة لمنع عودة نقاط ضعفك.',
-                                  ),
-                            style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: AimSpacing.space8),
-                    Text(
-                      context.tr('Start', 'ابدأ'),
-                      style: AimTextStyles.bodyMd.copyWith(
-                        color: AimColors.primary500,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+          const SizedBox(height: AimSpacing.componentGap),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.track_changes_rounded,
+                  tone: AimColors.primary500,
+                  value: '${spots.length}',
+                  label: context.tr('To work on', 'تحتاج عملاً'),
+                  onTap: spots.length > 3 ? () => setState(() => _showAll = true) : null,
                 ),
               ),
+              const SizedBox(width: AimSpacing.componentGap),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.refresh_rounded,
+                  tone: AimColors.success500,
+                  value: mistakes?.total.toString() ?? '—',
+                  label: context.tr('Mistakes to retry', 'أخطاء لإعادتها'),
+                  onTap: () => context.push(AppRoutePaths.mistakes),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.calendar_month_rounded,
+                  tone: const Color(0xFFF59E0B),
+                  value: '${dueReviews.length}',
+                  label: context.tr('Reviews due', 'مراجعات مستحقة'),
+                  onTap: () => context.push(AppRoutePaths.reviewSchedule),
+                ),
+              ),
+              const SizedBox(width: AimSpacing.componentGap),
+              Expanded(
+                child: _StatTile(
+                  icon: Icons.check_circle_rounded,
+                  tone: const Color(0xFF7C5CF0),
+                  value: '${fixed.length}',
+                  label: context.tr('Already fixed', 'تم إصلاحها'),
+                ),
+              ),
+            ],
+          ),
+          if (mistakeCount > 0 || dueReviews.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            _FixSessionCard(
+              hasMistakes: mistakeCount > 0,
+              onTap: () => context.push('${AppRoutePaths.mistakes}?quick=1'),
             ),
           ],
           const SizedBox(height: AimSpacing.sectionGap),
-          Text(
-            context.tr('Weak spots', 'نقاط الضعف'),
-            style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+          Row(
+            children: [
+              const Icon(Icons.track_changes_rounded, size: 22, color: AimColors.primary500),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  context.tr('Weak spots', 'نقاط الضعف'),
+                  style: AimTextStyles.h3.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (spots.length > 3)
+                TextButton(
+                  onPressed: () => setState(() => _showAll = !_showAll),
+                  child: Text(_showAll
+                      ? context.tr('Show less', 'عرض أقل')
+                      : context.tr('See all', 'عرض الكل')),
+                ),
+            ],
           ),
           const SizedBox(height: AimSpacing.componentGap),
           if (spots.isEmpty)
@@ -244,15 +259,16 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               ),
             )
           else
-            for (final s in spots) ...[
+            for (final s in (_showAll ? spots : spots.take(3))) ...[
               _SpotCard(
                 spot: s,
+                title: skillName(titles, s.skillId),
                 mistakes: (mistakes?.items ?? const [])
                     .where((m) => m.skillIds.contains(s.skillId))
                     .toList(),
                 onPractice: s.lessonId == null ? _findLesson : () => _practice(s.lessonId!),
                 onReread: s.lessonId == null ? null : () => _reread(s.lessonId!),
-                onAsk: s.lessonId == null ? null : () => _askTeacher(s.lessonId!, _prettify(s.skillId)),
+                onAsk: s.lessonId == null ? null : () => _askTeacher(s.lessonId!, skillName(titles, s.skillId)),
               ),
               const SizedBox(height: AimSpacing.componentGap),
             ],
@@ -283,7 +299,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
                           children: [
                             Expanded(
                               child: Text(
-                                _prettify(r.skillId),
+                                skillName(titles, r.skillId),
                                 style: AimTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -313,7 +329,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
                 for (final w in fixed.take(12))
                   Chip(
                     avatar: const Icon(Icons.check_rounded, size: 16, color: AimColors.success500),
-                    label: Text(_prettify(w.skillId)),
+                    label: Text(skillName(titles, w.skillId)),
                   ),
               ],
             ),
@@ -344,97 +360,124 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
 class _Hero extends StatelessWidget {
   const _Hero({
     required this.top,
+    required this.topName,
     required this.toWorkOn,
-    required this.mistakes,
-    required this.reviewsDue,
-    required this.fixed,
     required this.onPractice,
   });
 
   final _WeakSpot? top;
+  final String topName;
   final int toWorkOn;
-  final int? mistakes;
-  final int reviewsDue;
-  final int fixed;
   final VoidCallback onPractice;
 
   @override
   Widget build(BuildContext context) {
-    Widget stat(String value, String label) => Expanded(
-          child: Container(
-            padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AimRadius.md),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value, style: AimTextStyles.h2.copyWith(color: Colors.white)),
-                Text(
-                  label,
-                  style: AimTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.9)),
-                ),
-              ],
-            ),
-          ),
-        );
-
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final chevron = rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;
     return Container(
-      padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
       decoration: BoxDecoration(
-        gradient: AimGradients.gzHero,
+        gradient: const LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+        ),
         borderRadius: BorderRadius.circular(AimRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.primary500.withValues(alpha: 0.30),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (top != null) ...[
-            Text(
-              context.tr('Start with this', 'ابدأ بهذا'),
-              style: AimTextStyles.caption.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(_prettify(top!.skillId), style: AimTextStyles.h2.copyWith(color: Colors.white)),
-            const SizedBox(height: AimSpacing.space12),
-            FilledButton(
-              onPressed: onPractice,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AimColors.primary500,
-                minimumSize: const Size.fromHeight(46),
-                shape: const StadiumBorder(),
-              ),
-              child: Text(top!.lessonId != null
-                  ? context.tr('Practice now', 'تدرّب الآن')
-                  : context.tr('Find a lesson', 'ابحث عن درس')),
-            ),
-          ] else
-            Text(
-              context.tr(
-                'No weak spots right now. Keep learning to stay sharp.',
-                'لا توجد نقاط ضعف حالياً. واصل التعلم لتبقى متميزاً.',
-              ),
-              style: AimTextStyles.bodyLg.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-          const SizedBox(height: AimSpacing.space16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              stat('$toWorkOn', context.tr('To work on', 'تحتاج عملاً')),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (top != null) ...[
+                      Container(
+                        padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, size: 14, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                context.tr('Start with this', 'ابدأ بهذا'),
+                                style: AimTextStyles.caption.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AimSpacing.space8),
+                      Text(
+                        topName,
+                        style: AimTextStyles.h2.copyWith(color: Colors.white),
+                      ),
+                    ] else
+                      Text(
+                        context.tr(
+                          'No weak spots right now. Keep learning to stay sharp.',
+                          'لا توجد نقاط ضعف حالياً. واصل التعلم لتبقى متميزاً.',
+                        ),
+                        style: AimTextStyles.bodyLg
+                            .copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                      ),
+                  ],
+                ),
+              ),
               const SizedBox(width: AimSpacing.space8),
-              stat(mistakes?.toString() ?? '—', context.tr('Mistakes to retry', 'أخطاء لإعادتها')),
+              Icon(Icons.menu_book_rounded,
+                  size: 56, color: Colors.white.withValues(alpha: 0.85)),
             ],
           ),
-          const SizedBox(height: AimSpacing.space8),
-          Row(
-            children: [
-              stat('$reviewsDue', context.tr('Reviews due', 'مراجعات مستحقة')),
-              const SizedBox(width: AimSpacing.space8),
-              stat('$fixed', context.tr('Already fixed', 'تم إصلاحها')),
-            ],
+          const SizedBox(height: AimSpacing.space16),
+          Material(
+            color: Colors.white,
+            shape: const StadiumBorder(),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: onPractice,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: 18, vertical: 13),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded, color: AimColors.primary500),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        top?.lessonId != null
+                            ? context.tr('Practice now', 'تدرّب الآن')
+                            : context.tr('Find a lesson', 'ابحث عن درس'),
+                        textAlign: TextAlign.center,
+                        style: AimTextStyles.bodyMd.copyWith(
+                          color: AimColors.primary500,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    Icon(chevron, color: AimColors.primary500),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -442,9 +485,195 @@ class _Hero extends StatelessWidget {
   }
 }
 
-class _SpotCard extends StatelessWidget {
+/// A tinted stat tile with a round icon, a number and a label.
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icon,
+    required this.tone,
+    required this.value,
+    required this.label,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final Color tone;
+  final String value;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Semantics(
+      button: onTap != null,
+      label: '$value $label',
+      child: Material(
+        color: Color.alphaBlend(tone.withValues(alpha: dark ? 0.14 : 0.08), surfaces.surface),
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              border: Border.all(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: tone.withValues(alpha: dark ? 0.25 : 0.16),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 22, color: tone),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.h2.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                if (onTap != null)
+                  Icon(
+                    rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                    size: 20,
+                    color: surfaces.textMuted,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "5-minute fix session": a short call to action with a Start pill.
+class _FixSessionCard extends StatelessWidget {
+  const _FixSessionCard({required this.hasMistakes, required this.onTap});
+
+  final bool hasMistakes;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Semantics(
+      button: true,
+      label: context.tr('5-minute fix session', 'جلسة إصلاح لخمس دقائق'),
+      child: Material(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: dark ? 0.16 : 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.timer_outlined, size: 44, color: AimColors.primary500),
+                const SizedBox(width: AimSpacing.space12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('5-minute fix session', 'جلسة إصلاح لخمس دقائق'),
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasMistakes
+                            ? context.tr(
+                                'Up to 5 questions you got wrong, picked for you. The fastest way to turn a mistake into a point.',
+                                'حتى 5 أسئلة أخطأت فيها، اخترناها لك. أسرع طريقة لتحويل الخطأ إلى نقطة.',
+                              )
+                            : context.tr(
+                                'A few quick questions to keep your weak spots from coming back.',
+                                'بعض الأسئلة السريعة لمنع عودة نقاط ضعفك.',
+                              ),
+                        style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AimSpacing.space8),
+                Container(
+                  padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                    ),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        context.tr('Start', 'ابدأ'),
+                        style: AimTextStyles.bodyMd.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.play_circle_fill_rounded, size: 18, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One weak spot: a compact row (icon, name, status, mastery bar) that opens
+/// to show what was missed and the ways to fix it.
+class _SpotCard extends StatefulWidget {
   const _SpotCard({
     required this.spot,
+    required this.title,
     required this.mistakes,
     required this.onPractice,
     required this.onReread,
@@ -452,148 +681,234 @@ class _SpotCard extends StatelessWidget {
   });
 
   final _WeakSpot spot;
+  final String title;
   final List<MistakeItem> mistakes;
   final VoidCallback onPractice;
   final VoidCallback? onReread;
   final VoidCallback? onAsk;
 
   @override
+  State<_SpotCard> createState() => _SpotCardState();
+}
+
+class _SpotCardState extends State<_SpotCard> {
+  bool _open = false;
+
+  @override
   Widget build(BuildContext context) {
+    final spot = widget.spot;
+    final mistakes = widget.mistakes;
     final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final (String label, Color tone) = switch (spot.severity) {
       'critical' => (context.tr('Needs focus', 'يحتاج تركيزاً'), AimColors.error500),
       'developing' => (context.tr('Getting there', 'في تحسّن'), const Color(0xFFE08A00)),
       _ => (context.tr('Just spotted', 'اكتُشف للتو'), surfaces.textMuted),
     };
     final pct = spot.mastery == null ? null : (spot.mastery! * 100).round().clamp(0, 100);
+    final title = widget.title;
 
-    return AIMCard(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    _prettify(spot.skillId),
-                    style: AimTextStyles.bodyLg.copyWith(
-                      color: surfaces.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AimSpacing.space8),
-                Container(
-                  padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: tone.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(
-                    label,
-                    style: AimTextStyles.caption.copyWith(color: tone, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
-            if (pct != null) ...[
-              const SizedBox(height: AimSpacing.space12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: (pct < 3 ? 3 : pct) / 100,
-                  minHeight: 8,
-                  color: tone,
-                  backgroundColor: surfaces.surfaceSunken,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                fill(context.tr('Mastery {pct}%', 'الإتقان {pct}%'), {'pct': pct}),
-                style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
-              ),
-            ] else
-              const SizedBox(height: AimSpacing.space4),
-            const SizedBox(height: AimSpacing.space4),
-            Text(
-              spot.detectedAt != null && spot.detectedAt!.length >= 10
-                  ? fill(context.tr('Detected {date}', 'رُصدت {date}'), {'date': spot.detectedAt!.substring(0, 10)})
-                  : context.tr('Your recent answers on this skill were low.', 'كانت إجاباتك الأخيرة في هذه المهارة ضعيفة.'),
-              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-            ),
-            if (mistakes.isNotEmpty) ...[
-              const SizedBox(height: AimSpacing.space12),
-              Container(
-                width: double.infinity,
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: surfaces.border),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.primary500.withValues(alpha: dark ? 0.12 : 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            button: true,
+            expanded: _open,
+            label: title,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              onTap: () => setState(() => _open = !_open),
+              child: Padding(
                 padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
-                decoration: BoxDecoration(
-                  color: surfaces.surfaceSunken,
-                  borderRadius: BorderRadius.circular(AimRadius.md),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      context.tr('Questions you missed', 'أسئلة أخطأت فيها'),
-                      style: AimTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.menu_book_rounded,
+                          size: 24, color: AimColors.primary500),
                     ),
-                    const SizedBox(height: 6),
-                    for (final m in mistakes.take(2))
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(m.prompt, style: AimTextStyles.bodySm.copyWith(color: surfaces.textSecondary)),
+                    const SizedBox(width: AimSpacing.space12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: AimTextStyles.bodyLg.copyWith(
+                                    color: surfaces.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: AimSpacing.space8),
+                              Container(
+                                padding: const EdgeInsetsDirectional.symmetric(
+                                    horizontal: 10, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: tone.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: AimTextStyles.caption
+                                      .copyWith(color: tone, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (pct != null) ...[
+                            const SizedBox(height: AimSpacing.space8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: LinearProgressIndicator(
+                                      value: (pct < 3 ? 3 : pct) / 100,
+                                      minHeight: 8,
+                                      color: AimColors.primary500,
+                                      backgroundColor: surfaces.surfaceSunken,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  '$pct%',
+                                  textDirection: TextDirection.ltr,
+                                  style: AimTextStyles.bodySm.copyWith(
+                                    color: surfaces.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
                       ),
-                    GestureDetector(
-                      onTap: () => context.push(
-                        '${AppRoutePaths.mistakes}?skill=${Uri.encodeQueryComponent(spot.skillId)}',
-                      ),
-                      child: Text(
-                        mistakes.length > 2
-                            ? fill(context.tr('See all {n} and fix them', 'اعرض الأسئلة الـ {n} وصحّحها'), {'n': mistakes.length})
-                            : context.tr('Fix them', 'صحّحها'),
-                        style: AimTextStyles.bodySm.copyWith(
-                          color: AimColors.primary500,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _open ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                      color: surfaces.textMuted,
                     ),
                   ],
                 ),
               ),
-            ],
-            const SizedBox(height: AimSpacing.space12),
-            Wrap(
-              spacing: AimSpacing.space8,
-              runSpacing: AimSpacing.space8,
-              children: [
-                AIMButton(
-                  size: AIMButtonSize.small,
-                  onPressed: onPractice,
-                  child: Text(spot.lessonId != null
-                      ? context.tr('Practice now', 'تدرّب الآن')
-                      : context.tr('Find a lesson', 'ابحث عن درس')),
-                ),
-                if (onReread != null)
-                  AIMButton(
-                    size: AIMButtonSize.small,
-                    variant: AIMButtonVariant.secondary,
-                    onPressed: onReread,
-                    child: Text(context.tr('Re-read the lesson', 'أعد قراءة الدرس')),
-                  ),
-                if (onAsk != null)
-                  AIMButton(
-                    size: AIMButtonSize.small,
-                    variant: AIMButtonVariant.secondary,
-                    onPressed: onAsk,
-                    child: Text(context.tr('Ask AI Teacher', 'اسأل المعلم الذكي')),
-                  ),
-              ],
             ),
-          ],
-        ),
+          ),
+          if (_open)
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                  AimSpacing.space12, 0, AimSpacing.space12, AimSpacing.space12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    spot.detectedAt != null && spot.detectedAt!.length >= 10
+                        ? fill(context.tr('Detected {date}', 'رُصدت {date}'),
+                            {'date': spot.detectedAt!.substring(0, 10)})
+                        : context.tr('Your recent answers on this skill were low.',
+                            'كانت إجاباتك الأخيرة في هذه المهارة ضعيفة.'),
+                    style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                  ),
+                  if (mistakes.isNotEmpty) ...[
+                    const SizedBox(height: AimSpacing.space12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
+                      decoration: BoxDecoration(
+                        color: surfaces.surfaceSunken,
+                        borderRadius: BorderRadius.circular(AimRadius.md),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.tr('Questions you missed', 'أسئلة أخطأت فيها'),
+                            style: AimTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 6),
+                          for (final m in mistakes.take(2))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Text(m.prompt,
+                                  style: AimTextStyles.bodySm
+                                      .copyWith(color: surfaces.textSecondary)),
+                            ),
+                          GestureDetector(
+                            onTap: () => context.push(
+                              '${AppRoutePaths.mistakes}?skill=${Uri.encodeQueryComponent(spot.skillId)}',
+                            ),
+                            child: Text(
+                              mistakes.length > 2
+                                  ? fill(
+                                      context.tr('See all {n} and fix them',
+                                          'اعرض الأسئلة الـ {n} وصحّحها'),
+                                      {'n': mistakes.length})
+                                  : context.tr('Fix them', 'صحّحها'),
+                              style: AimTextStyles.bodySm.copyWith(
+                                color: AimColors.primary500,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: AimSpacing.space12),
+                  Wrap(
+                    spacing: AimSpacing.space8,
+                    runSpacing: AimSpacing.space8,
+                    children: [
+                      AIMButton(
+                        size: AIMButtonSize.small,
+                        onPressed: widget.onPractice,
+                        child: Text(spot.lessonId != null
+                            ? context.tr('Practice now', 'تدرّب الآن')
+                            : context.tr('Find a lesson', 'ابحث عن درس')),
+                      ),
+                      if (widget.onReread != null)
+                        AIMButton(
+                          size: AIMButtonSize.small,
+                          variant: AIMButtonVariant.secondary,
+                          onPressed: widget.onReread,
+                          child: Text(context.tr('Re-read the lesson', 'أعد قراءة الدرس')),
+                        ),
+                      if (widget.onAsk != null)
+                        AIMButton(
+                          size: AIMButtonSize.small,
+                          variant: AIMButtonVariant.secondary,
+                          onPressed: widget.onAsk,
+                          child: Text(context.tr('Ask AI Teacher', 'اسأل المعلم الذكي')),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

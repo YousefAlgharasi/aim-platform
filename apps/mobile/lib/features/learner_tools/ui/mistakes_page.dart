@@ -92,14 +92,9 @@ class _MistakesPageState extends ConsumerState<MistakesPage> {
         _index++;
       });
 
-  String get _skillLabel {
-    final last = (widget.skill ?? '').split(':').last;
-    final words = last
-        .split(RegExp(r'[_\-]+'))
-        .where((w) => w.isNotEmpty)
-        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
-    return words.join(' ');
-  }
+  String get _skillLabel => widget.skill == null
+      ? ''
+      : skillName(ref.watch(skillTitlesProvider).valueOrNull ?? const {}, widget.skill!);
 
   @override
   Widget build(BuildContext context) {

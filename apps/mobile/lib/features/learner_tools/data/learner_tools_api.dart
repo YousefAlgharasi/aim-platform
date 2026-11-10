@@ -266,6 +266,25 @@ class LearnerToolsApi {
     );
   }
 
+  /// Readable titles for every published skill, keyed by skill key. The same
+  /// catalogue the web app uses, so students see "Possessive Adjectives"
+  /// instead of the raw key.
+  Future<Map<String, String>> skillTitles() async {
+    final r = await _client.get<Map<String, String>>(
+      '/student/skills/titles',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return {
+          for (final e in (m['skills'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>())
+            if (e['key'] is String && e['title'] is String)
+              (e['key'] as String).toLowerCase(): e['title'] as String,
+        };
+      },
+    );
+    return r.data ?? const {};
+  }
+
   Future<MistakeList> listMistakes({String? skill}) async {
     final r = await _client.get<MistakeList>(
       '/student/mistakes',
@@ -310,6 +329,31 @@ final learnerToolsApiProvider = Provider<LearnerToolsApi>(
 final vocabularyProvider = FutureProvider.autoDispose<VocabularyList>(
   (ref) => ref.watch(learnerToolsApiProvider).listWords(),
 );
+
+/// Skill key -> readable title. Never fails the page: on any error the screens
+/// fall back to a tidied version of the key.
+final skillTitlesProvider = FutureProvider<Map<String, String>>((ref) async {
+  try {
+    return await ref.watch(learnerToolsApiProvider).skillTitles();
+  } catch (_) {
+    return const <String, String>{};
+  }
+});
+
+/// The readable name for [skillId]: the catalogue title when known, otherwise
+/// the key tidied up.
+String skillName(Map<String, String> titles, String skillId) {
+  final hit = titles[skillId.toLowerCase()] ?? titles[skillId.split(':').last.toLowerCase()];
+  if (hit != null && hit.trim().isNotEmpty) return hit;
+  final last = skillId.split(':').last;
+  final tail = last.contains('.') ? last.split('.').last : last;
+  final words = tail
+      .split(RegExp(r'[_\-\s]+'))
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+  final label = words.join(' ');
+  return label.isEmpty ? skillId : label;
+}
 
 final mistakesProvider =
     FutureProvider.autoDispose.family<MistakeList, String?>(
