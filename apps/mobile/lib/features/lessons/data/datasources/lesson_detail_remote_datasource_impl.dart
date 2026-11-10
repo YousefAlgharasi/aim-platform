@@ -58,6 +58,9 @@ class LessonDetailRemoteDatasourceImpl implements LessonDetailRemoteDatasource {
       queryParameters: {
         'lessonId': lessonId,
         'status': 'published',
+        // The backend pages at 20 by default; ask for the max so a lesson
+        // with many steps never loses any (the web asks for the same).
+        'limit': '100',
       },
       headers: _auth(bearerToken),
       decodeData: (json) => _decodeAssetList(json),
@@ -74,10 +77,13 @@ class LessonDetailRemoteDatasourceImpl implements LessonDetailRemoteDatasource {
     if (json is! Map<String, dynamic>) return const [];
     final list = json['assets'];
     if (list is! List<dynamic>) return const [];
-    return list
+    final assets = list
         .whereType<Map<String, dynamic>>()
         .map(LessonAssetModel.fromJson)
         .toList();
+    // Same order the web shows: by the backend-supplied `order`.
+    assets.sort((a, b) => a.order.compareTo(b.order));
+    return assets;
   }
 
   static final _uuid = RegExp(
