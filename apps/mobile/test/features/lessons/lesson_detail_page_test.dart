@@ -26,6 +26,7 @@ import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lesson_detail_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
+import 'package:aim_mobile/features/lessons/ui/pages/lesson_content_page.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_detail_page.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/lessons_widgets.dart';
 
@@ -88,6 +89,48 @@ const LessonDetail _empty = LessonDetail(lesson: _lesson, assets: []);
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
+  group('Content in reading', () {
+    testWidgets('the lesson page shows the card', (tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Content in reading'), findsOneWidget);
+      expect(find.text('1 steps to read'), findsOneWidget);
+    });
+
+    testWidgets('the content page lists every step in order', (tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_wrap(
+        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'Lesson 1: Introduction'),
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Lesson 1: Introduction'), findsOneWidget);
+      expect(find.text('Step 1'), findsOneWidget);
+      expect(find.byType(LessonContentRenderer), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('LessonDetailPage', () {
     testWidgets('shows loading state without crash', (tester) async {
       await tester.pumpWidget(_wrap(

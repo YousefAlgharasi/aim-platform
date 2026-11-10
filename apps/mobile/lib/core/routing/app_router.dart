@@ -8,6 +8,7 @@ import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/register_page.dart';
 import '../../features/auth/ui/pages/forgot_password_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
+import '../../features/lessons/ui/pages/lesson_content_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
@@ -182,6 +183,18 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.lessonDetail,
           builder: (context, state) => _buildLessonDetailPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.lessonContent,
+          builder: (context, state) {
+            final args = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : const <String, dynamic>{};
+            return LessonContentPage(
+              lessonId: args['lessonId'] as String? ?? '',
+              lessonTitle: args['lessonTitle'] as String? ?? '',
+            );
+          },
         ),
         GoRoute(
           path: '/student/lessons/:id',
