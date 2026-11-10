@@ -320,88 +320,242 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
     _entry = wordOfTheDay(band, DateTime.now());
     final meaning = context.isArabic ? _entry.ar : _entry.en;
 
-    return HeroPanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final date = DateFormat('EEEE, MMM d', context.isArabic ? 'ar' : 'en').format(DateTime.now());
+    final busy = _state == _WordState.saving || _state == _WordState.checking;
+    final saved = _state == _WordState.saved;
+    final onBlue = Colors.white.withValues(alpha: 0.85);
+
+    // The example sentence with the word itself in bold.
+    final example = _entry.example;
+    final at = example.toLowerCase().indexOf(_entry.word.toLowerCase());
+    final exampleStyle = AimTextStyles.bodyLg.copyWith(
+      color: Colors.white.withValues(alpha: 0.95),
+      fontStyle: FontStyle.italic,
+    );
+    final exampleSpan = at < 0
+        ? TextSpan(text: example, style: exampleStyle)
+        : TextSpan(style: exampleStyle, children: [
+            TextSpan(text: example.substring(0, at)),
+            TextSpan(
+              text: example.substring(at, at + _entry.word.length),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            TextSpan(text: example.substring(at + _entry.word.length)),
+          ]);
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [Color(0xFF4A63F0), Color(0xFF3752E8), Color(0xFF2F46D6)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3752E8).withValues(alpha: 0.35),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
         children: [
-          Text(
-            context.tr('Word of the day', 'كلمة اليوم'),
-            style: AimTextStyles.bodySm.copyWith(
-              color: Colors.white.withValues(alpha: 0.85),
-              fontWeight: FontWeight.w600,
+          // A faint open book on the end side.
+          PositionedDirectional(
+            end: -14,
+            top: 70,
+            child: Transform.rotate(
+              angle: rtl ? 0.18 : -0.18,
+              child: Icon(
+                Icons.auto_stories_rounded,
+                size: 120,
+                color: Colors.white.withValues(alpha: 0.13),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.end,
-            spacing: 12,
-            children: [
-              Text(
-                _entry.word,
-                textDirection: TextDirection.ltr,
-                style: AimTextStyles.h1.copyWith(color: Colors.white, fontSize: 34),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  _pos(context, _entry.pos),
-                  style: AimTextStyles.bodySm.copyWith(color: Colors.white.withValues(alpha: 0.85)),
+          Padding(
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        context.tr('Word of the day', 'كلمة اليوم'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 7),
+                            Flexible(
+                              child: Text(
+                                date,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AimTextStyles.caption.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(meaning, style: AimTextStyles.bodyMd.copyWith(color: Colors.white)),
-          const SizedBox(height: 8),
-          Text(
-            '“${_entry.example}”',
-            textDirection: TextDirection.ltr,
-            style: AimTextStyles.bodySm.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: AimSpacing.space16),
-          if (_state == _WordState.saved)
-            Container(
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    context.tr('Added to my words', 'تمت الإضافة إلى كلماتي'),
-                    style: AimTextStyles.bodyMd.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                const SizedBox(height: AimSpacing.space16),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 6,
+                  children: [
+                    Text(
+                      _entry.word,
+                      textDirection: TextDirection.ltr,
+                      style: AimTextStyles.h1.copyWith(
+                        color: Colors.white,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        height: 1.05,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        _pos(context, _entry.pos),
+                        style: AimTextStyles.bodyMd.copyWith(color: onBlue),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  meaning,
+                  style: AimTextStyles.bodyLg.copyWith(color: Colors.white, fontSize: 18),
+                ),
+                const SizedBox(height: 14),
+                Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
+                const SizedBox(height: 14),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '“',
+                      textDirection: TextDirection.ltr,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        fontSize: 44,
+                        height: 0.9,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text.rich(
+                        exampleSpan,
+                        textDirection: TextDirection.ltr,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AimSpacing.space16),
+                Semantics(
+                  button: !saved,
+                  label: saved
+                      ? context.tr('Added to my words', 'تمت الإضافة إلى كلماتي')
+                      : context.tr('Add to my words', 'أضف إلى كلماتي'),
+                  child: Opacity(
+                    opacity: busy && !saved ? 0.6 : 1,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: (saved || busy) ? null : () => _add(meaning),
+                      child: Container(
+                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.75), width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              saved ? Icons.check_circle_outline_rounded : Icons.add_circle_outline_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                saved
+                                    ? context.tr('Added to my words', 'تمت الإضافة إلى كلماتي')
+                                    : _state == _WordState.saving
+                                        ? context.tr('Saving…', 'جارٍ الحفظ…')
+                                        : context.tr('Add to my words', 'أضف إلى كلماتي'),
+                                style: AimTextStyles.bodyLg.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (!saved)
+                              Icon(
+                                rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                                color: Colors.white,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 8),
+                  Text(_error!,
+                      style: AimTextStyles.bodySm.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
                 ],
-              ),
-            )
-          else
-            FilledButton(
-              onPressed: (_state == _WordState.saving || _state == _WordState.checking)
-                  ? null
-                  : () => _add(meaning),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AimColors.primary500,
-                disabledBackgroundColor: Colors.white.withValues(alpha: 0.6),
-                minimumSize: const Size(0, 48),
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 28),
-                shape: const StadiumBorder(),
-              ),
-              child: Text(_state == _WordState.saving
-                  ? context.tr('Saving…', 'جارٍ الحفظ…')
-                  : context.tr('Add to my words', 'أضف إلى كلماتي')),
+              ],
             ),
-          if (_error != null) ...[
-            const SizedBox(height: 8),
-            Text(_error!, style: AimTextStyles.bodySm.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-          ],
+          ),
         ],
       ),
     );
