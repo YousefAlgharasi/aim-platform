@@ -20,7 +20,7 @@ const LESSON_TRANSLATION_TABLE = {
   foreignKey: 'lesson_id',
 } as const;
 
-const LESSON_RETURNING = `id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, created_at, updated_at,
+const LESSON_RETURNING = `id, chapter_id, title, description, sort_order, status, xp_value, system_prompt, teaching_outline, explanation, created_at, updated_at,
          'en'::text AS locale, ARRAY['en']::text[] AS available_locales`;
 
 const DEFAULT_PAGE = 1;
@@ -38,6 +38,7 @@ function toLessonSummary(row: LessonRow): LessonSummary {
     xpValue: row.xp_value,
     systemPrompt: row.system_prompt,
     teachingOutline: row.teaching_outline,
+    explanation: row.explanation ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     locale: row.locale,
@@ -112,7 +113,7 @@ export class LessonsService {
     const text = lessonTextSql('l', `$${idx}`);
     const dataResult = await this.db.query<LessonRow>(
       `SELECT l.id, l.chapter_id, ${text.title} AS title, ${text.description} AS description,
-              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.created_at, l.updated_at,
+              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.explanation, l.created_at, l.updated_at,
               ${text.locale} AS locale,
               ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales
          FROM lessons l
@@ -135,7 +136,7 @@ export class LessonsService {
     const text = lessonTextSql('l', '$2');
     const result = await this.db.query<LessonRow>(
       `SELECT l.id, l.chapter_id, ${text.title} AS title, ${text.description} AS description,
-              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.created_at, l.updated_at,
+              l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.explanation, l.created_at, l.updated_at,
               ${text.locale} AS locale,
               ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales
          FROM lessons l
@@ -268,6 +269,11 @@ export class LessonsService {
     if (input.teachingOutline !== undefined) {
       setClauses.push(`teaching_outline = $${idx++}`);
       values.push(input.teachingOutline === null ? null : JSON.stringify(input.teachingOutline));
+    }
+
+    if (input.explanation !== undefined) {
+      setClauses.push(`explanation = $${idx++}`);
+      values.push(input.explanation === null ? null : JSON.stringify(input.explanation));
     }
 
     if (setClauses.length === 0) {
