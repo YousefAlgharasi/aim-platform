@@ -247,85 +247,22 @@ class _CourseListContentState extends State<_CourseListContent> {
           const SizedBox(height: 20),
 
           // Overview Hero Banner
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AimColors.primary500, AimColors.primary600, AimColors.primary400],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: AimColors.primary500.withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        l10n.lessonsLearningPathHeader,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: AimColors.warning500,
-                      size: 20,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.lessonsStructuredCurriculumHeader,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.lessonsPersonalizedSequenceSubtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildHero(context, l10n),
 
           const SizedBox(height: 20),
 
           // Filter Segment Tabs
-          Row(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
             children: [
-              _buildFilterTab(l10n.lessonsFilterAllCourses, _CourseFilter.all),
+              _buildFilterTab(l10n.lessonsFilterAllCourses, _CourseFilter.all, Icons.auto_stories_rounded),
               const SizedBox(width: 10),
-              _buildFilterTab(l10n.lessonsInProgressLabel, _CourseFilter.inProgress),
+              _buildFilterTab(l10n.lessonsInProgressLabel, _CourseFilter.inProgress, Icons.schedule_rounded),
               const SizedBox(width: 10),
-              _buildFilterTab(l10n.lessonsCompletedLabel, _CourseFilter.completed),
+              _buildFilterTab(l10n.lessonsCompletedLabel, _CourseFilter.completed, Icons.check_circle_outline_rounded),
             ],
+          ),
           ),
 
           const SizedBox(height: 20),
@@ -420,38 +357,192 @@ class _CourseListContentState extends State<_CourseListContent> {
     );
   }
 
-  Widget _buildFilterTab(String label, _CourseFilter filter) {
+  /// The course the hero button opens: the current one, else the first
+  /// unlocked course that is not finished.
+  StudentCourseModel? _startCourse() {
+    for (final c in widget.courses) {
+      if (c.courseId == widget.currentCourseId && !c.locked) return c;
+    }
+    for (final c in widget.courses) {
+      if (!c.locked && c.status != StudentCourseStatus.completed) return c;
+    }
+    return null;
+  }
+
+  Widget _buildHero(BuildContext context, AppLocalizations l10n) {
+    final start = _startCourse();
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6), Color(0xFF60A5FA)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AimColors.primary500.withValues(alpha: 0.30),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          PositionedDirectional(
+            end: -24,
+            top: -24,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.10),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: 18,
+            bottom: 14,
+            child: Icon(
+              Icons.school_rounded,
+              size: 72,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.route_rounded, size: 13, color: Colors.white),
+                      const SizedBox(width: 5),
+                      Text(
+                        l10n.lessonsLearningPathHeader,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.lessonsStructuredCurriculumHeader,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 70),
+                  child: Text(
+                    l10n.lessonsPersonalizedSequenceSubtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.92),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                if (start != null) ...[
+                  const SizedBox(height: 16),
+                  Material(
+                    color: Colors.white,
+                    shape: const StadiumBorder(),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: () => widget.onTap(start),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(20, 11, 14, 11),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              l10n.lessonsStartLearningNow,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: AimColors.primary500,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                              size: 20,
+                              color: AimColors.primary500,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String label, _CourseFilter filter, IconData icon) {
     final isSelected = _filter == filter;
     final colorScheme = Theme.of(context).colorScheme;
     final surfaces = aimSurfacesOf(context);
-    return InkWell(
-      onTap: () => setState(() => _filter = filter),
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary : surfaces.surfaceSunken,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? colorScheme.primary : surfaces.border,
+    final fg = isSelected ? Colors.white : surfaces.textSecondary;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 10),
+      child: InkWell(
+        onTap: () => setState(() => _filter = filter),
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? colorScheme.primary : surfaces.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected ? colorScheme.primary : surfaces.border,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withValues(alpha: isSelected ? 0.28 : 0.06),
+                blurRadius: isSelected ? 12 : 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected ? Colors.white : surfaces.textSecondary,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: fg),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: fg,
+                ),
+              ),
+            ],
           ),
         ),
       ),
