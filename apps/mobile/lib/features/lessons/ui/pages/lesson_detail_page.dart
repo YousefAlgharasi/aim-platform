@@ -289,7 +289,6 @@ class _LessonDetailContent extends StatelessWidget {
                 _LessonHero(detail: detail, isCompleted: practiceUnlocked),
                 const SizedBox(height: 16),
                 _ContentCard(
-                  steps: detail.assets.length,
                   onTap: () => context.push(
                     AppRoutePaths.lessonContent,
                     extra: {
@@ -581,9 +580,8 @@ class _LessonDetailContent extends StatelessWidget {
 
 /// "Content in reading": opens the page with all of the lesson's steps.
 class _ContentCard extends StatelessWidget {
-  const _ContentCard({required this.steps, required this.onTap});
+  const _ContentCard({required this.onTap});
 
-  final int steps;
   final VoidCallback onTap;
 
   @override
@@ -642,7 +640,7 @@ class _ContentCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        fill(context.tr('{n} steps to read', '{n} خطوات للقراءة'), {'n': steps}),
+                        context.tr('Explanation, examples and steps', 'الشرح والأمثلة والخطوات'),
                         style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
                       ),
                     ],
