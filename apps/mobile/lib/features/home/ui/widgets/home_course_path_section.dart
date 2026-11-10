@@ -434,13 +434,13 @@ class CoursePathTrail extends StatelessWidget {
 
   /// Width of the column a node sits in, and its distance from the edge.
   static const double nodeBox = 56.0;
-  static const double edgeInset = 6.0;
+  static const double edgeInset = 22.0;
 
   /// Centre of a node, measured from the edge it sits on.
   static const double laneCentre = edgeInset + nodeBox / 2;
 
   /// Height of the curve between two stops.
-  static const double linkHeight = 38.0;
+  static const double linkHeight = 46.0;
 
   @override
   Widget build(BuildContext context) {

@@ -42,7 +42,6 @@ import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
 import '../../../home/logic/entity/home_data.dart';
 import '../../../home/logic/provider/home_provider.dart';
-import '../../../notifications/ui/widgets/notification_bell_button.dart';
 
 /// Student profile screen.
 ///
@@ -171,7 +170,7 @@ class _ProfileBody extends StatelessWidget {
     final unlockedCount = achievements.where((a) => a.unlocked).length;
 
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.only(top: AimSpacing.space12, bottom: 72),
       children: [
         _ProfileHeroHeader(
           authContext: authContext,
@@ -182,7 +181,7 @@ class _ProfileBody extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AimSpacing.screenPaddingMobile,
-            vertical: AimSpacing.space24,
+            vertical: AimSpacing.space20,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -237,10 +236,10 @@ class _ProfileBody extends StatelessWidget {
   }
 }
 
-// ── Gradient hero header ───────────────────────────────────────────────────────
+// ── Hero ─────────────────────────────────────────────────────────────────────
 
-/// Gradient header: title + notification bell, avatar, name, email, and two
-/// real stats (day streak, achievements earned).
+/// Royal-blue profile card: avatar, name, email and two real stats (day
+/// streak, achievements earned). Flat colour with one faint corner detail.
 class _ProfileHeroHeader extends StatelessWidget {
   const _ProfileHeroHeader({
     required this.authContext,
@@ -254,6 +253,9 @@ class _ProfileHeroHeader extends StatelessWidget {
   final int unlockedCount;
   final int totalAchievements;
 
+  static const Color _royal = Color(0xFF2F4FE0);
+  static const Color _royalDark = Color(0xFF2840C4);
+
   String _initials(String? value) {
     if (value == null || value.trim().isEmpty) return '?';
     final parts = value.trim().split(RegExp(r'[\s@.]+'));
@@ -266,99 +268,111 @@ class _ProfileHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final displayName = authContext.profile?.displayName;
     final email = authContext.user.email;
     final name = (displayName != null && displayName.trim().isNotEmpty)
         ? displayName
         : l10n.commonLearner;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.componentGap,
-        AimSpacing.screenPaddingMobile,
-        AimSpacing.sectionGap,
-      ),
-      decoration: const BoxDecoration(
-        gradient: AimGradients.gzHero,
-        borderRadius: BorderRadiusDirectional.only(
-          bottomStart: Radius.circular(AimRadius.x2l),
-          bottomEnd: Radius.circular(AimRadius.x2l),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AimSpacing.screenPaddingMobile),
+      child: Container(
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: dark ? _royalDark : _royal,
+          borderRadius: BorderRadius.circular(AimRadius.x2l),
+          border: dark ? Border.all(color: Colors.white.withValues(alpha: 0.08)) : null,
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: IconTheme.merge(
-          data: const IconThemeData(
-            color: AimColors.neutral0,
-            size: AimSizes.iconMd,
-          ),
-          child: Column(
-            children: [
-              Row(
+        child: Stack(
+          children: [
+            // One quiet detail in the corner, nothing more.
+            PositionedDirectional(
+              top: -46,
+              end: -34,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AimSpacing.space16,
+                AimSpacing.space24,
+                AimSpacing.space16,
+                AimSpacing.space16,
+              ),
+              child: Column(
                 children: [
-                  Expanded(
+                  Container(
+                    width: 76,
+                    height: 76,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.16),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.5),
+                    ),
                     child: Text(
-                      l10n.profilePageTitle,
-                      style: AimTextStyles.title
-                          .copyWith(color: AimColors.neutral0),
+                      _initials(displayName ?? email),
+                      style: AimTextStyles.h2.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  const NotificationBellButton(),
-                ],
-              ),
-              const SizedBox(height: AimSpacing.space16),
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: AimColors.neutral0.withValues(alpha: 0.2),
-                child: Text(
-                  _initials(displayName ?? email),
-                  style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
-                ),
-              ),
-              const SizedBox(height: AimSpacing.space12),
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
-              ),
-              if (email != null && email.isNotEmpty) ...[
-                const SizedBox(height: AimSpacing.space2),
-                Text(
-                  email,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AimTextStyles.bodySm.copyWith(
-                    color: AimColors.neutral0.withValues(alpha: 0.85),
-                  ),
-                ),
-              ],
-              const SizedBox(height: AimSpacing.sectionGap),
-              Row(
-                children: [
-                  Expanded(
-                    child: _HeroStatCard(
-                      value: '$streakDays',
-                      label: l10n.profileStatDayStreak,
-                      icon: Icons.local_fire_department_rounded,
+                  const SizedBox(height: AimSpacing.space12),
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.h3.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: AimSpacing.componentGap),
-                  Expanded(
-                    child: _HeroStatCard(
-                      value: '$unlockedCount/$totalAchievements',
-                      label: l10n.profileStatAchievements,
-                      icon: Icons.emoji_events_rounded,
+                  if (email != null && email.isNotEmpty) ...[
+                    const SizedBox(height: AimSpacing.space2),
+                    Text(
+                      email,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: Colors.white.withValues(alpha: 0.78),
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: AimSpacing.space20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _HeroStatCard(
+                          value: '$streakDays',
+                          label: l10n.profileStatDayStreak,
+                          icon: Icons.local_fire_department_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: AimSpacing.componentGap),
+                      Expanded(
+                        child: _HeroStatCard(
+                          value: '$unlockedCount/$totalAchievements',
+                          label: l10n.profileStatAchievements,
+                          icon: Icons.emoji_events_rounded,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -376,40 +390,54 @@ class _HeroStatCard extends StatelessWidget {
   final String label;
   final IconData icon;
 
+  static const Color _accent = Color(0xFFFFC857);
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: '$value $label',
       child: Container(
         padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AimSpacing.componentGap,
+          horizontal: AimSpacing.space12,
           vertical: AimSpacing.space12,
         ),
         decoration: BoxDecoration(
-          color: AimColors.neutral0.withValues(alpha: 0.15),
-          borderRadius: AimRadius.borderMd,
+          color: Colors.white.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
         ),
         child: Row(
           children: [
-            Icon(icon, size: AimSizes.iconMd, color: AimColors.warning500),
-            const SizedBox(width: AimSpacing.space8),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: AimSizes.iconMd, color: _accent),
+            ),
+            const SizedBox(width: AimSpacing.space12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style:
-                        AimTextStyles.title.copyWith(color: AimColors.neutral0),
+                    style: AimTextStyles.title.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
                     label,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AimTextStyles.caption.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.85),
+                      color: Colors.white.withValues(alpha: 0.78),
                     ),
                   ),
                 ],
@@ -424,28 +452,54 @@ class _HeroStatCard extends StatelessWidget {
 
 // ── Menu ─────────────────────────────────────────────────────────────────────
 
+/// A group of rows in one container, separated by thin dividers that start
+/// where the labels start. Same tokens in both themes; only the surface and
+/// border colours come from the theme.
 class _MenuCard extends StatelessWidget {
   const _MenuCard({required this.items, required this.surfaces});
 
   final List<Widget> items;
   final AimSurfaceTheme surfaces;
 
+  /// Row padding (16) + icon tile (36) + gap (12): where the label begins.
+  static const double dividerIndent = 64;
+
   @override
   Widget build(BuildContext context) {
-    return AIMCard(
-      padding: const EdgeInsets.symmetric(vertical: AimSpacing.space4),
-      child: Column(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0)
-              Divider(
-                height: 1,
-                indent: AimSpacing.space48,
-                color: surfaces.divider,
-              ),
-            items[i],
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.xl),
+        border: Border.all(color: surfaces.border),
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: 0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  indent: dividerIndent,
+                  endIndent: AimSpacing.space16,
+                  color: surfaces.divider,
+                ),
+              items[i],
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -466,41 +520,53 @@ class _ProfileNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final isRtl = Directionality.of(context) == TextDirection.rtl;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AimSpacing.space16,
-          vertical: AimSpacing.space12,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AimColors.primary500.withValues(alpha: 0.1),
-                borderRadius: AimRadius.borderSm,
-              ),
-              child: Icon(icon, size: AimSizes.iconSm, color: AimColors.primary600),
+    return Semantics(
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 60),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AimSpacing.space16,
+              vertical: AimSpacing.space12,
             ),
-            const SizedBox(width: AimSpacing.componentGap),
-            Expanded(
-              child: Text(
-                label,
-                style: AimTextStyles.bodyMd.copyWith(
-                  color: surfaces.textPrimary,
-                  fontWeight: FontWeight.w600,
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: AimSizes.iconMd,
+                    color: dark ? AimColors.primary300 : AimColors.primary600,
+                  ),
                 ),
-              ),
+                const SizedBox(width: AimSpacing.space12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  isRtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                  size: AimSizes.iconMd,
+                  color: surfaces.textMuted,
+                ),
+              ],
             ),
-            Icon(
-              isRtl ? Icons.chevron_left : Icons.chevron_right,
-              size: AimSizes.iconSm,
-              color: surfaces.textMuted,
-            ),
-          ],
+          ),
         ),
       ),
     );
