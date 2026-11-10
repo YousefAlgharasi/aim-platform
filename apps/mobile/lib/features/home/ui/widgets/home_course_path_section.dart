@@ -43,10 +43,11 @@ import 'package:aim_mobile/features/student_courses/data/models/student_course_m
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
-enum _NodeKind { lesson, quiz, finalExam }
+enum CoursePathNodeKind { lesson, quiz, finalExam }
 
-class _PathNode {
-  const _PathNode({
+/// One stop on the roadmap (public so the trail can be tested on its own).
+class CoursePathNode {
+  const CoursePathNode({
     required this.kind,
     required this.id,
     required this.title,
@@ -55,7 +56,7 @@ class _PathNode {
     required this.current,
   });
 
-  final _NodeKind kind;
+  final CoursePathNodeKind kind;
   final String id;
   final String title;
   final bool completed;
@@ -81,7 +82,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   _LoadState _state = _LoadState.loading;
   String? _courseTitle;
   String? _subtitle;
-  List<_PathNode> _nodes = const [];
+  List<CoursePathNode> _nodes = const [];
 
   /// Set when the current course is completed and the backend names a next
   /// course: the roadmap then shows a "start the next course" card.
@@ -170,8 +171,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
               ? l10n.homeCoursePathCompletedSubtitle
               : l10n.homeCoursePathFinalExamLabel;
           _nodes = [
-            _PathNode(
-              kind: _NodeKind.finalExam,
+            CoursePathNode(
+              kind: CoursePathNodeKind.finalExam,
               id: finalExam.assessmentId,
               title: finalExam.title,
               completed: course.status == StudentCourseStatus.completed,
@@ -187,10 +188,10 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       final lessons = data.lessons;
       final quiz = data.quiz;
 
-      final nodes = <_PathNode>[
+      final nodes = <CoursePathNode>[
         for (final lesson in lessons)
-          _PathNode(
-            kind: _NodeKind.lesson,
+          CoursePathNode(
+            kind: CoursePathNodeKind.lesson,
             id: lesson.id,
             title: lesson.title,
             completed: lesson.completed,
@@ -198,8 +199,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             current: lesson.current,
           ),
         if (quiz != null)
-          _PathNode(
-            kind: _NodeKind.quiz,
+          CoursePathNode(
+            kind: CoursePathNodeKind.quiz,
             id: quiz.assessmentId,
             title: quiz.title,
             completed: quiz.completed,
@@ -281,27 +282,27 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     );
   }
 
-  void _openLesson(_PathNode node) {
+  void _openLesson(CoursePathNode node) {
     context.push(
       AppRoutePaths.lessonDetail,
       extra: {'lessonId': node.id, 'lessonTitle': node.title},
     );
   }
 
-  void _openAssessment(_PathNode node) {
+  void _openAssessment(CoursePathNode node) {
     context.push(
       AppRoutePaths.assessmentDetail,
       extra: {'assessmentId': node.id, 'assessmentTitle': node.title},
     );
   }
 
-  void _onTapNode(_PathNode node) {
+  void _onTapNode(CoursePathNode node) {
     if (!node.unlocked) return;
     switch (node.kind) {
-      case _NodeKind.lesson:
+      case CoursePathNodeKind.lesson:
         _openLesson(node);
-      case _NodeKind.quiz:
-      case _NodeKind.finalExam:
+      case CoursePathNodeKind.quiz:
+      case CoursePathNodeKind.finalExam:
         _openAssessment(node);
     }
   }
@@ -397,7 +398,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
               onStart: () => _startNextCourse(_nextCourse!),
             )
           else
-          _CoursePathTrail(
+          CoursePathTrail(
             nodes: _nodes,
             onTapNode: _onTapNode,
             quizLabel: l10n.homeCoursePathChapterQuizLabel,
@@ -410,10 +411,12 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   }
 }
 
-/// Winding node trail: nodes alternate horizontally, connected by a smooth
-/// curved wavy dashed path. Matches the React mockup's ZigZagRoadmap perfectly.
-class _CoursePathTrail extends StatelessWidget {
-  const _CoursePathTrail({
+/// Compact roadmap: small nodes on a gently winding dashed line down the
+/// start side, each with its title and status beside it. The line only runs
+/// between the nodes and never behind the text, so titles stay readable.
+class CoursePathTrail extends StatelessWidget {
+  const CoursePathTrail({
+    super.key,
     required this.nodes,
     required this.onTapNode,
     required this.quizLabel,
@@ -421,135 +424,74 @@ class _CoursePathTrail extends StatelessWidget {
     required this.lockedSemantic,
   });
 
-  final List<_PathNode> nodes;
-  final void Function(_PathNode node) onTapNode;
+  final List<CoursePathNode> nodes;
+  final void Function(CoursePathNode node) onTapNode;
   final String quizLabel;
   final String finalExamLabel;
   final String lockedSemantic;
 
+  /// Distance of the first lane from the start edge (node centre), how far
+  /// every other node sits from it, and where the text begins. The text
+  /// starts to the right of the widest the line ever gets.
+  static const double laneX = 28.0;
+  static const double wave = 16.0;
+  static const double textStart = laneX + wave + 26.0 + 12.0;
+
+  static double nodeX(int i) => laneX + (i.isOdd ? wave : 0.0);
+
   @override
   Widget build(BuildContext context) {
     if (nodes.isEmpty) return const SizedBox.shrink();
+    final rtl = Directionality.of(context) == TextDirection.rtl;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final center = constraints.maxWidth / 2;
-        final List<Offset> nodeOffsets = [];
-
-        // Alternating horizontal offsets like React prototype, starting immediately from index 1 to wind beautifully: center, right, left, right, left...
-        double getOffsetX(int index) {
-          if (index == 0) return 0.0;
-          return index % 2 == 1 ? 65.0 : -65.0;
-        }
-
-        // Calculated distance between circle centers is exactly 148 pixels
-        // (nodeSize/2 of 56 = 28, height spacer = 52, half of next = 28 => 28+52+28 = 108.
-        // Wait: node height with labels = 96 => bottom spacing of circle center is 96 - 28 = 68.
-        // 68 + spacer 52 + 28 = 148.0 pixels)
-        const double nodeSpacingY = 148.0;
-        const double initialY = 28.0;
-
-        for (var i = 0; i < nodes.length; i++) {
-          nodeOffsets.add(Offset(center + getOffsetX(i), initialY + (i * nodeSpacingY)));
-        }
-
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _WavyPathPainter(
-                  nodeOffsets: nodeOffsets,
-                  color: AimColors.primary200,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: Column(
-                children: [
-                  for (var i = 0; i < nodes.length; i++) ...[
-                    Transform.translate(
-                      offset: Offset(getOffsetX(i), 0),
-                      child: _RoadmapNodeWidget(
-                        node: nodes[i],
-                        label: switch (nodes[i].kind) {
-                          _NodeKind.lesson => nodes[i].title,
-                          _NodeKind.quiz => quizLabel,
-                          _NodeKind.finalExam => finalExamLabel,
-                        },
-                        lockedSemantic: lockedSemantic,
-                        onTap: () => onTapNode(nodes[i]),
-                      ),
-                    ),
-                    if (i < nodes.length - 1)
-                      const SizedBox(height: 52.0), // spacer to match nodeSpacingY calculation
-                  ],
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        for (var i = 0; i < nodes.length; i++)
+          _RoadmapRow(
+            node: nodes[i],
+            x: nodeX(i),
+            xAbove: i > 0 ? nodeX(i - 1) : null,
+            xBelow: i < nodes.length - 1 ? nodeX(i + 1) : null,
+            rtl: rtl,
+            label: switch (nodes[i].kind) {
+              CoursePathNodeKind.lesson => nodes[i].title,
+              CoursePathNodeKind.quiz => quizLabel,
+              CoursePathNodeKind.finalExam => finalExamLabel,
+            },
+            lockedSemantic: lockedSemantic,
+            onTap: () => onTapNode(nodes[i]),
+          ),
+      ],
     );
   }
 }
 
-class _WavyPathPainter extends CustomPainter {
-  _WavyPathPainter({required this.nodeOffsets, required this.color});
-  final List<Offset> nodeOffsets;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (nodeOffsets.length < 2) return;
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    path.moveTo(nodeOffsets[0].dx, nodeOffsets[0].dy);
-
-    for (var i = 0; i < nodeOffsets.length - 1; i++) {
-      final p0 = nodeOffsets[i];
-      final p1 = nodeOffsets[i + 1];
-      final midY = (p0.dy + p1.dy) / 2;
-      path.cubicTo(p0.dx, midY, p1.dx, midY, p1.dx, p1.dy);
-    }
-
-    // Draw dashed path
-    const dashWidth = 8.0;
-    const dashSpace = 6.0;
-    var distance = 0.0;
-    for (final pathMetric in path.computeMetrics()) {
-      while (distance < pathMetric.length) {
-        canvas.drawPath(
-          pathMetric.extractPath(distance, distance + dashWidth),
-          paint,
-        );
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-class _RoadmapNodeWidget extends StatelessWidget {
-  const _RoadmapNodeWidget({
+/// One stop: the node on the line at the start, its text beside it. The
+/// row is as tall as its text needs; the line is drawn in two halves per
+/// row (down to the row's edge and from the edge of the row above) that meet
+/// at the same point, so the path stays smooth whatever the text size.
+class _RoadmapRow extends StatelessWidget {
+  const _RoadmapRow({
     required this.node,
+    required this.x,
+    required this.xAbove,
+    required this.xBelow,
+    required this.rtl,
     required this.label,
     required this.lockedSemantic,
     required this.onTap,
   });
 
-  final _PathNode node;
+  final CoursePathNode node;
+  final double x;
+  final double? xAbove;
+  final double? xBelow;
+  final bool rtl;
   final String label;
   final String lockedSemantic;
   final VoidCallback onTap;
+
+  static const double _minHeight = 76.0;
 
   @override
   Widget build(BuildContext context) {
@@ -558,92 +500,62 @@ class _RoadmapNodeWidget extends StatelessWidget {
     final isDone = node.completed;
     final isCurrent = node.current;
     final isLocked = !node.unlocked;
+    final size = isCurrent ? 52.0 : 44.0;
 
-    final double nodeSize = isCurrent ? 68 : 56;
-
-    Widget circle;
+    final Widget dot;
     if (isDone) {
-      circle = Container(
-        width: nodeSize,
-        height: nodeSize,
+      dot = Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [AimColors.success500, AimColors.success600],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AimColors.success500.withValues(alpha: 0.2),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(14),
         ),
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.check_rounded,
-          color: AimColors.neutral0,
-          size: 24,
-        ),
+        child: const Icon(Icons.check_rounded, color: AimColors.neutral0, size: 22),
       );
     } else if (isCurrent) {
-      circle = Transform.rotate(
-        angle: 3 * 3.14159 / 180, // rotate-3
-        child: Container(
-          width: nodeSize,
-          height: nodeSize,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AimColors.primary500, AimColors.primary400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AimColors.primary200, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: AimColors.primary500.withValues(alpha: 0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: const Icon(
-            Icons.play_arrow_rounded,
-            color: AimColors.neutral0,
-            size: 28,
-          ),
-        ),
-      );
-    } else {
-      circle = Container(
-        width: nodeSize,
-        height: nodeSize,
+      dot = Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: surfaces.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: surfaces.border, width: 2),
+          gradient: const LinearGradient(
+            colors: [AimColors.primary500, AimColors.primary400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AimColors.primary200, width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: AimColors.primary500.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
+        child: const Icon(Icons.play_arrow_rounded, color: AimColors.neutral0, size: 26),
+      );
+    } else {
+      dot = Container(
+        width: size,
+        height: size,
         alignment: Alignment.center,
-        child: Icon(
-          Icons.lock_outline_rounded,
-          color: surfaces.textMuted,
-          size: 22,
+        decoration: BoxDecoration(
+          color: surfaces.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: surfaces.border, width: 2),
         ),
+        child: Icon(Icons.lock_outline_rounded, color: surfaces.textMuted, size: 20),
       );
     }
 
-    final String subTranslated = isDone
+    final status = isDone
         ? l10n.homeNodeMastered
         : isCurrent
             ? l10n.homeNodeCurrentLesson
@@ -652,82 +564,169 @@ class _RoadmapNodeWidget extends StatelessWidget {
     return Semantics(
       button: node.unlocked,
       label: node.unlocked ? label : '$label — $lockedSemantic',
-      child: GestureDetector(
+      child: InkWell(
         onTap: node.unlocked ? onTap : null,
-        child: SizedBox(
-          width: 140, // constraints label size
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  circle,
-                  if (isCurrent)
-                    Positioned(
-                      top: -24,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: AimGradients.ai,
-                          borderRadius: AimRadius.borderPill,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AimColors.primary500.withValues(alpha: 0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          l10n.homeNextUp.toUpperCase(),
-                          style: AimTextStyles.caption.copyWith(
-                            color: AimColors.neutral0,
-                            fontWeight: AimFontWeights.extrabold,
-                            fontSize: 9,
-                            letterSpacing: 0.8,
+        borderRadius: BorderRadius.circular(12),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: _minHeight),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: CoursePathTrail.textStart - 12,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _TrailPainter(
+                            x: x,
+                            xAbove: xAbove,
+                            xBelow: xBelow,
+                            rtl: rtl,
+                            color: AimColors.primary200,
                           ),
                         ),
                       ),
+                      Positioned.fill(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.only(start: x - size / 2),
+                            child: dot,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isCurrent)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: const BoxDecoration(
+                              gradient: AimGradients.ai,
+                              borderRadius: AimRadius.borderPill,
+                            ),
+                            child: Text(
+                              l10n.homeNextUp.toUpperCase(),
+                              style: AimTextStyles.caption.copyWith(
+                                color: AimColors.neutral0,
+                                fontWeight: AimFontWeights.extrabold,
+                                fontSize: 9,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                        Text(
+                          label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AimTextStyles.bodyMd.copyWith(
+                            color: isLocked ? surfaces.textMuted : surfaces.textPrimary,
+                            fontWeight: isCurrent ? AimFontWeights.bold : AimFontWeights.semibold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          status,
+                          style: AimTextStyles.caption.copyWith(
+                            color: isDone
+                                ? AimColors.success500
+                                : isCurrent
+                                    ? AimColors.primary500
+                                    : surfaces.textMuted,
+                            fontWeight: AimFontWeights.semibold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
-                ],
-              ),
-              const SizedBox(height: AimSpacing.space8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AimTextStyles.bodySm.copyWith(
-                  color: isLocked ? surfaces.textMuted : surfaces.textPrimary,
-                  fontWeight: isCurrent ? AimFontWeights.bold : AimFontWeights.semibold,
-                  fontSize: 13,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AimSpacing.space2),
-              Text(
-                subTranslated,
-                textAlign: TextAlign.center,
-                style: AimTextStyles.caption.copyWith(
-                  color: isDone
-                      ? AimColors.success500
-                      : isCurrent
-                          ? AimColors.primary500
-                          : surfaces.textMuted,
-                  fontWeight: AimFontWeights.semibold,
-                  fontSize: 11,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// This row's two halves of the dashed line: from the row's node down to the
+/// middle of the gap below, and from the middle of the gap above down to the
+/// node. Both ends are vertical, so neighbouring rows join smoothly.
+class _TrailPainter extends CustomPainter {
+  _TrailPainter({
+    required this.x,
+    required this.xAbove,
+    required this.xBelow,
+    required this.rtl,
+    required this.color,
+  });
+
+  final double x;
+  final double? xAbove;
+  final double? xBelow;
+  final bool rtl;
+  final Color color;
+
+  double _px(double v, double width) => rtl ? width - v : v;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final cx = _px(x, w);
+    final cy = size.height / 2;
+    final path = Path();
+
+    if (xAbove != null) {
+      final bx = (cx + _px(xAbove!, w)) / 2;
+      path
+        ..moveTo(bx, 0)
+        ..cubicTo(bx, cy * 0.5, cx, cy * 0.5, cx, cy);
+    } else {
+      path.moveTo(cx, cy);
+    }
+    if (xBelow != null) {
+      final bx = (cx + _px(xBelow!, w)) / 2;
+      path.cubicTo(cx, cy + (size.height - cy) * 0.5, bx,
+          cy + (size.height - cy) * 0.5, bx, size.height);
+    }
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    const dash = 7.0;
+    const gap = 6.0;
+    for (final metric in path.computeMetrics()) {
+      var d = 0.0;
+      while (d < metric.length) {
+        canvas.drawPath(metric.extractPath(d, d + dash), paint);
+        d += dash + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TrailPainter old) =>
+      old.x != x ||
+      old.xAbove != xAbove ||
+      old.xBelow != xBelow ||
+      old.rtl != rtl ||
+      old.color != color;
 }
 
 class _CoursePathSkeleton extends StatelessWidget {
