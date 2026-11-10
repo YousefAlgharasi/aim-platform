@@ -97,12 +97,14 @@ class PracticeHubPage extends ConsumerWidget {
                 title: context.tr('Practice Speaking', 'تدرّب على المحادثة'),
                 body: context.tr('Pick a topic, talk about it, earn XP.', 'اختر موضوعاً وتحدّث عنه واكسب نقاط خبرة.'),
                 onTap: () => context.push(AppRoutePaths.practiceSpeaking),
+                strip: true,
               ),
               _ModeCard(
                 icon: Icons.edit_outlined,
                 title: context.tr('Write a Paragraph', 'اكتب فقرة'),
                 body: context.tr('Write on a topic and see exactly what to fix.', 'اكتب عن موضوع واعرف ما يجب إصلاحه بالضبط.'),
                 onTap: () => context.push(AppRoutePaths.practiceWriting),
+                strip: true,
               ),
               const SizedBox(height: AimSpacing.space12),
               _GroupTitle(context.tr('Remember and fix', 'تذكّر وأصلح')),
@@ -159,8 +161,12 @@ class _ModeCard extends StatelessWidget {
     required this.body,
     required this.onTap,
     this.meta,
+    this.strip = false,
   });
 
+  /// The Today's-goal look: a brand-blue strip with the icon and title on
+  /// top, the description below.
+  final bool strip;
   final IconData icon;
   final String title;
   final String body;
@@ -171,6 +177,80 @@ class _ModeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
     final soft = aimSoftFillsOf(context);
+    if (strip) {
+      final dark = Theme.of(context).brightness == Brightness.dark;
+      final rtl = Directionality.of(context) == TextDirection.rtl;
+      return Padding(
+        padding: const EdgeInsetsDirectional.only(bottom: AimSpacing.componentGap),
+        child: Semantics(
+          button: true,
+          label: title,
+          child: Material(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(AimRadius.lg),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: Ink(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AimRadius.lg),
+                  border: Border.all(color: surfaces.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AimColors.primary500.withValues(alpha: dark ? 0.18 : 0.10),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: AimSpacing.space16, vertical: 10),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: AlignmentDirectional.centerStart,
+                          end: AlignmentDirectional.centerEnd,
+                          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(icon, size: 20, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: AimTextStyles.bodyMd.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+                      child: Text(
+                        body,
+                        style: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsetsDirectional.only(bottom: AimSpacing.componentGap),
       child: AIMCard(
