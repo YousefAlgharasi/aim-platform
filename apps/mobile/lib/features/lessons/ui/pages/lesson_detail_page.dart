@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -286,6 +287,17 @@ class _LessonDetailContent extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
                 _LessonHero(detail: detail, isCompleted: practiceUnlocked),
+                const SizedBox(height: 16),
+                _ContentCard(
+                  steps: detail.assets.length,
+                  onTap: () => context.push(
+                    AppRoutePaths.lessonContent,
+                    extra: {
+                      'lessonId': detail.lesson.id,
+                      'lessonTitle': detail.lesson.title,
+                    },
+                  ),
+                ),
                 const SizedBox(height: 20),
 
                 // Section Header: What's inside
@@ -563,6 +575,97 @@ class _LessonDetailContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "Content in reading": opens the page with all of the lesson's steps.
+class _ContentCard extends StatelessWidget {
+  const _ContentCard({required this.steps, required this.onTap});
+
+  final int steps;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Semantics(
+      button: true,
+      label: context.tr('Content in reading', 'المحتوى للقراءة'),
+      child: Material(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: dark ? 0.14 : 0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('Content in reading', 'المحتوى للقراءة'),
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        fill(context.tr('{n} steps to read', '{n} خطوات للقراءة'), {'n': steps}),
+                        style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                    size: 20,
+                    color: AimColors.primary500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -70,7 +70,7 @@ Widget _app({
 }
 
 void main() {
-  testWidgets('titles start clear of the dashed line (English)', (tester) async {
+  testWidgets('zigzags: start side, end side, start side', (tester) async {
     tester.view.physicalSize = const Size(390, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -78,17 +78,39 @@ void main() {
     await tester.pumpWidget(_app());
     await tester.pump();
 
-    // The line never gets further than this from the start edge.
-    const lineEdge = CoursePathTrail.laneX + CoursePathTrail.wave + 22;
-    for (final t in ['This Is My Family', 'I Am Not / You Are Not', 'Chapter quiz']) {
-      final left = tester.getTopLeft(find.text(t)).dx - 20; // minus page padding
-      expect(left, greaterThan(lineEdge), reason: '$t overlaps the line');
-    }
+    final done = tester.getCenter(find.byIcon(Icons.check_rounded)).dx;
+    final current = tester.getCenter(find.byIcon(Icons.play_arrow_rounded)).dx;
+    final locked = tester.getCenter(find.byIcon(Icons.lock_outline_rounded).first).dx;
+    expect(current, greaterThan(done + 100), reason: 'second stop is on the other side');
+    expect(locked, lessThan(current - 100), reason: 'third stop is back on the start side');
+    expect((locked - done).abs(), lessThan(4));
+    expect(find.text('Lesson 1'), findsOneWidget);
     expect(find.text('NEXT UP'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('mirrors in Arabic: titles stay clear of the line', (tester) async {
+  testWidgets('titles never sit on top of a node', (tester) async {
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(_app());
+    await tester.pump();
+
+    final icons = [
+      find.byIcon(Icons.check_rounded),
+      find.byIcon(Icons.play_arrow_rounded),
+      find.byIcon(Icons.lock_outline_rounded).first,
+    ].map((f) => tester.getRect(f)).toList();
+    for (final t in ['This Is My Family', 'I Am Not / You Are Not']) {
+      final r = tester.getRect(find.text(t));
+      for (final i in icons) {
+        expect(r.overlaps(i), isFalse, reason: '$t overlaps a node');
+      }
+    }
+  });
+
+  testWidgets('mirrors in Arabic: first stop on the right', (tester) async {
     tester.view.physicalSize = const Size(390, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -96,15 +118,14 @@ void main() {
     await tester.pumpWidget(_app(locale: const Locale('ar')));
     await tester.pump();
 
-    // In RTL the text sits to the left of the lane; measure from the right edge.
-    const lineEdge = CoursePathTrail.laneX + CoursePathTrail.wave + 22;
-    final right = 390 - 20 - tester.getTopRight(find.text('This Is My Family')).dx;
-    expect(right, greaterThan(lineEdge));
+    final done = tester.getCenter(find.byIcon(Icons.check_rounded)).dx;
+    final current = tester.getCenter(find.byIcon(Icons.play_arrow_rounded)).dx;
+    expect(done, greaterThan(current + 100));
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('grows with large text instead of overflowing', (tester) async {
-    tester.view.physicalSize = const Size(320, 1200);
+    tester.view.physicalSize = const Size(320, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 

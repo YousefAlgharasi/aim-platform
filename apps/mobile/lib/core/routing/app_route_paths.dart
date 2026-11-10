@@ -16,6 +16,7 @@ class AppRoutePaths {
   static const String courseChapters = '/lessons/chapters';
   static const String chapterLessons = '/lessons/lessons';
   static const String lessonDetail = '/lessons/detail';
+  static const String lessonContent = '/lessons/content';
 
   // AIM pipeline live wiring: lesson practice (learning session) flow
   static const String practiceSession = '/practice/session';
