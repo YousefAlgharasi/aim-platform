@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aim_mobile/core/widgets/aim_logo_mark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -146,79 +147,93 @@ class _StreakAndBell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final streak = ref.watch(streakDaysProvider).valueOrNull;
     final unread = switch (ref.watch(notificationUnreadCountProvider)) {
       AppAsyncSuccess(:final data) => data,
       _ => 0,
     };
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (streak != null)
-          Semantics(
-            label: '$streak ${context.tr('Day streak', 'أيام متتالية')}',
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.local_fire_department_outlined,
-                      size: 20, color: surfaces.textPrimary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$streak',
-                    style: AimTextStyles.bodyMd.copyWith(
-                      color: surfaces.textPrimary,
-                      fontWeight: FontWeight.w600,
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: dark ? surfaces.surface : Colors.white,
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: surfaces.border),
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (streak != null) ...[
+            Semantics(
+              label: '$streak ${context.tr('Day streak', 'أيام متتالية')}',
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(start: 12, end: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.local_fire_department_rounded,
+                        size: 22, color: Color(0xFFFF7A1A)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$streak',
+                      style: AimTextStyles.bodyMd.copyWith(
+                        color: surfaces.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            IconButton(
-              tooltip: unread > 0
-                  ? fill(
-                      context.tr('Notifications, {n} unread',
-                          'الإشعارات، {n} غير مقروءة'),
-                      {'n': unread})
-                  : context.tr('Notifications', 'الإشعارات'),
-              icon: Icon(Icons.notifications_none_rounded,
-                  color: surfaces.textSecondary),
-              onPressed: () => context.push(AppRoutePaths.notificationInbox),
-            ),
-            if (unread > 0)
-              PositionedDirectional(
-                top: 4,
-                end: 4,
-                child: IgnorePointer(
-                  child: Container(
-                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AimColors.error500,
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(color: surfaces.background, width: 2),
-                    ),
-                    child: Text(
-                      unread > 9 ? '9+' : '$unread',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
+            Container(width: 1, height: 20, color: surfaces.divider),
+          ],
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: unread > 0
+                    ? fill(
+                        context.tr('Notifications, {n} unread',
+                            'الإشعارات، {n} غير مقروءة'),
+                        {'n': unread})
+                    : context.tr('Notifications', 'الإشعارات'),
+                icon: Icon(Icons.notifications_none_rounded,
+                    size: 24, color: surfaces.textPrimary),
+                onPressed: () => context.push(AppRoutePaths.notificationInbox),
+              ),
+              if (unread > 0)
+                PositionedDirectional(
+                  top: 7,
+                  end: 8,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 11,
+                      height: 11,
+                      decoration: BoxDecoration(
+                        color: AimColors.error500,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: dark ? surfaces.surface : Colors.white,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -246,11 +261,15 @@ class _ProfileAvatar extends ConsumerWidget {
           context.go(AppRoutePaths.mainShell);
         },
         child: Container(
-          width: 34,
-          height: 34,
+          width: 40,
+          height: 40,
           alignment: Alignment.center,
           decoration: const BoxDecoration(
-            gradient: AimGradients.ai,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF3F6CF6), Color(0xFF2848D8)],
+            ),
             shape: BoxShape.circle,
           ),
           child: Text(
@@ -258,7 +277,7 @@ class _ProfileAvatar extends ConsumerWidget {
             style: AimTextStyles.label.copyWith(
               color: AimColors.neutral0,
               fontWeight: AimFontWeights.bold,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
         ),
@@ -299,21 +318,28 @@ class _AppTopBar extends ConsumerWidget {
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                child: Text(
-                  'AIM',
-                  style: AimTextStyles.h2.copyWith(
-                    color: surfaces.textPrimary,
-                    fontWeight: AimFontWeights.bold,
-                    fontSize: 22,
-                    letterSpacing: context.isArabic ? 0 : -0.5,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AimLogoMark(size: 30),
+                    const SizedBox(width: 8),
+                    Text(
+                      'AIM',
+                      style: AimTextStyles.h2.copyWith(
+                        color: surfaces.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22,
+                        letterSpacing: context.isArabic ? 0 : 0.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
           const Spacer(),
           const _StreakAndBell(),
-          const SizedBox(width: 4),
+          const SizedBox(width: 10),
           const _ProfileAvatar(),
         ],
       );
@@ -364,7 +390,7 @@ class _AppTopBar extends ConsumerWidget {
                 ),
           ),
           for (final a in s.actions) a,
-          if (mode == ChromeBarMode.section) const _StreakAndBell(),
+          if (mode == ChromeBarMode.section) ...const [_StreakAndBell(), SizedBox(width: 4)],
         ],
       );
     }
