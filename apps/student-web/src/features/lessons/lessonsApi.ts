@@ -12,6 +12,14 @@ import { apiClient } from '../../api/client';
 // Both progress endpoints enforce the unlock gate server-side: 403 when the
 // course is locked or the previous lesson (course order) isn't completed.
 
+export interface LessonExplanation {
+  overview: string;
+  sections: { heading: string; body: string; examples?: { text: string; note?: string }[] }[];
+  keyPoints: string[];
+  commonMistakes?: { wrong: string; right: string; why: string }[];
+  recap?: string;
+}
+
 export interface LessonDetail {
   id: string;
   chapterId: string;
@@ -20,6 +28,8 @@ export interface LessonDetail {
   status: string;
   sortOrder: number;
   xpValue: number;
+  /** Written teaching content; null until authored. */
+  explanation?: LessonExplanation | null;
   createdAt: string;
   updatedAt: string;
 }

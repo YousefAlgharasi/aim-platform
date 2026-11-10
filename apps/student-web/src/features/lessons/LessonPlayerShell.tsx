@@ -8,6 +8,7 @@ import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ContentBlockRenderer } from './ContentBlockRenderer';
+import { LessonExplanationView } from './LessonExplanationView';
 import { LessonNavigation } from './LessonNavigation';
 import {
   fetchLessonAssets,
@@ -150,8 +151,12 @@ export function LessonPlayerShell() {
         </Banner>
       )}
 
+      {lesson.explanation && <LessonExplanationView explanation={lesson.explanation} />}
+
       <div className="flex flex-col gap-3">
-        <h2 className="m-0 text-xl font-semibold tracking-tight text-ink">{t('What’s inside')}</h2>
+        <h2 className="m-0 text-xl font-semibold tracking-tight text-ink">
+          {lesson.explanation ? t('Practice material') : t('What’s inside')}
+        </h2>
         {assets.length === 0 ? (
           <EmptyState
             title={t('No content yet')}

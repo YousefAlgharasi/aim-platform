@@ -5,6 +5,33 @@ import {
 
 export { CURRICULUM_CONTENT_STATUSES, CurriculumContentStatus };
 
+export interface LessonExplanationExample {
+  text: string;
+  note?: string;
+}
+
+export interface LessonExplanationSection {
+  heading: string;
+  /** Markdown. */
+  body: string;
+  examples?: LessonExplanationExample[];
+}
+
+export interface LessonExplanationMistake {
+  wrong: string;
+  right: string;
+  why: string;
+}
+
+/** Student-facing teaching content for a lesson (lessons.explanation JSONB). */
+export interface LessonExplanation {
+  overview: string;
+  sections: LessonExplanationSection[];
+  keyPoints: string[];
+  commonMistakes?: LessonExplanationMistake[];
+  recap?: string;
+}
+
 export interface LessonRow {
   id: string;
   chapter_id: string;
@@ -17,6 +44,7 @@ export interface LessonRow {
   system_prompt: string | null;
   /** Optional admin-authored checklist of discrete points the AI Teacher must cover. */
   teaching_outline: string[] | null;
+  explanation?: LessonExplanation | null;
   created_at: string;
   updated_at: string;
   locale: string;
@@ -36,6 +64,8 @@ export interface LessonSummary {
   systemPrompt: string | null;
   /** Optional admin-authored checklist of discrete points the AI Teacher must cover. */
   teachingOutline: string[] | null;
+  /** Student-facing explanation of the lesson; null until written. */
+  explanation?: LessonExplanation | null;
   createdAt: string;
   updatedAt: string;
   locale: string;
@@ -62,4 +92,5 @@ export interface UpdateLessonInput {
   sortOrder?: number;
   systemPrompt?: string | null;
   teachingOutline?: string[] | null;
+  explanation?: LessonExplanation | null;
 }
