@@ -516,8 +516,6 @@ class _ZigStop extends StatelessWidget {
   final String lockedSemantic;
   final VoidCallback onTap;
 
-  static const double _minHeight = 76.0;
-
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
