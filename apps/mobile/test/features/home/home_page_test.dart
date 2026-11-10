@@ -210,6 +210,7 @@ void main() {
 
       double y(String text) => tester.getTopLeft(find.text(text).first).dy;
       final order = [
+        y("Today's goal"),
         y('Word of the day'),
         y('XP level'),
         y('Top learners'),
