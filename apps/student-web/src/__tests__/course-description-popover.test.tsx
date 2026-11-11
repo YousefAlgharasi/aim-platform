@@ -47,17 +47,17 @@ const exit = () => act(async () => { await new Promise((r) => setTimeout(r, 200)
 describe('Course description popover', () => {
   it('lists the real chapter titles in the info popover, with no decorative pictures on the cards', async () => {
     render(<CourseCatalog />);
-    await screen.findByText('3 chapters');
-    fireEvent.click(screen.getByRole('button', { name: 'التمهيدي: course description' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'التمهيدي: course description' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent("What you'll cover");
     ['Greetings', 'Numbers', 'Colours'].forEach((c) => expect(dialog).toHaveTextContent(c));
     expect(document.querySelectorAll('img')).toHaveLength(0);
   });
 
-  it('shows the summed chapter count on the learning path', async () => {
+  it('keeps the chapter count off the card (it lives in the info popover)', async () => {
     render(<CourseCatalog />);
-    expect(await screen.findByText('3 chapters')).toBeInTheDocument(); // c1: 2 + 1 across two levels
+    await screen.findByRole('button', { name: 'التمهيدي: course description' });
+    expect(screen.queryByText('3 chapters')).not.toBeInTheDocument();
     expect(screen.queryByText(/UNIT/)).not.toBeInTheDocument();
     expect(screen.getByText('Courses')).toBeInTheDocument();
     expect(screen.queryByText('Lessons completed')).not.toBeInTheDocument();

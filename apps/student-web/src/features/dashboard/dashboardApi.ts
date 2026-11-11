@@ -30,6 +30,12 @@ export interface StreakFreezeSummary {
   canUseNow: boolean;
 }
 
+export interface StreakDaySummary {
+  /** yyyy-mm-dd (UTC) */
+  date: string;
+  status: 'active' | 'frozen' | 'none';
+}
+
 export interface EngagementSummary {
   goal: DailyGoalSummary;
   challenge: DailyChallengeSummary | null;
@@ -37,6 +43,8 @@ export interface EngagementSummary {
   challenges?: DailyChallengeSummary[];
   /** Absent on older backends: the freeze UI stays hidden. */
   streakFreeze?: StreakFreezeSummary;
+  /** The last 7 UTC days, oldest first, ending today. Absent on older backends. */
+  recentDays?: StreakDaySummary[];
 }
 
 export interface WeeklyActivityDay {

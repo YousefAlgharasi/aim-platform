@@ -13,6 +13,7 @@ import {
   DailyGoalSummary,
   EngagementStatsResponse,
   EngagementSummaryResponse,
+  StreakDay,
   StreakFreezeSummary,
   WeeklyActivityDay,
   LeaderboardEntry,
@@ -95,7 +96,13 @@ export class EngagementService {
       this.practiceChallenge(PRACTICE_WRITING_CHALLENGE, practiceToday.writing),
     ];
 
-    return { goal, challenge, challenges, streakFreeze: this.freezeSummary(activeDates, frozenDates, usedThisMonth) };
+    return {
+      goal,
+      challenge,
+      challenges,
+      streakFreeze: this.freezeSummary(activeDates, frozenDates, usedThisMonth),
+      recentDays: this.recentDays(activeDates, frozenDates),
+    };
   }
 
   /**
@@ -125,6 +132,18 @@ export class EngagementService {
       return fresh;
     }
     return this.getSummary(studentId);
+  }
+
+  /** The last 7 UTC days, oldest first, each marked from the same dates the streak is computed from. */
+  private recentDays(activeDates: readonly string[], frozenDates: readonly string[]): StreakDay[] {
+    const active = new Set(activeDates);
+    const frozen = new Set(frozenDates);
+    const days: StreakDay[] = [];
+    for (let offset = -6; offset <= 0; offset += 1) {
+      const date = dayStr(offset);
+      days.push({ date, status: active.has(date) ? 'active' : frozen.has(date) ? 'frozen' : 'none' });
+    }
+    return days;
   }
 
   private freezeSummary(activeDates: readonly string[], frozenDates: readonly string[], usedThisMonth: number): StreakFreezeSummary {

@@ -68,7 +68,7 @@ export function SessionComplete({ title, score, total, summary, children }: { ti
   const { formatNumber } = useI18n();
   return (
     <section aria-label={title} className="mx-auto flex w-full max-w-lg flex-col items-center gap-6 rounded-2xl bg-surface px-6 py-10 text-center ring-1 ring-line sm:px-10">
-      <span aria-hidden="true" className="lp-node grid size-24 place-items-center rounded-full border-solid border-success bg-surface text-success-ink" style={{ borderWidth: 10 }}>
+      <span aria-hidden="true" className="ix-pop lp-node grid size-24 place-items-center rounded-full border-solid border-success bg-surface text-success-ink" style={{ borderWidth: 10 }}>
         <CheckIcon className="size-9" />
       </span>
       <div className="flex flex-col items-center gap-2">

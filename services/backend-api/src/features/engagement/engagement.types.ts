@@ -24,6 +24,15 @@ export interface StreakFreezeSummary {
   readonly canUseNow: boolean;
 }
 
+export type StreakDayStatus = 'active' | 'frozen' | 'none';
+
+export interface StreakDay {
+  /** ISO date (yyyy-mm-dd), UTC. */
+  readonly date: string;
+  /** active = learned that day; frozen = covered by a streak freeze; none = nothing (yet, when it is today). */
+  readonly status: StreakDayStatus;
+}
+
 export interface EngagementSummaryResponse {
   readonly goal: DailyGoalSummary;
   /** The lesson/streak challenge picked for today. Kept for older clients; newer ones read `challenges`. */
@@ -31,6 +40,8 @@ export interface EngagementSummaryResponse {
   /** Every challenge for today: the lesson/streak one, then Speaking practice and Write a paragraph. */
   readonly challenges: readonly DailyChallengeSummary[];
   readonly streakFreeze: StreakFreezeSummary;
+  /** The last 7 UTC days, oldest first, ending today: the same days the streak is counted from. */
+  readonly recentDays: readonly StreakDay[];
 }
 
 export type LeaderboardPeriod = 'week' | 'all';

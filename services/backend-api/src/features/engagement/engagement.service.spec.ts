@@ -45,6 +45,18 @@ describe('EngagementService', () => {
       expect(summary.challenge).toMatchObject({ key: 'daily_goal', targetCount: 1, progressCount: 0, completed: false });
     });
 
+    it('lists the last 7 UTC days oldest first, marking active and frozen days', async () => {
+      const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+      const repository = makeRepository({
+        findActiveDates: jest.fn().mockResolvedValue([day(0), day(-2), day(-9)]),
+        findFrozenDates: jest.fn().mockResolvedValue([day(-1)]),
+      });
+      const summary = await new EngagementService(repository).getSummary('student-1');
+
+      expect(summary.recentDays.map((d) => d.date)).toEqual([-6, -5, -4, -3, -2, -1, 0].map(day));
+      expect(summary.recentDays.map((d) => d.status)).toEqual(['none', 'none', 'none', 'none', 'active', 'frozen', 'active']);
+    });
+
     it('computes a consecutive streak ending today', async () => {
       const today = new Date().toISOString().slice(0, 10);
       const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);

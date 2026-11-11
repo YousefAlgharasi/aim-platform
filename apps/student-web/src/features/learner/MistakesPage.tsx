@@ -7,8 +7,8 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { mistakesApi, type MistakeCheck, type MistakeItem } from './learnerApi';
-import { ChoiceRow, PILL_PRIMARY, PILL_SECONDARY, SessionComplete, SessionProgress, CrossIcon, type ChoiceState } from './sessionUi';
-import { CheckIcon } from '../../components/common/Icons';
+import { ChoiceRow, PILL_PRIMARY, PILL_SECONDARY, SessionComplete, SessionProgress, type ChoiceState } from './sessionUi';
+import { ResultIcon, playSound, resultCue } from '../../interaction';
 import { prettifySkillId } from '../progress/aimApi';
 import { loadSkillTitles } from '../progress/skillTitles';
 
@@ -75,6 +75,8 @@ export function MistakesPage() {
     try {
       const r = await mistakesApi.check(item.itemId, optionId);
       setResult(r);
+      const cue = resultCue(r.correct);
+      if (cue) playSound(cue);
       if (r.correct) setFixed((n) => n + 1);
     } catch (e) { setError(getErrorMessage(e, t('Could not check your answer'))); }
     finally { setBusy(false); }
@@ -107,10 +109,8 @@ export function MistakesPage() {
         </div>
 
         {result && (
-          <div role="status" className={`flex items-start gap-3 rounded-2xl p-4 text-sm ${result.correct ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'}`}>
-            <span aria-hidden="true" className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-white ${result.correct ? 'bg-success' : 'bg-danger'}`}>
-              {result.correct ? <CheckIcon className="size-3.5" /> : <CrossIcon className="size-3" />}
-            </span>
+          <div role="status" className={`flex items-start gap-3 rounded-2xl p-4 text-sm ${result.correct ? 'ix-fade-up bg-success-soft text-success-ink' : 'ix-settle bg-danger-soft text-danger-ink'}`}>
+            <ResultIcon correct={result.correct} className="mt-0.5 size-6" />
             <div className="min-w-0">
               <p className="m-0 text-base font-semibold">{result.correct ? t('Correct — fixed!') : t('Not quite')}</p>
               {!result.correct && result.correctText && <p className="m-0 mt-1">{t('Correct answer: {answer}', { answer: `⁨${result.correctText}⁩` })}</p>}

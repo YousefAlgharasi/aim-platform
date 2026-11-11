@@ -4,6 +4,7 @@ import { getErrorMessage } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { useI18n } from '../../i18n/I18nContext';
+import { reportLearningCompleted } from '../../interaction';
 import { practiceTopicsApi, type PracticeSessionState } from './practiceTopicsApi';
 
 function mmss(seconds: number): string {
@@ -37,6 +38,7 @@ export function PracticeBanner({ practice }: { practice: PracticeSessionState })
       const done = await practiceTopicsApi.completeSpeaking(practice.attemptId);
       finished.current = true;
       setXp(done.xpAwarded);
+      void reportLearningCompleted();
     } catch (err) {
       setError(getErrorMessage(err, t('Could not finish. Please try again.')));
     } finally {
@@ -62,7 +64,7 @@ export function PracticeBanner({ practice }: { practice: PracticeSessionState })
         <p className="m-0 text-sm text-ink-muted">{t('Finish to earn +{xp} XP', { xp: practice.xpReward })}</p>
       </div>
       {left !== null && <span className="lp-num rounded-full px-3 py-1 text-sm font-semibold text-ink ring-1 ring-line-strong" aria-live="off">{left > 0 ? mmss(left) : t("Time's up")}</span>}
-      <Button size="sm" onClick={finish} disabled={finishing}>{finishing ? t('Finishing…') : t('Finish')}</Button>
+      <Button size="sm" onClick={finish} loading={finishing}>{finishing ? t('Finishing…') : t('Finish')}</Button>
       {error && <div className="w-full"><Banner variant="error">{error}</Banner></div>}
     </div>
   );

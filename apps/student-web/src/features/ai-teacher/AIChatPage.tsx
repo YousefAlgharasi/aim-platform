@@ -236,26 +236,30 @@ export function AIChatPage() {
 
   const isEmpty = messages.length === 0 && !sending;
 
+  const iconBtn = 'inline-flex size-10 items-center justify-center rounded-full border-0 bg-transparent text-ink-soft no-underline transition-colors hover:bg-surface-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand';
+
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-8rem)] md:min-h-[calc(100dvh-5rem)] w-full">
-      <div className="flex items-center gap-3 border-b border-line pb-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-          <SparkleIcon className="size-4 text-white" />
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-3xl flex-col md:min-h-[calc(100dvh-5rem)]">
+      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-page/90 py-3 backdrop-blur">
+        <div className="relative shrink-0">
+          <div className="flex size-10 items-center justify-center rounded-full bg-brand text-white">
+            <SparkleIcon className="size-4 text-white" />
+          </div>
+          <span className="absolute -bottom-0.5 -end-0.5 size-3 rounded-full bg-success-ink ring-2 ring-page" aria-hidden="true" />
         </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="m-0 text-lg font-semibold leading-tight text-ink">{t('AI Teacher')}</h1>
-          <span className="block truncate text-sm text-success-ink">
+        <div className="min-w-0 flex-1">
+          <h1 className="m-0 text-base font-semibold leading-tight text-ink">{t('AI Teacher')}</h1>
+          <span className="block truncate text-sm text-ink-muted">
             {navState.lessonTitle || t('Always here to help')}
           </span>
         </div>
-        <Link to={`/voice-teacher/${sessionId}`} className={pillLinkClass} aria-label={t('Switch to Voice Teacher')}>
-          <MicIcon className="size-4" />
-          <span className="hidden sm:inline">{t('Voice')}</span>
+        <Link to={`/voice-teacher/${sessionId}`} className={iconBtn} aria-label={t('Switch to Voice Teacher')} title={t('Voice')}>
+          <MicIcon className="size-5" />
         </Link>
-        <Link to="/ai-teacher/history" className={pillLinkClass}>
+        <Link to="/ai-teacher/history" className={`${iconBtn} w-auto px-4 text-sm font-semibold`}>
           {t('History')}
         </Link>
-      </div>
+      </header>
 
       {(safetyLimited || focusRecap || navState.lastSessionRecap) && (
         <div className="flex flex-col gap-2 pt-3">
@@ -274,16 +278,30 @@ export function AIChatPage() {
         </div>
       )}
 
-      <div className="flex-1 py-4 flex flex-col gap-3.5" role="log" aria-live="polite" aria-label={t('Chat messages')}>
+      <div className="flex flex-1 flex-col gap-6 py-6" role="log" aria-live="polite" aria-label={t('Chat messages')}>
         {isEmpty && (
-          <div className="flex flex-col items-center text-center gap-2 py-8">
-            <div className="flex size-16 items-center justify-center rounded-full bg-brand">
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-brand">
               <SparkleIcon className="size-6 text-white" />
             </div>
-            <p className="lp-display m-0 mt-2 text-[1.75rem] font-semibold text-ink">{t('Ask me anything')}</p>
-            <p className="m-0 text-sm text-ink-muted max-w-xs">
-              {t('Start the conversation with a question or pick a suggestion below.')}
-            </p>
+            <div>
+              <p className="lp-display m-0 text-[1.75rem] font-semibold text-ink sm:text-[2.25rem]">{t('Ask me anything')}</p>
+              <p className="m-0 mx-auto mt-2 max-w-sm text-sm text-ink-muted">
+                {t('Start the conversation with a question or pick a suggestion below.')}
+              </p>
+            </div>
+            <div className="grid w-full max-w-xl grid-cols-1 gap-2 sm:grid-cols-2" aria-label={t('Suggested prompts')}>
+              {SUGGESTED_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => send(t(prompt))}
+                  className="cursor-pointer rounded-2xl border-0 bg-surface px-4 py-3.5 text-start text-sm font-semibold text-ink ring-1 ring-line transition hover:bg-surface-strong hover:ring-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  {t(prompt)}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -291,68 +309,77 @@ export function AIChatPage() {
           const isStudent = msg.role === 'student';
           const entry = feedback[msg.id];
           const canRate = !isStudent && !msg.id.startsWith('temp-');
-          return (
-            <div
-              key={msg.id}
-              className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isStudent ? 'self-end items-end' : 'self-start items-start'}`}
-              aria-label={isStudent ? t('Your message') : t('AI Teacher')}
-            >
-              <div
-                className={`p-4 rounded-2xl text-base leading-relaxed whitespace-pre-wrap break-words ${
-                  isStudent
-                    ? 'bg-brand text-white rounded-ee-none'
-                    : 'bg-surface ring-1 ring-line text-ink rounded-es-none'
-                }`}
-              >
-                {isStudent ? msg.text : <SelectToSave source="chat"><Markdown text={msg.text} /></SelectToSave>}
-              </div>
-              <span className="mt-1 flex items-center gap-1 px-1 text-xs text-ink-muted">
-                {msg.channel === 'voice' && (
-                  <span className="inline-flex items-center gap-0.5"><MicIcon className="size-3" /> {t('Voice')} ·</span>
-                )}
-                {formatMsgTime(msg.createdAt, formatTime)}
-              </span>
-              {canRate && (
-                <div className="flex items-center gap-2 mt-1 px-1">
-                  <span className="text-xs text-ink-muted">
-                    {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
-                  </span>
-                  <ThumbButton
-                    kind="up"
-                    active={entry?.rating === 'helpful'}
-                    disabled={!!entry}
-                    onClick={() => submitFeedback(msg.id, 'helpful')}
-                    label={t('Mark AI Teacher reply as helpful')}
-                  />
-                  <ThumbButton
-                    kind="down"
-                    active={entry?.rating === 'not_helpful'}
-                    disabled={!!entry}
-                    onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                    label={t('Mark AI Teacher reply as not helpful')}
-                  />
+          const time = formatMsgTime(msg.createdAt, formatTime);
+          if (isStudent) {
+            return (
+              <div key={msg.id} className="flex max-w-[85%] flex-col items-end self-end sm:max-w-[75%]" aria-label={t('Your message')}>
+                <div className="whitespace-pre-wrap break-words rounded-3xl rounded-ee-lg bg-brand px-5 py-3 text-base leading-relaxed text-white">
+                  {msg.text}
                 </div>
-              )}
+                <span className="mt-1 px-1 text-xs text-ink-muted">{time}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={msg.id} className="flex items-start gap-3 self-start" aria-label={t('AI Teacher')}>
+              <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-brand">
+                <SparkleIcon className="size-3.5 text-white" />
+              </div>
+              <div className="flex min-w-0 max-w-[92%] flex-col items-start">
+                <div className="break-words text-base leading-relaxed text-ink">
+                  <SelectToSave source="chat"><Markdown text={msg.text} /></SelectToSave>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-ink-muted">
+                  {msg.channel === 'voice' && (
+                    <span className="inline-flex items-center gap-0.5 pe-1"><MicIcon className="size-3" /> {t('Voice')}</span>
+                  )}
+                  <span className="pe-1">{time}</span>
+                  {canRate && (
+                    <>
+                      <ThumbButton
+                        kind="up"
+                        active={entry?.rating === 'helpful'}
+                        disabled={!!entry}
+                        onClick={() => submitFeedback(msg.id, 'helpful')}
+                        label={t('Mark AI Teacher reply as helpful')}
+                      />
+                      <ThumbButton
+                        kind="down"
+                        active={entry?.rating === 'not_helpful'}
+                        disabled={!!entry}
+                        onClick={() => submitFeedback(msg.id, 'not_helpful')}
+                        label={t('Mark AI Teacher reply as not helpful')}
+                      />
+                      {entry?.status === 'done' && <span className="ps-1">{t('Thanks for your feedback')}</span>}
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}
 
         {sending && streamingText !== null && streamingText.length > 0 && (
-          <div className="flex flex-col max-w-[88%] sm:max-w-[78%] self-start items-start" aria-busy="true">
-            <div className="p-4 rounded-2xl rounded-es-none text-base leading-relaxed whitespace-pre-wrap break-words bg-surface ring-1 ring-line text-ink">
+          <div className="flex items-start gap-3 self-start" aria-busy="true">
+            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-brand">
+              <SparkleIcon className="size-3.5 text-white" />
+            </div>
+            <div className="min-w-0 max-w-[92%] break-words text-base leading-relaxed text-ink">
               <Markdown text={streamingText} />
             </div>
           </div>
         )}
         {sending && !streamingText && (
-          <div
-            className="self-start bg-surface ring-1 ring-line rounded-2xl rounded-es-none p-3.5 flex items-center gap-1.5"
-            role="status"
-          >
+          <div className="flex items-center gap-3 self-start" role="status">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand">
+              <SparkleIcon className="size-3.5 text-white" />
+            </div>
             <span className="sr-only">{t('AI Teacher is thinking…')}</span>
-            <div className="size-2 rounded-full bg-brand animate-bounce" aria-hidden="true" />
-            <div className="size-2 rounded-full bg-brand animate-bounce [animation-delay:150ms]" aria-hidden="true" />
-            <div className="size-2 rounded-full bg-brand animate-bounce [animation-delay:300ms]" aria-hidden="true" />
+            <div className="flex items-center gap-1.5" aria-hidden="true">
+              <div className="size-2 animate-bounce rounded-full bg-brand" />
+              <div className="size-2 animate-bounce rounded-full bg-brand [animation-delay:150ms]" />
+              <div className="size-2 animate-bounce rounded-full bg-brand [animation-delay:300ms]" />
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -360,15 +387,12 @@ export function AIChatPage() {
 
       <div className="sticky bottom-0 z-10 flex flex-col gap-2 bg-page pb-4 pt-2">
         {(sendError || feedbackError) && (
-          <div
-            className="rounded-xl bg-danger-soft text-danger-ink ring-1 ring-danger-line px-3 py-2 text-sm"
-            role="alert"
-          >
+          <div className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger-ink ring-1 ring-danger-line" role="alert">
             {sendError || feedbackError}
           </div>
         )}
 
-        {!sending && (
+        {!sending && !isEmpty && (
           <div className="flex gap-2 overflow-x-auto pb-1" aria-label={t('Suggested prompts')}>
             {SUGGESTED_PROMPTS.map((prompt) => (
               <button
@@ -383,9 +407,9 @@ export function AIChatPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2 rounded-2xl bg-surface p-2 ps-4 ring-1 ring-line-strong focus-within:ring-2 focus-within:ring-brand">
+        <div className="flex items-end gap-2 rounded-3xl bg-surface p-2 ps-5 shadow-lg ring-1 ring-line-strong transition focus-within:ring-2 focus-within:ring-brand">
           <textarea
-            className="flex-1 min-h-10 max-h-32 resize-none bg-transparent border-none outline-none py-2.5 text-base text-ink placeholder-ink-muted"
+            className="max-h-40 min-h-11 flex-1 resize-none border-none bg-transparent py-3 text-base text-ink outline-none placeholder-ink-muted"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -399,7 +423,7 @@ export function AIChatPage() {
             onClick={() => send(input)}
             disabled={sending || !input.trim()}
             aria-label={sending ? t('Sending…') : t('Send message')}
-            className={`${buttonClasses('primary', 'sm')} !px-0 size-11 shrink-0`}
+            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-brand text-white transition hover:opacity-90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <SendIcon />
           </button>

@@ -3,6 +3,7 @@ import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import type { SessionQuestion, SessionSummary } from './practiceApi';
 import { useI18n } from '../../i18n/I18nContext';
+import { ResultIcon } from '../../interaction';
 import { linkButton, linkButtonPrimary, questionCard } from './practiceStyles';
 
 export type CompletionStatus = 'saving' | 'saved' | 'failed';
@@ -34,6 +35,7 @@ export function PracticeFeedback({
   const { t } = useI18n();
   const byId = new Map(questions.map(q => [q.id, q]));
   const lessonState = { courseId };
+  const ringLength = (Math.max(0, Math.min(100, summary.accuracyPercent)) / 100) * 326.7;
 
   function answerText(itemId: string, answerValue: string) {
     const option = byId.get(itemId)?.options.find(o => o.id === answerValue);
@@ -47,12 +49,13 @@ export function PracticeFeedback({
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
             <circle cx="60" cy="60" r="52" fill="none" strokeWidth="8" className="stroke-line-strong" />
             <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" strokeLinecap="round"
-              className={summary.accuracyPercent >= 70 ? 'stroke-success' : summary.accuracyPercent >= 40 ? 'stroke-warning' : 'stroke-danger'}
-              strokeDasharray={`${(Math.max(0, Math.min(100, summary.accuracyPercent)) / 100) * 326.7} 326.7`} />
+              className={'ix-ring ' + (summary.accuracyPercent >= 70 ? 'stroke-success' : summary.accuracyPercent >= 40 ? 'stroke-warning' : 'stroke-danger')}
+              strokeDasharray={`${ringLength} 326.7`}
+              style={{ ['--ix-ring-from' as string]: ringLength }} />
           </svg>
           <span className="lp-num text-4xl font-semibold tracking-tight text-ink rtl:tracking-normal">{summary.accuracyPercent}%</span>
         </div>
-        <h1 className="lp-display m-0 text-[2rem] font-semibold text-ink sm:text-[2.5rem]">
+        <h1 className="ix-fade-up lp-display m-0 text-[2rem] font-semibold text-ink sm:text-[2.5rem]">
           {summary.accuracyPercent >= 70 ? t('Great job!') : t('Good effort!')}
         </h1>
         {lessonTitle && <span className="text-sm text-ink-muted [unicode-bidi:plaintext]">{lessonTitle}</span>}
@@ -71,7 +74,14 @@ export function PracticeFeedback({
       </div>
 
       {completion === 'saving' && <Banner variant="info">{t('Saving your lesson progress…')}</Banner>}
-      {completion === 'saved' && <Banner variant="success">{t('Lesson completed — the next lesson is unlocked.')}</Banner>}
+      {completion === 'saved' && (
+        <Banner variant="success">
+          <span className="flex items-center gap-2.5">
+            <ResultIcon correct className="size-6" />
+            <span>{t('Lesson completed — the next lesson is unlocked.')}</span>
+          </span>
+        </Banner>
+      )}
       {completion === 'failed' && (
         <Banner variant="warning">
           <div className="flex flex-wrap items-center justify-between gap-3">

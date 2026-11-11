@@ -8,7 +8,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export const BTN_BASE =
   'inline-flex items-center justify-center gap-2 border-0 font-bold no-underline cursor-pointer select-none whitespace-nowrap ' +
-  'transition-all duration-200 ease-out active:scale-[0.98] ' +
+  'transition-[background-color,color,box-shadow,transform,opacity] duration-150 ease-out active:scale-[0.97] ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 ' +
   'disabled:cursor-not-allowed disabled:active:scale-100';
 
