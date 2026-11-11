@@ -375,7 +375,7 @@ class _Hero extends StatelessWidget {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final chevron = rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;
     return Container(
-      padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space12 + 2),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: AlignmentDirectional.topStart,
@@ -445,10 +445,10 @@ class _Hero extends StatelessWidget {
               ),
               const SizedBox(width: AimSpacing.space8),
               Icon(Icons.menu_book_rounded,
-                  size: 56, color: Colors.white.withValues(alpha: 0.85)),
+                  size: 44, color: Colors.white.withValues(alpha: 0.85)),
             ],
           ),
-          const SizedBox(height: AimSpacing.space16),
+          const SizedBox(height: AimSpacing.space12),
           Material(
             color: Colors.white,
             shape: const StadiumBorder(),
@@ -456,7 +456,7 @@ class _Hero extends StatelessWidget {
               customBorder: const StadiumBorder(),
               onTap: onPractice,
               child: Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 18, vertical: 13),
+                padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 10),
                 child: Row(
                   children: [
                     const Icon(Icons.search_rounded, color: AimColors.primary500),
@@ -516,7 +516,7 @@ class _StatTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AimRadius.lg),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 12),
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AimRadius.lg),
               border: Border.all(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
@@ -524,8 +524,8 @@ class _StatTile extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     color: tone.withValues(alpha: dark ? 0.25 : 0.16),
                     shape: BoxShape.circle,
@@ -542,7 +542,7 @@ class _StatTile extends StatelessWidget {
                         value,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AimTextStyles.h2.copyWith(
+                        style: AimTextStyles.h3.copyWith(
                           color: surfaces.textPrimary,
                           fontWeight: FontWeight.w800,
                         ),
@@ -592,7 +592,7 @@ class _FixSessionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AimRadius.lg),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AimRadius.lg),
               border: Border.all(color: surfaces.border),
@@ -606,7 +606,7 @@ class _FixSessionCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.timer_outlined, size: 44, color: AimColors.primary500),
+                const Icon(Icons.timer_outlined, size: 36, color: AimColors.primary500),
                 const SizedBox(width: AimSpacing.space12),
                 Expanded(
                   child: Column(
@@ -736,8 +736,8 @@ class _SpotCardState extends State<_SpotCard> {
                 child: Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.12),
                         shape: BoxShape.circle,

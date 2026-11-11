@@ -408,12 +408,12 @@ class _CourseListContentState extends State<_CourseListContent> {
             bottom: 14,
             child: Icon(
               Icons.school_rounded,
-              size: 72,
+              size: 56,
               color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -440,11 +440,11 @@ class _CourseListContentState extends State<_CourseListContent> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   l10n.lessonsStructuredCurriculumHeader,
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 19,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
@@ -462,7 +462,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                   ),
                 ),
                 if (start != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Material(
                     color: Colors.white,
                     shape: const StadiumBorder(),
@@ -470,7 +470,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                       customBorder: const StadiumBorder(),
                       onTap: () => widget.onTap(start),
                       child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(20, 11, 14, 11),
+                        padding: const EdgeInsetsDirectional.fromSTEB(18, 8, 12, 8),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

@@ -321,7 +321,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
     final meaning = context.isArabic ? _entry.ar : _entry.en;
 
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final date = DateFormat('EEEE, MMM d', context.isArabic ? 'ar' : 'en').format(DateTime.now());
+    final date = DateFormat('EEE, MMM d', context.isArabic ? 'ar' : 'en').format(DateTime.now());
     final busy = _state == _WordState.saving || _state == _WordState.checking;
     final saved = _state == _WordState.saved;
     final onBlue = Colors.white.withValues(alpha: 0.85);
@@ -329,7 +329,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
     // The example sentence with the word itself in bold.
     final example = _entry.example;
     final at = example.toLowerCase().indexOf(_entry.word.toLowerCase());
-    final exampleStyle = AimTextStyles.bodyLg.copyWith(
+    final exampleStyle = AimTextStyles.bodyMd.copyWith(
       color: Colors.white.withValues(alpha: 0.95),
       fontStyle: FontStyle.italic,
     );
@@ -352,7 +352,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
           end: AlignmentDirectional.bottomEnd,
           colors: [Color(0xFF4A63F0), Color(0xFF3752E8), Color(0xFF2F46D6)],
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF3752E8).withValues(alpha: 0.35),
@@ -365,32 +365,32 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
         children: [
           // A faint open book on the end side.
           PositionedDirectional(
-            end: -14,
-            top: 70,
+            end: -10,
+            top: 54,
             child: Transform.rotate(
               angle: rtl ? 0.18 : -0.18,
               child: Icon(
                 Icons.auto_stories_rounded,
-                size: 120,
+                size: 88,
                 color: Colors.white.withValues(alpha: 0.13),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space12 + 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 22),
+                      child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 19),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -398,7 +398,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                         context.tr('Word of the day', 'كلمة اليوم'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AimTextStyles.bodyLg.copyWith(
+                        style: AimTextStyles.bodyMd.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                         ),
@@ -407,7 +407,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Container(
-                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 7),
+                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.16),
                           borderRadius: BorderRadius.circular(100),
@@ -439,24 +439,24 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.space16),
+                const SizedBox(height: AimSpacing.space12),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 12,
-                  runSpacing: 6,
+                  spacing: 10,
+                  runSpacing: 4,
                   children: [
                     Text(
                       _entry.word,
                       textDirection: TextDirection.ltr,
                       style: AimTextStyles.h1.copyWith(
                         color: Colors.white,
-                        fontSize: 44,
+                        fontSize: 34,
                         fontWeight: FontWeight.w800,
                         height: 1.05,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(100),
@@ -464,19 +464,19 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                       ),
                       child: Text(
                         _pos(context, _entry.pos),
-                        style: AimTextStyles.bodyMd.copyWith(color: onBlue),
+                        style: AimTextStyles.bodySm.copyWith(color: onBlue),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 Text(
                   meaning,
-                  style: AimTextStyles.bodyLg.copyWith(color: Colors.white, fontSize: 18),
+                  style: AimTextStyles.bodyMd.copyWith(color: Colors.white, fontSize: 15),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -485,12 +485,12 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                       textDirection: TextDirection.ltr,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.45),
-                        fontSize: 44,
+                        fontSize: 32,
                         height: 0.9,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text.rich(
                         exampleSpan,
@@ -499,7 +499,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.space16),
+                const SizedBox(height: AimSpacing.space12),
                 Semantics(
                   button: !saved,
                   label: saved
@@ -511,7 +511,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                       borderRadius: BorderRadius.circular(100),
                       onTap: (saved || busy) ? null : () => _add(meaning),
                       child: Container(
-                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(100),
                           border: Border.all(color: Colors.white.withValues(alpha: 0.75), width: 1.5),
@@ -521,9 +521,9 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                             Icon(
                               saved ? Icons.check_circle_outline_rounded : Icons.add_circle_outline_rounded,
                               color: Colors.white,
-                              size: 26,
+                              size: 22,
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 saved
@@ -531,7 +531,7 @@ class _WordOfDayCardState extends ConsumerState<WordOfDayCard> {
                                     : _state == _WordState.saving
                                         ? context.tr('Saving…', 'جارٍ الحفظ…')
                                         : context.tr('Add to my words', 'أضف إلى كلماتي'),
-                                style: AimTextStyles.bodyLg.copyWith(
+                                style: AimTextStyles.bodyMd.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1055,7 +1055,7 @@ class DailyGoalCard extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+            padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
             child: Column(
               children: [
                 Row(
@@ -1064,8 +1064,8 @@ class DailyGoalCard extends ConsumerWidget {
                       label: context.tr('Daily goal progress', 'تقدّم الهدف اليومي'),
                       value: '${(fraction * 100).round()}%',
                       child: SizedBox(
-                        width: 84,
-                        height: 84,
+                        width: 70,
+                        height: 70,
                         child: CustomPaint(
                           painter: _RingPainter(
                             fraction: fraction,
@@ -1085,7 +1085,7 @@ class DailyGoalCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: AimSpacing.space16),
+                    const SizedBox(width: AimSpacing.space12),
                     stat(
                       Icons.local_fire_department_rounded,
                       const Color(0xFFF97316),
@@ -1102,11 +1102,11 @@ class DailyGoalCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AimSpacing.space12),
+                const SizedBox(height: AimSpacing.space8),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsetsDirectional.symmetric(
-                      horizontal: AimSpacing.space12, vertical: 8),
+                      horizontal: AimSpacing.space12, vertical: 6),
                   decoration: BoxDecoration(
                     color: ringColor.withValues(alpha: dark ? 0.18 : 0.10),
                     borderRadius: BorderRadius.circular(AimRadius.md),

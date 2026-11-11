@@ -303,15 +303,15 @@ class _ProfileHeroHeader extends StatelessWidget {
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 AimSpacing.space16,
-                AimSpacing.space24,
+                AimSpacing.space16,
                 AimSpacing.space16,
                 AimSpacing.space16,
               ),
               child: Column(
                 children: [
                   Container(
-                    width: 76,
-                    height: 76,
+                    width: 64,
+                    height: 64,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -349,7 +349,7 @@ class _ProfileHeroHeader extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: AimSpacing.space20),
+                  const SizedBox(height: AimSpacing.space16),
                   Row(
                     children: [
                       Expanded(

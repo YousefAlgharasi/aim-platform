@@ -305,7 +305,9 @@ class _LessonDetailContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.lessonsWhatsInsideTitle,
+                      detail.lesson.explanation != null
+                          ? context.tr('Practice material', 'مواد التدرّب')
+                          : l10n.lessonsWhatsInsideTitle,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
