@@ -22,6 +22,9 @@ class LessonsListNotifier extends AppStateNotifier<List<LessonProgress>> {
 
   final LessonsRepository _repository;
 
+  /// The chapter last loaded, so the list can be re-read in place later.
+  String? _lastChapterId;
+
   /// Load lessons (with real per-student completed/current markers) for the
   /// given [chapterId].
   ///
@@ -31,6 +34,7 @@ class LessonsListNotifier extends AppStateNotifier<List<LessonProgress>> {
     required String bearerToken,
     required String chapterId,
   }) async {
+    _lastChapterId = chapterId;
     setLoading();
     try {
       final lessons = await _repository.getLessonsWithProgress(
@@ -53,4 +57,21 @@ class LessonsListNotifier extends AppStateNotifier<List<LessonProgress>> {
     required String chapterId,
   }) =>
       load(bearerToken: bearerToken, chapterId: chapterId);
+
+  /// Re-reads the lessons (and their completed/current markers) for the last
+  /// chapter loaded, keeping the current list on screen meanwhile. A failed
+  /// re-read leaves the current list in place.
+  Future<void> refreshQuietly({required String bearerToken}) async {
+    final chapterId = _lastChapterId;
+    if (chapterId == null) return;
+    try {
+      final lessons = await _repository.getLessonsWithProgress(
+        bearerToken: bearerToken,
+        chapterId: chapterId,
+      );
+      setSuccess(lessons);
+    } catch (_) {
+      // Keep what is on screen; the next pull-to-refresh retries.
+    }
+  }
 }
