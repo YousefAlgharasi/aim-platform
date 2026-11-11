@@ -172,49 +172,34 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
                 : _findLesson(),
           ),
           const SizedBox(height: AimSpacing.componentGap),
-          Row(
-            children: [
-              Expanded(
-                child: _StatTile(
-                  icon: Icons.track_changes_rounded,
-                  tone: AimColors.primary500,
-                  value: '${spots.length}',
-                  label: context.tr('To work on', 'تحتاج عملاً'),
-                  onTap: spots.length > 3 ? () => setState(() => _showAll = true) : null,
-                ),
+          _StatGrid(
+            tiles: [
+              _StatTile(
+                icon: Icons.track_changes_rounded,
+                tone: AimColors.primary500,
+                value: '${spots.length}',
+                label: context.tr('To work on', 'تحتاج عملاً'),
+                onTap: spots.length > 3 ? () => setState(() => _showAll = true) : null,
               ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: _StatTile(
-                  icon: Icons.refresh_rounded,
-                  tone: AimColors.success500,
-                  value: mistakes?.total.toString() ?? '—',
-                  label: context.tr('Mistakes to retry', 'أخطاء لإعادتها'),
-                  onTap: () => context.push(AppRoutePaths.mistakes),
-                ),
+              _StatTile(
+                icon: Icons.refresh_rounded,
+                tone: AimColors.success500,
+                value: mistakes?.total.toString() ?? '—',
+                label: context.tr('Mistakes to retry', 'أخطاء لإعادتها'),
+                onTap: () => context.push(AppRoutePaths.mistakes),
               ),
-            ],
-          ),
-          const SizedBox(height: AimSpacing.componentGap),
-          Row(
-            children: [
-              Expanded(
-                child: _StatTile(
-                  icon: Icons.calendar_month_rounded,
-                  tone: const Color(0xFFF59E0B),
-                  value: '${dueReviews.length}',
-                  label: context.tr('Reviews due', 'مراجعات مستحقة'),
-                  onTap: () => context.push(AppRoutePaths.reviewSchedule),
-                ),
+              _StatTile(
+                icon: Icons.calendar_month_rounded,
+                tone: const Color(0xFFF59E0B),
+                value: '${dueReviews.length}',
+                label: context.tr('Reviews due', 'مراجعات مستحقة'),
+                onTap: () => context.push(AppRoutePaths.reviewSchedule),
               ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: _StatTile(
-                  icon: Icons.check_circle_rounded,
-                  tone: const Color(0xFF7C5CF0),
-                  value: '${fixed.length}',
-                  label: context.tr('Already fixed', 'تم إصلاحها'),
-                ),
+              _StatTile(
+                icon: Icons.check_circle_rounded,
+                tone: const Color(0xFF7C5CF0),
+                value: '${fixed.length}',
+                label: context.tr('Already fixed', 'تم إصلاحها'),
               ),
             ],
           ),
@@ -486,6 +471,45 @@ class _Hero extends StatelessWidget {
 }
 
 /// A tinted stat tile with a round icon, a number and a label.
+/// The four figures in an equal 2x2 grid: every tile has exactly the same
+/// width and height, with the same gap across and down. The height is fixed
+/// (and grows only with the user's text size), so numbers with more digits or
+/// labels that wrap never make one tile bigger than the others.
+class _StatGrid extends StatelessWidget {
+  const _StatGrid({required this.tiles});
+
+  final List<Widget> tiles;
+
+  static const double _baseHeight = 76;
+  static const double _gap = AimSpacing.componentGap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    final height = _baseHeight * scale;
+    Widget row(Widget a, Widget b) => SizedBox(
+          height: height,
+          child: Row(
+            children: [
+              Expanded(child: a),
+              const SizedBox(width: _gap),
+              Expanded(child: b),
+            ],
+          ),
+        );
+    return Column(
+      children: [
+        row(tiles[0], tiles[1]),
+        const SizedBox(height: _gap),
+        row(tiles[2], tiles[3]),
+      ],
+    );
+  }
+}
+
+/// A tinted stat tile with a round icon, a number and a label. It fills
+/// whatever size its grid cell gives it; the arrow slot is always reserved so
+/// labels wrap at the same width in every tile.
 class _StatTile extends StatelessWidget {
   const _StatTile({
     required this.icon,
@@ -506,22 +530,23 @@ class _StatTile extends StatelessWidget {
     final surfaces = aimSurfacesOf(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    final radius = BorderRadius.circular(AimRadius.lg);
     return Semantics(
       button: onTap != null,
       label: '$value $label',
       child: Material(
         color: Color.alphaBlend(tone.withValues(alpha: dark ? 0.14 : 0.08), surfaces.surface),
-        borderRadius: BorderRadius.circular(AimRadius.lg),
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AimRadius.lg),
           onTap: onTap,
-          child: Container(
+          child: Padding(
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AimRadius.lg),
-              border: Border.all(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
-            ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 34,
@@ -535,8 +560,8 @@ class _StatTile extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         value,
@@ -556,12 +581,16 @@ class _StatTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (onTap != null)
-                  Icon(
-                    rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-                    size: 20,
-                    color: surfaces.textMuted,
-                  ),
+                SizedBox(
+                  width: 20,
+                  child: onTap == null
+                      ? null
+                      : Icon(
+                          rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                          size: 20,
+                          color: surfaces.textMuted,
+                        ),
+                ),
               ],
             ),
           ),
