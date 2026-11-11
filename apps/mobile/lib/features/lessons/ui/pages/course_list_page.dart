@@ -30,6 +30,21 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
+  bool _idleLoadScheduled = false;
+
+  /// The list can be reset underneath this screen (its provider recreated in
+  /// the idle state); idle means "not asked yet", so ask instead of waiting.
+  Widget _idleBody(String label) {
+    if (!_idleLoadScheduled) {
+      _idleLoadScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _idleLoadScheduled = false;
+        if (mounted && ref.read(studentCoursesProvider) is AppAsyncIdle) _load();
+      });
+    }
+    return AIMFullScreenLoading(semanticLabel: label);
+  }
+
   void _load() {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
@@ -143,9 +158,7 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
               onRefresh: _refresh,
               onTap: _onCourseTap,
             ),
-          AppAsyncIdle() => AIMFullScreenLoading(
-              semanticLabel: loadingLabel,
-            ),
+          AppAsyncIdle() => _idleBody(loadingLabel),
         },
       ),
     );

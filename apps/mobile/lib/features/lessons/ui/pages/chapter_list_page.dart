@@ -47,6 +47,21 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     });
   }
 
+  bool _idleLoadScheduled = false;
+
+  /// The list can be reset underneath this screen (its provider recreated in
+  /// the idle state); idle means "not asked yet", so ask instead of waiting.
+  Widget _idleBody() {
+    if (!_idleLoadScheduled) {
+      _idleLoadScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _idleLoadScheduled = false;
+        if (mounted && ref.read(chaptersProvider) is AppAsyncIdle) _load();
+      });
+    }
+    return const AIMFullScreenLoading();
+  }
+
   void _load() {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
@@ -128,7 +143,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
                     onRetry: _load,
                   ),
                 AppAsyncSuccess(:final data) => _buildBody(context, data),
-                AppAsyncIdle() => const AIMFullScreenLoading(),
+                AppAsyncIdle() => _idleBody(),
               },
             ),
           ],

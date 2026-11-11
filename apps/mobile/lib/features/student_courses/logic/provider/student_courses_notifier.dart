@@ -6,6 +6,7 @@
 // - Bearer token sourced from authFlowProvider; never stored here.
 
 import 'package:aim_mobile/core/errors/app_exception.dart';
+import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/state/app_state_notifier.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/repository/student_courses_repository.dart';
@@ -33,4 +34,21 @@ class StudentCoursesNotifier extends AppStateNotifier<List<StudentCourseModel>> 
 
   Future<void> refresh({required String bearerToken}) =>
       load(bearerToken: bearerToken);
+
+  /// Re-reads the courses without clearing the screen: the list stays up
+  /// while the request runs and is replaced when fresh data arrives. If the
+  /// request fails and there is already data on screen, that data stays.
+  Future<void> refreshQuietly({required String bearerToken}) async {
+    try {
+      final courses = await _repository.getCourses(bearerToken: bearerToken);
+      setSuccess(courses);
+    } catch (_) {
+      if (state is! AppAsyncSuccess<List<StudentCourseModel>>) {
+        setFailure(
+          message: 'Failed to load courses',
+          code: 'STUDENT_COURSES_LOAD_FAILED',
+        );
+      }
+    }
+  }
 }
