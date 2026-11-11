@@ -48,28 +48,31 @@ class LessonModel extends Lesson {
   static LessonExplanation? _parseExplanation(Object? raw) {
     if (raw is! Map<String, dynamic>) return null;
     final sections = <LessonExplanationSection>[];
-    for (final s in (raw['sections'] as List<dynamic>? ?? const [])) {
+    final rawSections = raw['sections'];
+    for (final s in (rawSections is List ? rawSections : const [])) {
       if (s is! Map<String, dynamic>) continue;
       final heading = _str(s['heading']);
       if (heading == null) continue;
       final examples = <LessonExample>[];
-      for (final e in (s['examples'] as List<dynamic>? ?? const [])) {
+      final rawExamples = s['examples'];
+      for (final e in (rawExamples is List ? rawExamples : const [])) {
         if (e is! Map<String, dynamic>) continue;
         final text = _str(e['text']);
         if (text != null) examples.add(LessonExample(text: text, note: _str(e['note'])));
       }
       sections.add(LessonExplanationSection(
         heading: heading,
-        body: (s['body'] as String?) ?? '',
+        body: s['body'] is String ? s['body'] as String : '',
         examples: examples,
       ));
     }
     final keyPoints = [
-      for (final k in (raw['keyPoints'] as List<dynamic>? ?? const []))
+      for (final k in (raw['keyPoints'] is List ? raw['keyPoints'] as List : const []))
         if (_str(k) != null) _str(k)!,
     ];
     final mistakes = <LessonMistake>[];
-    for (final m in (raw['commonMistakes'] as List<dynamic>? ?? const [])) {
+    final rawMistakes = raw['commonMistakes'];
+    for (final m in (rawMistakes is List ? rawMistakes : const [])) {
       if (m is! Map<String, dynamic>) continue;
       final wrong = _str(m['wrong']);
       final right = _str(m['right']);
