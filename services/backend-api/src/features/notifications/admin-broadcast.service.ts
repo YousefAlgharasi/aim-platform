@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationRepository } from './notification.repository';
 import { NotificationQueueService } from './notification-queue.service';
 import { AdminBroadcastScheduleRow } from './notification-repository.types';
@@ -63,9 +63,11 @@ export class AdminBroadcastService {
   }
 
   async fireBroadcastById(id: string): Promise<{ sent: number }> {
-    const rows = await this.repo.findBroadcastSchedulesPage(1, 0);
-    const broadcast = rows.rows.find((r) => r.id === id);
-    if (!broadcast) throw new Error(`Broadcast ${id} not found`);
+    // Look the broadcast up by id. (It used to read only the newest broadcast
+    // and look for the id in that one row, so "run now" failed for every
+    // other broadcast.)
+    const broadcast = await this.repo.findBroadcastScheduleById(id);
+    if (!broadcast) throw new NotFoundException(`Broadcast ${id} not found`);
     const sent = await this.fireBroadcast(broadcast.id, broadcast.title, broadcast.body, broadcast.channel, broadcast.audience);
     const next = nextRunAt(broadcast.schedule);
     await this.repo.updateBroadcastAfterRun(id, sent, next);
