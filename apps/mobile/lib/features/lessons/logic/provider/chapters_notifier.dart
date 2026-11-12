@@ -22,6 +22,11 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterProgress>> {
 
   final LessonsRepository _repository;
 
+  /// What was last asked for, so the list can be re-read in place later
+  /// (e.g. after a lesson is completed) without the screen restating it.
+  String? _lastCourseId;
+  String? _lastLevelId;
+
   /// Load chapters (with real per-student progress) for the given [levelId].
   ///
   /// [levelId] must be a backend-supplied value from a prior API response.
@@ -30,6 +35,8 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterProgress>> {
     required String bearerToken,
     required String levelId,
   }) async {
+    _lastCourseId = null;
+    _lastLevelId = levelId;
     setLoading();
     try {
       final chapters = await _repository.getChaptersWithProgress(
@@ -65,6 +72,8 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterProgress>> {
     required String bearerToken,
     required String courseId,
   }) async {
+    _lastCourseId = courseId;
+    _lastLevelId = null;
     setLoading();
     try {
       final levels = await _repository.getLevels(
@@ -87,6 +96,36 @@ class ChaptersNotifier extends AppStateNotifier<List<ChapterProgress>> {
         message: 'Failed to load chapters',
         code: 'CHAPTERS_LOAD_FAILED',
       );
+    }
+  }
+
+  /// Re-reads the chapters (and their progress) for whatever was loaded last,
+  /// keeping the current list on screen meanwhile. Does nothing if nothing
+  /// has been loaded yet; a failed re-read leaves the current list in place.
+  Future<void> refreshQuietly({required String bearerToken}) async {
+    final courseId = _lastCourseId;
+    final levelId = _lastLevelId;
+    if (courseId == null && levelId == null) return;
+    try {
+      var level = levelId;
+      if (level == null) {
+        final levels = await _repository.getLevels(
+          bearerToken: bearerToken,
+          courseId: courseId!,
+        );
+        if (levels.isEmpty) {
+          setSuccess(const []);
+          return;
+        }
+        level = levels.first.id;
+      }
+      final chapters = await _repository.getChaptersWithProgress(
+        bearerToken: bearerToken,
+        levelId: level,
+      );
+      setSuccess(chapters);
+    } catch (_) {
+      // Keep what is on screen; the next pull-to-refresh retries.
     }
   }
 }

@@ -6,6 +6,8 @@ import '../../../core/localization/inline_tr.dart';
 import '../../../core/routing/app_route_paths.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../learner_tools/data/learner_tools_api.dart';
+import '../../shell/logic/main_shell_tab_provider.dart';
+import 'widgets/practice_widgets.dart';
 
 /// Practice — one place to see every way to practice, with what is waiting
 /// today. Mirrors the web app's "Practice" hub.
@@ -35,6 +37,44 @@ class PracticeHubPage extends ConsumerWidget {
       }
     }
 
+    final surfaces = aimSurfacesOf(context);
+
+    void openCourses() {
+      ref.read(mainShellTabIndexProvider.notifier).state = 1;
+      context.go(AppRoutePaths.mainShell);
+    }
+
+    final skills = [
+      PracticeSkillTile(
+        icon: Icons.mic_rounded,
+        tone: const Color(0xFF3B82F6),
+        title: context.tr('Speak', 'تحدّث'),
+        subtitle: context.tr('Have a conversation', 'ابدأ محادثة'),
+        onTap: () => context.push(AppRoutePaths.practiceSpeaking),
+      ),
+      PracticeSkillTile(
+        icon: Icons.edit_rounded,
+        tone: const Color(0xFF8B5CF6),
+        title: context.tr('Write', 'اكتب'),
+        subtitle: context.tr('Express your ideas', 'عبّر عن أفكارك'),
+        onTap: () => context.push(AppRoutePaths.practiceWriting),
+      ),
+      PracticeSkillTile(
+        icon: Icons.headphones_rounded,
+        tone: const Color(0xFF10B981),
+        title: context.tr('Listen', 'استمع'),
+        subtitle: context.tr('Hear words and sentences', 'استمع إلى الكلمات والجمل'),
+        onTap: () => context.push(AppRoutePaths.vocabularyLibrary),
+      ),
+      PracticeSkillTile(
+        icon: Icons.menu_book_rounded,
+        tone: const Color(0xFFF59E0B),
+        title: context.tr('Read', 'اقرأ'),
+        subtitle: context.tr('Read and learn', 'اقرأ وتعلّم'),
+        onTap: openCourses,
+      ),
+    ];
+
     return Scaffold(
       body: SafeArea(
         top: false,
@@ -44,180 +84,73 @@ class PracticeHubPage extends ConsumerWidget {
             ref.invalidate(mistakesProvider(null));
           },
           child: ListView(
-            padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AimSpacing.screenPaddingMobile,
+              AimSpacing.space16,
+              AimSpacing.screenPaddingMobile,
+              72,
+            ),
             children: [
               // A main screen: the heading sits under the app frame's AIM bar.
-              PageTitleBar(title: context.tr('Practice', 'تدرّب')),
-              const SizedBox(height: AimSpacing.sectionGap),
-              Container(
-                padding: const EdgeInsetsDirectional.all(AimSpacing.space20),
-                decoration: BoxDecoration(
-                  gradient: AimGradients.gzHero,
-                  borderRadius: BorderRadius.circular(AimRadius.lg),
+              PageTitleBar(
+                title: context.tr('Practice', 'تدرّب'),
+                subtitle: context.tr(
+                  'Sharpen your skills and reach your goals',
+                  'نمِّ مهاراتك وحقّق أهدافك',
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      waiting > 0
-                          ? context.tr('Your 5-minute plan is ready', 'خطتك لخمس دقائق جاهزة')
-                          : context.tr('You are all caught up', 'أنهيت كل شيء'),
-                      style: AimTextStyles.h2.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: AimSpacing.space8),
-                    Text(
-                      waiting > 0
-                          ? summary
-                          : context.tr(
-                              'Try a conversation or a new topic to keep your streak going.',
-                              'جرّب محادثة أو موضوعاً جديداً لتحافظ على سلسلتك.',
-                            ),
-                      style: AimTextStyles.bodyMd.copyWith(color: Colors.white.withValues(alpha: 0.9)),
-                    ),
-                    const SizedBox(height: AimSpacing.space16),
-                    FilledButton(
-                      onPressed: startNow,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AimColors.primary500,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: const StadiumBorder(),
+              ),
+              const SizedBox(height: AimSpacing.space16),
+              PracticePlanBanner(
+                title: waiting > 0
+                    ? context.tr('Your 5-minute plan', 'خطتك لخمس دقائق')
+                    : context.tr('You are all caught up', 'أنهيت كل شيء'),
+                subtitle: waiting > 0
+                    ? summary
+                    : context.tr(
+                        'Quick practice for steady progress',
+                        'تدريب سريع لتقدّم ثابت',
                       ),
-                      child: Text(waiting > 0
-                          ? context.tr('Start now', 'ابدأ الآن')
-                          : context.tr('Chat with AI Teacher', 'تحدث مع المعلم الذكي')),
-                    ),
-                  ],
-                ),
+                onStart: startNow,
               ),
               const SizedBox(height: AimSpacing.sectionGap),
-              _GroupTitle(context.tr('Speak and write', 'تكلّم واكتب')),
-              _ModeCard(
-                icon: Icons.mic_none_rounded,
-                title: context.tr('Practice Speaking', 'تدرّب على المحادثة'),
-                body: context.tr('Pick a topic, talk about it, earn XP.', 'اختر موضوعاً وتحدّث عنه واكسب نقاط خبرة.'),
-                onTap: () => context.push(AppRoutePaths.practiceSpeaking),
-              ),
-              _ModeCard(
-                icon: Icons.edit_outlined,
-                title: context.tr('Write a Paragraph', 'اكتب فقرة'),
-                body: context.tr('Write on a topic and see exactly what to fix.', 'اكتب عن موضوع واعرف ما يجب إصلاحه بالضبط.'),
-                onTap: () => context.push(AppRoutePaths.practiceWriting),
-              ),
-              const SizedBox(height: AimSpacing.space12),
-              _GroupTitle(context.tr('Remember and fix', 'تذكّر وأصلح')),
-              _ModeCard(
-                icon: Icons.menu_book_outlined,
-                title: context.tr('Vocabulary', 'المفردات'),
-                body: context.tr('Browse words with Arabic meanings, listen and save them.', 'تصفّح الكلمات بمعانيها العربية، واستمع إليها واحفظها.'),
-                onTap: () => context.push(AppRoutePaths.vocabularyLibrary),
-              ),
-              _ModeCard(
-                icon: Icons.lightbulb_outline_rounded,
-                title: context.tr('My words', 'كلماتي'),
-                body: context.tr('Review the words you saved with spaced flashcards.', 'راجع كلماتك المحفوظة ببطاقات متباعدة.'),
-                meta: (due ?? 0) > 0 ? fill(context.tr('{n} due', '{n} مستحقة'), {'n': due}) : null,
-                onTap: () => context.push(AppRoutePaths.vocabulary),
-              ),
-              _ModeCard(
-                icon: Icons.refresh_rounded,
-                title: context.tr('My mistakes', 'أخطائي'),
-                body: context.tr('Retry the questions you got wrong until they stick.', 'أعد الأسئلة التي أخطأت فيها حتى تثبت.'),
-                meta: (mistakes ?? 0) > 0 ? '$mistakes' : null,
-                onTap: () => context.push(AppRoutePaths.mistakes),
-              ),
-              _ModeCard(
-                icon: Icons.track_changes_rounded,
-                title: context.tr('Improve', 'تحسين'),
-                body: context.tr('See your weak spots and train them directly.', 'اطّلع على نقاط ضعفك ودرّب عليها مباشرة.'),
-                onTap: () => context.push(AppRoutePaths.improve),
-              ),
-              const SizedBox(height: 72),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GroupTitle extends StatelessWidget {
-  const _GroupTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsetsDirectional.only(bottom: AimSpacing.space8),
-        child: Text(text, style: AimTextStyles.h3.copyWith(color: aimSurfacesOf(context).textPrimary)),
-      );
-}
-
-class _ModeCard extends StatelessWidget {
-  const _ModeCard({
-    required this.icon,
-    required this.title,
-    required this.body,
-    required this.onTap,
-    this.meta,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-  final String? meta;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final soft = aimSoftFillsOf(context);
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: AimSpacing.componentGap),
-      child: AIMCard(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(color: soft.primary, shape: BoxShape.circle),
-                child: Icon(icon, color: soft.onPrimary),
-              ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AimTextStyles.bodyLg.copyWith(
+              Row(
+                children: [
+                  const Icon(Icons.graphic_eq_rounded, size: 22, color: AimColors.primary500),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      context.tr('Practice Skills', 'مهارات التدريب'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AimTextStyles.h3.copyWith(
                         color: surfaces.textPrimary,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(body, style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: skills[0]),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Expanded(child: skills[1]),
                   ],
                 ),
               ),
-              if (meta != null) ...[
-                const SizedBox(width: AimSpacing.space8),
-                Container(
-                  padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: surfaces.border),
-                  ),
-                  child: Text(meta!, style: AimTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: AimSpacing.componentGap),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: skills[2]),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Expanded(child: skills[3]),
+                  ],
                 ),
-              ],
-              Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left_rounded
-                    : Icons.chevron_right_rounded,
-                color: surfaces.textMuted,
               ),
             ],
           ),

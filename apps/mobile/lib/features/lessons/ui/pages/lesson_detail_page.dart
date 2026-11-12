@@ -40,10 +40,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
@@ -80,6 +82,21 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  bool _idleLoadScheduled = false;
+
+  /// Idle means "not asked yet" (e.g. the provider was recreated); ask
+  /// instead of showing a skeleton nothing will ever replace.
+  Widget _idleBody(String label) {
+    if (!_idleLoadScheduled) {
+      _idleLoadScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _idleLoadScheduled = false;
+        if (mounted && ref.read(lessonDetailProvider) is AppAsyncIdle) _load();
+      });
+    }
+    return AIMFullScreenLoading(semanticLabel: label);
   }
 
   void _load() {
@@ -166,8 +183,17 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
     if (mounted) {
       _practiceCheckStarted = false;
-      ref.invalidate(chaptersProvider);
-      ref.invalidate(studentCoursesProvider);
+      // Progress changed: re-read what depends on it in place. The screens
+      // underneath keep showing their current data meanwhile (invalidating
+      // their providers instead would reset them to an empty state that
+      // nothing reloads, leaving them on a skeleton for good).
+      final token = ref.read(authFlowProvider).accessToken;
+      if (token != null && token.isNotEmpty) {
+        unawaited(ref.read(chaptersProvider.notifier).refreshQuietly(bearerToken: token));
+        unawaited(ref.read(lessonsListProvider.notifier).refreshQuietly(bearerToken: token));
+        unawaited(ref.read(studentCoursesProvider.notifier).refreshQuietly(bearerToken: token));
+      }
+      ref.invalidate(homeCoursesProvider);
       await _checkPracticeUnlock(detail);
       await _refresh();
     }
@@ -179,19 +205,6 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
       extra: {
         'contextRef': 'lesson:${detail.lesson.id}',
         'lessonTitle': detail.lesson.title,
-      },
-    );
-  }
-
-  void _openContent(LessonDetail detail) {
-    final explanation = detail.lesson.explanation;
-    if (explanation == null) return;
-    context.push(
-      AppRoutePaths.lessonContent,
-      extra: {
-        'lessonId': detail.lesson.id,
-        'lessonTitle': detail.lesson.title,
-        'explanation': explanation,
       },
     );
   }
@@ -251,13 +264,10 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
                 onOpenStep: _openStep,
-                onOpenContent: () => _openContent(data),
               );
             },
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
-            semanticLabel: l10n.lessonsLoadingLessonSemantic,
-          ),
+        AppAsyncIdle() => _idleBody(l10n.lessonsLoadingLessonSemantic),
       },
     );
   }
@@ -276,7 +286,6 @@ class _LessonDetailContent extends StatelessWidget {
     required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
     required this.onOpenStep,
-    required this.onOpenContent,
   });
 
   final LessonDetail detail;
@@ -286,7 +295,6 @@ class _LessonDetailContent extends StatelessWidget {
   final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
   final void Function(LessonAsset asset, int stepNumber) onOpenStep;
-  final VoidCallback onOpenContent;
 
   @override
   Widget build(BuildContext context) {
@@ -302,19 +310,27 @@ class _LessonDetailContent extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
                 _LessonHero(detail: detail, isCompleted: practiceUnlocked),
+                const SizedBox(height: 16),
+                _ContentCard(
+                  hasContent: detail.lesson.explanation != null || !detail.hasNoContent,
+                  onTap: () => context.push(
+                    AppRoutePaths.lessonContent,
+                    extra: {
+                      'lessonId': detail.lesson.id,
+                      'lessonTitle': detail.lesson.title,
+                    },
+                  ),
+                ),
                 const SizedBox(height: 20),
-
-                if (detail.lesson.explanation != null) ...[
-                  _LessonContentCard(onTap: onOpenContent),
-                  const SizedBox(height: 20),
-                ],
 
                 // Section Header: What's inside
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.lessonsWhatsInsideTitle,
+                      detail.lesson.explanation != null
+                          ? context.tr('Practice material', 'مواد التدرّب')
+                          : l10n.lessonsWhatsInsideTitle,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -588,6 +604,99 @@ class _LessonDetailContent extends StatelessWidget {
   }
 }
 
+/// "Content in reading": opens the page with all of the lesson's steps.
+class _ContentCard extends StatelessWidget {
+  const _ContentCard({required this.hasContent, required this.onTap});
+
+  final bool hasContent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Semantics(
+      button: true,
+      label: context.tr('Content in reading', 'المحتوى للقراءة'),
+      child: Material(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              border: Border.all(color: surfaces.border),
+              boxShadow: [
+                BoxShadow(
+                  color: AimColors.primary500.withValues(alpha: dark ? 0.14 : 0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('Content in reading', 'المحتوى للقراءة'),
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasContent
+                            ? context.tr('Explanation, examples and steps', 'الشرح والأمثلة والخطوات')
+                            : context.tr('No content for this lesson yet', 'لا يوجد محتوى لهذا الدرس بعد'),
+                        style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                    size: 20,
+                    color: AimColors.primary500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _LessonHero extends StatelessWidget {
   const _LessonHero({required this.detail, this.isCompleted = false});
 
@@ -821,84 +930,6 @@ class _LessonStepSheet extends StatelessWidget {
                   child: LessonContentRenderer(asset: asset),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// "Lesson content" entry card — opens the full written lesson (no AI Teacher
-// session needed).
-// ---------------------------------------------------------------------------
-
-class _LessonContentCard extends StatelessWidget {
-  const _LessonContentCard({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final ar = Localizations.localeOf(context).languageCode == 'ar';
-    final title = ar ? 'محتوى الدرس' : 'Lesson content';
-    final subtitle = ar
-        ? 'اقرأ شرح الدرس كاملاً مع الأمثلة والأخطاء الشائعة'
-        : 'Read the full explanation with examples and common mistakes';
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AimColors.primary200),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AimColors.primary500, AimColors.primary600],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.menu_book_rounded,
-                    color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.35,
-                        color: surfaces.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: surfaces.textMuted),
             ],
           ),
         ),

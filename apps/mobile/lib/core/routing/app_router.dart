@@ -10,7 +10,6 @@ import '../../features/auth/ui/pages/forgot_password_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
 import '../../features/lessons/ui/pages/lesson_content_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
-import '../../features/lessons/logic/entity/lesson_explanation.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
@@ -188,14 +187,12 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.lessonContent,
           builder: (context, state) {
-            final extra = state.extra is Map ? state.extra as Map : const {};
-            final explanation = extra['explanation'];
-            if (explanation is! LessonExplanation) {
-              return const Scaffold(body: SizedBox.shrink());
-            }
+            final args = state.extra is Map<String, dynamic>
+                ? state.extra as Map<String, dynamic>
+                : const <String, dynamic>{};
             return LessonContentPage(
-              lessonTitle: extra['lessonTitle'] as String? ?? '',
-              explanation: explanation,
+              lessonId: args['lessonId'] as String? ?? '',
+              lessonTitle: args['lessonTitle'] as String? ?? '',
             );
           },
         ),
