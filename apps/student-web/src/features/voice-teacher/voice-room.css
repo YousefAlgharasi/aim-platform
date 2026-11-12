@@ -19,6 +19,7 @@
   box-shadow: 0 0 0 calc(var(--vr-size) * 0.06) rgb(var(--c-danger) / 0.16), 0 0 calc(var(--vr-size) * 0.4) rgb(var(--c-danger) / 0.35);
   animation: vr-listen 1.1s ease-in-out infinite;
 }
+.vr-orb[data-state='idle'][data-live='true'] { transform: scale(calc(1 + var(--vr-level, 0) * 0.12)); transition: transform 90ms linear; }
 .vr-orb[data-state='thinking'] { animation: vr-think 1.4s ease-in-out infinite; filter: saturate(0.8); }
 
 @keyframes vr-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }

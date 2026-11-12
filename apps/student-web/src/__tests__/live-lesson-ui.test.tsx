@@ -38,19 +38,40 @@ describe('LessonStart', () => {
 
 describe('VoiceComposer', () => {
   const props = {
-    draft: '', onDraftChange: jest.fn(), onSend: jest.fn(), onMic: jest.fn(), onCancelRecording: jest.fn(),
-    isRecording: false, elapsedLabel: '0:03', busy: false, micBlocked: false, micRequesting: false, muted: false, onToggleMute: jest.fn(),
+    draft: '', onDraftChange: jest.fn(), onSend: jest.fn(), onMicToggle: jest.fn(),
+    micState: 'on' as const, busy: false, muted: false, onToggleMute: jest.fn(),
   };
   beforeEach(() => jest.clearAllMocks());
 
-  it('is a mic while the box is empty and a send button once something is typed', () => {
+  it('the mic button is the live microphone: tap it to mute, tap again to turn it on', () => {
     const { rerender } = render(<VoiceComposer {...props} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
-    expect(props.onMic).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument();
+    const mic = screen.getByRole('button', { name: 'Mute your microphone' });
+    expect(mic).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(mic);
+    expect(props.onMicToggle).toHaveBeenCalledTimes(1);
 
+    rerender(<VoiceComposer {...props} micState="muted" />);
+    expect(screen.getByRole('button', { name: 'Turn your microphone on' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('shows a way to start the live conversation when the mic is off', () => {
+    render(<VoiceComposer {...props} micState="off" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start live conversation' }));
+    expect(props.onMicToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('says to just talk while live, and to type or talk otherwise', () => {
+    const { rerender } = render(<VoiceComposer {...props} micState="hearing" />);
+    expect(screen.getByPlaceholderText('Just talk, or type here')).toBeInTheDocument();
+    rerender(<VoiceComposer {...props} micState="muted" />);
+    expect(screen.getByPlaceholderText('Type or talk to your teacher')).toBeInTheDocument();
+  });
+
+  it('becomes a send button once something is typed', () => {
+    const { rerender } = render(<VoiceComposer {...props} />);
+    expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument();
     rerender(<VoiceComposer {...props} draft="Hello teacher" />);
-    expect(screen.queryByRole('button', { name: 'Start recording' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mute your microphone' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
     expect(props.onSend).toHaveBeenCalledTimes(1);
   });
@@ -67,17 +88,6 @@ describe('VoiceComposer', () => {
     expect(props.onSend).toHaveBeenCalledTimes(1);
   });
 
-  it('while recording shows the meter with stop and cancel, and no text box', () => {
-    render(<VoiceComposer {...props} isRecording />);
-    expect(screen.getByText('Listening…')).toBeInTheDocument();
-    expect(screen.getByText('0:03')).toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(props.onCancelRecording).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Stop recording and send' }));
-    expect(props.onMic).toHaveBeenCalledTimes(1);
-  });
-
   it('lets the student mute the teacher and shows when it is muted', () => {
     const { rerender } = render(<VoiceComposer {...props} />);
     fireEvent.click(screen.getByRole('button', { name: 'Mute the teacher’s voice' }));
@@ -86,9 +96,9 @@ describe('VoiceComposer', () => {
     expect(screen.getByRole('button', { name: 'Turn the teacher’s voice on' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('typing still works when the microphone is blocked; the mic is disabled', () => {
-    render(<VoiceComposer {...props} micBlocked />);
-    expect(screen.getByRole('button', { name: 'Start recording' })).toBeDisabled();
+  it('typing still works when live voice is not available; the mic is disabled', () => {
+    render(<VoiceComposer {...props} micState="blocked" />);
+    expect(screen.getByRole('button', { name: /isn’t available here/ })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: 'Message your teacher' })).toBeEnabled();
   });
 });
