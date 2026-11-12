@@ -1,3 +1,4 @@
+import { trackLearningAudio } from '../../interaction';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
@@ -103,6 +104,7 @@ export function VocabularyLibraryPage() {
       urlRef.current = url;
       const audio = new Audio(url);
       audioRef.current = audio;
+      trackLearningAudio(audio);
       audio.onended = () => setPlaying((p) => (p === w.id ? null : p));
       audio.onerror = () => setPlaying((p) => (p === w.id ? null : p));
       await audio.play();

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useI18n } from '../i18n/I18nContext';
+import { useLocation } from 'react-router-dom';
 import { fetchUnreadCount } from '../features/notifications/notificationsApi';
-import { fetchEngagementSummary } from '../features/dashboard/dashboardApi';
-import { FlameIcon } from '../components/common/Icons';
+import { NotificationBell } from './NotificationBell';
+import { StreakBadge, refreshEngagement, useEngagement } from '../interaction';
 
 /** Unread in-app notifications, refreshed on every navigation so the badge clears after the inbox is read. */
 function useUnreadCount(pathname: string): number {
@@ -21,62 +20,23 @@ function useUnreadCount(pathname: string): number {
   return count;
 }
 
-/** Current day streak, refreshed on every navigation so it moves after a lesson is finished. */
-function useStreakDays(pathname: string): number | null {
-  const [days, setDays] = useState<number | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    fetchEngagementSummary()
-      .then((s) => !cancelled && setDays(s?.goal?.streakDays ?? null))
-      // The streak is a convenience; never surface an error for it.
-      .catch(() => !cancelled && setDays(null));
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
-  return days;
-}
-
 export function TopBar() {
   const { pathname } = useLocation();
 
-  const { t, formatNumber } = useI18n();
   const unread = useUnreadCount(pathname);
-  const streakDays = useStreakDays(pathname);
+  // Streak from the shared engagement store, refreshed on every navigation so it moves after a lesson is finished.
+  const { summary } = useEngagement();
+  useEffect(() => { void refreshEngagement(); }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b backdrop-blur-md bg-page/90 border-line">
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 shrink-0 border-b shadow-[0_1px_4px_rgba(0,0,0,0.06)] backdrop-blur-md bg-page/90 border-line">
       <div className="flex items-center gap-2.5 justify-self-start min-w-0">
         <span className="text-xl font-bold leading-none tracking-tight text-ink rtl:tracking-normal md:hidden">AIM</span>
       </div>
 
       <div className="flex items-center gap-2 justify-self-end ms-auto">
-        {streakDays != null && (
-            <span
-              role="img"
-              aria-label={`${formatNumber(streakDays)} ${t('Day streak')}`}
-              title={t('Day streak')}
-              className="inline-flex items-center gap-1.5 h-9 px-2 text-sm font-semibold text-ink lp-num"
-            >
-              <FlameIcon className="size-[18px] text-ink" />
-              <span aria-hidden="true">{formatNumber(streakDays)}</span>
-            </span>
-          )}
-        <Link
-          to="/notifications"
-          aria-label={unread > 0 ? t('Notifications, {n} unread', { n: unread }) : t('Notifications')}
-          className="relative size-10 rounded-full flex items-center justify-center no-underline transition-colors text-ink-soft hover:bg-surface-strong hover:text-ink"
-        >
-          <svg className="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-          </svg>
-          {unread > 0 && (
-            <span aria-hidden="true" className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-elevated">
-              {unread > 9 ? '9+' : formatNumber(unread)}
-            </span>
-          )}
-        </Link>
+        <StreakBadge summary={summary} />
+        <NotificationBell unread={unread} />
       </div>
     </header>
   );

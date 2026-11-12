@@ -20,7 +20,7 @@ interface LearningPathCardProps {
 
 /** One large course card: icon, chapters, title, status, progress and an Info popover. */
 export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, relation = 'unknown' }: LearningPathCardProps) {
-  const { t, plural } = useI18n();
+  const { t } = useI18n();
   const completed = course.status === 'completed';
   const chapterCount = chapters?.count;
 
@@ -31,7 +31,7 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, r
       className={`relative flex flex-col justify-between gap-5 rounded-2xl bg-surface p-5 text-start ring-1 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
         course.locked
           ? 'cursor-not-allowed opacity-60 ring-line'
-          : `cursor-pointer hover:bg-surface-muted ${relation === 'passed' && !isCurrent ? 'opacity-90' : ''} ${isCurrent ? 'ring-2 ring-ink' : 'ring-line hover:ring-line-strong'}`
+          : `cursor-pointer hover:bg-surface-muted ${relation === 'passed' && !isCurrent ? 'opacity-90' : ''} ${isCurrent ? 'ring-2 ring-brand' : 'ring-brand-line hover:ring-brand'}`
       }`}
       onClick={(e) => onOpen(e.currentTarget)}
       onKeyDown={(e) => {
@@ -46,15 +46,10 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, r
     >
       <div className="relative flex items-start gap-3">
         <div className="min-w-0 flex-1 flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted">
-            {!!chapterCount && (
-              <span>
-                {plural(chapterCount, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: chapterCount }), other: t('{n} chapters', { n: chapterCount }) })}
-              </span>
-            )}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-muted empty:hidden">
             {relation === 'unknown' && course.levelCode && <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-ink ring-1 ring-line-strong">{course.levelCode}</span>}
             {isCurrent && (
-              <span className="whitespace-nowrap rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-ink-inverse">{t('Current course')}</span>
+              <span className="whitespace-nowrap rounded-full bg-brand px-2.5 py-0.5 text-xs font-semibold text-white">{t('Current course')}</span>
             )}
           </div>
           <h2 className="m-0 text-2xl font-semibold leading-tight tracking-tight text-ink break-words">{course.title}</h2>

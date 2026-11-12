@@ -1,0 +1,153 @@
+/* Interaction layer: shared motion values and one-shot animations.
+   Everyday feedback 120-220ms, celebrations 600-1200ms. Only opacity and transform are animated.
+   Reduced motion (OS setting or Settings → Reduce motion) is handled globally in accessibility.css, which
+   collapses every animation to its end state; particles are also hidden outright below. */
+:root {
+  --ix-fast: 140ms;
+  --ix-base: 200ms;
+  --ix-celebrate: 900ms;
+  --ix-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ix-ease-pop: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Entrance for feedback panels and banners. */
+@keyframes ix-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.ix-fade-up { animation: ix-fade-up var(--ix-base) var(--ix-ease) both; }
+
+/* Small pop for a result icon. */
+@keyframes ix-pop {
+  0% { opacity: 0; transform: scale(0.7); }
+  70% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.ix-pop { animation: ix-pop 220ms var(--ix-ease-pop) both; }
+
+/* Tick that draws itself. The path needs pathLength="1". */
+@keyframes ix-draw { to { stroke-dashoffset: 0; } }
+.ix-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ix-draw 260ms 90ms var(--ix-ease) forwards; }
+
+/* Gentle "not quite": one small settle, no shaking. */
+@keyframes ix-settle {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: none; }
+}
+.ix-settle { animation: ix-settle var(--ix-base) var(--ix-ease) both; }
+
+/* Bars and rings that fill once when a confirmed result arrives. */
+@keyframes ix-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ix-grow-x { transform-origin: left center; animation: ix-grow-x 700ms var(--ix-ease) both; }
+[dir='rtl'] .ix-grow-x { transform-origin: right center; }
+@keyframes ix-ring { from { stroke-dashoffset: var(--ix-ring-from, 326.7); } to { stroke-dashoffset: 0; } }
+.ix-ring { animation: ix-ring 900ms var(--ix-ease) both; }
+
+/* One bump for a number that just changed (top bar streak). */
+@keyframes ix-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+.ix-bump { animation: ix-bump 420ms var(--ix-ease) both; }
+
+/* Badge reveal: more special than ordinary feedback, still under a second. */
+@keyframes ix-reveal {
+  0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+  60% { opacity: 1; transform: scale(1.015); }
+  100% { opacity: 1; transform: none; }
+}
+.ix-reveal { animation: ix-reveal 640ms var(--ix-ease) both; }
+@keyframes ix-sheen {
+  from { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  30% { opacity: 0.5; }
+  to { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+.ix-sheen { position: relative; overflow: hidden; }
+.ix-sheen::after {
+  content: ''; position: absolute; inset: 0; width: 45%; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(var(--c-gold) / 0.28), transparent);
+  animation: ix-sheen 1000ms 250ms ease-out both;
+}
+
+/* ── Streak celebration ─────────────────────────────────────────────── */
+@keyframes ix-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.ix-toast { animation: ix-toast-in 260ms var(--ix-ease) both; }
+.ix-toast[data-leaving='true'] { animation: none; opacity: 0; transform: translateY(8px); transition: opacity 180ms ease-out, transform 180ms ease-out; }
+
+@keyframes ix-flame-pop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+  55% { opacity: 1; transform: scale(1.14) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.ix-flame { animation: ix-flame-pop 620ms 120ms var(--ix-ease-pop) both; }
+
+/* Glow fades in and out once; the badge is calm afterwards. */
+@keyframes ix-glow {
+  0% { opacity: 0; transform: scale(0.6); }
+  40% { opacity: 0.9; transform: scale(1.15); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+.ix-glow { animation: ix-glow var(--ix-celebrate) 160ms ease-out both; }
+
+/* Count: the previous number leaves upward, the new one rises in. */
+@keyframes ix-count-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-70%); } }
+@keyframes ix-count-in { from { opacity: 0; transform: translateY(70%); } to { opacity: 1; transform: none; } }
+.ix-count-out { animation: ix-count-out 260ms 520ms var(--ix-ease) both; }
+.ix-count-in { animation: ix-count-in 320ms 620ms var(--ix-ease-pop) both; }
+
+/* Particles fly out from the badge along --dx/--dy and fade. */
+@keyframes ix-particle {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); }
+}
+.ix-particle { animation: ix-particle 760ms 260ms var(--ix-ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ix-particles, .ix-glow, .ix-sheen::after { display: none !important; }
+}
+html[data-motion='reduce'] .ix-particles,
+html[data-motion='reduce'] .ix-glow,
+html[data-motion='reduce'] .ix-sheen::after { display: none !important; }
+
+/* ── Top-bar streak flame ─────────────────────────────────────────────
+   Lit (streak > 0): a slow, small flicker, livelier while hovered or focused. Unlit (0 days): still, with one
+   small sway on hover. Reduced motion collapses all of it to a still flame (accessibility.css). */
+.ix-fire { overflow: visible; }
+.ix-fire-outer, .ix-fire-inner { transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes ix-fire-outer {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  30% { transform: scale(0.97, 1.05) rotate(-2deg); }
+  60% { transform: scale(1.03, 0.97) rotate(1.5deg); }
+  80% { transform: scale(0.99, 1.03) rotate(-1deg); }
+}
+@keyframes ix-fire-inner {
+  0%, 100% { transform: scale(1, 1); opacity: 1; }
+  40% { transform: scale(0.9, 1.14); opacity: 0.85; }
+  70% { transform: scale(1.06, 0.92); opacity: 1; }
+}
+.ix-fire-outer { animation: ix-fire-outer 2.4s ease-in-out infinite; }
+.ix-fire-inner { animation: ix-fire-inner 1.5s ease-in-out infinite; }
+.ix-streak:hover .ix-fire-outer, .ix-streak:focus-visible .ix-fire-outer { animation-duration: 0.9s; }
+.ix-streak:hover .ix-fire-inner, .ix-streak:focus-visible .ix-fire-inner { animation-duration: 0.6s; }
+.ix-streak .ix-fire, .ix-streak .ix-unlit { transition: transform var(--ix-base) var(--ix-ease); }
+.ix-streak:hover .ix-fire, .ix-streak:focus-visible .ix-fire { transform: scale(1.14); }
+@keyframes ix-sway {
+  0%, 100% { transform: rotate(0deg); }
+  35% { transform: rotate(-9deg); }
+  70% { transform: rotate(6deg); }
+}
+.ix-streak:hover .ix-unlit { animation: ix-sway 480ms var(--ix-ease) both; transform-origin: 50% 90%; }
+
+/* Week strip in the streak popover: days appear one after another, once. */
+.ix-week > * { animation: ix-fade-up var(--ix-base) var(--ix-ease) both; }
+.ix-week > *:nth-child(2) { animation-delay: 30ms; }
+.ix-week > *:nth-child(3) { animation-delay: 60ms; }
+.ix-week > *:nth-child(4) { animation-delay: 90ms; }
+.ix-week > *:nth-child(5) { animation-delay: 120ms; }
+.ix-week > *:nth-child(6) { animation-delay: 150ms; }
+.ix-week > *:nth-child(7) { animation-delay: 180ms; }

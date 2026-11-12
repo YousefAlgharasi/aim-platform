@@ -43,10 +43,10 @@ export function ThumbButton({
       disabled={disabled}
       aria-pressed={active}
       aria-label={label}
-      className={`size-9 rounded-full flex items-center justify-center border-none cursor-pointer transition-colors disabled:cursor-default ${
+      className={`size-8 rounded-full flex items-center justify-center border-none cursor-pointer transition-colors disabled:cursor-default ${
         active
           ? 'bg-brand-soft text-brand-ink'
-          : 'bg-surface-strong text-ink-muted dark:text-ink-soft hover:bg-brand-soft disabled:opacity-60'
+          : 'bg-transparent text-ink-muted hover:bg-surface-strong hover:text-ink disabled:opacity-60'
       }`}
     >
       <svg className={`size-4 ${kind === 'down' ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

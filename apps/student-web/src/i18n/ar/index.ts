@@ -12,6 +12,7 @@ import { billing } from './billing';
 import { practice } from './practice';
 import { learner } from './learner';
 import { skills } from './skills';
+import { interaction } from './interaction';
 
 export const ar: Record<string, string> = {
   ...common,
@@ -26,4 +27,5 @@ export const ar: Record<string, string> = {
   ...practice,
   ...learner,
   ...skills,
+  ...interaction,
 };

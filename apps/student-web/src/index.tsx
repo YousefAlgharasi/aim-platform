@@ -7,6 +7,7 @@ import './styles/tokens.css';
 import './styles/global.css';
 import './styles/responsive.css';
 import './styles/rtl.css';
+import './interaction/motion.css';
 import './styles/accessibility.css';
 import { applyDisplayPrefs } from './state/displayPrefs';
 import { registerServiceWorker } from './pwa/registerServiceWorker';

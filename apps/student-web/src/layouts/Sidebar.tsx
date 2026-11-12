@@ -193,7 +193,7 @@ export function Sidebar({ forceCollapsed = false }: { forceCollapsed?: boolean }
   return (
     <aside
       aria-label={t('Sidebar')}
-      className={`hidden md:block shrink-0 sticky top-0 h-screen overflow-hidden bg-page border-e border-line transition-[width] duration-300 ease-in-out motion-reduce:transition-none ${
+      className={`hidden md:block shrink-0 sticky top-0 z-10 h-screen overflow-hidden bg-page border-e border-line shadow-[1px_0_4px_rgba(0,0,0,0.06)] rtl:shadow-[-1px_0_4px_rgba(0,0,0,0.06)] transition-[width] duration-300 ease-in-out motion-reduce:transition-none ${
         collapsed ? 'w-[76px]' : 'w-64'
       }`}
     >

@@ -16,7 +16,7 @@ const VARIANT: Record<BannerProps['variant'], string> = {
 
 export function Banner({ variant, children }: BannerProps) {
   return (
-    <div role={variant === 'error' ? 'alert' : 'status'} className={`rounded-xl border px-3.5 py-3 text-[13px] font-medium leading-relaxed ${VARIANT[variant]}`}>
+    <div role={variant === 'error' ? 'alert' : 'status'} className={`ix-fade-up rounded-xl border px-3.5 py-3 text-[13px] font-medium leading-relaxed ${VARIANT[variant]}`}>
       {children}
     </div>
   );

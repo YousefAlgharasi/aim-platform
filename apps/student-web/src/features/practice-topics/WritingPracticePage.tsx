@@ -8,6 +8,7 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { useI18n } from '../../i18n/I18nContext';
+import { playSound, reportLearningCompleted } from '../../interaction';
 import { countWords, isPracticeLocked, practiceTopicsApi, type PracticeTopic, type WritingResult } from './practiceTopicsApi';
 
 function mmss(seconds: number): string {
@@ -62,6 +63,9 @@ export function WritingPracticePage() {
     setError('');
     try {
       setResult(await practiceTopicsApi.submitWriting(topic.id, text.trim()));
+      // The server marked and saved the paragraph: a finished activity for today.
+      playSound('complete');
+      void reportLearningCompleted();
     } catch (err) {
       setError(getErrorMessage(err, t('We could not mark your paragraph right now. Please try again.')));
     } finally {
@@ -118,22 +122,22 @@ export function WritingPracticePage() {
             disabled={submitting}
           />
           {error && <Banner variant="error">{error}</Banner>}
-          <Button onClick={submit} disabled={!canSubmit} fullWidth>
+          <Button onClick={submit} disabled={!canSubmit} loading={submitting} fullWidth>
             {submitting ? t('Marking your paragraph…') : t('Submit for marking')}
           </Button>
         </>
       )}
 
       {result && (
-        <section className="flex flex-col gap-4" aria-label={t('Your result')}>
+        <section className="ix-fade-up flex flex-col gap-4" aria-label={t('Your result')}>
           <div className="flex flex-col items-center gap-2 rounded-2xl bg-surface p-6 text-center ring-1 ring-line sm:p-8">
             <p className="m-0 text-sm text-ink-muted">{t('Your score')}</p>
             <p className={`lp-num m-0 text-6xl font-semibold tracking-tight ${result.score >= 70 ? 'text-success-ink' : result.score >= 40 ? 'text-warning-ink' : 'text-danger-ink'}`}>{result.score}<span className="text-xl text-ink-muted">/100</span></p>
             <div className="w-full max-w-xs h-2 rounded-full bg-ink/10 overflow-hidden" role="img" aria-label={`${result.score} / 100`}>
-              <div className="h-full bg-brand rounded-full" style={{ width: `${result.score}%` }} />
+              <div className="ix-grow-x h-full bg-brand rounded-full" style={{ width: `${result.score}%` }} />
             </div>
             {result.xpAwarded > 0
-              ? <span className="rounded-full px-3 py-1 text-sm font-semibold text-brand-ink ring-1 ring-brand-line">{t('+{xp} XP', { xp: result.xpAwarded })}</span>
+              ? <span className="ix-pop rounded-full px-3 py-1 text-sm font-semibold text-brand-ink ring-1 ring-brand-line">{t('+{xp} XP', { xp: result.xpAwarded })}</span>
               : <span className="text-xs text-ink-muted">{t('You already earned XP for this topic today.')}</span>}
             <p className="m-0 mt-2 text-sm leading-relaxed text-ink-soft max-w-xl">{result.summary}</p>
           </div>

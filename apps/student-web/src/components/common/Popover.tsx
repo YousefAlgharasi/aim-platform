@@ -143,7 +143,10 @@ export function Popover({ title, renderTrigger, open: openProp, onClose, anchorR
       setOpenState((v) => !v);
     },
     // Keep Enter/Space on the trigger from activating an ancestor handler.
-    onKeyDown: (e) => e.stopPropagation(),
+    onKeyDown: (e) => {
+      e.stopPropagation();
+      if (e.key === 'Escape' && open) close(true);
+    },
     'aria-haspopup': 'dialog',
     'aria-expanded': open,
     'aria-controls': mounted ? id : undefined,
@@ -162,7 +165,12 @@ export function Popover({ title, renderTrigger, open: openProp, onClose, anchorR
             tabIndex={-1}
             style={style}
             onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              // Stopped so ancestors (e.g. a clickable card) never see it; that also hides it from the document
+              // listener above, so Escape is handled here while focus is inside the panel.
+              e.stopPropagation();
+              if (e.key === 'Escape') close(true);
+            }}
             className={`z-50 rounded-2xl bg-surface text-ink ring-1 ring-line shadow-xl shadow-slate-900/10 dark:shadow-black/40 p-4 text-start outline-none focus-visible:ring-2 focus-visible:ring-focus transition duration-150 ease-out motion-reduce:transition-none ${
               shown ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-95'
             }`}

@@ -22,6 +22,7 @@ import {
 } from './practiceApi';
 import { linkButton, linkButtonPrimary } from './practiceStyles';
 import { useI18n } from '../../i18n/I18nContext';
+import { ResultIcon, SoundToggleButton, playSound, reportLearningCompleted, resultCue, useSoundOn } from '../../interaction';
 
 type Status = 'loading' | 'locked' | 'expired' | 'failed' | 'empty' | 'active' | 'finished';
 
@@ -74,7 +75,12 @@ export function PracticeShell() {
     setCompletion('saving');
     setCompletionError('');
     markComplete()
-      .then(() => setCompletion('saved'))
+      .then(() => {
+        setCompletion('saved');
+        // Server-confirmed completion: soft cue, then let the streak celebrate if this is today's first.
+        playSound('complete');
+        void reportLearningCompleted();
+      })
       .catch(err => {
         setCompletion('failed');
         setCompletionError(
@@ -152,6 +158,9 @@ export function PracticeShell() {
   function restart() {
     navigate(`/practice/lesson/${lessonId}`, { state: navState });
   }
+
+  // Optional cue once per checked answer (keyed by question, so re-renders stay silent).
+  useSoundOn(resultCue(feedback?.isCorrect), feedback?.isCorrect == null ? null : feedback.questionId);
 
   const lessonLink = (
     <Link to={lessonId ? `/lessons/${lessonId}` : '/curriculum'} state={navState} className={linkButton}>
@@ -265,6 +274,7 @@ export function PracticeShell() {
           )}
         </div>
         <span className="flex shrink-0 items-center gap-2">
+          <SoundToggleButton />
           <LevelBadge showName={false} />
           <span className="lp-num text-base font-semibold text-ink">{index + 1}<span className="text-ink-muted">/{questions.length}</span></span>
         </span>
@@ -279,7 +289,7 @@ export function PracticeShell() {
         aria-label={t('Practice progress')}
       >
         <div
-          className="h-full rounded-full bg-brand transition-all duration-500"
+          className="h-full rounded-full bg-brand transition-[width] duration-500 ease-out"
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -297,25 +307,32 @@ export function PracticeShell() {
 
         {answered && (
           <div
-            className={`rounded-2xl p-4 ring-1 ${
+            key={feedback.questionId}
+            className={`flex items-start gap-3 rounded-2xl p-4 ring-1 ${
               feedback.isCorrect === false
-                ? 'bg-danger-soft ring-danger-line text-danger-ink'
-                : 'bg-success-soft ring-success-line text-success-ink'
+                ? 'ix-settle bg-danger-soft ring-danger-line text-danger-ink'
+                : 'ix-fade-up bg-success-soft ring-success-line text-success-ink'
             }`}
             role="status"
           >
-            <p className="m-0 text-lg font-semibold">
-              {feedback.isCorrect === true
-                ? t('✓ Correct!')
-                : feedback.isCorrect === false
-                  ? t('✗ Not quite')
-                  : t('Answer recorded')}
-            </p>
-            <p className="m-0 mt-1 text-base opacity-90">
-              {feedback.isCorrect === false
-                ? t('Keep going — AIM uses this to tailor your next practice.')
-                : t('Your answer was saved.')}
-            </p>
+            {feedback.isCorrect != null && <ResultIcon correct={feedback.isCorrect} className="mt-0.5 size-7" />}
+            <div className="min-w-0">
+              <p className="m-0 text-lg font-semibold">
+                {feedback.isCorrect === true
+                  ? t('Correct!')
+                  : feedback.isCorrect === false
+                    ? t('Not quite')
+                    : t('Answer recorded')}
+              </p>
+              <p className="m-0 mt-1 text-base opacity-90">
+                {feedback.isCorrect === false
+                  ? t('Keep going — AIM uses this to tailor your next practice.')
+                  : t('Your answer was saved.')}
+              </p>
+              {feedback.isCorrect === false && (
+                <p className="m-0 mt-1 text-sm opacity-90">{t('You can retry this question later in My mistakes.')}</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -327,7 +344,7 @@ export function PracticeShell() {
             {index + 1 < questions.length ? t('Next question →') : t('Finish practice')}
           </Button>
         ) : (
-          <Button variant="primary" size="lg" fullWidth onClick={handleSubmit} disabled={!canSubmit || submitting}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleSubmit} disabled={!canSubmit} loading={submitting}>
             {submitting ? t('Checking…') : t('Check answer')}
           </Button>
         )}

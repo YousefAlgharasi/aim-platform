@@ -93,7 +93,7 @@ export function QuestionRenderer({
                   <span className="min-w-0 [unicode-bidi:plaintext]">{option.text}</span>
                 </span>
                 {isSelected && disabled && result === true && (
-                  <CheckIcon className="size-5 text-success-ink shrink-0" />
+                  <CheckIcon className="ix-pop size-5 text-success-ink shrink-0" />
                 )}
               </label>
             );

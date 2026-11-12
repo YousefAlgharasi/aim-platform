@@ -16,6 +16,7 @@ import { LanguageDropdown } from './LanguageDropdown';
 import { ThemeSwitch } from './ThemeSwitch';
 import { DisplayPrefs } from './DisplayPrefs';
 import { DailyGoalSetting } from './DailyGoalSetting';
+import { SoundSwitch } from '../../interaction';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -128,6 +129,12 @@ export function SettingsPage() {
             <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
             <ThemeSwitch />
             <DisplayPrefs />
+          </div>
+        </Card>
+        <Card>
+          <div className="flex flex-col gap-3.5">
+            <SectionTitle hint={t('Soft sounds for correct answers, finished lessons and streaks. Lesson audio and recordings are never affected. Saved on this device.')}>{t('Sounds')}</SectionTitle>
+            <SoundSwitch />
           </div>
         </Card>
       </section>
