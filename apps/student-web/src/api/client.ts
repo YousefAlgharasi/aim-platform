@@ -24,6 +24,8 @@ export interface RequestOptions {
   accept?: string;
   /** Sent as `Idempotency-Key` so the server can de-duplicate retries / double clicks of this action. */
   idempotencyKey?: string;
+  /** Request timeout in milliseconds (defaults to 15000ms). Pass 0 to disable. */
+  timeoutMs?: number;
 }
 
 /** Stored TTS audio is MP3 (about 8x smaller than WAV); endpoints that only have WAV still answer with WAV. */
@@ -70,6 +72,7 @@ class ApiClient {
   private baseUrl: string;
   private accessToken: string | null;
   private refreshInFlight: Promise<RefreshOutcome> | null = null;
+  private inFlightGets = new Map<string, Promise<unknown>>();
   private sessionExpiredListeners = new Set<() => void>();
 
   constructor(baseUrl: string) {
@@ -82,6 +85,7 @@ class ApiClient {
   }
 
   setSession(tokens: SessionTokens | null) {
+    this.inFlightGets.clear();
     this.accessToken = tokens?.accessToken ?? null;
     writeStorage(ACCESS_TOKEN_KEY, tokens?.accessToken ?? null);
     writeStorage(REFRESH_TOKEN_KEY, tokens?.refreshToken ?? null);
@@ -94,6 +98,7 @@ class ApiClient {
       this.setSession(null);
       return;
     }
+    this.inFlightGets.clear();
     this.accessToken = token;
     writeStorage(ACCESS_TOKEN_KEY, token);
   }
@@ -167,10 +172,22 @@ class ApiClient {
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
 
     let response: Response;
+    const timeout = options.timeoutMs ?? 15000;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let controller: AbortController | undefined;
+
     try {
-      response = await fetch(`${this.baseUrl}${path}`, { method, headers, body: payload });
+      let init: RequestInit = { method, headers, body: payload };
+      if (timeout > 0 && typeof AbortController !== 'undefined') {
+        controller = new AbortController();
+        init = { ...init, signal: controller.signal };
+        timer = setTimeout(() => controller?.abort(), timeout);
+      }
+      response = await fetch(`${this.baseUrl}${path}`, init);
     } catch {
       throw networkError();
+    } finally {
+      if (timer) clearTimeout(timer);
     }
 
     if (response.status === 401 && useAuth && !options.token && !isRetry) {
@@ -200,7 +217,25 @@ class ApiClient {
   }
 
   get<T>(path: string, options?: RequestOptions): Promise<T> {
-    return this.request<T>('GET', path, undefined, options);
+    const useAuth = options?.auth !== false;
+    const authKey = options?.token ?? (useAuth ? this.accessToken : 'anon') ?? 'none';
+    const lang = getLocale();
+    const accept = options?.accept ?? 'application/json';
+    const dedupKey = `${lang}:${accept}:${authKey}:${path}`;
+
+    const existing = this.inFlightGets.get(dedupKey) as Promise<T> | undefined;
+    if (existing) {
+      return existing;
+    }
+
+    const promise = this.request<T>('GET', path, undefined, options).finally(() => {
+      if (this.inFlightGets.get(dedupKey) === promise) {
+        this.inFlightGets.delete(dedupKey);
+      }
+    });
+
+    this.inFlightGets.set(dedupKey, promise as Promise<unknown>);
+    return promise;
   }
 
   post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {

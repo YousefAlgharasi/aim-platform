@@ -149,6 +149,7 @@ export function StreakBadge({ summary }: { summary: EngagementSummary | null }) 
       renderTrigger={(props) => (
         <button
           {...props}
+          data-tour="streak"
           type="button"
           aria-label={label}
           title={t('Day streak')}

@@ -11,7 +11,7 @@ import { FlashcardReview } from './FlashcardReview';
 
 /** Text field on the add card: light text on the blue card in light mode; the normal dark field in dark mode. */
 const FIELD =
-  'w-full rounded-xl border-0 bg-white/15 px-4 text-white outline-none ring-1 ring-white/30 placeholder:text-white/60 focus:ring-2 focus:ring-white dark:bg-field dark:text-ink dark:ring-line-strong dark:placeholder:text-ink-muted dark:focus:ring-focus';
+  'w-full rounded-xl border-0 bg-white/15 px-4 text-white outline-none ring-1 ring-white/30 placeholder:text-white/60 focus:ring-2 focus:ring-white';
 
 export function VocabularyPage() {
   const { t, formatDate } = useI18n();
@@ -65,10 +65,10 @@ export function VocabularyPage() {
     <div className="stagger flex w-full flex-col gap-6">
       <PageTitleBar
         title={t('My words')}
-        action={<Button size="sm" variant="secondary" onClick={() => setAdding((v) => !v)} aria-expanded={adding}>{adding ? t('Close') : t('Add a word')}</Button>}
+        action={<Button data-tour="words-add" size="sm" variant="secondary" onClick={() => setAdding((v) => !v)} aria-expanded={adding}>{adding ? t('Close') : t('Add a word')}</Button>}
       />
 
-      <div className="hero-panel">
+      <div data-tour="words-review" className="hero-panel">
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="m-0 text-sm font-bold text-on-brand">{t('Today’s review')}</p>
@@ -83,32 +83,32 @@ export function VocabularyPage() {
 
       {adding && (
         // Same look as the Word of the Day card, with the same three things: the word, its meaning and an example.
-        <form onSubmit={add} aria-label={t('Add a word')} className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-surface dark:text-ink dark:ring-1 dark:ring-line sm:p-8">
+        <form onSubmit={add} aria-label={t('Add a word')} className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white sm:p-8">
           <div className="flex flex-col gap-5">
-            <p className="m-0 text-sm font-medium text-white dark:text-ink-muted">{t('Add a word')}</p>
+            <p className="m-0 text-sm font-medium text-white">{t('Add a word')}</p>
             {formError && <p role="alert" className="m-0 text-sm font-bold">{formError}</p>}
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-white dark:text-ink-muted">{t('English word or phrase')}</span>
+              <span className="text-sm font-medium text-white">{t('English word or phrase')}</span>
               <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={60} required autoFocus dir="auto" placeholder={t('For example: borrow')}
                 className={`${FIELD} lp-display h-16 text-[2rem] font-semibold`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-white dark:text-ink-muted">{t('Meaning (optional)')}</span>
+              <span className="text-sm font-medium text-white">{t('Meaning (optional)')}</span>
               <input value={meaning} onChange={(e) => setMeaning(e.target.value)} maxLength={200} dir="auto" placeholder={t('What does it mean?')}
                 className={`${FIELD} h-12 text-base`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-white dark:text-ink-muted">{t('Example sentence (optional)')}</span>
+              <span className="text-sm font-medium text-white">{t('Example sentence (optional)')}</span>
               <input value={example} onChange={(e) => setExample(e.target.value)} maxLength={300} dir="auto" placeholder={t('Use it in a sentence')}
                 className={`${FIELD} h-12 text-base italic`} />
             </label>
             <div className="flex flex-wrap items-center gap-3">
               <button type="submit" disabled={saving || !word.trim()}
-                className="inline-flex h-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-white px-8 text-base font-semibold text-brand transition hover:bg-white/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-brand dark:text-white dark:hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand dark:focus-visible:ring-focus dark:focus-visible:ring-offset-surface">
+                className="inline-flex h-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-white px-8 text-base font-semibold text-brand transition hover:bg-white/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
                 {saving ? t('Saving…') : t('Save word')}
               </button>
               <button type="button" onClick={() => { setAdding(false); setFormError(''); }}
-                className="inline-flex h-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-7 text-base font-semibold text-white ring-1 ring-white/50 transition hover:bg-white/10 dark:text-ink dark:ring-line-strong dark:hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:focus-visible:ring-focus">
+                className="inline-flex h-14 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent px-7 text-base font-semibold text-white ring-1 ring-white/50 transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 {t('Cancel')}
               </button>
             </div>
@@ -119,7 +119,7 @@ export function VocabularyPage() {
       {words.length === 0 ? (
         <EmptyState title={t('No saved words yet')} message={t('Select a word in a lesson or an AI Teacher reply to save it here.')} />
       ) : (
-        <section className="flex flex-col gap-3" aria-label={t('Saved words')}>
+        <section data-tour="words-list" className="flex flex-col gap-3" aria-label={t('Saved words')}>
           <input
             type="search" value={query} onChange={(e) => setQuery(e.target.value)} dir="auto"
             placeholder={t('Search your words')} aria-label={t('Search your words')}

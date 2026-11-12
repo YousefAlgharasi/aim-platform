@@ -202,7 +202,7 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
   let chapterNumber = 0;
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div data-tour="chapter-list" className="flex w-full flex-col gap-6">
       {levels.map(({ level, chapters }) => (
         <div key={level.id} className="flex flex-col gap-4" aria-label={level.title}>
           {levels.length > 1 && (

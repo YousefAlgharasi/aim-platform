@@ -4,7 +4,7 @@ import { Markdown } from '../../components/common/Markdown';
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, newIdempotencyKey } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -12,13 +12,15 @@ import { aiTeacherApi, GENERAL_CONTEXT_REF, lessonContextRef, type FeedbackRatin
 import { useVoiceRecorder, type RecordingResult } from './useVoiceRecorder';
 import {
   MAX_AUDIO_SIZE_BYTES,
-  MAX_RECORDING_MS,
   MIN_RECORDING_MS,
   voiceTeacherApi,
   type VoiceMessage,
 } from './voiceTeacherApi';
 import { MicIcon } from '../../components/common/Icons';
 import { ThumbButton, pillLinkClass } from '../ai-teacher/ui';
+import { VoiceComposer } from './VoiceComposer';
+import { VoiceOrb, type OrbState } from './VoiceOrb';
+import './voice-room.css';
 import { useI18n } from '../../i18n/I18nContext';
 import { PracticeBanner } from '../practice-topics/PracticeBanner';
 import type { PracticeSessionState } from '../practice-topics/practiceTopicsApi';
@@ -26,6 +28,7 @@ import type { PracticeSessionState } from '../practice-topics/practiceTopicsApi'
 const WAVE_HEIGHTS = [4, 8, 14, 22, 16, 28, 18, 12, 24, 15, 8, 5];
 
 interface VoiceLocationState {
+  lessonId?: string | null;
   lessonTitle?: string | null;
   lastSessionRecap?: string | null;
   focusRecap?: string | null;
@@ -83,6 +86,7 @@ function VoiceSessionStarter() {
       .startSession(contextRef)
       .then((session) => {
         const state: VoiceLocationState = {
+          lessonId,
           lessonTitle,
           lastSessionRecap: session.lastSessionRecap,
           focusRecap: session.focusRecap,
@@ -90,7 +94,7 @@ function VoiceSessionStarter() {
         navigate(`/voice-teacher/${session.sessionId}`, { replace: true, state });
       })
       .catch((err) => setError(getErrorMessage(err, t('Could not start a Voice Teacher session.'))));
-  }, [contextRef, lessonTitle, navigate, t]);
+  }, [contextRef, lessonId, lessonTitle, navigate, t]);
 
   useEffect(() => {
     if (started.current) return;
@@ -123,12 +127,16 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [playbackNotice, setPlaybackNotice] = useState('');
   const [feedback, setFeedback] = useState<Record<string, FeedbackEntry>>({});
+  // Live-lesson controls: the teacher's voice can be muted (replies stay on screen), and the student can type instead of talking.
+  const [muted, setMuted] = useState(false);
+  const [draft, setDraft] = useState('');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlCache = useRef(new Map<string, string>());
   const mountedRef = useRef(true);
   const greetingHandled = useRef(false);
   const playRequest = useRef(0);
+  const mutedRef = useRef(false);
 
   // ── Playback ──────────────────────────────────────────────────────────
 
@@ -193,6 +201,18 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
     }
   }, [t]);
 
+  /** Plays a teacher reply on its own, unless the student muted the teacher's voice. */
+  const playReply = useCallback((source: AudioSource) => {
+    if (!mutedRef.current) void play(source);
+  }, [play]);
+
+  const toggleMute = useCallback(() => {
+    const next = !mutedRef.current;
+    mutedRef.current = next;
+    setMuted(next);
+    if (next) stopPlayback();
+  }, [stopPlayback]);
+
   useEffect(() => {
     mountedRef.current = true;
     const cache = urlCache.current;
@@ -226,9 +246,9 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
     greetingHandled.current = true;
     if (messages.length === 1 && messages[0].isGreeting) {
       const source = sourceForMessage(messages[0]);
-      if (source) play(source);
+      if (source) playReply(source);
     }
-  }, [messages, play]);
+  }, [messages, playReply]);
 
   // ── Recording turn ────────────────────────────────────────────────────
 
@@ -264,12 +284,12 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         if (!mountedRef.current) return;
 
         if (reply.audioRef) {
-          play({ kind: 'ref', audioRef: reply.audioRef });
+          playReply({ kind: 'ref', audioRef: reply.audioRef });
         } else if (reply.isFallback) {
           setFallbackText(reply.text);
         } else {
           const lastTeacher = latest ? [...latest].reverse().find((m) => m.role === 'teacher') : undefined;
-          if (lastTeacher) play(sourceForMessage(lastTeacher) as AudioSource);
+          if (lastTeacher) playReply(sourceForMessage(lastTeacher) as AudioSource);
           else setFallbackText(reply.text);
         }
       } catch (err) {
@@ -278,7 +298,52 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         if (mountedRef.current) setSubmitting(false);
       }
     },
-    [sessionId, play, t],
+    [sessionId, playReply, t],
+  );
+
+  /** A typed turn: same conversation as the voice turns, so the teacher answers (and speaks) the same way. */
+  const submitText = useCallback(
+    async (raw: string) => {
+      const message = raw.trim();
+      if (!message || submitting) return;
+      stopPlayback();
+      setSubmitting(true);
+      setTurnError('');
+      setFallbackText(null);
+      setDraft('');
+      const localId = `local-${Date.now()}`;
+      setMessages((prev) => [
+        ...(prev ?? []),
+        { id: localId, role: 'student', text: message, audioRef: null, createdAt: new Date().toISOString(), channel: 'text', audioDurationMs: null, isGreeting: false },
+      ]);
+      try {
+        const reply = await aiTeacherApi.sendMessage(sessionId, message, newIdempotencyKey());
+        if (!mountedRef.current) return;
+        let latest: VoiceMessage[] | null = null;
+        try {
+          latest = (await voiceTeacherApi.getHistory(sessionId)).messages ?? [];
+          if (mountedRef.current) setMessages(latest);
+        } catch {
+          // Best effort: the turn already succeeded; keep the local copy of the student's message.
+        }
+        if (!mountedRef.current) return;
+        if (reply.isFallback) {
+          setFallbackText(reply.text);
+        } else {
+          const lastTeacher = latest ? [...latest].reverse().find((m) => m.role === 'teacher') : undefined;
+          if (lastTeacher) playReply(sourceForMessage(lastTeacher) as AudioSource);
+        }
+      } catch (err) {
+        if (mountedRef.current) {
+          setMessages((prev) => (prev ?? []).filter((m) => m.id !== localId));
+          setDraft(message);
+          setTurnError(getErrorMessage(err, t('Your message could not be sent. Please try again.')));
+        }
+      } finally {
+        if (mountedRef.current) setSubmitting(false);
+      }
+    },
+    [sessionId, submitting, stopPlayback, playReply, t],
   );
 
   const recorder = useVoiceRecorder((result) => {
@@ -328,218 +393,163 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
 
   const isRecording = recorder.status === 'recording';
   const isSpeaking = playingKey !== null || loadingKey !== null;
+  const orbState: OrbState = isRecording ? 'listening' : submitting ? 'thinking' : isSpeaking ? 'speaking' : 'idle';
   const status = isRecording
     ? { label: t('Recording'), heading: t('Listening to you…') }
     : submitting
-      ? { label: t('Processing'), heading: t('Processing your answer…') }
+      ? { label: t('Processing'), heading: t('Your teacher is thinking…') }
       : isSpeaking
         ? { label: t('Teacher speaking'), heading: t('Your teacher is speaking…') }
-        : { label: t('Ready'), heading: t('Your turn — tap the microphone to speak') };
+        : { label: t('Ready'), heading: t('Your turn: talk or type') };
 
   const micBlocked = recorder.status === 'unsupported' || recorder.status === 'denied';
   const lastTeacher = [...messages].reverse().find((m) => m.role === 'teacher');
-
-  const waveActive = isRecording || isSpeaking;
+  const lastTeacherSource = lastTeacher ? sourceForMessage(lastTeacher) : null;
+  const onlyGreeting = messages.length === 1 && messages[0].isGreeting;
+  const isLesson = !!navState.lessonTitle;
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <PageTitleBar
-        title={t('Voice Teacher')}
-        subtitle={navState.lessonTitle || t('Practise speaking with your AI teacher')}
-        fallback="/practice"
-        action={<Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>{t('Text chat')}</Link>}
-      />
+    <div className="-mb-24 flex min-h-[calc(100dvh-1.5rem)] w-full flex-col md:-mb-8 md:min-h-[calc(100dvh-5rem)]">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4">
+        <PageTitleBar
+          title={isLesson ? navState.lessonTitle! : t('Voice Teacher')}
+          subtitle={isLesson ? t('Live lesson with your AI teacher') : t('Practise speaking with your AI teacher')}
+          fallback={navState.lessonId ? `/lessons/${navState.lessonId}` : '/practice'}
+          action={<Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>{t('Text chat')}</Link>}
+        />
 
-      {navState.practice && <PracticeBanner practice={navState.practice} />}
-      {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
-      {navState.lastSessionRecap && (
-        <Banner variant="success">
-          <strong>{t('Welcome back.')}</strong> {navState.lastSessionRecap}
-        </Banner>
-      )}
-
-      <section
-        className="relative overflow-hidden rounded-2xl bg-surface px-5 py-8 ring-1 ring-line flex flex-col items-center text-center gap-3 sm:px-8"
-        aria-label={t('Voice conversation')}
-      >
-        <span
-          className="rounded-full px-3 py-1 text-sm font-medium text-ink-muted ring-1 ring-line-strong"
-          role="status"
-          aria-live="polite"
-        >
-          {t('Status: {status}', { status: status.label })}
-        </span>
-        <p className="lp-display m-0 text-[1.75rem] font-semibold leading-snug text-ink sm:text-[2.25rem]">
-          {status.heading}
-        </p>
-
-        {lastTeacher && !showTranscript && (
-          <p className="m-0 max-w-xl text-sm leading-relaxed text-ink-soft bg-surface dark:bg-surface-sunken/60 ring-1 ring-line/80 rounded-2xl rounded-es-none p-4 text-start">
-            {lastTeacher.text}
-          </p>
+        {navState.practice && <PracticeBanner practice={navState.practice} />}
+        {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
+        {navState.lastSessionRecap && (
+          <Banner variant="success">
+            <strong>{t('Welcome back.')}</strong> {navState.lastSessionRecap}
+          </Banner>
         )}
 
-        <div className="w-full max-w-md flex flex-col gap-2 empty:hidden text-start">
-          {recorder.status === 'unsupported' && (
-            <Banner variant="warning">
-              {t("Voice recording isn't available in this browser. Use a recent version of Chrome, Edge, Firefox or Safari over a secure (https) connection.")}{' '}
-              <Link to={`/ai-teacher/${sessionId}`}>{t('Continue in text chat')}</Link>
-            </Banner>
-          )}
-          {recorder.status === 'denied' && (
-            <Banner variant="error">
-              {t('Microphone permission was denied. Allow microphone access for this site in your browser settings, then try again.')}{' '}
-              <button type="button" className="bg-transparent border-none p-0 underline font-semibold text-inherit cursor-pointer" onClick={recorder.reset}>
-                {t('Try again')}
-              </button>
-            </Banner>
-          )}
-          {recorder.status === 'error' && recorder.errorMessage && (
-            <Banner variant="error">{recorder.errorMessage}</Banner>
-          )}
-          {turnError && <Banner variant="error">{turnError}</Banner>}
-          {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
-          {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
-        </div>
+        <section className="flex flex-1 flex-col items-center gap-4 py-2 text-center" aria-label={t('Voice conversation')}>
+          <VoiceOrb state={orbState} className="[--vr-size:8.5rem] sm:[--vr-size:11rem]" />
+          <span className="rounded-full px-3 py-1 text-sm font-medium text-ink-muted ring-1 ring-line-strong" role="status" aria-live="polite">
+            {t('Status: {status}', { status: status.label })}
+          </span>
+          <p className="lp-display m-0 text-[1.5rem] font-semibold leading-snug text-ink sm:text-[2rem]">{status.heading}</p>
 
-        <div className="flex flex-col items-center justify-center py-4">
-          <div className="flex items-end gap-1.5 h-10 mb-6" aria-hidden="true">
-            {WAVE_HEIGHTS.map((h, i) => (
-              <div
-                key={i}
-                className={`w-1.5 rounded-full transition-all duration-200 ${
-                  waveActive ? 'bg-brand dark:bg-brand-ink animate-pulse' : 'bg-surface-strong'
-                }`}
-                style={{ height: `${waveActive ? h * 1.5 : 8}px` }}
-              />
-            ))}
-          </div>
-
-          <div className="relative">
-            {isRecording && (
-              <>
-                <div className="absolute -inset-6 rounded-full bg-brand/10 animate-ping" aria-hidden="true" />
-                <div className="absolute -inset-3 rounded-full bg-brand/20" aria-hidden="true" />
-              </>
+          <div className="flex w-full max-w-xl flex-col gap-2 empty:hidden text-start">
+            {recorder.status === 'unsupported' && (
+              <Banner variant="warning">
+                {t("Voice recording isn't available in this browser. Use a recent version of Chrome, Edge, Firefox or Safari over a secure (https) connection. You can still type to your teacher below.")}
+              </Banner>
             )}
-            <button
-              type="button"
-              onClick={handleMicClick}
-              disabled={submitting || micBlocked || recorder.status === 'requesting'}
-              aria-pressed={isRecording}
-              aria-label={isRecording ? t('Stop recording and send') : t('Start recording')}
-              className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-                isRecording
-                  ? 'bg-danger text-white'
-                  : 'bg-brand text-white ring-8 ring-brand/15 hover:bg-brand-hover'
-              }`}
-            >
-              {submitting ? (
-                <span className="text-3xl font-black leading-none" aria-hidden="true">…</span>
-              ) : isRecording ? (
-                <span className="size-8 rounded-md bg-white" aria-hidden="true" />
-              ) : (
-                <MicIcon className="size-10 text-white" />
-              )}
-            </button>
+            {recorder.status === 'denied' && (
+              <Banner variant="error">
+                {t('Microphone permission was denied. Allow microphone access for this site in your browser settings, then try again.')}{' '}
+                <button type="button" className="bg-transparent border-none p-0 underline font-semibold text-inherit cursor-pointer" onClick={recorder.reset}>
+                  {t('Try again')}
+                </button>
+              </Banner>
+            )}
+            {recorder.status === 'error' && recorder.errorMessage && <Banner variant="error">{recorder.errorMessage}</Banner>}
+            {turnError && <Banner variant="error">{turnError}</Banner>}
+            {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
+            {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
           </div>
 
-          <p className={`mb-0 mt-5 text-base font-semibold ${isRecording ? 'text-danger-ink' : 'text-ink-muted'}`}>
-            {recorder.status === 'requesting'
-              ? t('Waiting for microphone permission…')
-              : isRecording
-                ? t('Listening… tap to send')
-                : submitting
-                  ? t('Sending your answer…')
-                  : t('Tap to speak')}
-          </p>
-          {isRecording && (
-            <span className="lp-num mt-1 text-sm font-semibold tracking-widest text-ink">
-              {formatSeconds(recorder.elapsedMs)} / {formatSeconds(MAX_RECORDING_MS)}
-            </span>
+          {/* What the teacher is saying, as text, so the student can read along. */}
+          {lastTeacher && !showTranscript && (
+            <div className="w-full max-w-xl rounded-3xl bg-surface p-5 text-start ring-1 ring-line">
+              <div className="max-h-[32vh] overflow-y-auto text-base leading-relaxed text-ink [unicode-bidi:plaintext]">
+                <Markdown text={lastTeacher.text} />
+              </div>
+              {lastTeacherSource && (
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    className={buttonClasses('secondary', 'sm')}
+                    onClick={() => (isSpeaking ? stopPlayback() : play(lastTeacherSource))}
+                    disabled={isRecording}
+                  >
+                    {isSpeaking ? `■ ${t('Stop audio')}` : `▶ ${t('Play again')}`}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
-        </div>
 
-        {isSpeaking && (
-          <Button variant="secondary" size="sm" onClick={stopPlayback}>
-            {t('Stop audio')}
+          {/* One tap to answer the teacher's "ready to start?" */}
+          {onlyGreeting && !submitting && !isRecording && (
+            <Button variant="primary" size="md" onClick={() => void submitText(t('Yes, let’s start.'))}>
+              {t('Yes, let’s start')}
+            </Button>
+          )}
+
+          <Button variant="ghost" size="sm" onClick={() => setShowTranscript((v) => !v)} aria-expanded={showTranscript}>
+            {showTranscript ? t('Hide messages') : t('Messages ({n})', { n: messages.length })}
           </Button>
-        )}
-      </section>
 
-      <div className="flex justify-center">
-        <Button variant="ghost" size="sm" onClick={() => setShowTranscript((v) => !v)} aria-expanded={showTranscript}>
-          {showTranscript ? t('Hide messages') : t('Messages ({n})', { n: messages.length })}
-        </Button>
+          {showTranscript && (
+            <div className="flex w-full max-w-2xl flex-col gap-3.5 text-start" role="log" aria-label={t('Voice conversation messages')}>
+              {messages.length === 0 && (
+                <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone or type to start.')}</p>
+              )}
+              {messages.map((msg) => {
+                const isTeacher = msg.role === 'teacher';
+                const source = sourceForMessage(msg);
+                const key = source ? sourceKey(source) : null;
+                const entry = feedback[msg.id];
+                return (
+                  <div key={msg.id} className={`flex max-w-[88%] flex-col sm:max-w-[78%] ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}>
+                    <div
+                      className={`whitespace-pre-wrap break-words rounded-2xl p-4 text-base leading-relaxed ${
+                        isTeacher ? 'rounded-es-none bg-surface text-ink ring-1 ring-line' : 'rounded-ee-none bg-brand text-on-brand'
+                      }`}
+                    >
+                      {isTeacher ? <Markdown text={msg.text} /> : msg.text}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 px-1 text-xs text-ink-muted">
+                      <span className="inline-flex items-center gap-1">
+                        {msg.channel === 'voice' && <MicIcon className="size-3" />}
+                        {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {source && key && (
+                        <button
+                          type="button"
+                          className={buttonClasses('secondary', 'sm')}
+                          onClick={() => (playingKey === key ? stopPlayback() : play(source))}
+                          disabled={loadingKey === key || isRecording}
+                          aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}
+                        >
+                          {loadingKey === key ? t('Loading…') : playingKey === key ? `■ ${t('Stop')}` : `▶ ${t('Play')}`}
+                        </button>
+                      )}
+                    </div>
+                    {isTeacher && !msg.id.startsWith('local-') && (
+                      <div className="mt-1 flex items-center gap-2 px-1">
+                        <span className="text-xs text-ink-muted">{entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}</span>
+                        <ThumbButton kind="up" active={entry?.rating === 'helpful'} disabled={!!entry} onClick={() => submitFeedback(msg.id, 'helpful')} label={t('Mark reply as helpful')} />
+                        <ThumbButton kind="down" active={entry?.rating === 'not_helpful'} disabled={!!entry} onClick={() => submitFeedback(msg.id, 'not_helpful')} label={t('Mark reply as not helpful')} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
 
-      {showTranscript && (
-        <div className="flex flex-col gap-3.5" role="log" aria-label={t('Voice conversation messages')}>
-          {messages.length === 0 && (
-            <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone to start.')}</p>
-          )}
-          {messages.map((msg) => {
-            const isTeacher = msg.role === 'teacher';
-            const source = sourceForMessage(msg);
-            const key = source ? sourceKey(source) : null;
-            const entry = feedback[msg.id];
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}
-              >
-                <div
-                  className={`p-4 rounded-2xl text-base leading-relaxed whitespace-pre-wrap break-words ${
-                    isTeacher
-                      ? 'bg-surface ring-1 ring-line text-ink rounded-es-none'
-                      : 'bg-brand text-white rounded-ee-none'
-                  }`}
-                >
-                  {isTeacher ? <Markdown text={msg.text} /> : msg.text}
-                </div>
-                <div className="mt-1 flex items-center gap-2 px-1 text-xs text-ink-muted">
-                  <span className="inline-flex items-center gap-1">
-                    {msg.channel === 'voice' && <MicIcon className="size-3" />}
-                    {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  {source && key && (
-                    <button
-                      type="button"
-                      className={buttonClasses('secondary', 'sm')}
-                      onClick={() => (playingKey === key ? stopPlayback() : play(source))}
-                      disabled={loadingKey === key || isRecording}
-                      aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}
-                    >
-                      {loadingKey === key ? t('Loading…') : playingKey === key ? `■ ${t('Stop')}` : `▶ ${t('Play')}`}
-                    </button>
-                  )}
-                </div>
-                {isTeacher && (
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-xs text-ink-muted">
-                      {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
-                    </span>
-                    <ThumbButton
-                      kind="up"
-                      active={entry?.rating === 'helpful'}
-                      disabled={!!entry}
-                      onClick={() => submitFeedback(msg.id, 'helpful')}
-                      label={t('Mark reply as helpful')}
-                    />
-                    <ThumbButton
-                      kind="down"
-                      active={entry?.rating === 'not_helpful'}
-                      disabled={!!entry}
-                      onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                      label={t('Mark reply as not helpful')}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <VoiceComposer
+        draft={draft}
+        onDraftChange={setDraft}
+        onSend={() => void submitText(draft)}
+        onMic={() => void handleMicClick()}
+        onCancelRecording={recorder.reset}
+        isRecording={isRecording}
+        elapsedLabel={formatSeconds(recorder.elapsedMs)}
+        busy={submitting}
+        micBlocked={micBlocked}
+        micRequesting={recorder.status === 'requesting'}
+        muted={muted}
+        onToggleMute={toggleMute}
+      />
     </div>
   );
 }

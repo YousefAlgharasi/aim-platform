@@ -113,7 +113,7 @@ export function ProgressSummary() {
         <EmptyState title={t('No progress yet')} message={t('Complete lessons and practice to see your skill mastery, weaknesses and review schedule here.')} />
       ) : (
         <>
-          <section className="hero-panel" aria-label={t('Your next step')}>
+          <section data-tour="progress-next" className="hero-panel" aria-label={t('Your next step')}>
             <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
               {avg !== null ? <Ring percent={avg} /> : null}
               <div className="min-w-0 flex-1">
@@ -164,7 +164,7 @@ export function ProgressSummary() {
             </section>
           )}
 
-          <section className="flex flex-col gap-3" aria-label={t('Skills by area')}>
+          <section data-tour="progress-skills" className="flex flex-col gap-3" aria-label={t('Skills by area')}>
             <div className="flex items-center justify-between px-1">
               <h2 className={ui.sectionTitle}>{t('Skills by area')}</h2>
               <Link to="/progress/skills" className={ui.link}>{t('All skills')}</Link>

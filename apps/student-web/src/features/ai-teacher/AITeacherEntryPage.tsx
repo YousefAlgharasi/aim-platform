@@ -132,24 +132,24 @@ export function AITeacherEntryPage() {
         action={<Link to="/ai-teacher/history" className={pillLinkClass}>{t('History')}</Link>}
       />
 
-      <section className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8">
+      <section data-tour="teacher-start" className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white sm:p-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="lp-display m-0 text-[1.75rem] font-semibold sm:text-[2.25rem]">{t('Ask me anything')}</p>
-            <p className="m-0 mt-2 max-w-md text-base text-white dark:text-ink-inverse/70">{t('Start the conversation with a question or pick a suggestion below.')}</p>
+            <p className="m-0 mt-2 max-w-md text-base text-white">{t('Start the conversation with a question or pick a suggestion below.')}</p>
           </div>
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => startSession(GENERAL_CONTEXT_REF)}
               disabled={starting}
-              className="inline-flex h-14 cursor-pointer items-center justify-center rounded-full border-0 bg-white px-8 text-base font-semibold text-brand transition hover:bg-white/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand disabled:cursor-not-allowed disabled:opacity-60 dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90 dark:focus-visible:ring-ink-inverse dark:focus-visible:ring-offset-white"
+              className="inline-flex h-14 cursor-pointer items-center justify-center rounded-full border-0 bg-white px-8 text-base font-semibold text-brand transition hover:bg-white/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand disabled:cursor-not-allowed disabled:opacity-60"
             >
               {starting ? t('Starting…') : t('Chat with AI Teacher')}
             </button>
             <Link
               to="/voice-teacher"
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold text-white no-underline ring-1 ring-white/50 transition hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:text-ink-inverse dark:ring-ink-inverse/30 dark:hover:bg-ink-inverse/5"
+              className="inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold text-white no-underline ring-1 ring-white/50 transition hover:bg-white/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <MicIcon className="size-5" />
               {t('Talk with Voice Teacher')}
@@ -157,11 +157,11 @@ export function AITeacherEntryPage() {
           </div>
         </div>
         {startError && (
-          <p className="m-0 mt-4 rounded-xl bg-black/25 px-3 py-2 text-sm text-white dark:bg-danger-soft dark:text-danger-ink" role="alert">{startError}</p>
+          <p className="m-0 mt-4 rounded-xl bg-black/25 px-3 py-2 text-sm text-white" role="alert">{startError}</p>
         )}
       </section>
 
-      <section className="flex flex-col gap-3" aria-label={t('Try asking')}>
+      <section data-tour="teacher-prompts" className="flex flex-col gap-3" aria-label={t('Try asking')}>
         <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Try asking')}</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {STARTERS.map((q) => (

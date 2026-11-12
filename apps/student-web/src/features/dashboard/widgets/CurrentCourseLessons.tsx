@@ -51,7 +51,10 @@ export function nextLesson(lessons: StudentLessonSummary[]): StudentLessonSummar
  * the one before it is complete) and never bypassing the backend gates. 'hidden' when the course is locked/unpaid,
  * finished, or any request fails.
  */
-export function useCurrentChapter(courseId: string | null): { state: 'idle' | 'loading' | 'hidden' | 'ready' | 'finished'; chapter: CurrentChapter | null; finished: FinishedCourse | null } {
+export function useCurrentChapter(
+  courseId: string | null,
+  knownCourses?: StudentCourse[] | null,
+): { state: 'idle' | 'loading' | 'hidden' | 'ready' | 'finished'; chapter: CurrentChapter | null; finished: FinishedCourse | null } {
   const [state, setState] = useState<'idle' | 'loading' | 'hidden' | 'ready' | 'finished'>(courseId ? 'loading' : 'idle');
   const [chapter, setChapter] = useState<CurrentChapter | null>(null);
   const [finished, setFinished] = useState<FinishedCourse | null>(null);
@@ -61,7 +64,7 @@ export function useCurrentChapter(courseId: string | null): { state: 'idle' | 'l
     let cancelled = false;
     setState('loading');
     (async () => {
-      const courses = await fetchStudentCourses();
+      const courses = knownCourses && knownCourses.length > 0 ? knownCourses : await fetchStudentCourses();
       const course = courses.find((c) => c.courseId === courseId);
       if (!course || course.locked) return null;
 
@@ -93,7 +96,7 @@ export function useCurrentChapter(courseId: string | null): { state: 'idle' | 'l
       })
       .catch(() => !cancelled && setState('hidden'));
     return () => { cancelled = true; };
-  }, [courseId]);
+  }, [courseId, knownCourses]);
 
   return { state, chapter, finished };
 }
@@ -119,7 +122,7 @@ export function CurrentCourseLessons({ courseId, data }: { courseId: string; cou
   }
 
   return (
-    <section aria-label={t('Your course lessons')} className={ui.panel}>
+    <section data-tour="course-lessons" aria-label={t('Your course lessons')} className={ui.panel}>
       <div className="flex items-start justify-between gap-3 border-b border-line pb-3">
         <div className="min-w-0">
           <h2 className="m-0 text-base font-semibold leading-snug text-ink [overflow-wrap:anywhere] [unicode-bidi:plaintext]">
