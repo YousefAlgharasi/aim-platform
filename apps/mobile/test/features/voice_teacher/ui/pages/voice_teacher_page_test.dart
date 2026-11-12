@@ -734,6 +734,116 @@ void main() {
       },
     );
   });
+
+  group('VoiceTeacherPage live lesson controls', () {
+    const greetingOnly = VoiceTeacherSessionState(
+      sessionId: 'session-1',
+      history: [
+        VoiceMessage(
+          id: 'g1',
+          role: VoiceMessageRole.teacher,
+          text: 'Welcome! Are you ready to start?',
+          createdAt: '2026-01-01T00:00:00Z',
+          isGreeting: true,
+        ),
+      ],
+    );
+    const withHistory = VoiceTeacherSessionState(sessionId: 'session-1', history: _history);
+
+    Widget page(_FakeVoiceTeacherSessionNotifier notifier) => _wrap(
+          VoiceTeacherPage(contextRef: 'lesson:l1', recorder: _FakeVoiceRecorderClient()),
+          overrides: [
+            voiceTeacherSessionProvider.overrideWith((ref) => notifier),
+            voicePlaybackProvider.overrideWith(
+              (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+            ),
+            voiceTeacherRepositoryProvider.overrideWithValue(_FakeVoiceTeacherRepository()),
+          ],
+        );
+
+    Future<void> open(WidgetTester tester, _FakeVoiceTeacherSessionNotifier notifier) async {
+      await tester.pumpWidget(page(notifier));
+      await tester.pump();
+      await tester.pump();
+    }
+
+    testWidgets("shows the text box, send button, mute toggle and the teacher's words as text", (tester) async {
+      await open(tester, _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(withHistory)));
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Type or talk to your teacher'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
+      expect(find.text('You say "hello".'), findsOneWidget);
+    });
+
+    testWidgets('sends what is typed (trimmed) and clears the box', (tester) async {
+      final notifier = _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(withHistory));
+      await open(tester, notifier);
+
+      await tester.enterText(find.byType(TextField), '  I play football on Sundays  ');
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.pump();
+      await tester.pump();
+
+      expect(notifier.sentTexts, ['I play football on Sundays']);
+      expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, isEmpty);
+    });
+
+    testWidgets('does not send an empty message', (tester) async {
+      final notifier = _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(withHistory));
+      await open(tester, notifier);
+
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.pump();
+
+      expect(notifier.sentTexts, isEmpty);
+    });
+
+    testWidgets('keeps the text and says so when a message could not be sent', (tester) async {
+      final notifier = _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(withHistory))
+        ..textSendSucceeds = false;
+      await open(tester, notifier);
+
+      await tester.enterText(find.byType(TextField), 'Hello');
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Your message could not be sent. Please try again.'), findsOneWidget);
+      expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, 'Hello');
+    });
+
+    testWidgets('after the greeting, one tap answers "ready to start?"', (tester) async {
+      final notifier = _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(greetingOnly));
+      await open(tester, notifier);
+
+      expect(find.text("Yes, let's start"), findsOneWidget);
+      // The test window is small; scroll the button into view like a student would.
+      await tester.ensureVisible(find.text("Yes, let's start"));
+      await tester.pump();
+      await tester.tap(find.text("Yes, let's start"));
+      await tester.pump();
+      await tester.pump();
+
+      expect(notifier.sentTexts, ["Yes, let's start."]);
+    });
+
+    testWidgets("the mute toggle switches the teacher's voice off and on", (tester) async {
+      await open(tester, _FakeVoiceTeacherSessionNotifier(const AppAsyncState.success(withHistory)));
+
+      await tester.tap(find.byIcon(Icons.volume_up_rounded));
+      await tester.pump();
+      expect(find.byIcon(Icons.volume_off_rounded), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.volume_off_rounded));
+      await tester.pump();
+      expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
+    });
+  });
 }
 
 class _SignedInAuthFlowNotifier extends AuthFlowNotifier {
@@ -755,6 +865,20 @@ class _FakeVoiceTeacherSessionNotifier extends VoiceTeacherSessionNotifier {
   /// Test hook — lets a test observe the audio bytes _onStopRecording
   /// actually submitted, without needing a real backend round trip.
   void Function(List<int> audioBytes)? onSubmitTurn;
+
+  /// Typed messages the screen sent, and whether sending "works".
+  final List<String> sentTexts = [];
+  bool textSendSucceeds = true;
+
+  @override
+  Future<bool> submitTextTurn({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async {
+    sentTexts.add(message);
+    return textSendSucceeds;
+  }
 
   @override
   Future<void> startSession({
@@ -827,6 +951,21 @@ class _FakeVoiceTeacherRepository implements VoiceTeacherRepository {
     required String audioRef,
   }) async =>
       const [];
+
+  @override
+  Future<VoiceTurnResult> submitText({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async =>
+      const VoiceTurnResult(text: 'reply', isFallback: false, latencyMs: 10);
+
+  @override
+  Future<List<int>> getMessageAudio({
+    required String bearerToken,
+    required String messageId,
+  }) async =>
+      const [1, 2, 3];
 
   @override
   Future<VoiceFeedbackResult> submitFeedback({

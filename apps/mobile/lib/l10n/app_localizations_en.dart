@@ -4128,4 +4128,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceFinishFailed => 'Could not finish. Please try again.';
+
+  @override
+  String lessonPlayerGreeting(String name) {
+    return 'Hi, I’m $name!';
+  }
+
+  @override
+  String get lessonPlayerLetsGo => 'Let’s go';
+
+  @override
+  String get lessonPlayerReadyToPractice => 'Ready to practice?';
+
+  @override
+  String get lessonPlayerFinishHint =>
+      'Finish this lesson by completing its practice questions. Your answers are checked by AIM and the lesson is marked complete when you reach the end.';
+
+  @override
+  String get lessonPlayerKeyPoints => 'Key points';
+
+  @override
+  String get lessonPlayerRecap => 'Recap';
+
+  @override
+  String get lessonPlayerMistakes => 'Common mistakes';
+
+  @override
+  String get lessonPlayerWrong => 'Wrong';
+
+  @override
+  String get lessonPlayerRight => 'Right';
+
+  @override
+  String get lessonPlayerPrevious => 'Previous';
+
+  @override
+  String get lessonPlayerProgress => 'Lesson progress';
+
+  @override
+  String get lessonPlayerShowText => 'Show text';
+
+  @override
+  String get lessonPlayerHideText => 'Hide text';
+
+  @override
+  String get lessonPlayerConversation => 'Conversation';
+
+  @override
+  String get lessonPlayerCompleted => 'Completed';
+
+  @override
+  String get lessonPlayerLiveTitle => 'Start the lesson with your AI teacher';
+
+  @override
+  String get lessonPlayerLiveHint =>
+      'Your teacher talks you through the lesson out loud. Answer by speaking or typing.';
+
+  @override
+  String get lessonPlayerLiveButton => 'Start live lesson';
+
+  @override
+  String lessonPlayerReadWith(String name) {
+    return 'Read it with $name';
+  }
+
+  @override
+  String get lessonPlayerReadHint =>
+      'Go through the lesson step by step at your own pace.';
+
+  @override
+  String get voiceLiveComposerHint => 'Type or talk to your teacher';
+
+  @override
+  String get voiceLiveSend => 'Send message';
+
+  @override
+  String get voiceLiveMute => 'Mute the teacher\'s voice';
+
+  @override
+  String get voiceLiveUnmute => 'Turn the teacher\'s voice on';
+
+  @override
+  String get voiceLiveYesStart => 'Yes, let\'s start';
+
+  @override
+  String get voiceLiveYesStartMessage => 'Yes, let\'s start.';
+
+  @override
+  String get voiceLiveSendFailed =>
+      'Your message could not be sent. Please try again.';
 }

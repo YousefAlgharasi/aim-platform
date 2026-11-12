@@ -68,6 +68,31 @@ class VoiceTeacherRepositoryImpl implements VoiceTeacherRepository {
   }
 
   @override
+  Future<VoiceTurnResult> submitText({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async {
+    final model = await datasource.submitText(
+      bearerToken: bearerToken,
+      sessionId: sessionId,
+      message: message,
+    );
+    return model.toEntity();
+  }
+
+  @override
+  Future<List<int>> getMessageAudio({
+    required String bearerToken,
+    required String messageId,
+  }) {
+    return datasource.getMessageAudio(
+      bearerToken: bearerToken,
+      messageId: messageId,
+    );
+  }
+
+  @override
   Future<VoiceFeedbackResult> submitFeedback({
     required String bearerToken,
     required String sessionId,

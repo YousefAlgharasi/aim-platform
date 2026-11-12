@@ -59,6 +59,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
@@ -99,6 +100,12 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   bool _stoppingTurn = false;
   bool _greetingHandled = false;
 
+  // Live-lesson controls: the teacher's voice can be muted (replies stay on screen), and the student can type instead
+  // of talking. Typed and spoken turns share one conversation.
+  bool _muted = false;
+  bool _sendingText = false;
+  final TextEditingController _draft = TextEditingController();
+
   /// The call view (avatar, status text, push-to-talk button) is the
   /// default surface — the transcript is opt-in via a button, not shown
   /// automatically every time the student re-enters an in-progress session.
@@ -114,6 +121,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
   @override
   void dispose() {
+    _draft.dispose();
     _audioRecorder.dispose();
     super.dispose();
   }
@@ -153,7 +161,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final history = state.data.history;
     if (history.length == 1 && history.first.isGreeting) {
       final greeting = history.first;
-      if (greeting.audioRef != null) {
+      if (greeting.audioRef != null && !_muted) {
         unawaited(_onPlayReply(
           greeting.audioRef!,
           fallbackText: greeting.text,
@@ -304,7 +312,9 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
           ? latest.data.lastTurn
           : null;
       final turnText = turn?.text;
-      if (turn?.audioRef != null) {
+      if (_muted) {
+        // Muted: the reply is shown on screen only.
+      } else if (turn?.audioRef != null) {
         unawaited(_onPlayReply(turn!.audioRef!, fallbackText: turnText));
       } else if (turnText != null && turnText.isNotEmpty) {
         unawaited(_onPlayText(turnText));
@@ -312,6 +322,78 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     } finally {
       _stoppingTurn = false;
     }
+  }
+
+  void _toggleMute() {
+    setState(() => _muted = !_muted);
+    if (_muted) ref.read(voicePlaybackProvider).stop();
+  }
+
+  /// A typed turn. Same conversation as the voice turns: the teacher answers (and, unless muted, speaks) the same way.
+  Future<void> _sendText(String raw) async {
+    final message = raw.trim();
+    if (message.isEmpty || _sendingText) return;
+    final token = _token;
+    final sessionState = ref.read(voiceTeacherSessionProvider);
+    if (token == null ||
+        token.isEmpty ||
+        sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
+      return;
+    }
+    final sessionId = sessionState.data.sessionId;
+    if (sessionId == null) return;
+
+    ref.read(voicePlaybackProvider).stop();
+    setState(() => _sendingText = true);
+    _draft.clear();
+    final sent = await ref.read(voiceTeacherSessionProvider.notifier).submitTextTurn(
+          bearerToken: token,
+          sessionId: sessionId,
+          message: message,
+        );
+    if (!mounted) return;
+    setState(() => _sendingText = false);
+    if (!sent) {
+      _draft.text = message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).voiceLiveSendFailed)),
+      );
+      return;
+    }
+    if (_muted) return;
+    final latest = ref.read(voiceTeacherSessionProvider);
+    if (latest is! AppAsyncSuccess<VoiceTeacherSessionState>) return;
+    // A fallback reply is shown as text on screen; there is no audio for it.
+    if (latest.data.lastTurn?.isFallback == true) return;
+    VoiceMessage? lastTeacher;
+    for (final m in latest.data.history.reversed) {
+      if (m.role == VoiceMessageRole.teacher) {
+        lastTeacher = m;
+        break;
+      }
+    }
+    if (lastTeacher != null) unawaited(_onPlayMessage(lastTeacher));
+  }
+
+  /// Plays a teacher message: its stored recording when it has one, otherwise the backend's lazily synthesised audio.
+  Future<void> _onPlayMessage(VoiceMessage message) async {
+    final audioRef = message.audioRef;
+    if (audioRef != null) {
+      await _onPlayReply(audioRef, fallbackText: message.text);
+      return;
+    }
+    final token = _token;
+    if (token == null || token.isEmpty) return;
+    await ref.read(voicePlaybackProvider).loadAndPlay(
+          audioRef: 'message:${message.id}',
+          fallbackText: message.text,
+          fetchAudioFn: (_) async {
+            final bytes = await ref
+                .read(voiceTeacherRepositoryProvider)
+                .getMessageAudio(bearerToken: token, messageId: message.id);
+            return Uint8List.fromList(bytes);
+          },
+        );
   }
 
   Future<void> _onFeedback(
@@ -411,6 +493,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 recordState: recordState,
                 playbackState: playbackState,
                 greetingHandled: _greetingHandled,
+                muted: _muted,
+                sendingText: _sendingText,
+                draft: _draft,
+                onToggleMute: _toggleMute,
+                onSendText: _sendText,
                 showTranscript: _showTranscript,
                 onToggleTranscript: _toggleTranscript,
                 onPressStart: _onPressStart,
@@ -512,6 +599,11 @@ class _VoiceTutorContent extends StatelessWidget {
     required this.recordState,
     required this.playbackState,
     required this.greetingHandled,
+    required this.muted,
+    required this.sendingText,
+    required this.draft,
+    required this.onToggleMute,
+    required this.onSendText,
     required this.showTranscript,
     required this.onToggleTranscript,
     required this.onPressStart,
@@ -525,6 +617,15 @@ class _VoiceTutorContent extends StatelessWidget {
   final VoiceRecordSubmitNotifier recordState;
   final VoicePlaybackNotifier playbackState;
   final bool greetingHandled;
+
+  /// The teacher's voice is muted: replies are shown as text only.
+  final bool muted;
+
+  /// A typed message is being answered.
+  final bool sendingText;
+  final TextEditingController draft;
+  final VoidCallback onToggleMute;
+  final Future<void> Function(String message) onSendText;
 
   /// The call view (avatar, status text, push-to-talk button) is the
   /// default surface every time this session is opened — the transcript is
@@ -562,9 +663,10 @@ class _VoiceTutorContent extends StatelessWidget {
         sessionState.history.length == 1 &&
         sessionState.history.first.isGreeting;
 
+    final processing = isSubmitting || sendingText;
     final mood = showGreetingSpeaking || isPlaying
         ? VoiceAvatarMood.speaking
-        : isSubmitting
+        : processing
             ? VoiceAvatarMood.processing
             : isRecording
                 ? VoiceAvatarMood.recording
@@ -647,10 +749,26 @@ class _VoiceTutorContent extends StatelessWidget {
     // Default surface every time the session is (re)opened: the avatar call
     // view, never the transcript list — the student opts into seeing the
     // message history via the button below instead.
-    return _VoiceAvatarStage(
+    // The teacher's latest message, shown as text so the student can read along.
+    String? caption;
+    for (final m in sessionState.history.reversed) {
+      if (m.role == VoiceMessageRole.teacher) {
+        caption = m.text;
+        break;
+      }
+    }
+    final onlyGreeting =
+        sessionState.history.length == 1 && sessionState.history.first.isGreeting;
+    final l10nLive = AppLocalizations.of(context);
+
+    final stage = _VoiceAvatarStage(
       mood: mood,
       recording: isRecording,
-      processing: isSubmitting,
+      processing: processing,
+      caption: caption,
+      onQuickStart: onlyGreeting && !processing && !isRecording
+          ? () => onSendText(l10nLive.voiceLiveYesStartMessage)
+          : null,
       onPressStart: onPressStart,
       onPressEnd: onPressEnd,
       onViewMessages: sessionState.history.isEmpty ? null : onToggleTranscript,
@@ -665,6 +783,19 @@ class _VoiceTutorContent extends StatelessWidget {
                   originalAudioError: 'audio_unavailable',
                 )
               : null,
+    );
+
+    return Column(
+      children: [
+        Expanded(child: stage),
+        _VoiceComposerBar(
+          controller: draft,
+          muted: muted,
+          busy: processing || isRecording,
+          onToggleMute: onToggleMute,
+          onSend: onSendText,
+        ),
+      ],
     );
   }
 }
@@ -682,9 +813,17 @@ class _VoiceAvatarStage extends StatelessWidget {
     required this.processing,
     required this.onPressStart,
     required this.onPressEnd,
+    this.caption,
+    this.onQuickStart,
     this.onViewMessages,
     this.errorOrFallback,
   });
+
+  /// What the teacher last said, as text.
+  final String? caption;
+
+  /// One tap to answer the teacher's "ready to start?". Null when it does not apply.
+  final VoidCallback? onQuickStart;
 
   final VoiceAvatarMood mood;
   final bool recording;
@@ -728,49 +867,85 @@ class _VoiceAvatarStage extends StatelessWidget {
 
     return Stack(
       children: [
-        Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.componentGap,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _VoiceStatusPill(label: label),
-                const SizedBox(height: AimSpacing.componentGap),
-                VoiceTeacherAvatar(mood: mood, size: 144),
-                const SizedBox(height: AimSpacing.componentGap),
-                Text(
-                  heading,
-                  style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.componentGap),
-                VoicePushToTalkButton(
-                  recording: recording,
-                  processing: !micEnabled,
-                  onPressStart: onPressStart,
-                  onPressEnd: onPressEnd,
-                ),
-                const SizedBox(height: AimSpacing.componentGap),
-                if (errorOrFallback != null)
-                  errorOrFallback!
-                else
-                  Text(
-                    l10n.voiceTeacherPracticeSubtitle,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.85),
-                    ),
-                    textAlign: TextAlign.center,
+        Column(
+          children: [
+            // Only this top part scrolls (a long teacher message); the microphone below stays where it is.
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: AimSpacing.screenPaddingMobile,
+                    vertical: AimSpacing.componentGap,
                   ),
-              ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _VoiceStatusPill(label: label),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      VoiceTeacherAvatar(mood: mood, size: 120),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      Text(
+                        heading,
+                        style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (caption != null && caption!.isNotEmpty) ...[
+                        const SizedBox(height: AimSpacing.componentGap),
+                        _TeacherCaption(text: caption!),
+                      ],
+                      if (onQuickStart != null) ...[
+                        const SizedBox(height: AimSpacing.componentGap),
+                        FilledButton(
+                          onPressed: onQuickStart,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AimColors.neutral0,
+                            foregroundColor: AimColors.primary600,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          ),
+                          child: Text(
+                            l10n.voiceLiveYesStart,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  VoicePushToTalkButton(
+                    recording: recording,
+                    processing: !micEnabled,
+                    onPressStart: onPressStart,
+                    onPressEnd: onPressEnd,
+                  ),
+                  const SizedBox(height: AimSpacing.space8),
+                  if (errorOrFallback != null)
+                    errorOrFallback!
+                  else
+                    Text(
+                      l10n.voiceTeacherPracticeSubtitle,
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: AimColors.neutral0.withValues(alpha: 0.85),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  const SizedBox(height: AimSpacing.space8),
+                ],
+              ),
+            ),
+          ],
         ),
         if (onViewMessages != null)
           PositionedDirectional(
-            bottom: AimSpacing.screenPaddingMobile,
+            top: AimSpacing.space4,
             end: AimSpacing.screenPaddingMobile,
             child: _VoiceTranscriptToggleButton(
               label: l10n.voiceTeacherMessagesButton,
@@ -895,6 +1070,161 @@ class _VoiceStatusPill extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What the teacher last said, as text, on a soft translucent card over the gradient.
+class _TeacherCaption extends StatelessWidget {
+  const _TeacherCaption({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 560),
+      padding: const EdgeInsets.all(AimSpacing.space16),
+      decoration: BoxDecoration(
+        color: AimColors.neutral0.withValues(alpha: 0.16),
+        border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.28)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: AimTextStyles.bodyMd.copyWith(color: AimColors.neutral0, height: 1.45),
+      ),
+    );
+  }
+}
+
+/// The bottom bar of the live lesson: a mute toggle for the teacher's voice, a text box and a send button. Talking
+/// is the big microphone above; this is the typing side of the same conversation.
+class _VoiceComposerBar extends StatelessWidget {
+  const _VoiceComposerBar({
+    required this.controller,
+    required this.muted,
+    required this.busy,
+    required this.onToggleMute,
+    required this.onSend,
+  });
+
+  final TextEditingController controller;
+  final bool muted;
+  final bool busy;
+  final VoidCallback onToggleMute;
+  final Future<void> Function(String message) onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.space12,
+        AimSpacing.space4,
+        AimSpacing.space12,
+        AimSpacing.space12,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _RoundIconButton(
+            icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+            tooltip: muted ? l10n.voiceLiveUnmute : l10n.voiceLiveMute,
+            selected: muted,
+            onTap: onToggleMute,
+          ),
+          const SizedBox(width: AimSpacing.space8),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              enabled: !busy,
+              minLines: 1,
+              maxLines: 4,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (v) => onSend(v),
+              style: const TextStyle(color: AimColors.neutral0, fontSize: 16),
+              cursorColor: AimColors.neutral0,
+              decoration: InputDecoration(
+                hintText: l10n.voiceLiveComposerHint,
+                hintStyle: TextStyle(color: AimColors.neutral0.withValues(alpha: 0.7)),
+                filled: true,
+                fillColor: AimColors.neutral0.withValues(alpha: 0.18),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: const BorderSide(color: AimColors.neutral0, width: 1.5),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AimSpacing.space8),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: controller,
+            builder: (context, value, _) {
+              final canSend = value.text.trim().isNotEmpty && !busy;
+              return _RoundIconButton(
+                icon: Icons.arrow_upward_rounded,
+                tooltip: l10n.voiceLiveSend,
+                filled: true,
+                onTap: canSend ? () => onSend(controller.text) : null,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.selected = false,
+    this.filled = false,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final bool selected;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    final background = filled
+        ? AimColors.neutral0.withValues(alpha: enabled ? 1 : 0.35)
+        : AimColors.neutral0.withValues(alpha: selected ? 0.34 : 0.18);
+    final foreground = filled ? AimColors.primary600 : AimColors.neutral0;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: tooltip,
+      child: Tooltip(
+        message: tooltip,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 28,
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+            child: Icon(icon, color: foreground, size: 24),
           ),
         ),
       ),

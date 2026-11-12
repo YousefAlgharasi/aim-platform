@@ -7019,6 +7019,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not finish. Please try again.'**
   String get practiceFinishFailed;
+
+  /// Greeting from the student character on the first card of a lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, I’m {name}!'**
+  String lessonPlayerGreeting(String name);
+
+  /// Button on the first card of the lesson player that starts the lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s go'**
+  String get lessonPlayerLetsGo;
+
+  /// Heading on the last card of the lesson player.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to practice?'**
+  String get lessonPlayerReadyToPractice;
+
+  /// Explains what practice does, on the last card of the lesson player.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish this lesson by completing its practice questions. Your answers are checked by AIM and the lesson is marked complete when you reach the end.'**
+  String get lessonPlayerFinishHint;
+
+  /// Heading of the key-points card.
+  ///
+  /// In en, this message translates to:
+  /// **'Key points'**
+  String get lessonPlayerKeyPoints;
+
+  /// Heading of the recap card.
+  ///
+  /// In en, this message translates to:
+  /// **'Recap'**
+  String get lessonPlayerRecap;
+
+  /// Heading of the common-mistakes card.
+  ///
+  /// In en, this message translates to:
+  /// **'Common mistakes'**
+  String get lessonPlayerMistakes;
+
+  /// Screen-reader label for the wrong example in a common mistake.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong'**
+  String get lessonPlayerWrong;
+
+  /// Screen-reader label for the right example in a common mistake.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get lessonPlayerRight;
+
+  /// Button that goes back one card in the lesson player.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get lessonPlayerPrevious;
+
+  /// Screen-reader label of the lesson player progress bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson progress'**
+  String get lessonPlayerProgress;
+
+  /// Button that shows the written dialogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Show text'**
+  String get lessonPlayerShowText;
+
+  /// Button that hides the written dialogue (listening practice).
+  ///
+  /// In en, this message translates to:
+  /// **'Hide text'**
+  String get lessonPlayerHideText;
+
+  /// Screen-reader label for the written dialogue.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get lessonPlayerConversation;
+
+  /// Shown when the student already completed the lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get lessonPlayerCompleted;
+
+  /// Heading of the main card on the lesson start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the lesson with your AI teacher'**
+  String get lessonPlayerLiveTitle;
+
+  /// Text of the main card on the lesson start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher talks you through the lesson out loud. Answer by speaking or typing.'**
+  String get lessonPlayerLiveHint;
+
+  /// Button of the main card on the lesson start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start live lesson'**
+  String get lessonPlayerLiveButton;
+
+  /// Secondary card on the lesson start screen: read the lesson with a named student character.
+  ///
+  /// In en, this message translates to:
+  /// **'Read it with {name}'**
+  String lessonPlayerReadWith(String name);
+
+  /// Hint of the secondary card (reading mode) on the lesson start screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Go through the lesson step by step at your own pace.'**
+  String get lessonPlayerReadHint;
+
+  /// Placeholder of the text box in the live lesson with the AI teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or talk to your teacher'**
+  String get voiceLiveComposerHint;
+
+  /// Send button of the live lesson text box.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get voiceLiveSend;
+
+  /// Toggle that mutes the AI teacher's voice (replies stay on screen).
+  ///
+  /// In en, this message translates to:
+  /// **'Mute the teacher\'s voice'**
+  String get voiceLiveMute;
+
+  /// Toggle that turns the AI teacher's voice back on.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the teacher\'s voice on'**
+  String get voiceLiveUnmute;
+
+  /// One-tap answer to the teacher's 'ready to start?'.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, let\'s start'**
+  String get voiceLiveYesStart;
+
+  /// The message sent when the student taps 'Yes, let's start'.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, let\'s start.'**
+  String get voiceLiveYesStartMessage;
+
+  /// Shown when a typed message fails to send.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message could not be sent. Please try again.'**
+  String get voiceLiveSendFailed;
 }
 
 class _AppLocalizationsDelegate

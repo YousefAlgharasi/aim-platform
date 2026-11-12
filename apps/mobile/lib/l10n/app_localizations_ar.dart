@@ -4163,4 +4163,93 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get practiceFinishFailed => 'تعذّر الإنهاء. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String lessonPlayerGreeting(String name) {
+    return 'أهلاً، أنا $name!';
+  }
+
+  @override
+  String get lessonPlayerLetsGo => 'هيا بنا';
+
+  @override
+  String get lessonPlayerReadyToPractice => 'هل أنت مستعد للتدريب؟';
+
+  @override
+  String get lessonPlayerFinishHint =>
+      'أكمل هذا الدرس بحل أسئلة التدريب. تتم مراجعة إجاباتك بواسطة AIM ويُسجَّل الدرس كمكتمل عند وصولك إلى النهاية.';
+
+  @override
+  String get lessonPlayerKeyPoints => 'النقاط الأساسية';
+
+  @override
+  String get lessonPlayerRecap => 'خلاصة';
+
+  @override
+  String get lessonPlayerMistakes => 'أخطاء شائعة';
+
+  @override
+  String get lessonPlayerWrong => 'خطأ';
+
+  @override
+  String get lessonPlayerRight => 'صحيح';
+
+  @override
+  String get lessonPlayerPrevious => 'السابق';
+
+  @override
+  String get lessonPlayerProgress => 'تقدّم الدرس';
+
+  @override
+  String get lessonPlayerShowText => 'أظهر النص';
+
+  @override
+  String get lessonPlayerHideText => 'أخفِ النص';
+
+  @override
+  String get lessonPlayerConversation => 'محادثة';
+
+  @override
+  String get lessonPlayerCompleted => 'مكتمل';
+
+  @override
+  String get lessonPlayerLiveTitle => 'ابدأ الدرس مع معلّمك الذكي';
+
+  @override
+  String get lessonPlayerLiveHint =>
+      'يشرح لك معلّمك الدرس بصوته. أجب بالتحدّث أو بالكتابة.';
+
+  @override
+  String get lessonPlayerLiveButton => 'ابدأ الدرس المباشر';
+
+  @override
+  String lessonPlayerReadWith(String name) {
+    return 'اقرأه مع $name';
+  }
+
+  @override
+  String get lessonPlayerReadHint =>
+      'تابع الدرس خطوة بخطوة بالسرعة التي تناسبك.';
+
+  @override
+  String get voiceLiveComposerHint => 'اكتب أو تحدّث إلى معلّمك';
+
+  @override
+  String get voiceLiveSend => 'إرسال الرسالة';
+
+  @override
+  String get voiceLiveMute => 'كتم صوت المعلّم';
+
+  @override
+  String get voiceLiveUnmute => 'تشغيل صوت المعلّم';
+
+  @override
+  String get voiceLiveYesStart => 'نعم، لنبدأ';
+
+  @override
+  String get voiceLiveYesStartMessage => 'نعم، لنبدأ.';
+
+  @override
+  String get voiceLiveSendFailed =>
+      'تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى.';
 }

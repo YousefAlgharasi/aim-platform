@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_explanation.dart';
+import 'package:aim_mobile/features/lessons/ui/widgets/light_markdown.dart';
 
 class _Strings {
   _Strings(BuildContext context)
@@ -249,7 +250,7 @@ class _SectionView extends StatelessWidget {
           ),
           if (section.body.isNotEmpty) ...[
             const SizedBox(height: 12),
-            _LightMarkdown(
+            LightMarkdown(
               text: section.body,
               style: TextStyle(
                 fontSize: 15,
@@ -460,65 +461,3 @@ class _MistakeCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Minimal markdown: paragraphs, "- " bullets, "1. " numbered items, **bold**.
 // ---------------------------------------------------------------------------
-
-class _LightMarkdown extends StatelessWidget {
-  const _LightMarkdown({required this.text, required this.style});
-
-  final String text;
-  final TextStyle style;
-
-  static final _bullet = RegExp(r'^\s*[-*•]\s+(.*)$');
-  static final _numbered = RegExp(r'^\s*(\d+)[.)]\s+(.*)$');
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = <Widget>[];
-    for (final raw in text.split('\n')) {
-      final line = raw.trimRight();
-      if (line.trim().isEmpty) continue;
-      final b = _bullet.firstMatch(line);
-      final n = _numbered.firstMatch(line);
-      if (b != null || n != null) {
-        final marker = n != null ? '${n.group(1)}.' : '•';
-        final content = (b?.group(1) ?? n!.group(2))!;
-        rows.add(Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 22,
-                child: Text(marker, style: style),
-              ),
-              Expanded(child: Text.rich(_inline(content, style))),
-            ],
-          ),
-        ));
-      } else {
-        rows.add(Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text.rich(_inline(line, style)),
-        ));
-      }
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
-  }
-
-  static TextSpan _inline(String s, TextStyle base) {
-    final spans = <InlineSpan>[];
-    final parts = s.split('**');
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].isEmpty) continue;
-      spans.add(TextSpan(
-        text: parts[i],
-        style: i.isOdd
-            ? base.copyWith(
-                fontWeight: FontWeight.w800,
-                color: base.color,
-              )
-            : null,
-      ));
-    }
-    return TextSpan(style: base, children: spans);
-  }
-}
