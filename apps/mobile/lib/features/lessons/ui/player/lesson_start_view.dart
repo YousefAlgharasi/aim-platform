@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
-import 'package:aim_mobile/features/voice_teacher/ui/widgets/voice_teacher_avatar.dart';
+import 'package:aim_mobile/features/voice_teacher/ui/widgets/aim_robot.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 import 'lesson_slide_views.dart';
@@ -106,7 +106,7 @@ class LessonStartView extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const VoiceTeacherAvatar(mood: VoiceAvatarMood.speaking, size: 96),
+                      const AimRobot(mood: RobotMood.speaking, height: 150),
                       const SizedBox(height: 16),
                       Text(
                         l10n.lessonPlayerLiveTitle,

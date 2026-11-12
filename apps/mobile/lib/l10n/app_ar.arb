@@ -1189,5 +1189,8 @@
   "voiceLiveHeadingOff": "اكتب إجابتك، أو اضغط على الميكروفون",
   "voiceLiveMicMute": "كتم الميكروفون",
   "voiceLiveMicOn": "تشغيل الميكروفون",
-  "voiceLiveMicStart": "ابدأ المحادثة المباشرة"
+  "voiceLiveMicStart": "ابدأ المحادثة المباشرة",
+  "voiceLiveMessagesCount": "الرسائل ({n})",
+  "voiceLiveHideMessages": "إخفاء الرسائل",
+  "voiceLiveConversation": "المحادثة"
 }

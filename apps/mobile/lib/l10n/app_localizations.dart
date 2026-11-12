@@ -7199,6 +7199,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start live conversation'**
   String get voiceLiveMicStart;
+
+  /// Button under the text box that opens the conversation sheet; n is the number of messages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages ({n})'**
+  String voiceLiveMessagesCount(int n);
+
+  /// Button under the text box that closes the conversation sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide messages'**
+  String get voiceLiveHideMessages;
+
+  /// Title of the conversation sheet in the live lesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get voiceLiveConversation;
 }
 
 class _AppLocalizationsDelegate

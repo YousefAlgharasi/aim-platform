@@ -4259,4 +4259,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get voiceLiveMicStart => 'ابدأ المحادثة المباشرة';
+
+  @override
+  String voiceLiveMessagesCount(int n) {
+    return 'الرسائل ($n)';
+  }
+
+  @override
+  String get voiceLiveHideMessages => 'إخفاء الرسائل';
+
+  @override
+  String get voiceLiveConversation => 'المحادثة';
 }
