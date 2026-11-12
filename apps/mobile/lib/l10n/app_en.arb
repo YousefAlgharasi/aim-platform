@@ -4892,5 +4892,17 @@
   "voiceLiveYesStartMessage": "Yes, let's start.",
   "@voiceLiveYesStartMessage": {"description": "The message sent when the student taps 'Yes, let's start'."},
   "voiceLiveSendFailed": "Your message could not be sent. Please try again.",
-  "@voiceLiveSendFailed": {"description": "Shown when a typed message fails to send."}
+  "@voiceLiveSendFailed": {"description": "Shown when a typed message fails to send."},
+  "voiceLiveHeadingListening": "I'm listening. Just talk.",
+  "@voiceLiveHeadingListening": {"description": "Heading while the live microphone is on and it is the student's turn."},
+  "voiceLiveHeadingMuted": "Your microphone is muted",
+  "@voiceLiveHeadingMuted": {"description": "Heading while the student's microphone is muted."},
+  "voiceLiveHeadingOff": "Type your answer, or tap the mic",
+  "@voiceLiveHeadingOff": {"description": "Heading while the microphone is off."},
+  "voiceLiveMicMute": "Mute your microphone",
+  "@voiceLiveMicMute": {"description": "Tooltip of the microphone button while it is on."},
+  "voiceLiveMicOn": "Turn your microphone on",
+  "@voiceLiveMicOn": {"description": "Tooltip of the microphone button while it is muted."},
+  "voiceLiveMicStart": "Start live conversation",
+  "@voiceLiveMicStart": {"description": "Tooltip of the microphone button while the microphone is off."}
 }

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_explanation.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/light_markdown.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/lessons_widgets.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -45,7 +45,7 @@ class SaySlideView extends StatelessWidget {
   final StudentCharacter guide;
   final String? title;
   final String body;
-  final List<LessonExplanationExample> examples;
+  final List<LessonExample> examples;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +87,7 @@ class SaySlideView extends StatelessWidget {
 class _ExampleCard extends StatelessWidget {
   const _ExampleCard({required this.example});
 
-  final LessonExplanationExample example;
+  final LessonExample example;
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +186,7 @@ class MistakesSlideView extends StatelessWidget {
 
   final StudentCharacter guide;
   final String title;
-  final List<LessonExplanationMistake> items;
+  final List<LessonMistake> items;
 
   @override
   Widget build(BuildContext context) {

@@ -2,7 +2,7 @@
 // (its explanation, description and steps); nothing here writes lesson content.
 
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_explanation.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
 
 sealed class LessonSlide {
   const LessonSlide();
@@ -18,7 +18,7 @@ class SaySlide extends LessonSlide {
 
   final String? title;
   final String body;
-  final List<LessonExplanationExample> examples;
+  final List<LessonExample> examples;
 }
 
 class PointsSlide extends LessonSlide {
@@ -32,7 +32,7 @@ class MistakesSlide extends LessonSlide {
   const MistakesSlide({required this.title, required this.items});
 
   final String title;
-  final List<LessonExplanationMistake> items;
+  final List<LessonMistake> items;
 }
 
 class AssetSlide extends LessonSlide {

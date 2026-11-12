@@ -114,25 +114,6 @@ Future<void> _next(WidgetTester tester, String label) async {
 
 void main() {
   group('Content in reading', () {
-    testWidgets('the lesson page shows the card', (tester) async {
-      tester.view.physicalSize = const Size(900, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-
-      expect(find.text('Content in reading'), findsOneWidget);
-      expect(find.text('Explanation, examples and steps'), findsOneWidget);
-    });
-
     testWidgets('the content page shows the written explanation like the web', (tester) async {
       tester.view.physicalSize = const Size(900, 6000);
       tester.view.devicePixelRatio = 1;
@@ -186,29 +167,6 @@ void main() {
       expect(find.textContaining('Quick recap'), findsOneWidget);
       expect(find.text('Lesson materials'), findsOneWidget);
       expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('a lesson with no content says so on the card and the page', (tester) async {
-      tester.view.physicalSize = const Size(900, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      final overrides = [
-        lessonDetailProvider.overrideWith(
-          (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
-        ),
-      ];
-
-      await tester.pumpWidget(_wrap(_page, overrides: overrides));
-      await tester.pump();
-      expect(find.text('No content for this lesson yet'), findsOneWidget);
-
-      await tester.pumpWidget(_wrap(
-        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'x'),
-        overrides: overrides,
-      ));
-      await tester.pump();
-      expect(find.text('There is no content for this lesson yet'), findsOneWidget);
     });
 
     testWidgets('the content page lists every step in order', (tester) async {

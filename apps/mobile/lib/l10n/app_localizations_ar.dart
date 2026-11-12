@@ -4241,4 +4241,22 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get voiceLiveSendFailed =>
       'تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get voiceLiveHeadingListening => 'أنا أستمع. تحدّث فقط.';
+
+  @override
+  String get voiceLiveHeadingMuted => 'الميكروفون مكتوم';
+
+  @override
+  String get voiceLiveHeadingOff => 'اكتب إجابتك، أو اضغط على الميكروفون';
+
+  @override
+  String get voiceLiveMicMute => 'كتم الميكروفون';
+
+  @override
+  String get voiceLiveMicOn => 'تشغيل الميكروفون';
+
+  @override
+  String get voiceLiveMicStart => 'ابدأ المحادثة المباشرة';
 }

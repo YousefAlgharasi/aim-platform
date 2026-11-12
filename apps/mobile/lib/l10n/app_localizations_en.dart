@@ -4206,4 +4206,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceLiveSendFailed =>
       'Your message could not be sent. Please try again.';
+
+  @override
+  String get voiceLiveHeadingListening => 'I\'m listening. Just talk.';
+
+  @override
+  String get voiceLiveHeadingMuted => 'Your microphone is muted';
+
+  @override
+  String get voiceLiveHeadingOff => 'Type your answer, or tap the mic';
+
+  @override
+  String get voiceLiveMicMute => 'Mute your microphone';
+
+  @override
+  String get voiceLiveMicOn => 'Turn your microphone on';
+
+  @override
+  String get voiceLiveMicStart => 'Start live conversation';
 }

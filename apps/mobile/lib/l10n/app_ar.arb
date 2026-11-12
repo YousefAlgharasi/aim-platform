@@ -1183,5 +1183,11 @@
   "voiceLiveUnmute": "تشغيل صوت المعلّم",
   "voiceLiveYesStart": "نعم، لنبدأ",
   "voiceLiveYesStartMessage": "نعم، لنبدأ.",
-  "voiceLiveSendFailed": "تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى."
+  "voiceLiveSendFailed": "تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى.",
+  "voiceLiveHeadingListening": "أنا أستمع. تحدّث فقط.",
+  "voiceLiveHeadingMuted": "الميكروفون مكتوم",
+  "voiceLiveHeadingOff": "اكتب إجابتك، أو اضغط على الميكروفون",
+  "voiceLiveMicMute": "كتم الميكروفون",
+  "voiceLiveMicOn": "تشغيل الميكروفون",
+  "voiceLiveMicStart": "ابدأ المحادثة المباشرة"
 }

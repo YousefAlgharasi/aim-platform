@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/features/lessons/data/models/lessons_models.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_asset.dart';
-import 'package:aim_mobile/features/lessons/logic/entity/lesson_explanation.dart';
+import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
 import 'package:aim_mobile/features/lessons/ui/player/lesson_dialogue.dart';
 import 'package:aim_mobile/features/lessons/ui/player/lesson_slides.dart';
 import 'package:aim_mobile/features/lessons/ui/player/student_characters.dart';
@@ -112,13 +112,13 @@ void main() {
             LessonExplanationSection(
               heading: 'Form',
               body: 'Use am.',
-              examples: [LessonExplanationExample(text: 'I am happy.')],
+              examples: [LessonExample(text: 'I am happy.')],
             ),
             LessonExplanationSection(heading: 'Empty', body: ' '),
           ],
           keyPoints: ['One'],
           commonMistakes: [
-            LessonExplanationMistake(wrong: 'I am agree', right: 'I agree', why: 'Agree is a verb.'),
+            LessonMistake(wrong: 'I am agree', right: 'I agree', why: 'Agree is a verb.'),
           ],
           recap: 'Done.',
         ),

@@ -7163,6 +7163,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your message could not be sent. Please try again.'**
   String get voiceLiveSendFailed;
+
+  /// Heading while the live microphone is on and it is the student's turn.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m listening. Just talk.'**
+  String get voiceLiveHeadingListening;
+
+  /// Heading while the student's microphone is muted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your microphone is muted'**
+  String get voiceLiveHeadingMuted;
+
+  /// Heading while the microphone is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your answer, or tap the mic'**
+  String get voiceLiveHeadingOff;
+
+  /// Tooltip of the microphone button while it is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute your microphone'**
+  String get voiceLiveMicMute;
+
+  /// Tooltip of the microphone button while it is muted.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your microphone on'**
+  String get voiceLiveMicOn;
+
+  /// Tooltip of the microphone button while the microphone is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Start live conversation'**
+  String get voiceLiveMicStart;
 }
 
 class _AppLocalizationsDelegate
