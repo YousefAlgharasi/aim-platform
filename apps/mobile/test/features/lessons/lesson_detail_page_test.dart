@@ -1,17 +1,12 @@
 // Phase 6 — P6-079
 // lesson_detail_page_test.dart — widget tests for LessonDetailPage.
 //
-// Covers:
+// Covers (the page is a guided lesson player, one card at a time):
 //   1. Loading state renders without crash.
 //   2. Error state renders error message.
-//   3. Success with no assets renders AIMEmptyState.
-//   4. Success with assets renders lesson description and asset titles.
-//   5. RTL layout renders without error.
-//   6. AppBar shows the static "Lesson" title; the real lesson title
-//      renders prominently in the hero card instead (design screen 09).
-//   7. "Lesson {sortOrder}" pill renders in the hero.
-//   8. Disabled bookmark action renders in the AppBar and is non-interactive.
-//   9. Tapping a step tile opens a bottom sheet with LessonContentRenderer.
+//   3. Start screen: live AI lesson first, reading with a named character second.
+//   4. Reading mode: hello → description → step → finish cards (voice practice entry point on the last one).
+//   5. A lesson with no steps; the back/previous buttons; RTL layout.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +23,7 @@ import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_content_page.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_detail_page.dart';
+import 'package:aim_mobile/features/lessons/ui/player/lesson_player.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/lessons_widgets.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -88,27 +84,36 @@ const LessonDetail _empty = LessonDetail(lesson: _lesson, assets: []);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+Future<void> _open(
+  WidgetTester tester,
+  AppAsyncState<LessonDetail> state, {
+  TextDirection dir = TextDirection.ltr,
+}) async {
+  await tester.pumpWidget(_wrap(
+    _page,
+    overrides: [
+      lessonDetailProvider.overrideWith((ref) => _FakeLessonDetailNotifier(state)),
+    ],
+    dir: dir,
+  ));
+  await tester.pump();
+}
+
+/// Moves the lesson player forward one card (bounded pumps: the card transition is animated and the image card
+/// calls Image.network, so pumpAndSettle would never settle).
+/// Opening a lesson shows the two ways to learn it; this chooses "read it with the character".
+Future<void> _read(WidgetTester tester) async {
+  await _next(tester, tester.widget<Text>(find.textContaining('Read it with')).data!);
+}
+
+Future<void> _next(WidgetTester tester, String label) async {
+  await tester.tap(find.text(label));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 void main() {
   group('Content in reading', () {
-    testWidgets('the lesson page shows the card', (tester) async {
-      tester.view.physicalSize = const Size(900, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-
-      expect(find.text('Content in reading'), findsOneWidget);
-      expect(find.text('Explanation, examples and steps'), findsOneWidget);
-    });
-
     testWidgets('the content page shows the written explanation like the web', (tester) async {
       tester.view.physicalSize = const Size(900, 6000);
       tester.view.devicePixelRatio = 1;
@@ -164,29 +169,6 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a lesson with no content says so on the card and the page', (tester) async {
-      tester.view.physicalSize = const Size(900, 3000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-
-      final overrides = [
-        lessonDetailProvider.overrideWith(
-          (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
-        ),
-      ];
-
-      await tester.pumpWidget(_wrap(_page, overrides: overrides));
-      await tester.pump();
-      expect(find.text('No content for this lesson yet'), findsOneWidget);
-
-      await tester.pumpWidget(_wrap(
-        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'x'),
-        overrides: overrides,
-      ));
-      await tester.pump();
-      expect(find.text('There is no content for this lesson yet'), findsOneWidget);
-    });
-
     testWidgets('the content page lists every step in order', (tester) async {
       tester.view.physicalSize = const Size(900, 3000);
       tester.view.devicePixelRatio = 1;
@@ -211,173 +193,84 @@ void main() {
 
   group('LessonDetailPage', () {
     testWidgets('shows loading state without crash', (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.loading()),
-          ),
-        ],
-      ));
-      await tester.pump();
+      await _open(tester, const AppAsyncState.loading());
       expect(find.byType(LessonDetailPage), findsOneWidget);
     });
 
     testWidgets('shows error state with message', (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(
-                const AppAsyncState.failure(message: 'Load failed')),
-          ),
-        ],
-      ));
-      await tester.pump();
+      await _open(tester, const AppAsyncState.failure(message: 'Load failed'));
       expect(find.text('Load failed'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when lesson has no assets', (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
-          ),
-        ],
-      ));
-      await tester.pump();
-      expect(find.text('No content yet'), findsOneWidget);
+    testWidgets('start screen: the live AI lesson first, reading with a named character second', (tester) async {
+      await _open(tester, AppAsyncState.success(_populated));
+      expect(find.byType(LessonPlayer), findsOneWidget);
+      expect(find.text('Lesson 1: Introduction'), findsOneWidget);
+      expect(find.text('Start the lesson with your AI teacher'), findsOneWidget);
+      expect(find.text('Start live lesson'), findsOneWidget);
+      expect(find.textContaining('Read it with'), findsOneWidget);
+      // Nothing of the reading player is on screen yet.
+      expect(find.text('Let’s go'), findsNothing);
     });
 
-    testWidgets('shows lesson description and asset title when populated',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-      expect(find.text('An introduction to basic grammar concepts.'),
-          findsOneWidget);
-      expect(find.text('Grammar Diagram'), findsOneWidget);
-    });
+    testWidgets('reading mode: hello card, then description, step and finish cards', (tester) async {
+      await _open(tester, AppAsyncState.success(_populated));
+      await _read(tester);
+      expect(find.textContaining('Hi, I’m '), findsOneWidget);
+      expect(find.text('Lesson 1: Introduction'), findsOneWidget);
+      expect(find.text('Grammar Diagram'), findsNothing);
 
-    // P21-017: voice entry point next to "Start practice".
-    testWidgets('shows a voice-practice entry point next to Start practice',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
+      await _next(tester, 'Let’s go');
+      expect(find.text('An introduction to basic grammar concepts.'), findsOneWidget);
 
+      await _next(tester, 'Continue');
+      expect(find.byType(LessonContentRenderer), findsOneWidget);
+      expect(find.text('Grammar Diagram'), findsWidgets);
+
+      await _next(tester, 'Continue');
+      expect(find.text('Ready to practice?'), findsOneWidget);
+      expect(find.text('Ask AI Tutor'), findsOneWidget);
+      // Voice practice entry point (P21-017) is still reachable from the last card.
       expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
     });
 
-    testWidgets('renders without error under RTL directionality',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-        dir: TextDirection.rtl,
-      ));
+    testWidgets('a lesson with no steps goes straight from the description to the finish card', (tester) async {
+      await _open(tester, const AppAsyncState.success(_empty));
+      await _read(tester);
+      await _next(tester, 'Let’s go');
+      await _next(tester, 'Continue');
+      expect(find.text('Ready to practice?'), findsOneWidget);
+    });
+
+    testWidgets('the back arrow on the hello card returns to the start screen', (tester) async {
+      await _open(tester, AppAsyncState.success(_populated));
+      await _read(tester);
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded).first);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Start live lesson'), findsOneWidget);
+    });
+
+    testWidgets('the previous button goes back one card', (tester) async {
+      await _open(tester, AppAsyncState.success(_populated));
+      await _read(tester);
+      await _next(tester, 'Let’s go');
+      expect(find.text('An introduction to basic grammar concepts.'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded).last);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Let’s go'), findsOneWidget);
+    });
+
+    testWidgets('renders the start screen and every card under RTL directionality', (tester) async {
+      await _open(tester, AppAsyncState.success(_populated), dir: TextDirection.rtl);
       expect(find.byType(LessonDetailPage), findsOneWidget);
-      expect(find.text('Grammar Diagram'), findsOneWidget);
-    });
-
-    testWidgets(
-        'AppBar shows the static "Lesson" title; real title renders in the hero',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
-          ),
-        ],
-      ));
-      await tester.pump();
-      expect(find.text('Lesson'), findsOneWidget);
-      expect(find.text('Lesson 1: Introduction'), findsOneWidget);
-    });
-
-    testWidgets('shows "Lesson {sortOrder}" pill using real backend field',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-      // _lesson.sortOrder == 1.
-      expect(find.text('Lesson 1'), findsOneWidget);
-    });
-
-    testWidgets('AppBar shows a disabled bookmark action', (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-
-      final bookmarkButton = tester.widget<AIMIconButton>(
-        find.widgetWithIcon(AIMIconButton, Icons.bookmark_border_rounded),
-      );
-      expect(bookmarkButton.onPressed, isNull);
-    });
-
-    testWidgets(
-        'tapping a step tile opens a bottom sheet with LessonContentRenderer',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        _page,
-        overrides: [
-          lessonDetailProvider.overrideWith(
-            (ref) =>
-                _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
-          ),
-        ],
-      ));
-      await tester.pump();
-
-      expect(find.byType(LessonContentRenderer), findsNothing);
-
-      await tester.tap(find.byType(LessonStepTile));
-      // Bounded pumps (not pumpAndSettle) — the sheet contains an
-      // Image.network call (real image asset) which never settles without
-      // a network mock, same caution as lesson_content_renderer_test.dart.
-      await tester.pump(); // start the modal route transition
-      await tester.pump(const Duration(milliseconds: 300)); // finish it
-
-      expect(find.byType(LessonContentRenderer), findsOneWidget);
-      // The asset's title from LessonContentRenderer's image label should
-      // now be visible inside the sheet.
+      await _read(tester);
+      await _next(tester, 'Let’s go');
+      await _next(tester, 'Continue');
       expect(find.text('Grammar Diagram'), findsWidgets);
+      await _next(tester, 'Continue');
+      expect(find.text('Ready to practice?'), findsOneWidget);
     });
   });
 }

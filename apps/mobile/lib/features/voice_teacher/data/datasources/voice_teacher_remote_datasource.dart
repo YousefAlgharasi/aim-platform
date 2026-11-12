@@ -29,6 +29,20 @@ abstract class VoiceTeacherRemoteDatasource {
     required String audioRef,
   });
 
+  /// A typed student turn. Voice and text turns share one session, so this posts to the AI Teacher message endpoint
+  /// of the same session id; the reply has the same shape as a voice turn's (without an audioRef).
+  Future<VoiceAudioSubmitResponseModel> submitText({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  });
+
+  /// Spoken audio for a teacher message that has no stored recording yet.
+  Future<List<int>> getMessageAudio({
+    required String bearerToken,
+    required String messageId,
+  });
+
   Future<VoiceFeedbackResponseModel> submitFeedback({
     required String bearerToken,
     required String sessionId,

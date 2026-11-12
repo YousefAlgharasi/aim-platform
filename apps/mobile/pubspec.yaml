@@ -50,6 +50,7 @@ flutter:
   assets:
     - assets/splash/
     - assets/images/
+    - assets/characters/
 
 # Native splash-screen config, consumed by `dart run
 # flutter_native_splash:create` to generate the Android/iOS launch resources.

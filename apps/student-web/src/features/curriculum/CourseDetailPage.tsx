@@ -105,7 +105,7 @@ export function CourseDetailPage() {
 
   return (
     <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-12">
-      <section className="lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+      <section data-tour="course-summary" className="lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-3">
             <Link to="/curriculum" className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-ink-soft no-underline hover:text-ink"><BookIcon className="size-4" />{t('Courses')}</Link>

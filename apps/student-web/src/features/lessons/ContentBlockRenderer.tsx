@@ -3,6 +3,8 @@ import { Markdown } from '../../components/common/Markdown';
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useI18n } from '../../i18n/I18nContext';
 import { t as tr, plural } from '../../i18n';
+import { DialogueScene } from './dialogue/DialogueScene';
+import { parseDialogue } from './dialogue/dialogue';
 import { AuthAudioPlayer } from './AuthAudioPlayer';
 import { AudioPlayer } from '../../components/common/AudioPlayer';
 import { fetchLessonAssetAudio, type LessonAsset } from './lessonsApi';
@@ -55,6 +57,8 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
 
   const script = asset.metadata?.script;
   const hasScript = typeof script === 'string' && script.trim().length > 0;
+  // A script written as "Man: Hello! Woman: Hi!" becomes a scene with the student characters.
+  const dialogue = asset.type === 'audio' && hasScript ? parseDialogue(script as string) : null;
 
   return (
     <article className="bg-surface rounded-2xl p-5 ring-1 ring-line flex flex-col gap-3 sm:p-6" aria-label={t('Step {n}: {title}', { n: stepNumber, title: asset.title })}>
@@ -77,7 +81,14 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
         )
       )}
 
-      {asset.type === 'audio' && hasScript && (
+      {dialogue && (
+        <DialogueScene
+          lines={dialogue}
+          seed={asset.id}
+          fallbackAudio={<AuthAudioPlayer load={() => fetchLessonAssetAudio(asset.id)} label={t('Listen')} />}
+        />
+      )}
+      {asset.type === 'audio' && hasScript && !dialogue && (
         <AuthAudioPlayer load={() => fetchLessonAssetAudio(asset.id)} label={t('Listen')} />
       )}
       {asset.type === 'audio' && !hasScript && asset.url && (

@@ -17,6 +17,7 @@ import { ThemeSwitch } from './ThemeSwitch';
 import { DisplayPrefs } from './DisplayPrefs';
 import { DailyGoalSetting } from './DailyGoalSetting';
 import { SoundSwitch } from '../../interaction';
+import { requestTour } from '../tour/tourStore';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -135,6 +136,14 @@ export function SettingsPage() {
           <div className="flex flex-col gap-3.5">
             <SectionTitle hint={t('Soft sounds for correct answers, finished lessons and streaks. Lesson audio and recordings are never affected. Saved on this device.')}>{t('Sounds')}</SectionTitle>
             <SoundSwitch />
+          </div>
+        </Card>
+        <Card>
+          <div className="flex flex-col gap-3.5">
+            <SectionTitle hint={t('Take a short tour of your dashboard. On other pages, use the ? button at the top.')}>{t('Guided tour')}</SectionTitle>
+            <div>
+              <Button type="button" variant="secondary" onClick={() => requestTour('dashboard')}>{t('Take the dashboard tour')}</Button>
+            </div>
           </div>
         </Card>
       </section>

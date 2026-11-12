@@ -319,19 +319,11 @@ export function PracticeShell() {
             <div className="min-w-0">
               <p className="m-0 text-lg font-semibold">
                 {feedback.isCorrect === true
-                  ? t('Correct!')
+                  ? t('Right')
                   : feedback.isCorrect === false
-                    ? t('Not quite')
+                    ? t('Wrong')
                     : t('Answer recorded')}
               </p>
-              <p className="m-0 mt-1 text-base opacity-90">
-                {feedback.isCorrect === false
-                  ? t('Keep going — AIM uses this to tailor your next practice.')
-                  : t('Your answer was saved.')}
-              </p>
-              {feedback.isCorrect === false && (
-                <p className="m-0 mt-1 text-sm opacity-90">{t('You can retry this question later in My mistakes.')}</p>
-              )}
             </div>
           </div>
         )}

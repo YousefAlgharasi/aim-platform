@@ -6,15 +6,10 @@
 // Widgets: AIMTopAppBar (disabled bookmark action), AIMCard/LessonStepTile,
 //   LessonContentRenderer (in modal bottom sheet), AIMButton, AIMBadge
 //
-// Phase 6 — P6-079
-// LessonDetailPage — lesson overview screen.
-//
-// Displays a gradient hero (description + duration/steps/XP pills), a
-// "What's inside" step list (one row per published asset), and a
-// "Start practice" CTA that opens the AI Teacher chat with this lesson as
-// context. Tapping a step row opens a modal bottom sheet that renders that
-// asset's full content via LessonContentRenderer — this screen itself
-// remains an overview, not the content viewer.
+// Phase 6 — P6-079 (redesigned as a guided lesson player)
+// LessonDetailPage — loads the lesson and shows it as a short guided walk, one card at a time (LessonPlayer): a
+// student character says hello and offers the AI tutor, explains the lesson, the lesson's own steps follow, and the
+// last card starts question practice (or voice / AI-tutor practice).
 //
 // Security rules:
 // - lessonId is always the backend-supplied value from LessonModel; never
@@ -40,7 +35,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -50,7 +44,7 @@ import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
-import '../widgets/lessons_widgets.dart';
+import '../player/lesson_player.dart';
 
 /// Lesson detail screen MVP.
 ///
@@ -74,8 +68,9 @@ class LessonDetailPage extends ConsumerStatefulWidget {
 }
 
 class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
-  // Optional practice section: unlocked by default so students can practice anytime.
-  bool _practiceUnlocked = true;
+  // The backend's per-student "completed" flag for this lesson. Practice itself is always available; this only
+  // decides the wording ("Practice again", "Lesson mastered") and the Completed badge, so it starts as not completed.
+  bool _completed = false;
   bool _practiceCheckStarted = false;
 
   @override
@@ -134,10 +129,10 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
         }
       }
       if (mounted && match != null) {
-        setState(() => _practiceUnlocked = match!.completed);
+        setState(() => _completed = match!.completed);
       }
     } catch (_) {
-      // Leave _practiceUnlocked at its current (locked-by-default) value.
+      // Leave _completed as it is (not completed).
     }
   }
 
@@ -209,37 +204,19 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
   }
 
-  void _openStep(LessonAsset asset, int stepNumber) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _LessonStepSheet(
-        asset: asset,
-        stepNumber: stepNumber,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(lessonDetailProvider);
+    void back() {
+      if (context.canPop()) context.pop();
+    }
 
     return Scaffold(
-      appBar: AIMTopAppBar(
-        title: l10n.lessonsLessonAppBarTitle,
-        onBack: () {
-          if (context.canPop()) context.pop();
-        },
-        actions: [
-          AIMIconButton(
-            icon: const Icon(Icons.bookmark_border_rounded),
-            semanticLabel: l10n.lessonsSaveLessonComingSoonSemantic,
-            onPressed: null,
-          ),
-        ],
-      ),
+      // Once loaded, the player draws its own top bar (back arrow + progress).
+      appBar: state is AppAsyncSuccess<LessonDetail>
+          ? null
+          : AIMTopAppBar(title: l10n.lessonsLessonAppBarTitle, onBack: back),
       body: switch (state) {
         AppAsyncLoading() => AIMFullScreenLoading(
             semanticLabel: l10n.lessonsLoadingLessonSemantic,
@@ -256,684 +233,19 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) unawaited(_checkPracticeUnlock(data));
               });
-              return _LessonDetailContent(
+              return LessonPlayer(
                 detail: data,
-                practiceUnlocked: _practiceUnlocked,
-                onRefresh: _refresh,
-                onStartPractice: () => _startPractice(data),
+                completed: _completed,
+                onBack: back,
+                onStartLive: () => _startVoicePractice(data),
+                onAskTutor: () => _startPractice(data),
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
-                onOpenStep: _openStep,
               );
             },
           ),
         AppAsyncIdle() => _idleBody(l10n.lessonsLoadingLessonSemantic),
       },
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Content widget
-// ---------------------------------------------------------------------------
-
-class _LessonDetailContent extends StatelessWidget {
-  const _LessonDetailContent({
-    required this.detail,
-    required this.practiceUnlocked,
-    required this.onRefresh,
-    required this.onStartPractice,
-    required this.onStartQuestionPractice,
-    required this.onStartVoicePractice,
-    required this.onOpenStep,
-  });
-
-  final LessonDetail detail;
-  final bool practiceUnlocked;
-  final Future<void> Function() onRefresh;
-  final VoidCallback onStartPractice;
-  final VoidCallback onStartQuestionPractice;
-  final VoidCallback onStartVoicePractice;
-  final void Function(LessonAsset asset, int stepNumber) onOpenStep;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final l10n = AppLocalizations.of(context);
-
-    return Column(
-      children: [
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: onRefresh,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              children: [
-                _LessonHero(detail: detail, isCompleted: practiceUnlocked),
-                const SizedBox(height: 16),
-                _ContentCard(
-                  hasContent: detail.lesson.explanation != null || !detail.hasNoContent,
-                  onTap: () => context.push(
-                    AppRoutePaths.lessonContent,
-                    extra: {
-                      'lessonId': detail.lesson.id,
-                      'lessonTitle': detail.lesson.title,
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Section Header: What's inside
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      detail.lesson.explanation != null
-                          ? context.tr('Practice material', 'مواد التدرّب')
-                          : l10n.lessonsWhatsInsideTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      l10n.lessonsStepsCountLabel(detail.assets.length),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: surfaces.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                if (detail.hasNoContent)
-                  AIMEmptyState(
-                    icon: const Icon(Icons.play_lesson_outlined),
-                    title: l10n.lessonsNoContentTitle,
-                    subtitle: l10n.lessonsNoContentSubtitle,
-                  )
-                else
-                  ...detail.assets.asMap().entries.map(
-                        (entry) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: LessonStepTile(
-                            asset: entry.value,
-                            stepNumber: entry.key + 1,
-                            onTap: () => onOpenStep(entry.value, entry.key + 1),
-                          ),
-                        ),
-                      ),
-
-                const SizedBox(height: 20),
-
-                AIMGradientButton(
-                  label: practiceUnlocked
-                      ? l10n.lessonsPracticeAgainButton
-                      : l10n.lessonsStartPracticeToCompleteButton,
-                  icon: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
-                  fullWidth: true,
-                  onPressed: onStartQuestionPractice,
-                ),
-                const SizedBox(height: 16),
-
-                if (practiceUnlocked) ...[
-                  const SizedBox(height: 16),
-                  // Post-Lesson Mastered Section matching prototype
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: surfaces.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: surfaces.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.lessonsLessonMasteredTitle,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: surfaces.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.lessonsPracticeNowSubtitle,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: surfaces.textSecondary,
-                            height: 1.3,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Practice Now Card
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: onStartQuestionPractice,
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: AimColors.primary50,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AimColors.primary200),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [AimColors.primary500, AimColors.primary600],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              l10n.lessonsPracticeNowHeader,
-                                              style: const TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w800,
-                                                color: AimColors.primary500,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: AimColors.primary500,
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              child: Text(
-                                                l10n.lessonsQuizHeader,
-                                                style: const TextStyle(
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          l10n.lessonsQuizSubtitle,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            color: AimColors.primary600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // Ask AI Tutor Card
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: onStartPractice,
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: surfaces.surfaceSunken,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: surfaces.border),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: BoxDecoration(
-                                      color: AimColors.primary50,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(Icons.auto_awesome_rounded, color: AimColors.primary600, size: 22),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          l10n.lessonsAskAiTutorHeader,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: surfaces.textPrimary,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          l10n.lessonsAskAiTutorSubtitle,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: surfaces.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-
-        // Bottom Primary CTA Bar matching prototype
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AimColors.primary500.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onStartVoicePractice,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.mic_rounded, color: Colors.white, size: 22),
-                        const SizedBox(width: 10),
-                        Text(
-                          practiceUnlocked ? l10n.lessonsRelearnWithVoice : l10n.lessonsStartLearningNow,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// "Content in reading": opens the page with all of the lesson's steps.
-class _ContentCard extends StatelessWidget {
-  const _ContentCard({required this.hasContent, required this.onTap});
-
-  final bool hasContent;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    return Semantics(
-      button: true,
-      label: context.tr('Content in reading', 'المحتوى للقراءة'),
-      child: Material(
-        color: surfaces.surface,
-        borderRadius: BorderRadius.circular(AimRadius.lg),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AimRadius.lg),
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AimRadius.lg),
-              border: Border.all(color: surfaces.border),
-              boxShadow: [
-                BoxShadow(
-                  color: AimColors.primary500.withValues(alpha: dark ? 0.14 : 0.08),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 26),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.tr('Content in reading', 'المحتوى للقراءة'),
-                        style: AimTextStyles.bodyLg.copyWith(
-                          color: surfaces.textPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        hasContent
-                            ? context.tr('Explanation, examples and steps', 'الشرح والأمثلة والخطوات')
-                            : context.tr('No content for this lesson yet', 'لا يوجد محتوى لهذا الدرس بعد'),
-                        style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-                    size: 20,
-                    color: AimColors.primary500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LessonHero extends StatelessWidget {
-  const _LessonHero({required this.detail, this.isCompleted = false});
-
-  final LessonDetail detail;
-  final bool isCompleted;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final totalSeconds = detail.assets.fold<int>(
-      0,
-      (sum, asset) => sum + (asset.durationSeconds ?? 0),
-    );
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AimColors.primary500, AimColors.primary400, AimColors.primary600],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AimColors.primary500.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _HeroPill(text: l10n.lessonsLessonNumberPill(detail.lesson.sortOrder)),
-              if (isCompleted)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AimColors.success500.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AimColors.success100.withValues(alpha: 0.4)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_rounded, color: AimColors.success100, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Completed',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: AimColors.success100,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            detail.lesson.title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: -0.4,
-            ),
-          ),
-          if (detail.lesson.description.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              detail.lesson.description,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.white.withValues(alpha: 0.9),
-                height: 1.4,
-              ),
-            ),
-          ],
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (totalSeconds > 0)
-                _HeroPill(text: _formatMinutes(l10n, totalSeconds)),
-              _HeroPill(text: l10n.lessonsBlocksCountLabel(detail.assets.length)),
-              if (detail.lesson.xpValue > 0)
-                AIMBadge(
-                  tone: AIMBadgeTone.success,
-                  variant: AIMBadgeVariant.solid,
-                  pill: true,
-                  child: Text(l10n.lessonsXpBadge(detail.lesson.xpValue)),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatMinutes(AppLocalizations l10n, int seconds) {
-    final minutes = (seconds / 60).ceil();
-    return l10n.lessonsMinutesLabel(minutes);
-  }
-}
-
-class _HeroPill extends StatelessWidget {
-  const _HeroPill({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AimSpacing.space12,
-        vertical: AimSpacing.space4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: AimRadius.borderPill,
-      ),
-      child: Text(
-        text,
-        style: AimTextStyles.bodySm.copyWith(color: Colors.white),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Step content bottom sheet — wraps the already-tested LessonContentRenderer
-// ---------------------------------------------------------------------------
-
-/// Modal bottom sheet shown when a [LessonStepTile] row is tapped.
-///
-/// Renders the tapped step's full content via [LessonContentRenderer] (image
-/// preview, audio/video info card, etc.) — all values are backend-supplied
-/// verbatim; this sheet only adds a drag handle, title, and close affordance
-/// around the existing renderer. Styling mirrors [AIMNotificationsSheet],
-/// the codebase's existing showModalBottomSheet convention.
-class _LessonStepSheet extends StatelessWidget {
-  const _LessonStepSheet({
-    required this.asset,
-    required this.stepNumber,
-  });
-
-  final LessonAsset asset;
-  final int stepNumber;
-
-  @override
-  Widget build(BuildContext context) {
-    final surfaces = aimSurfacesOf(context);
-    final shadows = aimShadowsOf(context);
-    final l10n = AppLocalizations.of(context);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: surfaces.surface,
-        borderRadius: const BorderRadiusDirectional.only(
-          topStart: Radius.circular(AimRadius.x2l),
-          topEnd: Radius.circular(AimRadius.x2l),
-        ),
-        boxShadow: shadows.sheet,
-      ),
-      child: SafeArea(
-        top: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Drag handle
-              Padding(
-                padding: const EdgeInsets.only(top: AimSpacing.space12),
-                child: Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: surfaces.border,
-                      borderRadius: AimRadius.borderPill,
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                  AimSpacing.screenPaddingMobile,
-                  AimSpacing.space12,
-                  AimSpacing.space8,
-                  AimSpacing.space8,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.lessonsStepTitleLabel(stepNumber),
-                        style: AimTextStyles.h3.copyWith(
-                          color: surfaces.textPrimary,
-                        ),
-                      ),
-                    ),
-                    AIMIconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      semanticLabel: l10n.commonClose,
-                      onPressed: () => context.pop(),
-                    ),
-                  ],
-                ),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    AimSpacing.screenPaddingMobile,
-                    0,
-                    AimSpacing.screenPaddingMobile,
-                    AimSpacing.sectionGap,
-                  ),
-                  child: LessonContentRenderer(asset: asset),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

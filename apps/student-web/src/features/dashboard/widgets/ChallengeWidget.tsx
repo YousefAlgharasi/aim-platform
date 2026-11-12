@@ -31,7 +31,7 @@ export function ChallengeWidget({ challenges, courseId }: ChallengeWidgetProps) 
   if (challenges.length === 0) return null;
   const done = challenges.filter((c) => c.completed).length;
   return (
-    <section aria-label={t(challenges.length > 1 ? 'Daily challenges' : 'Daily challenge')} className={ui.panel}>
+    <section data-tour="daily-challenges" aria-label={t(challenges.length > 1 ? 'Daily challenges' : 'Daily challenge')} className={ui.panel}>
       <div className="flex items-center justify-between gap-2">
         <h3 className={ui.cardTitle}>{t(challenges.length > 1 ? 'Daily challenges' : 'Daily challenge')}</h3>
         <span className={done === challenges.length ? 'lp-num text-sm font-semibold text-success-ink' : 'lp-num text-sm text-ink-muted'}>

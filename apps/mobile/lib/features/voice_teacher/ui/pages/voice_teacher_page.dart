@@ -38,17 +38,13 @@
 // recorder's own hasPermission(); denial drives the existing microphone
 // error state (VoiceErrorState) rather than failing silently.
 //
-// Push-to-talk conversation flow: every AI reply (the opening greeting and
-// every subsequent turn) plays automatically the instant it's ready — no
-// tap required for that half of the turn. For the student's half, there is
-// no automatic voice-activity detection anymore — the student presses and
-// holds the mic to record, and releasing it stops and submits immediately
-// (see VoicePushToTalkButton). This is a deliberate UX choice over the
-// previous hands-free auto-listen loop: the student controls exactly when
-// their turn starts and ends instead of the app guessing from amplitude.
+// Live conversation flow: the microphone stays open (LiveVoiceController). It hears when the student starts and stops
+// talking, sends each finished sentence on its own, and the AI's reply plays the instant it is ready. The student can
+// talk over the teacher to interrupt, mute the mic with one tap, or type instead — typed and spoken turns share one
+// conversation. Audio is captured as 16 kHz PCM and sent as WAV (audio/wav is in the backend's ALLOWED_AUDIO_TYPES
+// allow-list, voice-audio-submit.controller.ts); nothing is written to disk.
 import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -59,23 +55,26 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_message.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/entity/voice_teacher_session_state.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_playback_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_record_submit_notifier.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_provider.dart';
-import 'package:aim_mobile/features/voice_teacher/data/datasources/voice_recorder_client_impl.dart';
-import 'package:aim_mobile/features/voice_teacher/logic/voice_recorder_client.dart';
+import 'package:aim_mobile/features/voice_teacher/data/datasources/live_voice_client_impl.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/live_voice_client.dart';
+import 'package:aim_mobile/features/voice_teacher/logic/live_voice_controller.dart';
 import '../widgets/voice_error_state.dart';
-import '../widgets/voice_push_to_talk_button.dart';
-import '../widgets/voice_record_button.dart';
 import '../widgets/voice_teacher_avatar.dart';
 import '../widgets/voice_text_fallback.dart';
 import '../widgets/voice_transcript_list.dart';
 import '../widgets/voice_waveform_indicator.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
+/// The live microphone as the student sees it: on and listening, hearing them talk, muted, or off.
+enum MicMode { live, hearing, muted, off }
+
 class VoiceTeacherPage extends ConsumerStatefulWidget {
-  const VoiceTeacherPage({required this.contextRef, this.recorder, this.practice, super.key});
+  const VoiceTeacherPage({required this.contextRef, this.liveClient, this.practice, super.key});
 
   final String contextRef;
 
@@ -85,21 +84,31 @@ class VoiceTeacherPage extends ConsumerStatefulWidget {
   /// Injectable for widget tests, which have no real platform channel to
   /// back the `record` package's `AudioRecorder` (its own constructor
   /// already calls into one) — production always uses
-  /// [RealVoiceRecorderClient] when this is left null.
-  final VoiceRecorderClient? recorder;
+  /// [RealLiveVoiceClient] when this is left null.
+  final LiveVoiceClient? liveClient;
 
   @override
   ConsumerState<VoiceTeacherPage> createState() => _VoiceTeacherPageState();
 }
 
 class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
-  late final VoiceRecorderClient _audioRecorder =
-      widget.recorder ?? RealVoiceRecorderClient();
+  late final LiveVoiceController _live = LiveVoiceController(
+    client: widget.liveClient ?? RealLiveVoiceClient(),
+    onUtterance: (wav, durationMs) => unawaited(_onUtterance(wav)),
+    onBargeIn: _onBargeIn,
+    isAiSpeaking: _aiIsSpeaking,
+  );
 
   bool _stoppingTurn = false;
   bool _greetingHandled = false;
 
-  /// The call view (avatar, status text, push-to-talk button) is the
+  // Live-lesson controls: the teacher's voice can be muted (replies stay on screen), and the student can type instead
+  // of talking. Typed and spoken turns share one conversation.
+  bool _muted = false;
+  bool _sendingText = false;
+  final TextEditingController _draft = TextEditingController();
+
+  /// The call view (avatar, status text, caption and the text/mic bar) is the
   /// default surface — the transcript is opt-in via a button, not shown
   /// automatically every time the student re-enters an in-progress session.
   bool _showTranscript = false;
@@ -109,16 +118,52 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   @override
   void initState() {
     super.initState();
+    _live.addListener(_onLiveChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
   }
 
   @override
   void dispose() {
-    _audioRecorder.dispose();
+    _draft.dispose();
+    _live
+      ..removeListener(_onLiveChanged)
+      ..dispose();
     super.dispose();
   }
 
   String? get _token => ref.read(authFlowProvider).accessToken;
+
+  void _onLiveChanged() {
+    if (mounted) setState(() {});
+  }
+
+  bool _aiIsSpeaking() {
+    final playback = ref.read(voicePlaybackProvider);
+    return playback.state == PlaybackState.playing ||
+        playback.state == PlaybackState.loading;
+  }
+
+  /// The student started talking over the teacher: stop the teacher's audio right away.
+  void _onBargeIn() => ref.read(voicePlaybackProvider).stop();
+
+  /// Retry after a microphone problem (or a failed spoken turn).
+  Future<void> _retryMic() async {
+    ref.read(voiceRecordSubmitProvider).reset();
+    _live.setMuted(false);
+    await _live.start();
+  }
+
+  /// Turns the live mic on, or mutes / unmutes it (the conversation itself is hands-free).
+  void _toggleMic() {
+    final status = _live.status;
+    if (status == LiveStatus.off || status == LiveStatus.denied || status == LiveStatus.error) {
+      ref.read(voiceRecordSubmitProvider).reset();
+      _live.setMuted(false);
+      unawaited(_live.start());
+      return;
+    }
+    _live.setMuted(!_live.muted);
+  }
 
   Future<void> _start() async {
     final token = _token;
@@ -139,12 +184,14 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
 
     _handleInitialGreeting();
+    // The student chose to start the live lesson, so the microphone opens now (the teacher can be interrupted).
+    unawaited(_live.start());
   }
 
   /// The session starts with exactly one message — the auto-generated
   /// greeting — before the student has said anything. Play it
-  /// automatically (no tap). Once it finishes, the student is prompted to
-  /// press-and-hold the mic themselves — no auto-listening.
+  /// automatically (no tap). The live mic is already listening, so the student
+  /// can answer by simply talking (or interrupt the greeting by talking over it).
   void _handleInitialGreeting() {
     if (!mounted) return;
     final state = ref.read(voiceTeacherSessionProvider);
@@ -153,7 +200,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final history = state.data.history;
     if (history.length == 1 && history.first.isGreeting) {
       final greeting = history.first;
-      if (greeting.audioRef != null) {
+      if (greeting.audioRef != null && !_muted) {
         unawaited(_onPlayReply(
           greeting.audioRef!,
           fallbackText: greeting.text,
@@ -172,107 +219,28 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
   }
 
-  // ── Recording (push-to-talk: press starts, release stops+submits) ─────
+  // ── A spoken turn (the live mic found the end of a sentence) ──────────
 
-  // P21-018: barge-in. Pressing the mic while AI audio is still playing is
-  // allowed — stop local playback immediately before starting to record.
-  // The backend already accepts overlapping submissions for the same
-  // session with no in-flight lock (P21-014), so no extra backend call is
-  // needed beyond the existing submit flow.
-  void _onPressStart() {
-    unawaited(_startRecordingAsync());
-  }
-
-  Future<void> _startRecordingAsync() async {
-    final playback = ref.read(voicePlaybackProvider);
-    if (playback.state == PlaybackState.playing ||
-        playback.state == PlaybackState.loading) {
-      playback.stop();
-    }
-
+  /// One turn at a time: speech that arrives while the teacher is still answering is dropped.
+  Future<void> _onUtterance(Uint8List audioBytes) async {
+    if (_stoppingTurn || _sendingText || !mounted) return;
     final recordNotifier = ref.read(voiceRecordSubmitProvider);
-    if (recordNotifier.state == RecordSubmitState.recording ||
-        recordNotifier.state == RecordSubmitState.submitting) {
+    if (recordNotifier.state == RecordSubmitState.submitting) return;
+
+    final token = _token;
+    final sessionState = ref.read(voiceTeacherSessionProvider);
+    if (token == null ||
+        token.isEmpty ||
+        sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
       return;
     }
-
-    final hasPermission = await _audioRecorder.hasPermission();
-    if (!hasPermission) {
-      recordNotifier.reportError(
-        'Microphone permission was denied. Please allow microphone access '
-        'to speak with the AI teacher.',
-      );
-      return;
-    }
-
-    final tempPath =
-        '${Directory.systemTemp.path}/voice_turn_${DateTime.now().microsecondsSinceEpoch}.wav';
-
-    try {
-      await _audioRecorder.start(tempPath);
-    } catch (error) {
-      recordNotifier.reportError('Could not start recording: $error');
-      return;
-    }
-
-    // Only flip the UI to "recording" once the native recorder has actually
-    // started — never optimistically, or a start() failure above would
-    // leave the button showing "recording" with nothing actually happening.
-    recordNotifier.startRecording();
-  }
-
-  void _onPressEnd() {
-    unawaited(_onStopRecording());
-  }
-
-  Future<void> _onStopRecording() async {
-    if (_stoppingTurn) return;
-    // Only a real in-progress recording can be stopped — a stray
-    // onTapCancel/onTapUp with nothing recording (e.g. the button was
-    // disabled mid-gesture) should no-op rather than submit empty audio.
-    if (ref.read(voiceRecordSubmitProvider).state != RecordSubmitState.recording) {
-      return;
-    }
+    final sessionId = sessionState.data.sessionId;
+    if (sessionId == null) return;
     _stoppingTurn = true;
 
     try {
-      final recordNotifier = ref.read(voiceRecordSubmitProvider);
-
-      Uint8List audioBytes = Uint8List(0);
-      const mimeType = 'audio/wav';
-
-      try {
-        final path = await _audioRecorder.stop();
-        if (path != null) {
-          final file = File(path);
-          if (await file.exists()) {
-            audioBytes = await file.readAsBytes();
-            unawaited(file.delete());
-          }
-        }
-      } catch (error) {
-        recordNotifier.reportError('Could not read recorded audio: $error');
-        return;
-      }
-
-      if (audioBytes.isEmpty) {
-        recordNotifier.reportError(
-          'No audio was recorded. Please try again.',
-        );
-        return;
-      }
-
-      recordNotifier.stopRecording(audioBytes, mimeType: mimeType);
-
-      final token = _token;
-      final sessionState = ref.read(voiceTeacherSessionProvider);
-      if (token == null ||
-          token.isEmpty ||
-          sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
-        return;
-      }
-      final sessionId = sessionState.data.sessionId;
-      if (sessionId == null) return;
+      recordNotifier.startRecording();
+      recordNotifier.stopRecording(audioBytes, mimeType: 'audio/wav');
 
       final sessionNotifier = ref.read(voiceTeacherSessionProvider.notifier);
       await recordNotifier.submitToBackend(
@@ -296,15 +264,17 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
           );
         },
       );
+      if (!mounted) return;
 
-      // Auto-play the AI's reply. The student presses-and-holds the mic
-      // themselves for their next turn — no auto-listening afterward.
+      // Auto-play the AI's reply. The mic is still open, so the student can simply answer.
       final latest = ref.read(voiceTeacherSessionProvider);
       final turn = latest is AppAsyncSuccess<VoiceTeacherSessionState>
           ? latest.data.lastTurn
           : null;
       final turnText = turn?.text;
-      if (turn?.audioRef != null) {
+      if (_muted) {
+        // Muted: the reply is shown on screen only.
+      } else if (turn?.audioRef != null) {
         unawaited(_onPlayReply(turn!.audioRef!, fallbackText: turnText));
       } else if (turnText != null && turnText.isNotEmpty) {
         unawaited(_onPlayText(turnText));
@@ -312,6 +282,78 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     } finally {
       _stoppingTurn = false;
     }
+  }
+
+  void _toggleMute() {
+    setState(() => _muted = !_muted);
+    if (_muted) ref.read(voicePlaybackProvider).stop();
+  }
+
+  /// A typed turn. Same conversation as the voice turns: the teacher answers (and, unless muted, speaks) the same way.
+  Future<void> _sendText(String raw) async {
+    final message = raw.trim();
+    if (message.isEmpty || _sendingText) return;
+    final token = _token;
+    final sessionState = ref.read(voiceTeacherSessionProvider);
+    if (token == null ||
+        token.isEmpty ||
+        sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
+      return;
+    }
+    final sessionId = sessionState.data.sessionId;
+    if (sessionId == null) return;
+
+    ref.read(voicePlaybackProvider).stop();
+    setState(() => _sendingText = true);
+    _draft.clear();
+    final sent = await ref.read(voiceTeacherSessionProvider.notifier).submitTextTurn(
+          bearerToken: token,
+          sessionId: sessionId,
+          message: message,
+        );
+    if (!mounted) return;
+    setState(() => _sendingText = false);
+    if (!sent) {
+      _draft.text = message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).voiceLiveSendFailed)),
+      );
+      return;
+    }
+    if (_muted) return;
+    final latest = ref.read(voiceTeacherSessionProvider);
+    if (latest is! AppAsyncSuccess<VoiceTeacherSessionState>) return;
+    // A fallback reply is shown as text on screen; there is no audio for it.
+    if (latest.data.lastTurn?.isFallback == true) return;
+    VoiceMessage? lastTeacher;
+    for (final m in latest.data.history.reversed) {
+      if (m.role == VoiceMessageRole.teacher) {
+        lastTeacher = m;
+        break;
+      }
+    }
+    if (lastTeacher != null) unawaited(_onPlayMessage(lastTeacher));
+  }
+
+  /// Plays a teacher message: its stored recording when it has one, otherwise the backend's lazily synthesised audio.
+  Future<void> _onPlayMessage(VoiceMessage message) async {
+    final audioRef = message.audioRef;
+    if (audioRef != null) {
+      await _onPlayReply(audioRef, fallbackText: message.text);
+      return;
+    }
+    final token = _token;
+    if (token == null || token.isEmpty) return;
+    await ref.read(voicePlaybackProvider).loadAndPlay(
+          audioRef: 'message:${message.id}',
+          fallbackText: message.text,
+          fetchAudioFn: (_) async {
+            final bytes = await ref
+                .read(voiceTeacherRepositoryProvider)
+                .getMessageAudio(bearerToken: token, messageId: message.id);
+            return Uint8List.fromList(bytes);
+          },
+        );
   }
 
   Future<void> _onFeedback(
@@ -411,13 +453,19 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 recordState: recordState,
                 playbackState: playbackState,
                 greetingHandled: _greetingHandled,
+                muted: _muted,
+                sendingText: _sendingText,
+                draft: _draft,
+                onToggleMute: _toggleMute,
+                onSendText: _sendText,
                 showTranscript: _showTranscript,
                 onToggleTranscript: _toggleTranscript,
-                onPressStart: _onPressStart,
-                onPressEnd: _onPressEnd,
+                liveStatus: _live.status,
+                liveMuted: _live.muted,
+                onToggleMic: _toggleMic,
                 onPlayReply: _onPlayReply,
                 onFeedback: _onFeedback,
-                onRetry: _onStopRecording,
+                onRetry: _retryMic,
               ),
           },
         ),
@@ -512,10 +560,16 @@ class _VoiceTutorContent extends StatelessWidget {
     required this.recordState,
     required this.playbackState,
     required this.greetingHandled,
+    required this.muted,
+    required this.sendingText,
+    required this.draft,
+    required this.onToggleMute,
+    required this.onSendText,
     required this.showTranscript,
     required this.onToggleTranscript,
-    required this.onPressStart,
-    required this.onPressEnd,
+    required this.liveStatus,
+    required this.liveMuted,
+    required this.onToggleMic,
     required this.onPlayReply,
     required this.onFeedback,
     required this.onRetry,
@@ -526,13 +580,25 @@ class _VoiceTutorContent extends StatelessWidget {
   final VoicePlaybackNotifier playbackState;
   final bool greetingHandled;
 
+  /// The teacher's voice is muted: replies are shown as text only.
+  final bool muted;
+
+  /// A typed message is being answered.
+  final bool sendingText;
+  final TextEditingController draft;
+  final VoidCallback onToggleMute;
+  final Future<void> Function(String message) onSendText;
+
   /// The call view (avatar, status text, push-to-talk button) is the
   /// default surface every time this session is opened — the transcript is
   /// opt-in via [onToggleTranscript], not shown automatically.
   final bool showTranscript;
   final VoidCallback onToggleTranscript;
-  final VoidCallback onPressStart;
-  final VoidCallback onPressEnd;
+
+  /// The live microphone: its status, whether it is muted, and the toggle (turn on / mute / unmute).
+  final LiveStatus liveStatus;
+  final bool liveMuted;
+  final VoidCallback onToggleMic;
   final Future<void> Function(String audioRef, {VoidCallback? onFinished}) onPlayReply;
   final void Function(String messageId, String rating, String? comment)
       onFeedback;
@@ -540,19 +606,21 @@ class _VoiceTutorContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRecording = recordState.state == RecordSubmitState.recording;
+    final isHearing = liveStatus == LiveStatus.hearing;
+    final isRecording = recordState.state == RecordSubmitState.recording || isHearing;
     final isSubmitting = recordState.state == RecordSubmitState.submitting;
-    final isError = recordState.state == RecordSubmitState.error;
+    final isError = recordState.state == RecordSubmitState.error ||
+        liveStatus == LiveStatus.denied ||
+        liveStatus == LiveStatus.error;
+    final micMode = switch (liveStatus) {
+      LiveStatus.listening || LiveStatus.hearing =>
+        liveMuted ? MicMode.muted : (isHearing ? MicMode.hearing : MicMode.live),
+      _ => MicMode.off,
+    };
     final isPlaying = playbackState.state == PlaybackState.playing ||
         playbackState.state == PlaybackState.loading;
     final lastTurn = sessionState.lastTurn;
     final hasFallback = lastTurn != null && lastTurn.isFallback;
-
-    final recordButtonState = isSubmitting
-        ? VoiceRecordState.processing
-        : isRecording
-            ? VoiceRecordState.recording
-            : VoiceRecordState.idle;
 
     // The session starts with exactly one message — the auto-generated
     // greeting — before the student has said anything. It plays
@@ -562,9 +630,10 @@ class _VoiceTutorContent extends StatelessWidget {
         sessionState.history.length == 1 &&
         sessionState.history.first.isGreeting;
 
+    final processing = isSubmitting || sendingText;
     final mood = showGreetingSpeaking || isPlaying
         ? VoiceAvatarMood.speaking
-        : isSubmitting
+        : processing
             ? VoiceAvatarMood.processing
             : isRecording
                 ? VoiceAvatarMood.recording
@@ -630,10 +699,14 @@ class _VoiceTutorContent extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
-                    child: VoiceRecordButton(
-                      state: recordButtonState,
-                      onStartRecording: onPressStart,
-                      onStopRecording: onPressEnd,
+                    child: _VoiceComposerBar(
+                      controller: draft,
+                      muted: muted,
+                      busy: isSubmitting || sendingText || isRecording,
+                      micMode: micMode,
+                      onToggleMute: onToggleMute,
+                      onToggleMic: onToggleMic,
+                      onSend: onSendText,
                     ),
                   ),
                 ],
@@ -647,12 +720,27 @@ class _VoiceTutorContent extends StatelessWidget {
     // Default surface every time the session is (re)opened: the avatar call
     // view, never the transcript list — the student opts into seeing the
     // message history via the button below instead.
-    return _VoiceAvatarStage(
+    // The teacher's latest message, shown as text so the student can read along.
+    String? caption;
+    for (final m in sessionState.history.reversed) {
+      if (m.role == VoiceMessageRole.teacher) {
+        caption = m.text;
+        break;
+      }
+    }
+    final onlyGreeting =
+        sessionState.history.length == 1 && sessionState.history.first.isGreeting;
+    final l10nLive = AppLocalizations.of(context);
+
+    final stage = _VoiceAvatarStage(
       mood: mood,
       recording: isRecording,
-      processing: isSubmitting,
-      onPressStart: onPressStart,
-      onPressEnd: onPressEnd,
+      processing: processing,
+      caption: caption,
+      onQuickStart: onlyGreeting && !processing && !isRecording
+          ? () => onSendText(l10nLive.voiceLiveYesStartMessage)
+          : null,
+      micMode: micMode,
       onViewMessages: sessionState.history.isEmpty ? null : onToggleTranscript,
       errorOrFallback: isError
           ? VoiceErrorState(
@@ -666,12 +754,27 @@ class _VoiceTutorContent extends StatelessWidget {
                 )
               : null,
     );
+
+    return Column(
+      children: [
+        Expanded(child: stage),
+        _VoiceComposerBar(
+          controller: draft,
+          muted: muted,
+          busy: processing || isRecording,
+          micMode: micMode,
+          onToggleMute: onToggleMute,
+          onToggleMic: onToggleMic,
+          onSend: onSendText,
+        ),
+      ],
+    );
   }
 }
 
 /// Full-page avatar call view: the illustrated AI-teacher avatar reacts to
 /// [mood] (speaking/listening/recording/processing), with a status pill,
-/// heading, the push-to-talk mic button, and static subtitle beneath.
+/// heading, the teacher's words as a caption, and a static subtitle beneath.
 /// Matches the "full page with a character that changes state" reference
 /// the redesign was requested against, using an abstract brand-gradient
 /// avatar (VoiceTeacherAvatar) instead of a stock photo.
@@ -680,17 +783,25 @@ class _VoiceAvatarStage extends StatelessWidget {
     required this.mood,
     required this.recording,
     required this.processing,
-    required this.onPressStart,
-    required this.onPressEnd,
+    required this.micMode,
+    this.caption,
+    this.onQuickStart,
     this.onViewMessages,
     this.errorOrFallback,
   });
 
+  /// What the teacher last said, as text.
+  final String? caption;
+
+  /// One tap to answer the teacher's "ready to start?". Null when it does not apply.
+  final VoidCallback? onQuickStart;
+
   final VoiceAvatarMood mood;
   final bool recording;
   final bool processing;
-  final VoidCallback onPressStart;
-  final VoidCallback onPressEnd;
+
+  /// Whether the live microphone is on, muted or off: decides what the heading says while it is the student's turn.
+  final MicMode micMode;
 
   /// Null when there's no history yet to view (nothing to show). Non-null
   /// once at least one turn exists — tapping it reveals the transcript,
@@ -720,57 +831,89 @@ class _VoiceAvatarStage extends StatelessWidget {
         ),
       VoiceAvatarMood.listening => (
           l10n.voiceTeacherStatusReady,
-          l10n.voiceTeacherHeadingListening,
+          switch (micMode) {
+            MicMode.live || MicMode.hearing => l10n.voiceLiveHeadingListening,
+            MicMode.muted => l10n.voiceLiveHeadingMuted,
+            MicMode.off => l10n.voiceLiveHeadingOff,
+          },
         ),
     };
 
-    final micEnabled = mood != VoiceAvatarMood.processing;
-
     return Stack(
       children: [
-        Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AimSpacing.screenPaddingMobile,
-              vertical: AimSpacing.componentGap,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _VoiceStatusPill(label: label),
-                const SizedBox(height: AimSpacing.componentGap),
-                VoiceTeacherAvatar(mood: mood, size: 144),
-                const SizedBox(height: AimSpacing.componentGap),
-                Text(
-                  heading,
-                  style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AimSpacing.componentGap),
-                VoicePushToTalkButton(
-                  recording: recording,
-                  processing: !micEnabled,
-                  onPressStart: onPressStart,
-                  onPressEnd: onPressEnd,
-                ),
-                const SizedBox(height: AimSpacing.componentGap),
-                if (errorOrFallback != null)
-                  errorOrFallback!
-                else
-                  Text(
-                    l10n.voiceTeacherPracticeSubtitle,
-                    style: AimTextStyles.bodySm.copyWith(
-                      color: AimColors.neutral0.withValues(alpha: 0.85),
-                    ),
-                    textAlign: TextAlign.center,
+        Column(
+          children: [
+            // Only this top part scrolls (a long teacher message); the microphone below stays where it is.
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: AimSpacing.screenPaddingMobile,
+                    vertical: AimSpacing.componentGap,
                   ),
-              ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _VoiceStatusPill(label: label),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      VoiceTeacherAvatar(mood: mood, size: 120),
+                      const SizedBox(height: AimSpacing.componentGap),
+                      Text(
+                        heading,
+                        style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (caption != null && caption!.isNotEmpty) ...[
+                        const SizedBox(height: AimSpacing.componentGap),
+                        _TeacherCaption(text: caption!),
+                      ],
+                      if (onQuickStart != null) ...[
+                        const SizedBox(height: AimSpacing.componentGap),
+                        FilledButton(
+                          onPressed: onQuickStart,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AimColors.neutral0,
+                            foregroundColor: AimColors.primary600,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          ),
+                          child: Text(
+                            l10n.voiceLiveYesStart,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.screenPaddingMobile,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: AimSpacing.space8),
+                  if (errorOrFallback != null)
+                    errorOrFallback!
+                  else
+                    Text(
+                      l10n.voiceTeacherPracticeSubtitle,
+                      style: AimTextStyles.bodySm.copyWith(
+                        color: AimColors.neutral0.withValues(alpha: 0.85),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  const SizedBox(height: AimSpacing.space8),
+                ],
+              ),
+            ),
+          ],
         ),
         if (onViewMessages != null)
           PositionedDirectional(
-            bottom: AimSpacing.screenPaddingMobile,
+            top: AimSpacing.space4,
             end: AimSpacing.screenPaddingMobile,
             child: _VoiceTranscriptToggleButton(
               label: l10n.voiceTeacherMessagesButton,
@@ -895,6 +1038,190 @@ class _VoiceStatusPill extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What the teacher last said, as text, on a soft translucent card over the gradient.
+class _TeacherCaption extends StatelessWidget {
+  const _TeacherCaption({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 560),
+      padding: const EdgeInsets.all(AimSpacing.space16),
+      decoration: BoxDecoration(
+        color: AimColors.neutral0.withValues(alpha: 0.16),
+        border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.28)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: AimTextStyles.bodyMd.copyWith(color: AimColors.neutral0, height: 1.45),
+      ),
+    );
+  }
+}
+
+/// The bottom bar of the live lesson: a mute toggle for the teacher's voice, a text box, and one round button that is
+/// the live microphone while the box is empty (tap to mute / unmute; the conversation is hands-free) and "send" once
+/// something is typed.
+class _VoiceComposerBar extends StatelessWidget {
+  const _VoiceComposerBar({
+    required this.controller,
+    required this.muted,
+    required this.busy,
+    required this.micMode,
+    required this.onToggleMute,
+    required this.onToggleMic,
+    required this.onSend,
+  });
+
+  final TextEditingController controller;
+  final bool muted;
+  final bool busy;
+
+  /// The live microphone: on, hearing the student, muted, or off.
+  final MicMode micMode;
+  final VoidCallback onToggleMute;
+  final VoidCallback onToggleMic;
+  final Future<void> Function(String message) onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AimSpacing.space12,
+        AimSpacing.space4,
+        AimSpacing.space12,
+        AimSpacing.space12,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _RoundIconButton(
+            icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+            tooltip: muted ? l10n.voiceLiveUnmute : l10n.voiceLiveMute,
+            selected: muted,
+            onTap: onToggleMute,
+          ),
+          const SizedBox(width: AimSpacing.space8),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              enabled: !busy,
+              minLines: 1,
+              maxLines: 4,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (v) => onSend(v),
+              style: const TextStyle(color: AimColors.neutral0, fontSize: 16),
+              cursorColor: AimColors.neutral0,
+              decoration: InputDecoration(
+                hintText: l10n.voiceLiveComposerHint,
+                hintStyle: TextStyle(color: AimColors.neutral0.withValues(alpha: 0.7)),
+                filled: true,
+                fillColor: AimColors.neutral0.withValues(alpha: 0.18),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(26),
+                  borderSide: const BorderSide(color: AimColors.neutral0, width: 1.5),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AimSpacing.space8),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: controller,
+            builder: (context, value, _) {
+              final hasText = value.text.trim().isNotEmpty;
+              if (hasText) {
+                return _RoundIconButton(
+                  icon: Icons.arrow_upward_rounded,
+                  tooltip: l10n.voiceLiveSend,
+                  filled: true,
+                  onTap: busy ? null : () => onSend(controller.text),
+                );
+              }
+              // Nothing typed: the round button is the live microphone (tap to mute / unmute).
+              return switch (micMode) {
+                MicMode.live || MicMode.hearing => _RoundIconButton(
+                    icon: Icons.mic_rounded,
+                    tooltip: l10n.voiceLiveMicMute,
+                    filled: true,
+                    onTap: onToggleMic,
+                  ),
+                MicMode.muted => _RoundIconButton(
+                    icon: Icons.mic_off_rounded,
+                    tooltip: l10n.voiceLiveMicOn,
+                    selected: true,
+                    onTap: onToggleMic,
+                  ),
+                MicMode.off => _RoundIconButton(
+                    icon: Icons.mic_none_rounded,
+                    tooltip: l10n.voiceLiveMicStart,
+                    onTap: onToggleMic,
+                  ),
+              };
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.selected = false,
+    this.filled = false,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final bool selected;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    final background = filled
+        ? AimColors.neutral0.withValues(alpha: enabled ? 1 : 0.35)
+        : AimColors.neutral0.withValues(alpha: selected ? 0.34 : 0.18);
+    final foreground = filled ? AimColors.primary600 : AimColors.neutral0;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: tooltip,
+      child: Tooltip(
+        message: tooltip,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 28,
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+            child: Icon(icon, color: foreground, size: 24),
           ),
         ),
       ),

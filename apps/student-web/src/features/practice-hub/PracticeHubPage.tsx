@@ -28,10 +28,10 @@ function ModeCard({ mode }: { mode: Mode }) {
   );
 }
 
-function Group({ title, modes }: { title: string; modes: Mode[] }) {
+function Group({ title, modes, tour }: { title: string; modes: Mode[]; tour?: string }) {
   const { t } = useI18n();
   return (
-    <section className="flex flex-col gap-3" aria-label={t(title)}>
+    <section data-tour={tour} className="flex flex-col gap-3" aria-label={t(title)}>
       <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t(title)}</h2>
       <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${modes.length >= 3 ? 'lg:grid-cols-3' : ''}`}>
         {modes.map((m) => <ModeCard key={m.to} mode={m} />)}
@@ -46,10 +46,17 @@ export function PracticeHubPage() {
   const [due, setDue] = useState<number | null>(null);
   const [mistakes, setMistakes] = useState<number | null>(null);
 
+  // Both counts settle (loaded or failed) before the plan card says anything, so it never flashes the wrong message.
+  const [settled, setSettled] = useState({ due: false, mistakes: false });
+
   useEffect(() => {
-    vocabularyApi.list().then((r) => setDue(r.dueCount)).catch(() => setDue(null));
-    mistakesApi.list().then((r) => setMistakes(r.total)).catch(() => setMistakes(null));
+    let cancelled = false;
+    const done = (key: 'due' | 'mistakes') => { if (!cancelled) setSettled((s) => ({ ...s, [key]: true })); };
+    vocabularyApi.list().then((r) => !cancelled && setDue(r.dueCount)).catch(() => !cancelled && setDue(null)).finally(() => done('due'));
+    mistakesApi.list().then((r) => !cancelled && setMistakes(r.total)).catch(() => !cancelled && setMistakes(null)).finally(() => done('mistakes'));
+    return () => { cancelled = true; };
   }, []);
+  const loading = !settled.due || !settled.mistakes;
 
   const waiting = (mistakes ?? 0) + (due ?? 0);
   const ic = 'size-6';
@@ -58,29 +65,40 @@ export function PracticeHubPage() {
     <div className="stagger flex flex-col gap-8">
       <PageTitleBar title={t('Practice')} />
 
-      <section className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white dark:bg-white dark:text-ink-inverse sm:p-8">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <p className="lp-display m-0 text-[1.75rem] font-semibold sm:text-[2.25rem]">
-              {waiting > 0 ? t('Your 5-minute plan is ready') : t('You are all caught up')}
-            </p>
-            <p className="m-0 mt-2 text-base text-white dark:text-ink-inverse/70">
-              {waiting > 0
-                ? [mistakes ? t('{n} mistakes to retry', { n: mistakes }) : '', due ? t('{n} words due', { n: due }) : ''].filter(Boolean).join(', ')
-                : t('Try a conversation or a new topic to keep your streak going.')}
-            </p>
+      <section data-tour="practice-plan" className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white sm:p-8" aria-busy={loading}>
+        {loading ? (
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between" role="status" aria-label={t('Loading…')}>
+            <div className="min-w-0 flex-1">
+              <div className="h-9 w-3/4 max-w-md animate-pulse rounded-lg bg-white/20 motion-reduce:animate-none" />
+              <div className="mt-3 h-5 w-2/3 max-w-xs animate-pulse rounded-lg bg-white/15 motion-reduce:animate-none" />
+            </div>
+            <div className="h-14 w-40 shrink-0 animate-pulse rounded-full bg-white/20 motion-reduce:animate-none" />
           </div>
-          <Link
-            to={mistakes ? '/mistakes?quick=1' : due ? '/vocabulary' : '/ai-teacher'}
-            className="inline-flex h-14 shrink-0 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-brand no-underline transition hover:bg-white/90 active:scale-[0.98] dark:bg-ink-inverse dark:text-ink dark:hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand dark:focus-visible:ring-ink-inverse dark:focus-visible:ring-offset-white"
-          >
-            {waiting > 0 ? t('Start now') : t('Chat with AI Teacher')}
-          </Link>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <p className="lp-display m-0 text-[1.75rem] font-semibold sm:text-[2.25rem]">
+                {waiting > 0 ? t('Your 5-minute plan is ready') : t('You are all caught up')}
+              </p>
+              <p className="m-0 mt-2 text-base text-white">
+                {waiting > 0
+                  ? [mistakes ? t('{n} mistakes to retry', { n: mistakes }) : '', due ? t('{n} words due', { n: due }) : ''].filter(Boolean).join(', ')
+                  : t('Try a conversation or a new topic to keep your streak going.')}
+              </p>
+            </div>
+            <Link
+              to={mistakes ? '/mistakes?quick=1' : due ? '/vocabulary' : '/ai-teacher'}
+              className="inline-flex h-14 shrink-0 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-brand no-underline transition hover:bg-white/90 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+            >
+              {waiting > 0 ? t('Start now') : t('Chat with AI Teacher')}
+            </Link>
+          </div>
+        )}
       </section>
 
       <Group
         title="Speak and write"
+        tour="practice-speak"
         modes={[
           { to: '/practice/speaking', title: 'Practice Speaking', body: 'Pick a topic, talk about it, earn XP.', icon: <MicIcon className={ic} />, tone: 'bg-accent-soft text-accent-ink' },
           { to: '/practice/writing', title: 'Write a Paragraph', body: 'Write on a topic and see exactly what to fix.', icon: <PencilIcon className={ic} />, tone: 'bg-warning-soft text-warning-ink' },
@@ -88,6 +106,7 @@ export function PracticeHubPage() {
       />
       <Group
         title="Remember and fix"
+        tour="practice-fix"
         modes={[
           { to: '/vocabulary', title: 'My words', body: 'Review the words you saved with spaced flashcards.', icon: <LightbulbIcon className={ic} />, meta: due ? t('{n} due', { n: due }) : undefined, tone: 'bg-success-soft text-success-ink' },
           { to: '/mistakes', title: 'My mistakes', body: 'Retry the questions you got wrong until they stick.', icon: <RetryIcon className={ic} />, meta: mistakes ? String(mistakes) : undefined, tone: 'bg-danger-soft text-danger-ink' },

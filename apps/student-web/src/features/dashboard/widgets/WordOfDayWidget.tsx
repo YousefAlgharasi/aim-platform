@@ -52,7 +52,7 @@ export function WordOfDayWidget() {
   const pill = 'inline-flex h-14 shrink-0 items-center justify-center rounded-full px-8 text-base font-semibold no-underline transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand';
 
   return (
-    <section aria-label={t('Word of the day')} className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white sm:p-8">
+    <section data-tour="word-of-day" aria-label={t('Word of the day')} className="relative overflow-hidden rounded-2xl bg-brand p-6 text-white sm:p-8">
       <div className="flex h-full flex-col justify-between gap-8">
         <div className="min-w-0">
           <p className="m-0 text-sm font-medium text-white">{t('Word of the day')}</p>

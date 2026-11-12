@@ -39,14 +39,27 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Page loads: network first, cached shell when offline.
+  // Page loads: network first with a bounded 2.5s timeout, falling back to cached shell when offline or slow.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).then((res) => {
-        const copy = res.clone();
-        caches.open(SHELL).then((c) => c.put('/', copy)).catch(() => undefined);
-        return res;
-      }).catch(() => caches.match('/')),
+      (async () => {
+        const cachedShell = await caches.match('/');
+        const networkFetch = fetch(request).then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(SHELL).then((c) => c.put('/', copy)).catch(() => undefined);
+          }
+          return res;
+        });
+
+        // If the shell is already cached, race the network with a 2.5s timer so slow/offline connections don't hang.
+        if (cachedShell) {
+          const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Navigation timeout')), 2500));
+          return Promise.race([networkFetch, timeout]).catch(() => cachedShell);
+        }
+
+        return networkFetch.catch(() => cachedShell || caches.match('/'));
+      })(),
     );
     return;
   }

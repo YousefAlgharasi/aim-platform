@@ -13,6 +13,7 @@ import { navItems } from './navItems';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { useI18n } from '../i18n/I18nContext';
 import { StreakCelebrationHost } from '../interaction';
+import { GuidedTour } from '../features/tour/GuidedTour';
 import '../features/landing/landing.css';
 
 // Full-screen flows (chat, voice, lessons, practice, test attempts) hide the bottom tab bar
@@ -75,6 +76,7 @@ export function AppLayout() {
         </main>
 
         <StreakCelebrationHost />
+        <GuidedTour />
         {showTabBar && <BottomTabBar onMenu={() => setMenuOpen(true)} />}
       </div>
     </div>
