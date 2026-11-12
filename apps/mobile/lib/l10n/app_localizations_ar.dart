@@ -218,15 +218,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authAppleButton => 'Apple';
 
   @override
-  String get authFacebookButton => 'Facebook';
-
-  @override
   String get authContinueWithAppleSemantic =>
       'المتابعة باستخدام Apple (قريبًا)';
-
-  @override
-  String get authContinueWithFacebookSemantic =>
-      'المتابعة باستخدام Facebook (قريبًا)';
 
   @override
   String get authTestModeLabel => 'وضع الاختبار';
@@ -314,10 +307,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authSignUpWithAppleSemantic => 'التسجيل باستخدام Apple (قريبًا)';
-
-  @override
-  String get authSignUpWithFacebookSemantic =>
-      'التسجيل باستخدام Facebook (قريبًا)';
 
   @override
   String get authAgreeToTermsPrefix => 'بالتسجيل، فإنك توافق على ';

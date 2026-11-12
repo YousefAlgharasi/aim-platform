@@ -494,23 +494,11 @@ abstract class AppLocalizations {
   /// **'Apple'**
   String get authAppleButton;
 
-  /// Label for the (visual-only) Facebook sign-in/sign-up button.
-  ///
-  /// In en, this message translates to:
-  /// **'Facebook'**
-  String get authFacebookButton;
-
   /// Accessibility label for the disabled Apple sign-in button on the login page.
   ///
   /// In en, this message translates to:
   /// **'Continue with Apple (coming soon)'**
   String get authContinueWithAppleSemantic;
-
-  /// Accessibility label for the disabled Facebook sign-in button on the login page.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue with Facebook (coming soon)'**
-  String get authContinueWithFacebookSemantic;
 
   /// Divider label above the developer test-mode shortcuts on the login page.
   ///
@@ -679,12 +667,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign up with Apple (coming soon)'**
   String get authSignUpWithAppleSemantic;
-
-  /// Accessibility label for the disabled Facebook sign-up button on the register page.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign up with Facebook (coming soon)'**
-  String get authSignUpWithFacebookSemantic;
 
   /// Prefix of the terms/privacy-policy notice on the register page.
   ///
