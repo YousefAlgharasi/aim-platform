@@ -4,6 +4,8 @@
 // Maps to LessonSummary returned by GET /curriculum/chapters/:chapterId/lessons.
 // All fields are backend-supplied verbatim; Flutter never modifies them.
 
+import 'lesson_explanation.dart';
+
 class Lesson {
   const Lesson({
     required this.id,
@@ -15,6 +17,7 @@ class Lesson {
     required this.xpValue,
     required this.createdAt,
     required this.updatedAt,
+    this.explanation,
   });
 
   final String id;
@@ -36,4 +39,7 @@ class Lesson {
 
   final String createdAt;
   final String updatedAt;
+
+  /// Written teaching content for the lesson; null until authored.
+  final LessonExplanation? explanation;
 }

@@ -8,7 +8,9 @@ import '../../features/auth/ui/pages/login_page.dart';
 import '../../features/auth/ui/pages/register_page.dart';
 import '../../features/auth/ui/pages/forgot_password_page.dart';
 import '../../features/lessons/ui/pages/chapter_list_page.dart';
+import '../../features/lessons/ui/pages/lesson_content_page.dart';
 import '../../features/lessons/ui/pages/lesson_detail_page.dart';
+import '../../features/lessons/logic/entity/lesson_explanation.dart';
 import '../../features/lessons/ui/pages/lesson_list_page.dart';
 import '../../features/onboarding/ui/pages/splash_page.dart';
 import '../../features/placement/ui/pages/placement_question_page.dart';
@@ -182,6 +184,20 @@ class AppRouter {
         GoRoute(
           path: AppRoutePaths.lessonDetail,
           builder: (context, state) => _buildLessonDetailPage(state.extra),
+        ),
+        GoRoute(
+          path: AppRoutePaths.lessonContent,
+          builder: (context, state) {
+            final extra = state.extra is Map ? state.extra as Map : const {};
+            final explanation = extra['explanation'];
+            if (explanation is! LessonExplanation) {
+              return const Scaffold(body: SizedBox.shrink());
+            }
+            return LessonContentPage(
+              lessonTitle: extra['lessonTitle'] as String? ?? '',
+              explanation: explanation,
+            );
+          },
         ),
         GoRoute(
           path: '/student/lessons/:id',

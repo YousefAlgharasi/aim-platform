@@ -6,6 +6,7 @@
 // modifies status, sortOrder, or any curriculum hierarchy value.
 
 import '../../logic/entity/lesson.dart';
+import 'lesson_explanation_model.dart';
 
 /// Data-layer model extending the [Lesson] domain entity.
 class LessonModel extends Lesson {
@@ -19,6 +20,7 @@ class LessonModel extends Lesson {
     required super.xpValue,
     required super.createdAt,
     required super.updatedAt,
+    super.explanation,
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class LessonModel extends Lesson {
       xpValue: (json['xpValue'] as num?)?.toInt() ?? 0,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
+      explanation: LessonExplanationModel.tryParse(json['explanation']),
     );
   }
 

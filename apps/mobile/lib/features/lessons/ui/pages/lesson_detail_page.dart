@@ -183,6 +183,19 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
   }
 
+  void _openContent(LessonDetail detail) {
+    final explanation = detail.lesson.explanation;
+    if (explanation == null) return;
+    context.push(
+      AppRoutePaths.lessonContent,
+      extra: {
+        'lessonId': detail.lesson.id,
+        'lessonTitle': detail.lesson.title,
+        'explanation': explanation,
+      },
+    );
+  }
+
   void _openStep(LessonAsset asset, int stepNumber) {
     showModalBottomSheet<void>(
       context: context,
@@ -238,6 +251,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
                 onOpenStep: _openStep,
+                onOpenContent: () => _openContent(data),
               );
             },
           ),
@@ -262,6 +276,7 @@ class _LessonDetailContent extends StatelessWidget {
     required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
     required this.onOpenStep,
+    required this.onOpenContent,
   });
 
   final LessonDetail detail;
@@ -271,6 +286,7 @@ class _LessonDetailContent extends StatelessWidget {
   final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
   final void Function(LessonAsset asset, int stepNumber) onOpenStep;
+  final VoidCallback onOpenContent;
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +303,11 @@ class _LessonDetailContent extends StatelessWidget {
               children: [
                 _LessonHero(detail: detail, isCompleted: practiceUnlocked),
                 const SizedBox(height: 20),
+
+                if (detail.lesson.explanation != null) ...[
+                  _LessonContentCard(onTap: onOpenContent),
+                  const SizedBox(height: 20),
+                ],
 
                 // Section Header: What's inside
                 Row(
@@ -800,6 +821,84 @@ class _LessonStepSheet extends StatelessWidget {
                   child: LessonContentRenderer(asset: asset),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// "Lesson content" entry card — opens the full written lesson (no AI Teacher
+// session needed).
+// ---------------------------------------------------------------------------
+
+class _LessonContentCard extends StatelessWidget {
+  const _LessonContentCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final ar = Localizations.localeOf(context).languageCode == 'ar';
+    final title = ar ? 'محتوى الدرس' : 'Lesson content';
+    final subtitle = ar
+        ? 'اقرأ شرح الدرس كاملاً مع الأمثلة والأخطاء الشائعة'
+        : 'Read the full explanation with examples and common mistakes';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: surfaces.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AimColors.primary200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AimColors.primary500, AimColors.primary600],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.menu_book_rounded,
+                    color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: surfaces.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.35,
+                        color: surfaces.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: surfaces.textMuted),
             ],
           ),
         ),
