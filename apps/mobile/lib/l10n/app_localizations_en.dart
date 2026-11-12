@@ -216,15 +216,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authAppleButton => 'Apple';
 
   @override
-  String get authFacebookButton => 'Facebook';
-
-  @override
   String get authContinueWithAppleSemantic =>
       'Continue with Apple (coming soon)';
-
-  @override
-  String get authContinueWithFacebookSemantic =>
-      'Continue with Facebook (coming soon)';
 
   @override
   String get authTestModeLabel => 'Test mode';
@@ -311,10 +304,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authSignUpWithAppleSemantic => 'Sign up with Apple (coming soon)';
-
-  @override
-  String get authSignUpWithFacebookSemantic =>
-      'Sign up with Facebook (coming soon)';
 
   @override
   String get authAgreeToTermsPrefix => 'By signing up you agree to AIM\'s ';

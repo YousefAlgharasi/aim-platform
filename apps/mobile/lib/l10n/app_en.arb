@@ -225,17 +225,9 @@
   "@authAppleButton": {
     "description": "Label for the (visual-only) Apple sign-in/sign-up button."
   },
-  "authFacebookButton": "Facebook",
-  "@authFacebookButton": {
-    "description": "Label for the (visual-only) Facebook sign-in/sign-up button."
-  },
   "authContinueWithAppleSemantic": "Continue with Apple (coming soon)",
   "@authContinueWithAppleSemantic": {
     "description": "Accessibility label for the disabled Apple sign-in button on the login page."
-  },
-  "authContinueWithFacebookSemantic": "Continue with Facebook (coming soon)",
-  "@authContinueWithFacebookSemantic": {
-    "description": "Accessibility label for the disabled Facebook sign-in button on the login page."
   },
   "authTestModeLabel": "Test mode",
   "@authTestModeLabel": {
@@ -348,10 +340,6 @@
   "authSignUpWithAppleSemantic": "Sign up with Apple (coming soon)",
   "@authSignUpWithAppleSemantic": {
     "description": "Accessibility label for the disabled Apple sign-up button on the register page."
-  },
-  "authSignUpWithFacebookSemantic": "Sign up with Facebook (coming soon)",
-  "@authSignUpWithFacebookSemantic": {
-    "description": "Accessibility label for the disabled Facebook sign-up button on the register page."
   },
   "authAgreeToTermsPrefix": "By signing up you agree to AIM's ",
   "@authAgreeToTermsPrefix": {

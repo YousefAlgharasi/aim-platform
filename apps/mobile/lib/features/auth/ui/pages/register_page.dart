@@ -327,28 +327,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: AimSpacing.formFieldGap),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: _RegFigmaSocialButton(
-                        icon: const _RegGoogleLogo(),
-                        label: 'Google',
-                        onPressed: formState.isSubmitting
-                            ? null
-                            : () => ref
-                                .read(registerProvider.notifier)
-                                .submitGoogleLogin(l10n),
-                      ),
-                    ),
-                    const SizedBox(width: AimSpacing.componentGap),
-                    Expanded(
-                      child: _RegFigmaSocialButton(
-                        icon: const _RegFacebookLogo(),
-                        label: 'Facebook',
-                        onPressed: () {},
-                      ),
-                    ),
-                  ],
+                _RegFigmaSocialButton(
+                  icon: const _RegGoogleLogo(),
+                  label: 'Google',
+                  onPressed: formState.isSubmitting
+                      ? null
+                      : () => ref
+                          .read(registerProvider.notifier)
+                          .submitGoogleLogin(l10n),
                 ),
                 const SizedBox(height: AimSpacing.space24),
 
@@ -883,17 +869,3 @@ class _RegGooglePainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter old) => false;
 }
-
-class _RegFacebookLogo extends StatelessWidget {
-  const _RegFacebookLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Icon(
-      Icons.facebook,
-      size: 20,
-      color: Color(0xFF1877F2),
-    );
-  }
-}
-
