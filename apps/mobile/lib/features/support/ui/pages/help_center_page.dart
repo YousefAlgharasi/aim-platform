@@ -11,6 +11,7 @@ import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
+import '../../data/models/support_models.dart';
 import '../../logic/provider/support_provider.dart';
 import '../widgets/help_faq_accordion.dart';
 
@@ -127,53 +128,6 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
     final tickets = ref.watch(ticketListProvider);
     final categories = _categories(context);
 
-    Widget actionCard(IconData icon, String title, String desc, VoidCallback onTap) {
-      return AIMCard(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: const BoxDecoration(
-                  color: AimColors.primary500,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: AimSpacing.componentGap),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AimTextStyles.bodyLg.copyWith(
-                        color: surfaces.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      desc,
-                      style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left_rounded
-                    : Icons.chevron_right_rounded,
-                color: surfaces.textMuted,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: surfaces.background,
       body: SafeArea(
@@ -184,22 +138,49 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
             padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
             children: [
               PageTitleBar(title: context.tr('Help & Support', 'المساعدة والدعم')),
-              const SizedBox(height: AimSpacing.sectionGap),
-              actionCard(
-                Icons.assignment_outlined,
-                context.tr('Submit a Ticket', 'أرسل تذكرة'),
-                context.tr('Report an issue or ask for help', 'أبلغ عن مشكلة أو اطلب المساعدة'),
-                () => context.push(AppRoutePaths.createTicket),
-              ),
-              const SizedBox(height: AimSpacing.componentGap),
-              actionCard(
-                Icons.chat_bubble_outline_rounded,
-                context.tr('Send Feedback', 'أرسل ملاحظاتك'),
-                context.tr('Share your thoughts and suggestions', 'شاركنا رأيك واقتراحاتك'),
-                () => context.push(AppRoutePaths.feedback),
+              const SizedBox(height: AimSpacing.space4),
+              Text(
+                context.tr(
+                  'Find quick answers, or reach our team.',
+                  'اعثر على إجابات سريعة، أو تواصل مع فريقنا.',
+                ),
+                style: AimTextStyles.bodyMd.copyWith(color: surfaces.textMuted),
               ),
               const SizedBox(height: AimSpacing.sectionGap),
-              _SectionTitle(context.tr('My Tickets', 'تذاكري')),
+              _ActionTile(
+                icon: Icons.assignment_outlined,
+                tone: AimColors.primary500,
+                title: context.tr('Submit a Ticket', 'أرسل تذكرة'),
+                subtitle: context.tr('Report an issue or ask for help', 'أبلغ عن مشكلة أو اطلب المساعدة'),
+                onTap: () => context.push(AppRoutePaths.createTicket),
+              ),
+              const SizedBox(height: AimSpacing.listItemGap),
+              _ActionTile(
+                icon: Icons.chat_bubble_outline_rounded,
+                tone: AimColors.success500,
+                title: context.tr('Send Feedback', 'أرسل ملاحظاتك'),
+                subtitle: context.tr('Share your thoughts and ideas', 'شاركنا رأيك واقتراحاتك'),
+                onTap: () => context.push(AppRoutePaths.feedback),
+              ),
+              const SizedBox(height: AimSpacing.listItemGap),
+              _ActionTile(
+                icon: Icons.monitor_heart_outlined,
+                tone: AimColors.warning500,
+                title: context.tr('System status', 'حالة النظام'),
+                subtitle: context.tr('Check if everything is running', 'تحقق من أن كل شيء يعمل'),
+                onTap: () => context.push(AppRoutePaths.supportStatus),
+              ),
+              const SizedBox(height: AimSpacing.sectionGap),
+              Row(
+                children: [
+                  Expanded(child: _SectionTitle(context.tr('My Tickets', 'تذاكري'))),
+                  if (tickets is AppAsyncSuccess<List<SupportTicket>> && tickets.data.length > 3)
+                    TextButton(
+                      onPressed: () => context.push(AppRoutePaths.ticketList),
+                      child: Text(context.tr('View all', 'عرض الكل')),
+                    ),
+                ],
+              ),
               const SizedBox(height: AimSpacing.componentGap),
               switch (tickets) {
                 AppAsyncLoading() || AppAsyncIdle() => const Padding(
@@ -234,50 +215,19 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
                       )
                     : Column(
                         children: [
-                          for (final t in data) ...[
-                            AIMCard(
+                          for (final t in data.take(3)) ...[
+                            _TicketTile(
+                              subject: t.subject,
+                              meta: '${_label(t.category)} · ${t.createdAt.year}-${t.createdAt.month.toString().padLeft(2, '0')}-${t.createdAt.day.toString().padLeft(2, '0')}',
+                              statusLabel: _status(context, t.status),
+                              statusColor: switch (t.status) {
+                                'resolved' => AimColors.success500,
+                                'closed' => surfaces.textMuted,
+                                _ => AimColors.primary500,
+                              },
                               onTap: () => context.push(
                                 AppRoutePaths.ticketDetail,
                                 extra: {'ticketId': t.id},
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            t.subject,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AimTextStyles.bodyMd.copyWith(
-                                              color: surfaces.textPrimary,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${_label(t.category)} · ${t.createdAt.year}-${t.createdAt.month.toString().padLeft(2, '0')}-${t.createdAt.day.toString().padLeft(2, '0')}',
-                                            style: AimTextStyles.caption.copyWith(
-                                              color: surfaces.textMuted,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: AimSpacing.space8),
-                                    StatusChip(
-                                      label: _status(context, t.status),
-                                      color: switch (t.status) {
-                                        'resolved' => AimColors.success500,
-                                        'closed' => surfaces.textMuted,
-                                        _ => AimColors.primary500,
-                                      },
-                                    ),
-                                  ],
-                                ),
                               ),
                             ),
                             const SizedBox(height: AimSpacing.listItemGap),
@@ -296,9 +246,9 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
               AIMButton(
                 fullWidth: true,
                 variant: AIMButtonVariant.secondary,
-                leadingIcon: const Icon(Icons.info_outline),
-                onPressed: () => context.push(AppRoutePaths.supportStatus),
-                child: Text(context.tr('System status', 'حالة النظام')),
+                leadingIcon: const Icon(Icons.new_releases_outlined),
+                onPressed: () => context.push(AppRoutePaths.releaseNotes),
+                child: Text(context.tr("What's new", 'ما الجديد')),
               ),
               const SizedBox(height: AimSpacing.space24),
             ],
@@ -331,4 +281,136 @@ class _SectionTitle extends StatelessWidget {
         text,
         style: AimTextStyles.h3.copyWith(color: aimSurfacesOf(context).textPrimary),
       );
+}
+
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.tone,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color tone;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final radius = BorderRadius.circular(AimRadius.lg);
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: Material(
+        color: Color.alphaBlend(tone.withValues(alpha: dark ? 0.14 : 0.08), surfaces.surface),
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: tone.withValues(alpha: dark ? 0.25 : 0.16),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 22, color: tone),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AimTextStyles.bodyLg.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                  color: surfaces.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TicketTile extends StatelessWidget {
+  const _TicketTile({
+    required this.subject,
+    required this.meta,
+    required this.statusLabel,
+    required this.statusColor,
+    required this.onTap,
+  });
+
+  final String subject;
+  final String meta;
+  final String statusLabel;
+  final Color statusColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return AIMCard(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subject,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AimTextStyles.bodyMd.copyWith(
+                      color: surfaces.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    meta,
+                    style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AimSpacing.space8),
+            StatusChip(label: statusLabel, color: statusColor),
+          ],
+        ),
+      ),
+    );
+  }
 }
