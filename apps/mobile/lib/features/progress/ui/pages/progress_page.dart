@@ -39,6 +39,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -48,6 +49,9 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.da
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
+import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
+import 'package:aim_mobile/features/reviews/ui/due_review_actions.dart';
+import 'package:aim_mobile/features/reviews/ui/widgets/due_review_tile.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
@@ -107,6 +111,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
           bearerToken: token,
           studentId: contextData.user.id,
         );
+    ref.invalidate(dueReviewsProvider);
   }
 
   @override
@@ -160,6 +165,10 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
                           AppAsyncSuccess(:final data) => data.goal,
                           _ => null,
                         },
+                        weekly: switch (homeState) {
+                          AppAsyncSuccess(:final data) => data.engagementStats?.weeklyActivity,
+                          _ => null,
+                        },
                         onRefresh: _refresh,
                       ),
                 AppAsyncIdle() => const AIMFullScreenLoading(
@@ -173,30 +182,27 @@ class _ProgressPageState extends ConsumerState<ProgressPage> {
   }
 }
 
-class _ProgressContent extends StatefulWidget {
+class _ProgressContent extends ConsumerStatefulWidget {
   const _ProgressContent({
     required this.data,
     required this.goal,
+    required this.weekly,
     required this.onRefresh,
   });
 
   final AimResultsData data;
   final HomeEngagementGoal? goal;
+
+  /// Backend XP per day for the current week, or null when unavailable.
+  final List<HomeWeeklyActivityDay>? weekly;
   final Future<void> Function() onRefresh;
 
   @override
-  State<_ProgressContent> createState() => _ProgressContentState();
+  ConsumerState<_ProgressContent> createState() => _ProgressContentState();
 }
 
-class _ProgressContentState extends State<_ProgressContent> {
-  int _selectedTab = 0; // 0: Overview, 1: Skills, 2: Weaknesses, 3: Schedule
-
-  int? get _averageMasteryPct {
-    if (widget.data.skillStates.isEmpty) return null;
-    final sum =
-        widget.data.skillStates.fold<double>(0, (acc, s) => acc + s.masteryScore);
-    return ((sum / widget.data.skillStates.length) * 100).round();
-  }
+class _ProgressContentState extends ConsumerState<_ProgressContent> {
+  int _tab = 0; // 0 Overview, 1 Skills, 2 Focus areas, 3 Reviews
 
   @override
   Widget build(BuildContext context) {
@@ -204,687 +210,442 @@ class _ProgressContentState extends State<_ProgressContent> {
       return AIMEmptyState(
         icon: const Icon(Icons.insights_outlined),
         title: AppLocalizations.of(context).progressNoProgressData,
-        subtitle:
-            'Complete lessons and practice sessions to see your AIM progress.',
+        subtitle: context.tr(
+          'Complete lessons and practice sessions to see your AIM progress.',
+          'أكمل الدروس وجلسات التدريب لترى تقدّمك.',
+        ),
       );
     }
+
+    final titles = ref.watch(skillTitlesProvider).valueOrNull ?? const <String, String>{};
+    final due = ref.watch(dueReviewsProvider);
+
+    final tabs = [
+      (Icons.dashboard_rounded, context.tr('Overview', 'نظرة عامة')),
+      (Icons.auto_stories_rounded, context.tr('Skills', 'المهارات')),
+      (Icons.flag_rounded, context.tr('Focus Areas', 'نقاط التركيز')),
+      (Icons.replay_rounded, context.tr('Reviews', 'المراجعات')),
+    ];
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 72),
         children: [
-          // Segmented Sub-Tab Switcher matching prototype
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AimColors.neutral200.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(14),
-            ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildSubTabButton(0, 'Overview'),
-                _buildSubTabButton(1, 'Skills'),
-                _buildSubTabButton(2, 'Focus Areas'),
-                _buildSubTabButton(3, 'Schedule'),
+                for (var i = 0; i < tabs.length; i++)
+                  _TabPill(
+                    icon: tabs[i].$1,
+                    label: tabs[i].$2,
+                    selected: _tab == i,
+                    onTap: () => setState(() => _tab = i),
+                  ),
               ],
             ),
           ),
-
-          const SizedBox(height: 20),
-
-          if (_selectedTab == 0) ..._buildOverviewTab(),
-          if (_selectedTab == 1) ..._buildSkillsTab(),
-          if (_selectedTab == 2) ..._buildWeaknessesTab(),
-          if (_selectedTab == 3) ..._buildScheduleTab(),
+          const SizedBox(height: AimSpacing.sectionGap),
+          if (_tab == 0) ..._overview(titles, due),
+          if (_tab == 1) ..._skills(titles),
+          if (_tab == 2) ..._focus(titles),
+          if (_tab == 3) ..._reviews(titles, due),
         ],
       ),
     );
   }
 
-  Widget _buildSubTabButton(int index, String label) {
-    final isSelected = _selectedTab == index;
-    final colorScheme = Theme.of(context).colorScheme;
-    final surfaces = aimSurfacesOf(context);
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() => _selectedTab = index),
-        borderRadius: BorderRadius.circular(10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            color: isSelected ? surfaces.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: surfaces.textPrimary.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    )
-                  ]
-                : null,
-          ),
-          child: Center(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? colorScheme.primary : surfaces.textSecondary,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // ── Overview ──────────────────────────────────────────────────────────────
 
-  List<Widget> _buildOverviewTab() {
+  List<Widget> _overview(Map<String, String> titles, AsyncValue<List<DueReview>> due) {
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
+    final weak = widget.data.weaknessRecords
+        .where((w) => w.status.toLowerCase() != 'resolved')
+        .toList();
+    final dueList = due.valueOrNull ?? const <DueReview>[];
+
     return [
-      // Top 2 Stat Cards matching prototype
-      Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              val: _averageMasteryPct != null ? '$_averageMasteryPct%' : '--',
-              label: l10n.progressAvgMastery,
-              icon: Icons.bolt_rounded,
-              color: AimColors.primary500,
-            ),
+      _TileGrid(
+        tiles: [
+          _Tile(
+            icon: Icons.auto_stories_rounded,
+            tone: AimColors.primary500,
+            value: '${widget.data.skillStates.length}',
+            label: context.tr('Skills tracked', 'مهارات متابَعة'),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildStatCard(
-              val: '${widget.goal?.streakDays ?? 0}',
-              label: l10n.progressDayStreak,
-              icon: Icons.local_fire_department_rounded,
-              color: AimColors.warning500,
-            ),
+          _Tile(
+            icon: Icons.local_fire_department_rounded,
+            tone: const Color(0xFFFF7A1A),
+            value: '${widget.goal?.streakDays ?? 0}',
+            label: l10n.progressDayStreak,
           ),
         ],
       ),
-
-      const SizedBox(height: 16),
-
-      _ProgressNavRow(
+      const SizedBox(height: AimSpacing.sectionGap),
+      _NavRow(
         icon: Icons.auto_stories_outlined,
         title: l10n.progressSkillStates,
         subtitle: '${widget.data.skillStates.length} skills tracked',
         onTap: () => context.push(AppRoutePaths.skillState),
       ),
-      const SizedBox(height: 10),
-      _ProgressNavRow(
+      const SizedBox(height: AimSpacing.componentGap),
+      _NavRow(
         icon: Icons.flag_outlined,
         title: l10n.progressWeaknesses,
         subtitle: '${widget.data.weaknessRecords.length} focus areas',
         onTap: () => context.push(AppRoutePaths.weaknessSummary),
       ),
-      const SizedBox(height: 10),
-      _ProgressNavRow(
+      const SizedBox(height: AimSpacing.componentGap),
+      _NavRow(
         icon: Icons.lightbulb_outline,
         title: l10n.progressRecommendations,
         subtitle: '${widget.data.recommendations.length} from AIM',
         onTap: () => context.push(AppRoutePaths.recommendations),
       ),
-      const SizedBox(height: 10),
-      _ProgressNavRow(
+      const SizedBox(height: AimSpacing.componentGap),
+      _NavRow(
         icon: Icons.schedule_outlined,
         title: l10n.progressReviewSchedule,
-        subtitle: '${widget.data.reviewSchedules.length} reviews scheduled',
+        subtitle: due.hasValue
+            ? fill(context.tr('{n} due now', '{n} مستحقة الآن'), {'n': dueList.length})
+            : context.tr('Checking…', 'جارٍ التحقق…'),
         onTap: () => context.push(AppRoutePaths.reviewSchedule),
       ),
-
-      const SizedBox(height: 20),
-
-      // Weekly Activity Chart Card matching prototype
-      Builder(
-        builder: (context) {
-          final surfaces = aimSurfacesOf(context);
-          final colorScheme = Theme.of(context).colorScheme;
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: surfaces.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: surfaces.border),
-              boxShadow: [
-                BoxShadow(
-                  color: surfaces.textPrimary.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context).progressWeeklyActivity,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: surfaces.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          AppLocalizations.of(context).progressDailyAverageMins(35),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: surfaces.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context).progressTotalMins(245),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 100,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _buildBar('Mon', 0.45, '25m'),
-                      _buildBar('Tue', 0.75, '40m'),
-                      _buildBar('Wed', 0.55, '30m'),
-                      _buildBar('Thu', 0.95, '50m'),
-                      _buildBar('Fri', 0.65, '35m'),
-                      _buildBar('Sat', 0.85, '45m'),
-                      _buildBar('Sun', 0.60, '30m'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-
-      const SizedBox(height: 20),
-
-      // Focus Areas Preview matching prototype
-      if (widget.data.weaknessRecords.isNotEmpty) ...[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              AppLocalizations.of(context).progressWeaknessRecordsHeader(widget.data.weaknessRecords.length),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: aimSurfacesOf(context).textMuted,
-                letterSpacing: 1.0,
-              ),
-            ),
-            InkWell(
-              onTap: () => context.push(AppRoutePaths.weaknessSummary),
-              child: Text(
-                AppLocalizations.of(context).progressViewAll,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        for (final w in widget.data.weaknessRecords.take(3))
-          Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: aimSurfacesOf(context).surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: aimSurfacesOf(context).border),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AimColors.error50,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.flag_rounded, color: AimColors.error600, size: 16),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    _prettifySkillId(w.skillId),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: aimSurfacesOf(context).textPrimary,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AimColors.error50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context).progressPriorityLabel(w.severity.toUpperCase()),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AimColors.error600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      if (widget.weekly != null && widget.weekly!.any((d) => d.xp > 0)) ...[
+        const SizedBox(height: AimSpacing.sectionGap),
+        _WeeklyXp(days: widget.weekly!),
       ],
+      if (weak.isNotEmpty) ...[
+        const SizedBox(height: AimSpacing.sectionGap),
+        _SectionHeader(
+          icon: Icons.flag_rounded,
+          title: context.tr('Focus areas', 'نقاط التركيز'),
+          actionLabel: context.tr('See all', 'عرض الكل'),
+          onAction: () => setState(() => _tab = 2),
+        ),
+        const SizedBox(height: AimSpacing.componentGap),
+        for (final w in weak.take(3)) ...[
+          _WeaknessRow(name: skillName(titles, w.skillId), severity: w.severity),
+          const SizedBox(height: AimSpacing.componentGap),
+        ],
+      ],
+      if (dueList.isNotEmpty) ...[
+        const SizedBox(height: AimSpacing.space8),
+        _SectionHeader(
+          icon: Icons.replay_rounded,
+          title: context.tr('Reviews due', 'مراجعات مستحقة'),
+          actionLabel: context.tr('See all', 'عرض الكل'),
+          onAction: () => setState(() => _tab = 3),
+        ),
+        const SizedBox(height: AimSpacing.componentGap),
+        for (final r in dueList.take(3)) ...[
+          DueReviewTile(
+            name: dueReviewName(r, titles),
+            dueAt: r.dueAt,
+            severity: r.severity,
+            onTap: () => openDueReview(context, ref, r),
+          ),
+          const SizedBox(height: AimSpacing.componentGap),
+        ],
+      ],
+      SizedBox(height: AimSpacing.space4, child: ColoredBox(color: surfaces.background)),
     ];
   }
 
-  List<Widget> _buildSkillsTab() {
+  // ── Skills ────────────────────────────────────────────────────────────────
+
+  List<Widget> _skills(Map<String, String> titles) {
     final skills = widget.data.skillStates;
-    final surfaces = aimSurfacesOf(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            AppLocalizations.of(context).progressTrackedSkillsHeader(skills.length),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: surfaces.textMuted,
-              letterSpacing: 1.0,
-            ),
-          ),
-          InkWell(
-            onTap: () => context.push(AppRoutePaths.skillState),
-            child: Text(
-              AppLocalizations.of(context).progressViewFullTable,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      for (final skill in skills) ...[
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: surfaces.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      _prettifySkillId(skill.skillId),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${(skill.masteryScore * 100).round()}%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: skill.masteryScore.clamp(0.0, 1.0),
-                  minHeight: 6,
-                  backgroundColor: colorScheme.primaryContainer,
-                  valueColor: AlwaysStoppedAnimation(colorScheme.primary),
-                ),
-              ),
-            ],
+    if (skills.isEmpty) {
+      return [
+        AIMEmptyState(
+          icon: const Icon(Icons.auto_stories_outlined),
+          title: context.tr('No skills tracked yet', 'لا توجد مهارات بعد'),
+          subtitle: context.tr(
+            'Practise a lesson and your skills appear here.',
+            'تدرّب على درس لتظهر مهاراتك هنا.',
           ),
         ),
+      ];
+    }
+    return [
+      for (final s in skills) ...[
+        _SkillRow(
+          name: skillName(titles, s.skillId),
+          mastery: s.masteryScore,
+          trend: s.masteryTrend,
+        ),
+        const SizedBox(height: AimSpacing.componentGap),
       ],
     ];
   }
 
-  List<Widget> _buildWeaknessesTab() {
-    final weaknesses = widget.data.weaknessRecords;
-    final surfaces = aimSurfacesOf(context);
+  // ── Focus areas ───────────────────────────────────────────────────────────
+
+  List<Widget> _focus(Map<String, String> titles) {
+    final all = widget.data.weaknessRecords;
+    if (all.isEmpty) {
+      return [
+        AIMEmptyState(
+          icon: const Icon(Icons.flag_outlined),
+          title: AppLocalizations.of(context).progressNoWeaknesses,
+        ),
+      ];
+    }
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            AppLocalizations.of(context).progressWeaknessRecordsHeader(weaknesses.length),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: surfaces.textMuted,
-              letterSpacing: 1.0,
-            ),
-          ),
-          InkWell(
-            onTap: () => context.push(AppRoutePaths.weaknessSummary),
-            child: Text(
-              AppLocalizations.of(context).progressViewAll,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      if (weaknesses.isEmpty)
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(AppLocalizations.of(context).progressNoWeaknesses),
-          ),
+      for (final w in all) ...[
+        _WeaknessRow(
+          name: skillName(titles, w.skillId),
+          severity: w.severity,
+          resolved: w.status.toLowerCase() == 'resolved',
         ),
-      for (final w in weaknesses) ...[
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: surfaces.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      _prettifySkillId(w.skillId),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AimColors.error50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context).progressPriorityLabel(w.severity.toUpperCase()),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: AimColors.error600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                AppLocalizations.of(context).progressWeakSpotIdentified,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: surfaces.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
+        const SizedBox(height: AimSpacing.componentGap),
       ],
     ];
   }
 
-  List<Widget> _buildScheduleTab() {
-    final schedules = widget.data.reviewSchedules;
-    final surfaces = aimSurfacesOf(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            AppLocalizations.of(context).progressReviewScheduleHeader(schedules.length),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: surfaces.textMuted,
-              letterSpacing: 1.0,
-            ),
+  // ── Reviews (due, weak skills only) ───────────────────────────────────────
+
+  List<Widget> _reviews(Map<String, String> titles, AsyncValue<List<DueReview>> due) {
+    return due.when(
+      loading: () => [const SizedBox(height: 160, child: AIMFullScreenLoading())],
+      error: (e, _) => [
+        SizedBox(
+          height: 260,
+          child: AIMFullScreenError(
+            message: context.tr('Could not load your reviews.', 'تعذّر تحميل مراجعاتك.'),
+            onRetry: () => ref.invalidate(dueReviewsProvider),
           ),
-          InkWell(
-            onTap: () => context.push(AppRoutePaths.reviewSchedule),
-            child: Text(
-              AppLocalizations.of(context).progressViewFullSchedule,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.primary,
+        ),
+      ],
+      data: (list) {
+        if (list.isEmpty) {
+          return [
+            AIMEmptyState(
+              icon: const Icon(Icons.check_circle_outline_rounded),
+              title: context.tr('No reviews due', 'لا توجد مراجعات مستحقة'),
+              subtitle: context.tr(
+                'Reviews appear here for your weak skills when they are due.',
+                'تظهر هنا مراجعات مهاراتك الضعيفة عندما يحين موعدها.',
               ),
             ),
+          ];
+        }
+        return [
+          Text(
+            context.tr(
+              'Tap a review to practise that skill.',
+              'اضغط على مراجعة لتتدرّب على هذه المهارة.',
+            ),
+            style: AimTextStyles.bodySm.copyWith(color: aimSurfacesOf(context).textMuted),
           ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      for (final s in schedules) ...[
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
+          const SizedBox(height: AimSpacing.componentGap),
+          for (final r in list) ...[
+            DueReviewTile(
+              name: dueReviewName(r, titles),
+              dueAt: r.dueAt,
+              severity: r.severity,
+              onTap: () => openDueReview(context, ref, r),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
+          ],
+        ];
+      },
+    );
+  }
+}
+
+// ── Building blocks ──────────────────────────────────────────────────────────
+
+class _TabPill extends StatelessWidget {
+  const _TabPill({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final primary = Theme.of(context).colorScheme.primary;
+    final fg = selected ? Colors.white : surfaces.textSecondary;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: surfaces.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: surfaces.border),
+            color: selected ? primary : surfaces.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: selected ? primary : surfaces.border),
+            boxShadow: [
+              BoxShadow(
+                color: primary.withValues(alpha: selected ? 0.28 : 0.06),
+                blurRadius: selected ? 12 : 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _prettifySkillId(s.skillId),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: surfaces.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppLocalizations.of(context).progressIntervalAndRep(s.intervalDays.round(), s.repetitionCount),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: surfaces.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: s.status == 'due' ? AimColors.error50 : surfaces.surfaceSunken,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  s.status.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: s.status == 'due' ? AimColors.error500 : surfaces.textSecondary,
-                  ),
+              Icon(icon, size: 18, color: fg),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+                  color: fg,
                 ),
               ),
             ],
           ),
         ),
-      ],
-    ];
+      ),
+    );
   }
+}
 
-  Widget _buildStatCard({
-    required String val,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    final surfaces = aimSurfacesOf(context);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: surfaces.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: surfaces.border),
-        boxShadow: [
-          BoxShadow(
-            color: surfaces.textPrimary.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+/// Two equal tiles side by side.
+class _TileGrid extends StatelessWidget {
+  const _TileGrid({required this.tiles});
+
+  final List<Widget> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    return SizedBox(
+      height: 76 * scale,
+      child: Row(
+        children: [
+          Expanded(child: tiles[0]),
+          const SizedBox(width: AimSpacing.componentGap),
+          Expanded(child: tiles[1]),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+    );
+  }
+}
+
+class _Tile extends StatelessWidget {
+  const _Tile({
+    required this.icon,
+    required this.tone,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final Color tone;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(tone.withValues(alpha: dark ? 0.14 : 0.08), surfaces.surface),
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: tone.withValues(alpha: dark ? 0.30 : 0.22)),
+      ),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: surfaces.textSecondary,
-                  ),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: tone.withValues(alpha: dark ? 0.25 : 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 22, color: tone),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: AimTextStyles.h3.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            val,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: surfaces.textPrimary,
+                Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildBar(String day, double heightPct, String val) {
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final IconData icon;
+  final String title;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return Row(
       children: [
-        Text(
-          val,
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w600,
-            color: surfaces.textMuted,
+        Icon(icon, size: 22, color: AimColors.primary500),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AimTextStyles.h3.copyWith(
+              color: surfaces.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
-        const SizedBox(height: 4),
-        Container(
-          width: 18,
-          height: 60 * heightPct,
-          decoration: BoxDecoration(
-            color: heightPct > 0.8 ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(6),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          day,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: surfaces.textSecondary,
-          ),
-        ),
+        TextButton(onPressed: onAction, child: Text(actionLabel)),
       ],
     );
   }
 }
 
-String _prettifySkillId(String skillId) {
-  final lastSegment = skillId.split(':').last;
-  final words = lastSegment
-      .split(RegExp(r'[_\-]+'))
-      .where((w) => w.isNotEmpty)
-      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
-  final label = words.join(' ');
-  return label.isEmpty ? skillId : label;
-}
-
-
-
-/// Tappable "title + subtitle + chevron" navigation row used for the hub's
-/// four destination links. Built as a clean, simple row on top of [AIMCard]
-/// (interactive) rather than reusing [AIMAppDrawer]'s item widget, which is
-/// specific to the side-drawer's Material/selected-state styling.
-class _ProgressNavRow extends StatelessWidget {
-  const _ProgressNavRow({
+/// "Title + subtitle + arrow" row for the four sub-pages, in the same card
+/// style as the rest of the app.
+class _NavRow extends StatelessWidget {
+  const _NavRow({
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -899,51 +660,287 @@ class _ProgressNavRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
-
-    return AIMCard(
-      variant: AIMCardVariant.elevated,
-      interactive: true,
-      onTap: onTap,
-      semanticLabel: '$title, $subtitle',
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AimSizes.touchTarget),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AimSizes.iconMd,
-              color: AimColors.primary500,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Semantics(
+      button: true,
+      label: '$title, $subtitle',
+      child: Material(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AimRadius.lg),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AimRadius.lg),
+              border: Border.all(color: surfaces.border),
             ),
-            const SizedBox(width: AimSpacing.componentGap),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: AimTextStyles.title
-                        .copyWith(color: surfaces.textPrimary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AimColors.primary500.withValues(alpha: dark ? 0.22 : 0.12),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: AimSpacing.space4),
-                  Text(
-                    subtitle,
-                    style: AimTextStyles.bodySm
-                        .copyWith(color: surfaces.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Icon(icon, size: 22, color: AimColors.primary500),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.bodyMd.copyWith(
+                          color: surfaces.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+                Icon(
+                  rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                  color: surfaces.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One weakness: the skill's real name and how serious it is.
+class _WeaknessRow extends StatelessWidget {
+  const _WeaknessRow({required this.name, required this.severity, this.resolved = false});
+
+  final String name;
+  final String severity;
+  final bool resolved;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final sev = severity.toLowerCase();
+    final (String label, Color tone) = resolved
+        ? (context.tr('Fixed', 'تم الإصلاح'), AimColors.success500)
+        : switch (sev) {
+            'critical' => (context.tr('Needs focus', 'يحتاج تركيزاً'), AimColors.error500),
+            'developing' => (context.tr('Getting there', 'في تحسّن'), const Color(0xFFE08A00)),
+            _ => (context.tr('Just spotted', 'اكتُشف للتو'), surfaces.textMuted),
+          };
+    return Container(
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: tone.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              resolved ? Icons.check_rounded : Icons.flag_rounded,
+              size: 22,
+              color: tone,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AimTextStyles.bodyMd.copyWith(
+                color: surfaces.textPrimary,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: surfaces.textMuted,
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: tone.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(100),
             ),
-          ],
-        ),
+            child: Text(
+              label,
+              style: AimTextStyles.caption.copyWith(color: tone, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One skill with its backend mastery and trend.
+class _SkillRow extends StatelessWidget {
+  const _SkillRow({required this.name, required this.mastery, required this.trend});
+
+  final String name;
+  final double mastery;
+  final String trend;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final pct = (mastery * 100).round().clamp(0, 100);
+    final t = trend.toLowerCase();
+    final trendIcon = t.contains('improv')
+        ? Icons.trending_up_rounded
+        : t.contains('declin')
+            ? Icons.trending_down_rounded
+            : Icons.trending_flat_rounded;
+    final trendColor = t.contains('improv')
+        ? AimColors.success500
+        : t.contains('declin')
+            ? AimColors.error500
+            : surfaces.textMuted;
+    return Container(
+      padding: const EdgeInsetsDirectional.all(12),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AimTextStyles.bodyMd.copyWith(
+                    color: surfaces.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Icon(trendIcon, size: 20, color: trendColor),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: (pct < 3 ? 3 : pct) / 100,
+                    minHeight: 8,
+                    color: AimColors.primary500,
+                    backgroundColor: surfaces.surfaceSunken,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '$pct%',
+                textDirection: TextDirection.ltr,
+                style: AimTextStyles.bodySm.copyWith(
+                  color: surfaces.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// This week's XP per day, from the backend (no invented numbers).
+class _WeeklyXp extends StatelessWidget {
+  const _WeeklyXp({required this.days});
+
+  final List<HomeWeeklyActivityDay> days;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final maxXp = days.fold<int>(1, (m, d) => d.xp > m ? d.xp : m);
+    const names = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    return Container(
+      padding: const EdgeInsetsDirectional.all(14),
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: BorderRadius.circular(AimRadius.lg),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr('XP this week', 'نقاط الخبرة هذا الأسبوع'),
+            style: AimTextStyles.bodyMd.copyWith(
+              color: surfaces.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 90,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (var i = 0; i < days.length; i++)
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          days[i].xp > 0 ? '${days[i].xp}' : '',
+                          style: AimTextStyles.caption.copyWith(color: surfaces.textMuted, fontSize: 10),
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          width: 14,
+                          height: 6 + 54 * (days[i].xp / maxXp),
+                          decoration: BoxDecoration(
+                            color: days[i].xp > 0
+                                ? AimColors.primary500
+                                : surfaces.surfaceSunken,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          names[i % 7],
+                          style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
