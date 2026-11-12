@@ -39,6 +39,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
@@ -76,6 +77,21 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  bool _idleLoadScheduled = false;
+
+  /// Idle means "not asked yet" (e.g. the provider was recreated); ask
+  /// instead of showing a skeleton nothing will ever replace.
+  Widget _idleBody(String label) {
+    if (!_idleLoadScheduled) {
+      _idleLoadScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _idleLoadScheduled = false;
+        if (mounted && ref.read(lessonDetailProvider) is AppAsyncIdle) _load();
+      });
+    }
+    return AIMFullScreenLoading(semanticLabel: label);
   }
 
   void _load() {
@@ -162,8 +178,17 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     );
     if (mounted) {
       _practiceCheckStarted = false;
-      ref.invalidate(chaptersProvider);
-      ref.invalidate(studentCoursesProvider);
+      // Progress changed: re-read what depends on it in place. The screens
+      // underneath keep showing their current data meanwhile (invalidating
+      // their providers instead would reset them to an empty state that
+      // nothing reloads, leaving them on a skeleton for good).
+      final token = ref.read(authFlowProvider).accessToken;
+      if (token != null && token.isNotEmpty) {
+        unawaited(ref.read(chaptersProvider.notifier).refreshQuietly(bearerToken: token));
+        unawaited(ref.read(lessonsListProvider.notifier).refreshQuietly(bearerToken: token));
+        unawaited(ref.read(studentCoursesProvider.notifier).refreshQuietly(bearerToken: token));
+      }
+      ref.invalidate(homeCoursesProvider);
       await _checkPracticeUnlock(detail);
       await _refresh();
     }
@@ -219,9 +244,7 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
               );
             },
           ),
-        AppAsyncIdle() => AIMFullScreenLoading(
-            semanticLabel: l10n.lessonsLoadingLessonSemantic,
-          ),
+        AppAsyncIdle() => _idleBody(l10n.lessonsLoadingLessonSemantic),
       },
     );
   }

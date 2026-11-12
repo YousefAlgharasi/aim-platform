@@ -6,7 +6,6 @@
 // modifies status, sortOrder, or any curriculum hierarchy value.
 
 import '../../logic/entity/lesson.dart';
-import 'lesson_explanation_model.dart';
 
 /// Data-layer model extending the [Lesson] domain entity.
 class LessonModel extends Lesson {
@@ -34,7 +33,64 @@ class LessonModel extends Lesson {
       xpValue: (json['xpValue'] as num?)?.toInt() ?? 0,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
-      explanation: LessonExplanationModel.tryParse(json['explanation']),
+      explanation: _parseExplanation(json['explanation']),
+    );
+  }
+
+  static String? _str(Object? v) {
+    if (v is! String) return null;
+    final t = v.trim();
+    return t.isEmpty ? null : t;
+  }
+
+  /// Reads the written explanation defensively: anything missing or the wrong
+  /// shape is skipped rather than failing the whole lesson.
+  static LessonExplanation? _parseExplanation(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final sections = <LessonExplanationSection>[];
+    final rawSections = raw['sections'];
+    for (final s in (rawSections is List ? rawSections : const [])) {
+      if (s is! Map<String, dynamic>) continue;
+      final heading = _str(s['heading']);
+      if (heading == null) continue;
+      final examples = <LessonExample>[];
+      final rawExamples = s['examples'];
+      for (final e in (rawExamples is List ? rawExamples : const [])) {
+        if (e is! Map<String, dynamic>) continue;
+        final text = _str(e['text']);
+        if (text != null) examples.add(LessonExample(text: text, note: _str(e['note'])));
+      }
+      sections.add(LessonExplanationSection(
+        heading: heading,
+        body: s['body'] is String ? s['body'] as String : '',
+        examples: examples,
+      ));
+    }
+    final keyPoints = [
+      for (final k in (raw['keyPoints'] is List ? raw['keyPoints'] as List : const []))
+        if (_str(k) != null) _str(k)!,
+    ];
+    final mistakes = <LessonMistake>[];
+    final rawMistakes = raw['commonMistakes'];
+    for (final m in (rawMistakes is List ? rawMistakes : const [])) {
+      if (m is! Map<String, dynamic>) continue;
+      final wrong = _str(m['wrong']);
+      final right = _str(m['right']);
+      if (wrong != null && right != null) {
+        mistakes.add(LessonMistake(wrong: wrong, right: right, why: _str(m['why']) ?? ''));
+      }
+    }
+    final overview = _str(raw['overview']) ?? '';
+    final recap = _str(raw['recap']);
+    if (overview.isEmpty && sections.isEmpty && keyPoints.isEmpty && mistakes.isEmpty && recap == null) {
+      return null;
+    }
+    return LessonExplanation(
+      overview: overview,
+      sections: sections,
+      keyPoints: keyPoints,
+      commonMistakes: mistakes,
+      recap: recap,
     );
   }
 

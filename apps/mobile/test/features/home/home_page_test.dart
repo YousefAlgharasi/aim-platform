@@ -20,6 +20,7 @@ import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
 import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/features/home/ui/pages/home_page.dart';
+import 'package:aim_mobile/features/home/ui/widgets/dashboard_sections.dart';
 import 'package:aim_mobile/features/home/ui/widgets/home_course_path_section.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/core/localization/localization.dart';
@@ -213,7 +214,7 @@ void main() {
         y('Word of the day'),
         y('XP level'),
         y('Top learners'),
-        y('1/2 today'),
+        y("Today's goal"),
         y('Daily challenge'),
         y('No activity this week'),
         y('Upcoming deadlines'),
@@ -222,6 +223,9 @@ void main() {
         expect(order[i], greaterThan(order[i - 1]), reason: 'section $i is out of order');
       }
       expect(find.byType(HomeCoursePathSection), findsOneWidget);
+      // The Word of the day card stays compact (it used to take over half a
+      // phone screen).
+      expect(tester.getSize(find.byType(WordOfDayCard)).height, lessThan(260));
     });
 
     testWidgets('shows error state with message', (tester) async {

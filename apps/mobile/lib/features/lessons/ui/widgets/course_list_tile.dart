@@ -8,18 +8,19 @@ import 'package:aim_mobile/features/course_billing/ui/widgets/course_billing_chi
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
-/// Distinct colors for each course card icon box to match Figma prototype.
-const List<Color> _kCourseIconBgColors = [
-  AimColors.primary400, // Purple (Starter)
-  AimColors.warning100, // Orange (A1.1)
-  AimColors.success100, // Soft Green (A1.2)
-  AimColors.error100, // Salmon/Peach (Writing 1)
-  AimColors.primary300, // Soft Purple (A2.1)
+/// A soft tone per course so the list has some life; the icon box is a
+/// tinted tile with a coloured icon (readable in light and dark).
+const List<Color> _kCourseTones = [
+  Color(0xFF3B82F6), // blue
+  Color(0xFFF59E0B), // amber
+  Color(0xFF10B981), // green
+  Color(0xFFEF6C57), // coral
+  Color(0xFF8B5CF6), // violet
 ];
 
 const List<IconData> _kCourseIcons = [
   Icons.menu_book_rounded,
-  Icons.chat_bubble_outline_rounded,
+  Icons.chat_bubble_rounded,
   Icons.auto_stories_rounded,
   Icons.school_rounded,
   Icons.menu_book_rounded,
@@ -41,7 +42,8 @@ class CourseListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconBgColor = _kCourseIconBgColors[index % _kCourseIconBgColors.length];
+    final tone = _kCourseTones[index % _kCourseTones.length];
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final iconData = _kCourseIcons[index % _kCourseIcons.length];
     final completed = model.status == StudentCourseStatus.completed;
     final inProgress = model.status == StudentCourseStatus.inProgress;
@@ -50,7 +52,7 @@ class CourseListTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: surfaces.surface,
         borderRadius: BorderRadius.circular(20),
@@ -58,13 +60,14 @@ class CourseListTile extends StatelessWidget {
           color: isCurrentEnrollment
               ? AimColors.primary400
               : surfaces.border,
-          width: isCurrentEnrollment ? 2 : 1,
+          width: isCurrentEnrollment ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: surfaces.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AimColors.primary500
+                .withValues(alpha: isCurrentEnrollment ? (dark ? 0.30 : 0.18) : (dark ? 0.10 : 0.06)),
+            blurRadius: isCurrentEnrollment ? 18 : 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -75,7 +78,7 @@ class CourseListTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,27 +86,26 @@ class CourseListTile extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Left Icon Container (Squircle)
+                    // Left icon tile: tinted square with a coloured icon.
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: locked ? iconBgColor.withValues(alpha: 0.4) : iconBgColor,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: locked
-                            ? null
-                            : [
-                                BoxShadow(
-                                  color: iconBgColor.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            tone.withValues(alpha: locked ? 0.10 : (dark ? 0.30 : 0.22)),
+                            tone.withValues(alpha: locked ? 0.05 : (dark ? 0.16 : 0.08)),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: tone.withValues(alpha: locked ? 0.15 : 0.30)),
                       ),
                       child: Icon(
                         iconData,
-                        color: Colors.white,
-                        size: 26,
+                        color: tone.withValues(alpha: locked ? 0.5 : 1),
+                        size: 28,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -182,10 +184,18 @@ class CourseListTile extends StatelessWidget {
 
                               // Lock Icon
                               if (locked) ...[
-                                const Icon(
-                                  Icons.lock_outline_rounded,
-                                  size: 18,
-                                  color: AimColors.neutral400,
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: surfaces.surfaceSunken,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 17,
+                                    color: surfaces.textMuted,
+                                  ),
                                 ),
                               ],
                             ],
@@ -235,7 +245,7 @@ class CourseListTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
                             value: model.percent / 100,
-                            minHeight: 6,
+                            minHeight: 8,
                             backgroundColor: surfaces.surfaceSunken,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               completed ? AimColors.success500 : colorScheme.primary,
@@ -259,23 +269,26 @@ class CourseListTile extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 // Metadata Row: Lessons, Quizzes, Exams
-                Row(
+                Wrap(
+                  spacing: 14,
+                  runSpacing: 6,
                   children: [
                     _buildMetaChip(
                       context,
-                      Icons.menu_book_outlined,
+                      Icons.menu_book_rounded,
+                      const Color(0xFF3B82F6),
                       AppLocalizations.of(context).lessonsCountChip(model.lessonCount),
                     ),
-                    const SizedBox(width: 12),
                     _buildMetaChip(
                       context,
-                      Icons.quiz_outlined,
+                      Icons.edit_note_rounded,
+                      const Color(0xFF10B981),
                       AppLocalizations.of(context).quizzesCountChip(model.quizCount),
                     ),
-                    const SizedBox(width: 12),
                     _buildMetaChip(
                       context,
-                      Icons.emoji_events_outlined,
+                      Icons.emoji_events_rounded,
+                      const Color(0xFFF59E0B),
                       AppLocalizations.of(context).examsCountChip(model.examCount),
                     ),
                   ],
@@ -320,7 +333,7 @@ class CourseListTile extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: surfaces.surfaceSunken,
+                        color: colorScheme.primary.withValues(alpha: dark ? 0.22 : 0.10),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -328,7 +341,7 @@ class CourseListTile extends StatelessWidget {
                             ? Icons.chevron_left_rounded
                             : Icons.chevron_right_rounded,
                         size: 20,
-                        color: surfaces.textSecondary,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
@@ -341,12 +354,12 @@ class CourseListTile extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaChip(BuildContext context, IconData icon, String label) {
+  Widget _buildMetaChip(BuildContext context, IconData icon, Color color, String label) {
     final surfaces = aimSurfacesOf(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: surfaces.textMuted),
+        Icon(icon, size: 16, color: color),
         const SizedBox(width: 4),
         Text(
           label,

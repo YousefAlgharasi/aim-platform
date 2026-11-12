@@ -16,6 +16,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/features/lessons/data/models/lesson_asset_model.dart';
+import 'package:aim_mobile/features/lessons/data/models/lesson_model.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 
@@ -149,6 +150,65 @@ void main() {
         assets: [LessonAssetModel.fromJson(fullJson)],
       );
       expect(detail.hasNoContent, isFalse);
+    });
+  });
+
+  group('LessonModel explanation', () {
+    Map<String, dynamic> lessonJson(Object? explanation) => {
+          'id': 'l1',
+          'chapterId': 'c1',
+          'title': 'T',
+          'status': 'published',
+          'sortOrder': 1,
+          'createdAt': 'x',
+          'updatedAt': 'y',
+          'explanation': explanation,
+        };
+
+    test('reads the full written explanation', () {
+      final m = LessonModel.fromJson(lessonJson({
+        'overview': 'Intro',
+        'sections': [
+          {
+            'heading': 'One',
+            'body': '- a',
+            'examples': [
+              {'text': 'I am', 'note': 'n'}
+            ],
+          },
+        ],
+        'keyPoints': ['k'],
+        'commonMistakes': [
+          {'wrong': 'w', 'right': 'r', 'why': 'y'}
+        ],
+        'recap': 'R',
+      }));
+      final e = m.explanation!;
+      expect(e.overview, 'Intro');
+      expect(e.sections.single.examples.single.note, 'n');
+      expect(e.keyPoints, ['k']);
+      expect(e.commonMistakes.single.right, 'r');
+      expect(e.recap, 'R');
+    });
+
+    test('odd shapes are skipped instead of failing the lesson', () {
+      final m = LessonModel.fromJson(lessonJson({
+        'overview': 'Intro',
+        'sections': [
+          {'heading': 'One', 'body': 42, 'examples': 'nope'},
+          'junk',
+        ],
+        'keyPoints': 'nope',
+        'commonMistakes': {'a': 1},
+      }));
+      expect(m.explanation!.sections.single.body, '');
+      expect(m.explanation!.sections.single.examples, isEmpty);
+      expect(m.explanation!.keyPoints, isEmpty);
+    });
+
+    test('no explanation stays null', () {
+      expect(LessonModel.fromJson(lessonJson(null)).explanation, isNull);
+      expect(LessonModel.fromJson(lessonJson({'overview': ''})).explanation, isNull);
     });
   });
 }

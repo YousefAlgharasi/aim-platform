@@ -112,7 +112,7 @@ void main() {
 
     expect(find.byType(TextField), findsNWidgets(4));
     expect(find.text('Google'), findsOneWidget);
-    expect(find.text('Facebook'), findsOneWidget);
+    expect(find.text('Facebook'), findsNothing);
     final signInLink = find.text('Sign In');
     await tester.scrollUntilVisible(
       signInLink,

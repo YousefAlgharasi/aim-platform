@@ -21,6 +21,7 @@ import 'package:aim_mobile/features/lessons/logic/entity/lesson_detail.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lesson_detail_notifier.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/features/lessons/logic/repository/lesson_detail_repository.dart';
+import 'package:aim_mobile/features/lessons/ui/pages/lesson_content_page.dart';
 import 'package:aim_mobile/features/lessons/ui/pages/lesson_detail_page.dart';
 import 'package:aim_mobile/features/lessons/ui/player/lesson_player.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/lessons_widgets.dart';
@@ -112,6 +113,126 @@ Future<void> _next(WidgetTester tester, String label) async {
 }
 
 void main() {
+  group('Content in reading', () {
+    testWidgets('the lesson page shows the card', (tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_wrap(
+        _page,
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Content in reading'), findsOneWidget);
+      expect(find.text('Explanation, examples and steps'), findsOneWidget);
+    });
+
+    testWidgets('the content page shows the written explanation like the web', (tester) async {
+      tester.view.physicalSize = const Size(900, 6000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final withExplanation = LessonDetail(
+        lesson: const Lesson(
+          id: 'lesson-1',
+          chapterId: 'chapter-1',
+          title: 'I Am Not / You Are Not',
+          description: '',
+          status: 'published',
+          sortOrder: 1,
+          xpValue: 0,
+          createdAt: '2025-01-01T00:00:00Z',
+          updatedAt: '2025-06-01T00:00:00Z',
+          explanation: LessonExplanation(
+            overview: 'In this lesson you will learn negative sentences.',
+            sections: [
+              LessonExplanationSection(
+                heading: 'Negative form of "to be"',
+                body: '- Use **am not** after I.\n- Use **isn\'t** after he, she, it.',
+                examples: [LessonExample(text: 'I am not happy today.', note: 'Shows "am not" with I')],
+              ),
+              LessonExplanationSection(heading: 'Short-answer practice', body: 'Answer with a negative.'),
+            ],
+            keyPoints: ['Use am not after I.'],
+            commonMistakes: [LessonMistake(wrong: 'I isn\'t', right: 'I am not', why: 'I goes with am.')],
+            recap: 'Pick the right contraction.',
+          ),
+        ),
+        assets: [_asset],
+      );
+
+      await tester.pumpWidget(_wrap(
+        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'x'),
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(withExplanation)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('In this lesson you will learn negative sentences.'), findsOneWidget);
+      expect(find.text('1. Negative form of "to be"'), findsOneWidget);
+      expect(find.text('2. Short-answer practice'), findsOneWidget);
+      expect(find.text('I am not happy today.'), findsOneWidget);
+      expect(find.text('Key points to remember'), findsOneWidget);
+      expect(find.text('Common mistakes'), findsOneWidget);
+      expect(find.textContaining('Quick recap'), findsOneWidget);
+      expect(find.text('Lesson materials'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a lesson with no content says so on the card and the page', (tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final overrides = [
+        lessonDetailProvider.overrideWith(
+          (ref) => _FakeLessonDetailNotifier(const AppAsyncState.success(_empty)),
+        ),
+      ];
+
+      await tester.pumpWidget(_wrap(_page, overrides: overrides));
+      await tester.pump();
+      expect(find.text('No content for this lesson yet'), findsOneWidget);
+
+      await tester.pumpWidget(_wrap(
+        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'x'),
+        overrides: overrides,
+      ));
+      await tester.pump();
+      expect(find.text('There is no content for this lesson yet'), findsOneWidget);
+    });
+
+    testWidgets('the content page lists every step in order', (tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(_wrap(
+        const LessonContentPage(lessonId: 'lesson-1', lessonTitle: 'Lesson 1: Introduction'),
+        overrides: [
+          lessonDetailProvider.overrideWith(
+            (ref) => _FakeLessonDetailNotifier(AppAsyncState.success(_populated)),
+          ),
+        ],
+      ));
+      await tester.pump();
+
+      expect(find.text('Lesson 1: Introduction'), findsOneWidget);
+      expect(find.text('Step 1'), findsOneWidget);
+      expect(find.byType(LessonContentRenderer), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('LessonDetailPage', () {
     testWidgets('shows loading state without crash', (tester) async {
       await _open(tester, const AppAsyncState.loading());

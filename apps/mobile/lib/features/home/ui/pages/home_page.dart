@@ -192,7 +192,6 @@ class _HomeContent extends ConsumerWidget {
             hasFailedSections: data.hasFailedSections,
             onRetry: onRefresh,
           ),
-          // The same order the web uses on a phone.
           const WordOfDayCard(),
           gap,
           const HomeCoursePathSection(),
@@ -201,7 +200,10 @@ class _HomeContent extends ConsumerWidget {
           gap,
           const LeaderboardCard(),
           gap,
-          DailyGoalCard(goal: data.goal),
+          DailyGoalCard(
+            goal: data.goal,
+            xpToday: data.engagementStats?.xpToday,
+          ),
           gap,
           ChallengesCard(fallback: data.dailyChallenge),
           if (data.dailyChallenge != null) gap,

@@ -9,6 +9,5 @@ export 'final_exam_summary.dart';
 export 'lesson.dart';
 export 'lesson_asset.dart';
 export 'lesson_detail.dart';
-export 'lesson_explanation.dart';
 export 'lesson_progress.dart';
 export 'level.dart';
