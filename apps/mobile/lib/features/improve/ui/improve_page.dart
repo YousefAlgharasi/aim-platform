@@ -11,6 +11,8 @@ import '../../aim_results/logic/provider/aim_results_provider.dart';
 import '../../auth/logic/provider/auth_context_provider.dart';
 import '../../auth/logic/provider/auth_flow_provider.dart';
 import '../../learner_tools/data/learner_tools_api.dart';
+import '../../reviews/ui/due_review_actions.dart';
+import '../../reviews/ui/widgets/due_review_tile.dart';
 import '../../shell/logic/main_shell_tab_provider.dart';
 
 /// One skill the student should work on, built from the backend's AIM outputs.
@@ -108,6 +110,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
 
   Future<void> _refresh() async {
     ref.invalidate(mistakesProvider(null));
+    ref.invalidate(dueReviewsProvider);
     await _load();
   }
 
@@ -148,13 +151,8 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
     final titles = ref.watch(skillTitlesProvider).valueOrNull ?? const <String, String>{};
     final spots = _buildWeakSpots(data);
     final fixed = data.weaknessRecords.where((w) => w.status.toLowerCase() == 'resolved').toList();
-    final dueReviews = data.reviewSchedules.where((r) {
-      final st = r.status.toLowerCase();
-      final due = DateTime.tryParse(r.dueAt);
-      return (st == 'due' || st == 'pending' || st == 'rescheduled') &&
-          due != null &&
-          !due.isAfter(DateTime.now());
-    }).toList();
+    // Due reviews for weak skills only, straight from the backend.
+    final dueReviews = ref.watch(dueReviewsProvider).valueOrNull ?? const <DueReview>[];
     final top = spots.isEmpty ? null : spots.first;
     final mistakeCount = mistakes?.total ?? 0;
 
@@ -191,7 +189,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               _StatTile(
                 icon: Icons.calendar_month_rounded,
                 tone: const Color(0xFFF59E0B),
-                value: '${dueReviews.length}',
+                value: ref.watch(dueReviewsProvider).hasValue ? '${dueReviews.length}' : '—',
                 label: context.tr('Reviews due', 'مراجعات مستحقة'),
                 onTap: () => context.push(AppRoutePaths.reviewSchedule),
               ),
@@ -272,33 +270,15 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
                 ),
               ],
             ),
-            AIMCard(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.all(AimSpacing.space16),
-                child: Column(
-                  children: [
-                    for (final r in dueReviews.take(4))
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                skillName(titles, r.skillId),
-                                style: AimTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                            Text(
-                              r.dueAt.length >= 10 ? r.dueAt.substring(0, 10) : r.dueAt,
-                              style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
+            for (final r in dueReviews.take(4)) ...[
+              DueReviewTile(
+                name: dueReviewName(r, titles),
+                dueAt: r.dueAt,
+                severity: r.severity,
+                onTap: () => openDueReview(context, ref, r),
               ),
-            ),
+              const SizedBox(height: AimSpacing.componentGap),
+            ],
           ],
           if (fixed.isNotEmpty) ...[
             const SizedBox(height: AimSpacing.sectionGap),
