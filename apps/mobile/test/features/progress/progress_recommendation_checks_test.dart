@@ -25,6 +25,7 @@
 // notifier pattern already used in test/features/home/home_page_test.dart.
 
 import 'package:flutter/material.dart';
+import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -44,7 +45,6 @@ import 'package:aim_mobile/features/home/logic/repository/home_repository.dart';
 import 'package:aim_mobile/core/localization/app_locale.dart';
 import 'package:aim_mobile/features/progress/ui/pages/progress_page.dart';
 import 'package:aim_mobile/features/progress/ui/pages/recommendations_page.dart';
-import 'package:aim_mobile/features/progress/ui/pages/review_schedule_page.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -53,9 +53,14 @@ Widget _wrap(
   required AppAsyncState<AimResultsData> state,
   TextDirection dir = TextDirection.ltr,
   AppAsyncState<HomeData>? homeState,
+  List<DueReview> due = const [],
 }) {
   return ProviderScope(
     overrides: [
+      dueReviewsProvider.overrideWith((ref) async => due),
+      skillTitlesProvider.overrideWith(
+        (ref) async => const {'grammar-articles': 'Using Articles'},
+      ),
       aimResultsProvider.overrideWith(
         (ref) => _StubNotifier(state),
       ),
@@ -324,7 +329,9 @@ void main() {
       expect(find.text('Recommendations'), findsOneWidget);
       expect(find.text('1 from AIM'), findsOneWidget);
       expect(find.text('Review Schedule'), findsOneWidget);
-      expect(find.text('1 reviews scheduled'), findsOneWidget);
+      // Reviews are counted from the weak-skills-only due list.
+      await tester.pump();
+      expect(find.textContaining('due now'), findsOneWidget);
     });
 
     testWidgets('5. RTL layout does not throw', (tester) async {
@@ -390,56 +397,50 @@ void main() {
     });
   });
 
-  group('P6-104 — ReviewSchedulePage widget checks', () {
-    testWidgets('11. loading state renders AIMFullScreenLoading',
-        (tester) async {
-      await tester.pumpWidget(
-        _wrap(const ReviewSchedulePage(), state: _loadingState),
-      );
-      await tester.pump();
-      expect(find.byType(AIMFullScreenLoading), findsOneWidget);
+  group('ProgressPage — real names, weak-only reviews', () {
+    testWidgets('the Skills and Focus Areas tabs show the real skill name', (tester) async {
+      await tester.pumpWidget(_wrap(const ProgressPage(), state: _populatedSuccess));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Skills'));
+      await tester.pumpAndSettle();
+      expect(find.text('Using Articles'), findsOneWidget);
+      expect(find.text('Grammar Articles'), findsNothing);
+
+      await tester.tap(find.text('Focus Areas'));
+      await tester.pumpAndSettle();
+      expect(find.text('Using Articles'), findsOneWidget);
     });
 
-    testWidgets('12. error state renders AIMFullScreenError', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const ReviewSchedulePage(), state: _errorState),
-      );
-      await tester.pump();
-      expect(find.text('Network error'), findsOneWidget);
+    testWidgets('the Reviews tab lists only the due weak reviews it is given', (tester) async {
+      await tester.pumpWidget(_wrap(
+        const ProgressPage(),
+        state: _populatedSuccess,
+        due: const [
+          DueReview(
+            scheduleId: 's1',
+            skillId: 'grammar-articles',
+            skillTitle: 'Using Articles',
+            dueAt: '2026-11-01T09:00:00.000Z',
+            severity: 'critical',
+            lessonId: 'l1',
+          ),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Reviews'));
+      await tester.pumpAndSettle();
+      expect(find.text('Using Articles'), findsOneWidget);
+      expect(find.text('Tap a review to practise that skill.'), findsOneWidget);
     });
 
-    testWidgets('13. empty success state renders AIMEmptyState',
-        (tester) async {
-      await tester.pumpWidget(
-        _wrap(const ReviewSchedulePage(), state: _emptySuccess),
-      );
-      await tester.pump();
-      expect(find.text('No reviews scheduled'), findsOneWidget);
-    });
-
-    testWidgets('14. populated state renders schedule content', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const ReviewSchedulePage(), state: _populatedSuccess),
-      );
-      await tester.pump();
-      // dueAt (2026-06-10) is far enough in the past that the relative
-      // "Due Today / Due Nd ago" formatting has settled into the stable
-      // "Due <Mon> <day>" branch regardless of the exact test run date.
-      expect(find.textContaining('Due Jun 10'), findsOneWidget);
-      expect(find.textContaining('Every 7d · repetition #3'), findsOneWidget);
-      expect(find.text('Grammar Articles'), findsOneWidget);
-    });
-
-    testWidgets('15. RTL layout does not throw', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const ReviewSchedulePage(),
-          state: _populatedSuccess,
-          dir: TextDirection.rtl,
-        ),
-      );
-      await tester.pump();
-      expect(tester.takeException(), isNull);
+    testWidgets('no due reviews: the Reviews tab says so', (tester) async {
+      await tester.pumpWidget(_wrap(const ProgressPage(), state: _populatedSuccess));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reviews'));
+      await tester.pumpAndSettle();
+      expect(find.text('No reviews due'), findsOneWidget);
     });
   });
 }

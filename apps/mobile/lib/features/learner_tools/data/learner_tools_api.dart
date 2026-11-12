@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/networking/api_client_exception.dart';
 import '../../../core/networking/backend_api_client.dart';
+import '../../../core/state/app_async_state.dart';
+import '../../auth/logic/provider/auth_context_provider.dart';
 import '../../auth/logic/provider/auth_token_interceptor_provider.dart';
 
 /// A word the student saved (`GET /vocabulary`).
@@ -154,6 +156,44 @@ class MistakeCheck {
   final String? explanation;
 }
 
+/// A review that is due now for a skill the student is weak at
+/// (`GET /aim/students/:id/due-reviews`). The backend decides what is due and
+/// what counts as weak; the app only shows it and opens the lesson to practise.
+class DueReview {
+  const DueReview({
+    required this.scheduleId,
+    required this.skillId,
+    required this.dueAt,
+    this.skillTitle,
+    this.severity,
+    this.masteryScore,
+    this.lessonId,
+    this.lessonTitle,
+  });
+
+  factory DueReview.fromJson(Map<String, dynamic> json) => DueReview(
+        scheduleId: json['scheduleId'] as String,
+        skillId: json['skillId'] as String,
+        skillTitle: json['skillTitle'] as String?,
+        dueAt: (json['dueAt'] as String?) ?? '',
+        severity: json['severity'] as String?,
+        masteryScore: (json['masteryScore'] as num?)?.toDouble(),
+        lessonId: json['lessonId'] as String?,
+        lessonTitle: json['lessonTitle'] as String?,
+      );
+
+  final String scheduleId;
+  final String skillId;
+  final String? skillTitle;
+  final String dueAt;
+
+  /// 'critical' | 'developing' | 'emerging' from the open weakness, if any.
+  final String? severity;
+  final double? masteryScore;
+  final String? lessonId;
+  final String? lessonTitle;
+}
+
 /// Talks to the same endpoints the web app uses for My words and My mistakes.
 /// Correctness and review scheduling are decided by the backend only.
 class LearnerToolsApi {
@@ -266,6 +306,21 @@ class LearnerToolsApi {
     );
   }
 
+  /// Due reviews for the student's weak skills only.
+  Future<List<DueReview>> dueReviews(String studentId) async {
+    final r = await _client.get<List<DueReview>>(
+      '/aim/students/$studentId/due-reviews',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['dueReviews'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(DueReview.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
   /// Readable titles for every published skill, keyed by skill key. The same
   /// catalogue the web app uses, so students see "Possessive Adjectives"
   /// instead of the raw key.
@@ -354,6 +409,17 @@ String skillName(Map<String, String> titles, String skillId) {
   final label = words.join(' ');
   return label.isEmpty ? skillId : label;
 }
+
+/// The due reviews for weak skills. Empty while signed out; a failed request
+/// is an error the screen can show with a retry.
+final dueReviewsProvider = FutureProvider.autoDispose<List<DueReview>>((ref) async {
+  final studentId = switch (ref.watch(authContextProvider)) {
+    AppAsyncSuccess(:final data) => data.user.id,
+    _ => null,
+  };
+  if (studentId == null) return const [];
+  return ref.watch(learnerToolsApiProvider).dueReviews(studentId);
+});
 
 final mistakesProvider =
     FutureProvider.autoDispose.family<MistakeList, String?>(

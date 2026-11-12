@@ -19,20 +19,34 @@ class NotificationEventModel {
     required this.createdAt,
   });
 
+  /// Reads a notification row as the backend sends it: the readable text lives
+  /// in `payload` (`payload.title` / `payload.body`) and the lifecycle value
+  /// is `state`. Top-level `title`, `body` and `status` are accepted too, so
+  /// either shape shows the notification instead of failing to load it.
   factory NotificationEventModel.fromJson(Map<String, dynamic> json) {
+    String? text(Object? v) {
+      if (v is! String) return null;
+      final t = v.trim();
+      return t.isEmpty ? null : t;
+    }
+
+    final payload = json['payload'] is Map<String, dynamic>
+        ? json['payload'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final status = text(json['status']) ?? text(json['state']) ?? 'sent';
     return NotificationEventModel(
       id: json['id'] as String,
       templateId: json['template_id'] as String?,
-      channel: json['channel'] as String,
-      category: json['category'] as String,
-      status: json['status'] as String,
-      title: json['title'] as String?,
-      body: json['body'] as String?,
+      channel: (json['channel'] as String?) ?? 'in_app',
+      category: (json['category'] as String?) ?? 'system_alert',
+      status: status,
+      title: text(json['title']) ?? text(payload['title']),
+      body: text(json['body']) ?? text(payload['body']),
       scheduledAt: json['scheduled_at'] as String?,
       sentAt: json['sent_at'] as String?,
       readAt: json['read_at'] as String?,
       dismissedAt: json['dismissed_at'] as String?,
-      createdAt: json['created_at'] as String,
+      createdAt: (json['created_at'] as String?) ?? DateTime.now().toUtc().toIso8601String(),
     );
   }
 
@@ -49,5 +63,6 @@ class NotificationEventModel {
   final String? dismissedAt;
   final String createdAt;
 
-  bool get isUnread => readAt == null && dismissedAt == null;
+  bool get isUnread =>
+      readAt == null && dismissedAt == null && status != 'read' && status != 'dismissed';
 }

@@ -495,6 +495,14 @@ export class NotificationRepository {
     return { rows: dataResult.rows, total: parseInt(countResult.rows[0]?.count ?? '0', 10) };
   }
 
+  async findBroadcastScheduleById(id: string): Promise<AdminBroadcastScheduleRow | null> {
+    const result = await this.db.query<AdminBroadcastScheduleRow>(
+      `SELECT * FROM admin_broadcast_schedules WHERE id = $1`,
+      [id],
+    );
+    return result.rows[0] ?? null;
+  }
+
   async findDueBroadcastSchedules(): Promise<AdminBroadcastScheduleRow[]> {
     const result = await this.db.query<AdminBroadcastScheduleRow>(
       `SELECT * FROM admin_broadcast_schedules

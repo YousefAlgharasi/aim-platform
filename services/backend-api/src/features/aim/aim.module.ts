@@ -53,6 +53,7 @@ import { AimFocusDirectiveService } from './persistence/aim-focus-directive.serv
 import { AimResultService } from './result/aim-result.service';
 import { StudentSkillStateReadService } from './result/student-skill-state-read.service';
 import { ReviewScheduleReadService } from './result/review-schedule-read.service';
+import { DueReviewsReadService } from './result/due-reviews-read.service';
 import { SessionStateReadService } from './result/session-state-read.service';
 import { WeaknessRecordsReadService } from './result/weakness-records-read.service';
 import { RecommendationReadService } from './result/recommendation-read.service';
@@ -60,10 +61,11 @@ import { DifficultyDecisionReadService } from './result/difficulty-decision-read
 import { ErrorPatternsReadService } from './result/error-patterns-read.service';
 import { FocusDirectiveReadService } from './result/focus-directive-read.service';
 import { AimResultController } from './result/aim-result.controller';
+import { DueReviewsController } from './result/due-reviews.controller';
 
 @Module({
   imports: [DatabaseModule, AuthModule, NotificationsModule, SkillsModule, RolesModule, UsersModule, StudentsModule],
-  controllers: [AimResultController, AimDiagnosticsController],
+  controllers: [AimResultController, DueReviewsController, AimDiagnosticsController],
   providers: [
     // Existing (pre-Phase 5)
     AimEngineClientService,
@@ -130,6 +132,7 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 5 — review schedule read service (P5-072)
     ReviewScheduleReadService,
+    DueReviewsReadService,
 
     // Phase 5 — session state read service (P5-068)
     SessionStateReadService,
@@ -167,6 +170,7 @@ import { AimResultController } from './result/aim-result.controller';
 
     // Phase 8 — review schedule read service (needed by AI Teacher context builder, P8-036)
     ReviewScheduleReadService,
+    DueReviewsReadService,
 
     // Phase 8 — error patterns read service (needed by AI Teacher context builder, P8-037)
     ErrorPatternsReadService,

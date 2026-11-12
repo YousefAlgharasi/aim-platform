@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/widgets/aim_logo_mark.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,12 +32,19 @@ class AppChrome extends ConsumerStatefulWidget {
   ConsumerState<AppChrome> createState() => _AppChromeState();
 }
 
-class _AppChromeState extends ConsumerState<AppChrome> {
+class _AppChromeState extends ConsumerState<AppChrome> with WidgetsBindingObserver {
   /// The top-bar requests of the pages inside the frame.
   final ChromeBarHost _bar = ChromeBarHost();
 
+  /// Checks for new notifications while the app is open, so one sent from the
+  /// admin dashboard shows up on the bell without the student having to
+  /// change screens.
+  Timer? _poll;
+
   @override
   void dispose() {
+    _poll?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _bar.dispose();
     super.dispose();
   }
@@ -43,7 +52,15 @@ class _AppChromeState extends ConsumerState<AppChrome> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _poll = Timer.periodic(const Duration(seconds: 75), (_) => _loadUnread());
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadUnread());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Coming back to the app: look straight away.
+    if (state == AppLifecycleState.resumed) _loadUnread(force: true);
   }
 
   @override
