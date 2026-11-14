@@ -172,6 +172,18 @@ export class NotificationRepository {
     return result.rows[0];
   }
 
+  /** True when this student already received an event from the given template within the last `hours`. */
+  async hasRecentEventForTemplateKey(recipientId: string, templateKey: string, hours: number): Promise<boolean> {
+    const result = await this.db.query(
+      `SELECT 1 FROM notification_events e
+         JOIN notification_templates t ON t.id = e.template_id
+        WHERE e.recipient_id = $1 AND t.key = $2 AND e.created_at > now() - make_interval(hours => $3)
+        LIMIT 1`,
+      [recipientId, templateKey, hours],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async findEventsByUserId(
     recipientId: string,
     channel: string,

@@ -185,6 +185,13 @@ class _NotificationDetailPageState
                   ),
                   const SizedBox(height: AimSpacing.sectionGap),
                   if (!isDismissed) ...[
+                    if (_event.link != null) ...[
+                      AIMButton(
+                        onPressed: () => context.push(_event.link!),
+                        child: Text(context.tr('Go to Improve', 'اذهب إلى التحسين')),
+                      ),
+                      const SizedBox(height: AimSpacing.innerGap),
+                    ],
                     AIMButton(
                       onPressed: _busy ? null : _markAsRead,
                       variant: AIMButtonVariant.secondary,

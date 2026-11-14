@@ -61,6 +61,24 @@ export const mistakesApi = {
   check: (itemId: string, answerId: string) => apiClient.post<MistakeCheck>('/student/mistakes/check', { itemId, answerId }),
 };
 
+// ── Recovery (Improve retry loop) ────────────────────────────────────────────
+export type SkillGroup = 'grammar' | 'vocabulary' | 'reading' | 'listening' | 'writing' | 'speaking';
+export interface RecoverySkill {
+  skillKey: string; title: string; group: SkillGroup; masteryScore: number | null; openMistakes: number;
+  lastMistakeAt: string | null;
+  /** null when there is nothing to wait for. */
+  retryAvailableAt: string | null; unlocked: boolean;
+}
+export interface RecoveryQuestion {
+  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string }>; source: 'missed' | 'bank' | 'ai';
+}
+export interface RecoveryStart { sessionId: string; skillKey: string; level: string; questions: RecoveryQuestion[] }
+export const recoveryApi = {
+  overview: () => apiClient.get<{ cooldownDays: number; skills: RecoverySkill[] }>('/student/recovery'),
+  /** 403 with retryAvailableAt while the cooldown runs. Answers are then sent through /sessions/:id/attempt. */
+  start: (skillKey: string) => apiClient.post<RecoveryStart>('/student/recovery/start', { skillKey }),
+};
+
 // ── Public catalog ───────────────────────────────────────────────────────────
 export interface PublicCourse { id: string; title: string; description: string | null; levelCode: string | null; cefrCode: string | null; lessonCount: number }
 export const publicApi = {

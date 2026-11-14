@@ -13,7 +13,9 @@ import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart'
 import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
 import 'package:aim_mobile/features/course_billing/logic/course_billing_providers.dart';
 import 'package:aim_mobile/features/course_billing/ui/widgets/billing_format.dart';
+import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
+import 'package:aim_mobile/features/stories/ui/widgets/story_widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
@@ -90,6 +92,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
   Future<void> _refresh() async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty) return;
+    ref.invalidate(courseStoryProvider(widget.courseId));
     await ref.read(chaptersProvider.notifier).loadForCourse(
           bearerToken: token,
           courseId: widget.courseId,
@@ -248,6 +251,8 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
     ];
 
     final totalLessons = chapters.fold<int>(0, (sum, c) => sum + c.lessonCount);
+    // The course's story, one part per chapter (null when the course has none, or it cannot load).
+    final courseStory = ref.watch(courseStoryProvider(widget.courseId)).valueOrNull;
 
     return RefreshIndicator(
       onRefresh: _refresh,
@@ -255,6 +260,10 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           _buildDeadlineBanner(context),
+          if (courseStory != null) ...[
+            CourseStoryCard(story: courseStory),
+            const SizedBox(height: 16),
+          ],
           // Course Overview Hero Banner
           Container(
             padding: const EdgeInsets.all(22),

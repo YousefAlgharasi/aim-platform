@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient, getErrorMessage } from '../../api/client';
 import { Input } from '../../components/common/Input';
@@ -8,6 +8,8 @@ import { AuthHeader, AuthFooterLink, MailBadge } from '../../components/auth/Aut
 import { mapApiFieldErrors, validateEmail } from '../../utils/validation';
 import { useI18n } from '../../i18n/I18nContext';
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
 export function ForgotPasswordPage() {
   const { t } = useI18n();
   const [email, setEmail] = useState('');
@@ -15,10 +17,18 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
 
+  // Tick the resend countdown once per second.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [cooldown]);
+
   async function send() {
-    if (loading) return;
+    if (loading || cooldown > 0) return;
     setError('');
     setLoading(true);
     try {
@@ -28,7 +38,12 @@ export function ForgotPasswordPage() {
         { auth: false },
       );
       setSent(true);
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (err) {
+      const wait = (err as { statusCode?: number; details?: { retryAfterSeconds?: number } } | null);
+      if (wait?.statusCode === 429) {
+        setCooldown(Math.min(Math.max(Math.ceil(wait.details?.retryAfterSeconds ?? RESEND_COOLDOWN_SECONDS), 1), 600));
+      }
       const mapped = mapApiFieldErrors(err, ['email'] as const);
       // On the "sent" screen there is no email field, so surface it as a banner.
       if (mapped.email && !sent) setEmailError(mapped.email);
@@ -61,8 +76,8 @@ export function ForgotPasswordPage() {
         </div>
         <div className="flex flex-col gap-2">
           {error && <Banner variant="error">{error}</Banner>}
-          <Button variant="ghost" fullWidth className="!rounded-full !tracking-normal" disabled={loading} onClick={() => void send()}>
-            {loading ? t('Sending…') : t("Didn't get it? Resend email")}
+          <Button variant="ghost" fullWidth className="!rounded-full !tracking-normal" disabled={loading || cooldown > 0} onClick={() => void send()}>
+            {loading ? t('Sending…') : cooldown > 0 ? t('Resend email in {seconds}s', { seconds: cooldown }) : t("Didn't get it? Resend email")}
           </Button>
           <Button variant="secondary" fullWidth className="!rounded-full !tracking-normal" onClick={() => navigate('/login')}>{t('Back to Sign In')}</Button>
         </div>

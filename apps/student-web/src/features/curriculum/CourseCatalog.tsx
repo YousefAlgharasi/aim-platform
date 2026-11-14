@@ -103,7 +103,7 @@ export function CourseCatalog() {
       <section>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3"><LevelBadge /><span className="lp-num text-sm text-ink-muted">{t('{pct}% of the whole path', { pct: overall })}</span></div>
+            <div data-tour="level-badge" className="flex flex-wrap items-center gap-3"><LevelBadge /><span className="lp-num text-sm text-ink-muted">{t('{pct}% of the whole path', { pct: overall })}</span></div>
             <p className="lp-display m-0 mt-3 text-[1.75rem] font-semibold [unicode-bidi:plaintext] sm:text-[2.25rem]">
               {currentCourse
                 ? <Link to={`/curriculum/${currentCourse.courseId}`} className="text-ink no-underline hover:underline">{currentCourse.title}</Link>
@@ -134,7 +134,7 @@ export function CourseCatalog() {
 
 
       {leading.length > 0 && (
-        <section className="flex flex-col gap-3 border-t border-brand-line pt-6" aria-label={t('Start here')}>
+        <section data-tour="courses-start" className="flex flex-col gap-3 border-t border-brand-line pt-6" aria-label={t('Start here')}>
           <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{t('Start here')}</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {leading.map((course) => (
@@ -147,7 +147,7 @@ export function CourseCatalog() {
       {groups.map(({ band: b, list }, groupIndex) => {
         const rel = relationTo(b, band);
         return (
-          <section key={b} id={groupIndex === 0 ? 'levels' : undefined} className="flex flex-col gap-3" aria-label={`${b} ${t(BAND_NAME[b])}`}>
+          <section key={b} id={groupIndex === 0 ? 'levels' : undefined} data-tour={groupIndex === 0 ? 'courses-levels' : undefined} className="flex flex-col gap-3" aria-label={`${b} ${t(BAND_NAME[b])}`}>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="m-0 text-2xl font-semibold tracking-tight text-ink">{b} <span className="font-medium text-ink-muted">{t(BAND_NAME[b])}</span></h2>
               <RelationChip relation={rel} />

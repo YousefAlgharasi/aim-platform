@@ -88,6 +88,31 @@ class VoiceTeacherSessionNotifier
     }
   }
 
+  /// A typed turn: same conversation as the voice turns. Sets [VoiceTeacherSessionState.lastTurn] to the teacher's
+  /// reply (no audioRef: the screen fetches the spoken version of the newest teacher message from the history).
+  ///
+  /// Returns false when the message could not be sent. Unlike a failed voice turn, this leaves the session as it is
+  /// (the screen shows a short message and keeps the text), because a typed message is easy to resend.
+  Future<bool> submitTextTurn({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async {
+    final previous = _currentDataOrEmpty();
+    try {
+      final turn = await _repository.submitText(
+        bearerToken: bearerToken,
+        sessionId: sessionId,
+        message: message,
+      );
+      setSuccess(previous.copyWith(lastTurn: turn));
+      await loadHistory(bearerToken: bearerToken, sessionId: sessionId);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> submitFeedback({
     required String bearerToken,
     required String sessionId,

@@ -11,7 +11,6 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
 import 'package:aim_mobile/features/practice_hub/ui/practice_hub_page.dart';
-import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 
 Widget _app({
   required ThemeData theme,
@@ -29,6 +28,7 @@ Widget _app({
         AppRoutePaths.practiceSpeaking,
         AppRoutePaths.practiceWriting,
         AppRoutePaths.vocabularyLibrary,
+        AppRoutePaths.skillPractice,
         AppRoutePaths.mistakes,
         AppRoutePaths.vocabulary,
         AppRoutePaths.mainShell,
@@ -91,6 +91,8 @@ void main() {
             for (final icon in [
               Icons.mic_rounded,
               Icons.edit_rounded,
+              Icons.spellcheck_rounded,
+              Icons.translate_rounded,
               Icons.headphones_rounded,
               Icons.menu_book_rounded,
             ]) {
@@ -134,22 +136,10 @@ void main() {
 
     await tapAndCheck(find.text('Speak'), AppRoutePaths.practiceSpeaking);
     await tapAndCheck(find.text('Write'), AppRoutePaths.practiceWriting);
-    await tapAndCheck(find.text('Listen'), AppRoutePaths.vocabularyLibrary);
+    await tapAndCheck(find.text('Grammar'), '${AppRoutePaths.skillPractice}?mode=grammar');
+    await tapAndCheck(find.text('Vocabulary'), AppRoutePaths.vocabularyLibrary);
+    await tapAndCheck(find.text('Listen'), '${AppRoutePaths.skillPractice}?mode=listening');
+    await tapAndCheck(find.text('Read'), '${AppRoutePaths.skillPractice}?mode=reading');
     await tapAndCheck(find.text('Start now'), '${AppRoutePaths.mistakes}?quick=1');
-  });
-
-  testWidgets('Read opens the Courses tab', (tester) async {
-    tester.view.physicalSize = const Size(390, 1200);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
-    final visited = <String>[];
-    await tester.pumpWidget(_app(theme: AppTheme.light, visited: visited));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Read'));
-    await tester.pumpAndSettle();
-    expect(visited.single, AppRoutePaths.mainShell);
-    final container = ProviderScope.containerOf(tester.element(find.text('went to ${AppRoutePaths.mainShell}')));
-    expect(container.read(mainShellTabIndexProvider), 1);
   });
 }

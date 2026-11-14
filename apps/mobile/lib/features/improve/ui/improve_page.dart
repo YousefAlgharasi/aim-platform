@@ -79,6 +79,63 @@ List<_WeakSpot> _buildWeakSpots(AimResultsData data) {
   return spots;
 }
 
+/// Group labels for the 6 main skills. Pronunciation and functional language
+/// sit under speaking (the server decides; this is only the fallback).
+const _groupSegments = {
+  'gra': 'grammar', 'grammar': 'grammar',
+  'voc': 'vocabulary', 'vocabulary': 'vocabulary',
+  'read': 'reading', 'reading': 'reading',
+  'lis': 'listening', 'listening': 'listening',
+  'write': 'writing', 'writing': 'writing',
+  'spe': 'speaking', 'speaking': 'speaking',
+  'pho': 'speaking', 'pronunciation': 'speaking',
+  'func': 'speaking', 'functional_language': 'speaking',
+};
+
+/// The main skill a weak skill belongs to: the server's mapping when we have
+/// it, otherwise read from the skill key ("en.a2.gra.comparatives" -> grammar).
+String recoveryGroupOf(String skillId, Map<String, RecoverySkill> recovery) {
+  final mapped = recovery[skillId]?.group;
+  if (mapped != null) return mapped;
+  for (final seg in skillId.toLowerCase().split('.')) {
+    final g = _groupSegments[seg];
+    if (g != null) return g;
+  }
+  return 'vocabulary';
+}
+
+class _GroupLook {
+  const _GroupLook(this.icon, this.tone);
+  final IconData icon;
+  final Color tone;
+}
+
+const _groupLooks = {
+  'grammar': _GroupLook(Icons.spellcheck_rounded, AimColors.primary500),
+  'vocabulary': _GroupLook(Icons.translate_rounded, AimColors.success500),
+  'reading': _GroupLook(Icons.menu_book_rounded, Color(0xFFF59E0B)),
+  'listening': _GroupLook(Icons.headphones_rounded, Color(0xFF7C5CF0)),
+  'writing': _GroupLook(Icons.edit_rounded, Color(0xFF0EA5E9)),
+  'speaking': _GroupLook(Icons.mic_rounded, Color(0xFFEC4899)),
+};
+
+String _groupLabel(BuildContext context, String group) => switch (group) {
+      'grammar' => context.tr('Grammar', 'القواعد'),
+      'vocabulary' => context.tr('Vocabulary', 'المفردات'),
+      'reading' => context.tr('Reading', 'القراءة'),
+      'listening' => context.tr('Listening', 'الاستماع'),
+      'writing' => context.tr('Writing', 'الكتابة'),
+      _ => context.tr('Speaking', 'المحادثة'),
+    };
+
+class _GroupStat {
+  const _GroupStat({required this.group, required this.count, required this.ready, this.avg});
+  final String group;
+  final int count;
+  final int ready;
+  final double? avg;
+}
+
 /// Improve — where the student is weak and how to fix it.
 /// Mirrors the web app's "Improve" page.
 class ImprovePage extends ConsumerStatefulWidget {
@@ -90,6 +147,7 @@ class ImprovePage extends ConsumerStatefulWidget {
 
 class _ImprovePageState extends ConsumerState<ImprovePage> {
   bool _showAll = false;
+  String? _group;
 
   @override
   void initState() {
@@ -111,6 +169,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
   Future<void> _refresh() async {
     ref.invalidate(mistakesProvider(null));
     ref.invalidate(dueReviewsProvider);
+    ref.invalidate(recoveryProvider);
     await _load();
   }
 
@@ -149,11 +208,33 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
     final surfaces = aimSurfacesOf(context);
     final mistakes = ref.watch(mistakesProvider(null)).valueOrNull;
     final titles = ref.watch(skillTitlesProvider).valueOrNull ?? const <String, String>{};
-    final spots = _buildWeakSpots(data);
+    final allSpots = _buildWeakSpots(data);
+    final recovery = {
+      for (final r in ref.watch(recoveryProvider).valueOrNull ?? const <RecoverySkill>[]) r.skillKey: r,
+    };
+    final groupStats = [
+      for (final g in recoveryGroups)
+        () {
+          final inGroup = allSpots.where((sp) => recoveryGroupOf(sp.skillId, recovery) == g).toList();
+          final scored = inGroup.where((sp) => sp.mastery != null).toList();
+          return _GroupStat(
+            group: g,
+            count: inGroup.length,
+            avg: scored.isEmpty ? null : scored.fold<double>(0, (n, sp) => n + sp.mastery!) / scored.length,
+            ready: inGroup.where((sp) {
+              final r = recovery[sp.skillId];
+              return r != null && r.unlocked && r.openMistakes > 0;
+            }).length,
+          );
+        }(),
+    ];
+    final spots = _group == null
+        ? allSpots
+        : allSpots.where((sp) => recoveryGroupOf(sp.skillId, recovery) == _group).toList();
     final fixed = data.weaknessRecords.where((w) => w.status.toLowerCase() == 'resolved').toList();
     // Due reviews for weak skills only, straight from the backend.
     final dueReviews = ref.watch(dueReviewsProvider).valueOrNull ?? const <DueReview>[];
-    final top = spots.isEmpty ? null : spots.first;
+    final top = allSpots.isEmpty ? null : allSpots.first;
     final mistakeCount = mistakes?.total ?? 0;
 
     return RefreshIndicator(
@@ -164,7 +245,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
           _Hero(
             top: top,
             topName: top == null ? '' : skillName(titles, top.skillId),
-            toWorkOn: spots.length,
+            toWorkOn: allSpots.length,
             onPractice: () => top?.lessonId != null
                 ? _practice(top!.lessonId!)
                 : _findLesson(),
@@ -175,9 +256,9 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               _StatTile(
                 icon: Icons.track_changes_rounded,
                 tone: AimColors.primary500,
-                value: '${spots.length}',
+                value: '${allSpots.length}',
                 label: context.tr('To work on', 'تحتاج عملاً'),
-                onTap: spots.length > 3 ? () => setState(() => _showAll = true) : null,
+                onTap: allSpots.length > 3 ? () => setState(() => _showAll = true) : null,
               ),
               _StatTile(
                 icon: Icons.refresh_rounded,
@@ -208,6 +289,17 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               onTap: () => context.push('${AppRoutePaths.mistakes}?quick=1'),
             ),
           ],
+          if (allSpots.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.sectionGap),
+            _GroupGrid(
+              stats: groupStats,
+              selected: _group,
+              onSelect: (g) => setState(() {
+                _group = _group == g ? null : g;
+                _showAll = false;
+              }),
+            ),
+          ],
           const SizedBox(height: AimSpacing.sectionGap),
           Row(
             children: [
@@ -222,7 +314,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
                   ),
                 ),
               ),
-              if (spots.length > 3)
+              if (spots.length > 3 && _group == null)
                 TextButton(
                   onPressed: () => setState(() => _showAll = !_showAll),
                   child: Text(_showAll
@@ -242,13 +334,17 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               ),
             )
           else
-            for (final s in (_showAll ? spots : spots.take(3))) ...[
+            for (final s in (_showAll || _group != null ? spots : spots.take(3))) ...[
               _SpotCard(
                 spot: s,
                 title: skillName(titles, s.skillId),
                 mistakes: (mistakes?.items ?? const [])
                     .where((m) => m.skillIds.contains(s.skillId))
                     .toList(),
+                recovery: recovery[s.skillId],
+                onRetry: () => context.push(
+                  '${AppRoutePaths.recoveryRetry}?skill=${Uri.encodeQueryComponent(s.skillId)}',
+                ),
                 onPractice: s.lessonId == null ? _findLesson : () => _practice(s.lessonId!),
                 onReread: s.lessonId == null ? null : () => _reread(s.lessonId!),
                 onAsk: s.lessonId == null ? null : () => _askTeacher(s.lessonId!, skillName(titles, s.skillId)),
@@ -687,8 +783,12 @@ class _SpotCard extends StatefulWidget {
     required this.onPractice,
     required this.onReread,
     required this.onAsk,
+    required this.onRetry,
+    this.recovery,
   });
 
+  final RecoverySkill? recovery;
+  final VoidCallback onRetry;
   final _WeakSpot spot;
   final String title;
   final List<MistakeItem> mistakes;
@@ -865,6 +965,7 @@ class _SpotCardState extends State<_SpotCard> {
                                   style: AimTextStyles.bodySm
                                       .copyWith(color: surfaces.textSecondary)),
                             ),
+                          if (widget.recovery == null)
                           GestureDetector(
                             onTap: () => context.push(
                               '${AppRoutePaths.mistakes}?skill=${Uri.encodeQueryComponent(spot.skillId)}',
@@ -885,6 +986,10 @@ class _SpotCardState extends State<_SpotCard> {
                         ],
                       ),
                     ),
+                  ],
+                  if (widget.recovery != null && widget.recovery!.openMistakes > 0) ...[
+                    const SizedBox(height: AimSpacing.space12),
+                    _RecoverySteps(recovery: widget.recovery!, onRetry: widget.onRetry),
                   ],
                   const SizedBox(height: AimSpacing.space12),
                   Wrap(
@@ -918,6 +1023,221 @@ class _SpotCardState extends State<_SpotCard> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The three recovery steps for one weak skill: Learn, wait for the server's
+/// 3-day gap, then Retry. The server decides when the retry unlocks.
+class _RecoverySteps extends StatelessWidget {
+  const _RecoverySteps({required this.recovery, required this.onRetry});
+
+  final RecoverySkill recovery;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final unlocked = recovery.unlocked;
+
+    Widget step(String text, Color tone, {bool on = true}) => Container(
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: on ? tone.withValues(alpha: 0.14) : surfaces.surface,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Text(
+            text,
+            style: AimTextStyles.caption.copyWith(
+              color: on ? tone : surfaces.textMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
+      decoration: BoxDecoration(
+        color: surfaces.surfaceSunken,
+        borderRadius: BorderRadius.circular(AimRadius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AimSpacing.space8,
+            runSpacing: AimSpacing.space8,
+            children: [
+              step('1 · ${context.tr('Learn', 'تعلّم')}', AimColors.primary500),
+              step(
+                unlocked
+                    ? '2 · ✓ ${context.tr('Ready', 'جاهز')}'
+                    : '2 · ${context.tr('Wait', 'انتظر')}',
+                unlocked ? AimColors.success500 : surfaces.textMuted,
+                on: unlocked,
+              ),
+              step('3 · ${context.tr('Retry', 'أعد المحاولة')}', AimColors.primary500, on: unlocked),
+            ],
+          ),
+          const SizedBox(height: AimSpacing.space8),
+          if (unlocked)
+            AIMButton(
+              size: AIMButtonSize.small,
+              onPressed: onRetry,
+              child: Text(context.tr('Retry now', 'أعد المحاولة الآن')),
+            )
+          else
+            Text(
+              fill(
+                context.tr(
+                  'Retry opens in {n} days. Spacing it out helps you remember. Learn it with the AI Teacher in the meantime.',
+                  'تفتح إعادة المحاولة بعد {n} أيام. التباعد يساعدك على التذكّر. تعلّمها مع المعلم الذكي في هذه الأثناء.',
+                ),
+                {'n': recovery.daysLeft()},
+              ),
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The 6 main skills as an equal 2-column grid. Tapping one filters the weak
+/// spots below to that skill group; tapping it again clears the filter.
+class _GroupGrid extends StatelessWidget {
+  const _GroupGrid({required this.stats, required this.selected, required this.onSelect});
+
+  final List<_GroupStat> stats;
+  final String? selected;
+  final ValueChanged<String> onSelect;
+
+  static const double _baseHeight = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    final height = _baseHeight * scale;
+    Widget tile(_GroupStat g) => _GroupTile(
+          stat: g,
+          selected: selected == g.group,
+          onTap: g.count == 0 ? null : () => onSelect(g.group),
+        );
+    return Column(
+      children: [
+        for (var i = 0; i < stats.length; i += 2) ...[
+          if (i > 0) const SizedBox(height: AimSpacing.componentGap),
+          SizedBox(
+            height: height,
+            child: Row(
+              children: [
+                Expanded(child: tile(stats[i])),
+                const SizedBox(width: AimSpacing.componentGap),
+                Expanded(child: i + 1 < stats.length ? tile(stats[i + 1]) : const SizedBox.shrink()),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _GroupTile extends StatelessWidget {
+  const _GroupTile({required this.stat, required this.selected, required this.onTap});
+
+  final _GroupStat stat;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final look = _groupLooks[stat.group]!;
+    final label = _groupLabel(context, stat.group);
+    final pct = stat.avg == null ? null : (stat.avg! * 100).round().clamp(0, 100);
+    final detail = stat.count == 0
+        ? context.tr('All good', 'كل شيء جيد')
+        : [
+            fill(context.tr('{n} to work on', '{n} للعمل عليها'), {'n': stat.count}),
+            if (pct != null) '$pct%',
+          ].join(' · ');
+    return Semantics(
+      button: onTap != null,
+      selected: selected,
+      label: '$label, $detail',
+      child: Opacity(
+        opacity: stat.count == 0 ? 0.6 : 1,
+        child: Material(
+          color: Color.alphaBlend(
+            look.tone.withValues(alpha: selected ? (dark ? 0.26 : 0.16) : (dark ? 0.14 : 0.08)),
+            surfaces.surface,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AimRadius.lg),
+            side: BorderSide(
+              color: look.tone.withValues(alpha: selected ? 0.9 : (dark ? 0.30 : 0.22)),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: look.tone.withValues(alpha: dark ? 0.25 : 0.16),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(look.icon, size: 20, color: look.tone),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AimTextStyles.bodyMd.copyWith(
+                            color: surfaces.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          detail,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AimTextStyles.caption.copyWith(color: surfaces.textMuted),
+                        ),
+                        if (stat.ready > 0)
+                          Text(
+                            fill(context.tr('{n} ready to retry', '{n} جاهزة لإعادة المحاولة'), {'n': stat.ready}),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AimTextStyles.caption.copyWith(
+                              color: AimColors.success500,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

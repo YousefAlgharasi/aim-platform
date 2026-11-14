@@ -114,3 +114,24 @@ describe('LearningReminderIntegration.createReviewReminder', () => {
     expect(scheduleService.createSchedule).not.toHaveBeenCalled();
   });
 });
+
+describe('LearningReminderIntegration.fireLearningReminder de-duplication', () => {
+  const enqueue = jest.fn().mockResolvedValue(null);
+  const make = (recent: boolean) =>
+    new LearningReminderIntegration(
+      {} as never,
+      { enqueue } as never,
+      {} as never,
+      { hasRecentEventForTemplateKey: jest.fn().mockResolvedValue(recent) } as never,
+    );
+  beforeEach(() => enqueue.mockClear());
+
+  it('sends nothing when the student already got a reminder recently', async () => {
+    await make(true).fireLearningReminder('u1');
+    expect(enqueue).not.toHaveBeenCalled();
+  });
+  it('sends the in-app and push reminders otherwise', async () => {
+    await make(false).fireLearningReminder('u1');
+    expect(enqueue).toHaveBeenCalledTimes(2);
+  });
+});

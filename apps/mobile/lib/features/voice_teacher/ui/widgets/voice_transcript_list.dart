@@ -18,10 +18,14 @@ class VoiceTranscriptList extends StatelessWidget {
     required this.messages,
     this.onPlayAudio,
     this.onFeedback,
+    this.controller,
     super.key,
   });
 
   final List<VoiceMessage> messages;
+
+  /// Lets the host keep the newest message in view.
+  final ScrollController? controller;
   final void Function(String audioRef)? onPlayAudio;
   final void Function(String messageId, String rating, String? comment)?
       onFeedback;
@@ -38,6 +42,7 @@ class VoiceTranscriptList extends StatelessWidget {
     }
 
     return ListView.separated(
+      controller: controller,
       padding: const EdgeInsets.symmetric(
         horizontal: AimSpacing.screenPaddingMobile,
         vertical: AimSpacing.sectionGap,

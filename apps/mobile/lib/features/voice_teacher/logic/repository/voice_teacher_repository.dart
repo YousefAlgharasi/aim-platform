@@ -28,6 +28,19 @@ abstract class VoiceTeacherRepository {
     required String audioRef,
   });
 
+  /// A typed student turn in the same session as the voice turns.
+  Future<VoiceTurnResult> submitText({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  });
+
+  /// Spoken audio for a teacher message that has no stored recording yet.
+  Future<List<int>> getMessageAudio({
+    required String bearerToken,
+    required String messageId,
+  });
+
   Future<VoiceFeedbackResult> submitFeedback({
     required String bearerToken,
     required String sessionId,

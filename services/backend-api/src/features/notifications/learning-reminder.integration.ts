@@ -1,7 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ReminderScheduleService } from './reminder-schedule.service';
 import { NotificationQueueService } from './notification-queue.service';
 import { UsersService } from '../users/users.service';
+import { NotificationRepository } from './notification.repository';
+
+/** A student gets at most one "time to keep learning" reminder in this window, however many reviews fall due. */
+export const LEARNING_REMINDER_MIN_GAP_HOURS = 20;
 
 @Injectable()
 export class LearningReminderIntegration {
@@ -11,6 +15,7 @@ export class LearningReminderIntegration {
     private readonly scheduleService: ReminderScheduleService,
     private readonly queueService: NotificationQueueService,
     private readonly usersService: UsersService,
+    @Optional() private readonly repo?: NotificationRepository,
   ) {}
 
   /**
@@ -84,6 +89,12 @@ export class LearningReminderIntegration {
   }
 
   async fireLearningReminder(userId: string, locale = 'en'): Promise<void> {
+    // Each due review used to fire its own reminder, so one student could get dozens at the same minute.
+    if (this.repo && (await this.repo.hasRecentEventForTemplateKey(userId, 'learning_reminder_due', LEARNING_REMINDER_MIN_GAP_HOURS))) {
+      this.logger.log(`Learning reminder skipped for user=${userId}: one was sent in the last ${LEARNING_REMINDER_MIN_GAP_HOURS}h`);
+      return;
+    }
+
     await this.queueService.enqueue({
       userId,
       recipientType: 'student',

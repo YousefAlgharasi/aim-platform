@@ -11,7 +11,7 @@ export function BottomTabBar({ onMenu }: { onMenu: () => void }) {
   // The icon sits in a pill: it fills with the brand color when active and squishes when pressed.
   const pill = (active: boolean) => `flex h-8 w-14 items-center justify-center rounded-full transition-all duration-200 ease-out group-active:scale-90 group-focus-visible:ring-2 group-focus-visible:ring-focus ${active ? 'bg-brand text-white shadow-sm' : 'bg-transparent text-ink-muted group-hover:bg-surface-strong'}`;
   return (
-    <nav aria-label={t('Main navigation')} className="fixed inset-x-0 bottom-0 z-40 flex rounded-t-3xl shadow-[0_-2px_10px_rgba(0,0,0,0.12)] bg-surface pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
+    <nav data-tour="nav" aria-label={t('Main navigation')} className="fixed inset-x-0 bottom-0 z-40 flex rounded-t-3xl shadow-[0_-2px_10px_rgba(0,0,0,0.12)] bg-surface pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
       {tabItems.map((item) => (
         <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={tap} className={tab}>
           {({ isActive }) => (

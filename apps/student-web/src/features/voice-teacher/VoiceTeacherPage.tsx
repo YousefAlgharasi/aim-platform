@@ -3,22 +3,26 @@ import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { Markdown } from '../../components/common/Markdown';
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { getErrorMessage, newIdempotencyKey } from '../../api/client';
 import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
 import { aiTeacherApi, GENERAL_CONTEXT_REF, lessonContextRef, type FeedbackRating } from '../ai-teacher/aiTeacherApi';
-import { useVoiceRecorder, type RecordingResult } from './useVoiceRecorder';
+import { useLiveVoice, type LiveUtterance } from './useLiveVoice';
 import {
   MAX_AUDIO_SIZE_BYTES,
-  MAX_RECORDING_MS,
   MIN_RECORDING_MS,
   voiceTeacherApi,
   type VoiceMessage,
 } from './voiceTeacherApi';
 import { MicIcon } from '../../components/common/Icons';
-import { ThumbButton, pillLinkClass } from '../ai-teacher/ui';
+import { ThumbButton } from '../ai-teacher/ui';
+import { VoiceComposer, type MicState } from './VoiceComposer';
+import type { RobotState } from './AimRobot';
+import { PANEL_MAX, PANEL_MIN, useResizablePanel } from './useResizablePanel';
+import { balanceMarkdown, useTypewriter } from './useTypewriter';
+import './voice-room.css';
 import { useI18n } from '../../i18n/I18nContext';
 import { PracticeBanner } from '../practice-topics/PracticeBanner';
 import type { PracticeSessionState } from '../practice-topics/practiceTopicsApi';
@@ -26,6 +30,7 @@ import type { PracticeSessionState } from '../practice-topics/practiceTopicsApi'
 const WAVE_HEIGHTS = [4, 8, 14, 22, 16, 28, 18, 12, 24, 15, 8, 5];
 
 interface VoiceLocationState {
+  lessonId?: string | null;
   lessonTitle?: string | null;
   lastSessionRecap?: string | null;
   focusRecap?: string | null;
@@ -42,17 +47,16 @@ function sourceKey(source: AudioSource): string {
   return source.kind === 'ref' ? `ref:${source.audioRef}` : `msg:${source.messageId}`;
 }
 
+/** Is this reply already in the conversation? Then there is nothing extra to show (the yellow "fallback" box only repeated it). */
+function replyIsShown(messages: VoiceMessage[] | null, text: string): boolean {
+  const wanted = text.trim();
+  return !!messages?.some((m) => m.role === 'teacher' && m.text.trim() === wanted);
+}
+
 function sourceForMessage(message: VoiceMessage): AudioSource | null {
   if (message.audioRef) return { kind: 'ref', audioRef: message.audioRef };
   if (message.role === 'teacher') return { kind: 'message', messageId: message.id };
   return null;
-}
-
-function formatSeconds(ms: number): string {
-  const total = Math.floor(ms / 1000);
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -83,6 +87,7 @@ function VoiceSessionStarter() {
       .startSession(contextRef)
       .then((session) => {
         const state: VoiceLocationState = {
+          lessonId,
           lessonTitle,
           lastSessionRecap: session.lastSessionRecap,
           focusRecap: session.focusRecap,
@@ -90,7 +95,7 @@ function VoiceSessionStarter() {
         navigate(`/voice-teacher/${session.sessionId}`, { replace: true, state });
       })
       .catch((err) => setError(getErrorMessage(err, t('Could not start a Voice Teacher session.'))));
-  }, [contextRef, lessonTitle, navigate, t]);
+  }, [contextRef, lessonId, lessonTitle, navigate, t]);
 
   useEffect(() => {
     if (started.current) return;
@@ -123,12 +128,16 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [playbackNotice, setPlaybackNotice] = useState('');
   const [feedback, setFeedback] = useState<Record<string, FeedbackEntry>>({});
+  // Live-lesson controls: the teacher's voice can be muted (replies stay on screen), and the student can type instead of talking.
+  const [muted, setMuted] = useState(false);
+  const [draft, setDraft] = useState('');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlCache = useRef(new Map<string, string>());
   const mountedRef = useRef(true);
   const greetingHandled = useRef(false);
   const playRequest = useRef(0);
+  const mutedRef = useRef(false);
 
   // ── Playback ──────────────────────────────────────────────────────────
 
@@ -193,6 +202,18 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
     }
   }, [t]);
 
+  /** Plays a teacher reply on its own, unless the student muted the teacher's voice. */
+  const playReply = useCallback((source: AudioSource) => {
+    if (!mutedRef.current) void play(source);
+  }, [play]);
+
+  const toggleMute = useCallback(() => {
+    const next = !mutedRef.current;
+    mutedRef.current = next;
+    setMuted(next);
+    if (next) stopPlayback();
+  }, [stopPlayback]);
+
   useEffect(() => {
     mountedRef.current = true;
     const cache = urlCache.current;
@@ -226,20 +247,20 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
     greetingHandled.current = true;
     if (messages.length === 1 && messages[0].isGreeting) {
       const source = sourceForMessage(messages[0]);
-      if (source) play(source);
+      if (source) playReply(source);
     }
-  }, [messages, play]);
+  }, [messages, playReply]);
 
   // ── Recording turn ────────────────────────────────────────────────────
 
   const submitRecording = useCallback(
-    async (result: RecordingResult | null) => {
+    async (result: LiveUtterance | null) => {
       if (!result) {
         setTurnError(t('No audio was recorded. Please try again.'));
         return;
       }
       if (result.durationMs < MIN_RECORDING_MS) {
-        setTurnError(t('That was too short. Tap the microphone, speak, then tap again to send.'));
+        setTurnError(t('That was too short. Please say it again.'));
         return;
       }
       if (result.blob.size > MAX_AUDIO_SIZE_BYTES) {
@@ -264,13 +285,13 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         if (!mountedRef.current) return;
 
         if (reply.audioRef) {
-          play({ kind: 'ref', audioRef: reply.audioRef });
+          playReply({ kind: 'ref', audioRef: reply.audioRef });
         } else if (reply.isFallback) {
-          setFallbackText(reply.text);
+          if (!replyIsShown(latest, reply.text)) setFallbackText(reply.text);
         } else {
           const lastTeacher = latest ? [...latest].reverse().find((m) => m.role === 'teacher') : undefined;
-          if (lastTeacher) play(sourceForMessage(lastTeacher) as AudioSource);
-          else setFallbackText(reply.text);
+          if (lastTeacher) playReply(sourceForMessage(lastTeacher) as AudioSource);
+          else if (!replyIsShown(latest, reply.text)) setFallbackText(reply.text);
         }
       } catch (err) {
         if (mountedRef.current) setTurnError(getErrorMessage(err, t('Your answer could not be sent. Please try again.')));
@@ -278,26 +299,91 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
         if (mountedRef.current) setSubmitting(false);
       }
     },
-    [sessionId, play, t],
+    [sessionId, playReply, t],
   );
 
-  const recorder = useVoiceRecorder((result) => {
-    // Auto-stopped at the maximum duration.
-    submitRecording(result);
+  /** A typed turn: same conversation as the voice turns, so the teacher answers (and speaks) the same way. */
+  const submitText = useCallback(
+    async (raw: string) => {
+      const message = raw.trim();
+      if (!message || submitting) return;
+      stopPlayback();
+      setSubmitting(true);
+      setTurnError('');
+      setFallbackText(null);
+      setDraft('');
+      const localId = `local-${Date.now()}`;
+      setMessages((prev) => [
+        ...(prev ?? []),
+        { id: localId, role: 'student', text: message, audioRef: null, createdAt: new Date().toISOString(), channel: 'text', audioDurationMs: null, isGreeting: false },
+      ]);
+      try {
+        const reply = await aiTeacherApi.sendMessage(sessionId, message, newIdempotencyKey());
+        if (!mountedRef.current) return;
+        let latest: VoiceMessage[] | null = null;
+        try {
+          latest = (await voiceTeacherApi.getHistory(sessionId)).messages ?? [];
+          if (mountedRef.current) setMessages(latest);
+        } catch {
+          // Best effort: the turn already succeeded; keep the local copy of the student's message.
+        }
+        if (!mountedRef.current) return;
+        if (reply.isFallback) {
+          if (!replyIsShown(latest, reply.text)) setFallbackText(reply.text);
+        } else {
+          const lastTeacher = latest ? [...latest].reverse().find((m) => m.role === 'teacher') : undefined;
+          if (lastTeacher) playReply(sourceForMessage(lastTeacher) as AudioSource);
+        }
+      } catch (err) {
+        if (mountedRef.current) {
+          setMessages((prev) => (prev ?? []).filter((m) => m.id !== localId));
+          setDraft(message);
+          setTurnError(getErrorMessage(err, t('Your message could not be sent. Please try again.')));
+        }
+      } finally {
+        if (mountedRef.current) setSubmitting(false);
+      }
+    },
+    [sessionId, submitting, stopPlayback, playReply, t],
+  );
+
+  // ── Live microphone ───────────────────────────────────────────────────
+  // The mic stays open: it hears when the student starts and stops talking, sends each finished sentence on its own,
+  // and the student can talk over the teacher to interrupt. Muting only ignores the mic; it does not close it.
+  const speakingRef = useRef(false);
+  const busyRef = useRef(false);
+  const [micMuted, setMicMuted] = useState(false);
+
+  const live = useLiveVoice({
+    onUtterance: (utterance) => {
+      // One turn at a time: speech that arrives while the teacher is still thinking is dropped.
+      if (busyRef.current) return;
+      void submitRecording(utterance);
+    },
+    onBargeIn: stopPlayback,
+    isAiSpeaking: () => speakingRef.current,
   });
 
-  async function handleMicClick() {
-    if (submitting) return;
-    if (recorder.status === 'recording') {
-      const result = await recorder.stop();
-      await submitRecording(result);
+  // Start listening as soon as the conversation is open (the student chose "start live lesson", so this is expected).
+  const liveStarted = useRef(false);
+  useEffect(() => {
+    if (!messages || liveStarted.current) return;
+    liveStarted.current = true;
+    void live.start();
+  }, [messages, live]);
+
+  function handleMicToggle() {
+    if (live.status === 'off' || live.status === 'denied' || live.status === 'error') {
+      // Turning the mic on (or trying again after a refusal).
+      setMicMuted(false);
+      live.setMuted(false);
+      setTurnError('');
+      void live.start();
       return;
     }
-    // Barge-in: stop the teacher's audio before recording (Flutter P21-018).
-    stopPlayback();
-    setTurnError('');
-    setFallbackText(null);
-    await recorder.start();
+    const next = !micMuted;
+    setMicMuted(next);
+    live.setMuted(next);
   }
 
   function submitFeedback(messageId: string, rating: FeedbackRating) {
@@ -320,226 +406,258 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
       });
   }
 
+  // The conversation panel on wide screens can be dragged wider or narrower; the width is remembered.
+  const panel = useResizablePanel('aim-voice-chat-width');
+
+  // The newest teacher message is "written live" (letter by letter). Messages that were already there when the page
+  // opened are shown at once; the greeting of a brand-new session counts as new.
+  const seenIds = useRef<Set<string> | null>(null);
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!messages) return;
+    if (seenIds.current === null) {
+      seenIds.current = new Set(messages.map((m) => m.id));
+      if (messages.length === 1 && messages[0].isGreeting) setAnimatingId(messages[0].id);
+      return;
+    }
+    const seen = seenIds.current;
+    const fresh = [...messages].reverse().find((m) => m.role === 'teacher' && !seen.has(m.id));
+    messages.forEach((m) => seen.add(m.id));
+    if (fresh) setAnimatingId(fresh.id);
+  }, [messages]);
+  const animating = messages?.find((m) => m.id === animatingId) ?? null;
+  const typed = useTypewriter(animating ? { id: animating.id, text: animating.text } : null);
+  const textOf = (m: VoiceMessage) => (m.id === animatingId && typed.id === m.id ? typed.shownText : m.text);
+  const isTyping = (m: VoiceMessage) => m.id === animatingId && typed.typing;
+
+  // Keep the newest message in view in the conversation panel.
+  const listRef = useRef<HTMLDivElement>(null);
+  const messageCount = messages?.length ?? 0;
+  useEffect(() => {
+    const el = listRef.current;
+    if (el && typeof el.scrollTo === 'function') el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [messageCount, submitting, showTranscript, typed.shownText.length]);
+
   // ── Render ────────────────────────────────────────────────────────────
 
   if (loading && !messages) return <ChatSkeleton />;
   if (loadError && !messages) return <ErrorState message={loadError} onRetry={fetchHistory} />;
   if (!messages) return null;
 
-  const isRecording = recorder.status === 'recording';
+  const isHearing = live.status === 'hearing';
   const isSpeaking = playingKey !== null || loadingKey !== null;
-  const status = isRecording
-    ? { label: t('Recording'), heading: t('Listening to you…') }
+  speakingRef.current = isSpeaking;
+  busyRef.current = submitting;
+  const micOn = (live.status === 'listening' || live.status === 'hearing') && !micMuted;
+  const robotState: RobotState = isHearing ? 'listening' : submitting ? 'thinking' : isSpeaking ? 'speaking' : 'idle';
+  const status = isHearing
+    ? { label: t('Hearing you'), heading: t('Listening to you…') }
     : submitting
-      ? { label: t('Processing'), heading: t('Processing your answer…') }
+      ? { label: t('Processing'), heading: t('Your teacher is thinking…') }
       : isSpeaking
         ? { label: t('Teacher speaking'), heading: t('Your teacher is speaking…') }
-        : { label: t('Ready'), heading: t('Your turn — tap the microphone to speak') };
+        : micOn
+          ? { label: t('Live'), heading: t('I’m listening. Just talk.') }
+          : live.status === 'starting'
+            ? { label: t('Starting'), heading: t('Starting the microphone…') }
+            : micMuted && (live.status === 'listening' || live.status === 'hearing')
+              ? { label: t('Muted'), heading: t('Your mic is muted. Type, or turn it on.') }
+              : { label: t('Mic off'), heading: t('Your turn: type your answer') };
 
-  const micBlocked = recorder.status === 'unsupported' || recorder.status === 'denied';
+  const micState: MicState =
+    live.status === 'unsupported' ? 'blocked'
+      : live.status === 'starting' ? 'starting'
+        : micOn ? (isHearing ? 'hearing' : 'on')
+          : (live.status === 'listening' || live.status === 'hearing') ? 'muted'
+            : 'off';
   const lastTeacher = [...messages].reverse().find((m) => m.role === 'teacher');
+  const onlyGreeting = messages.length === 1 && messages[0].isGreeting;
+  const isLesson = !!navState.lessonTitle;
 
-  const waveActive = isRecording || isSpeaking;
-
-  return (
-    <div className="flex flex-col gap-4 w-full">
-      <PageTitleBar
-        title={t('Voice Teacher')}
-        subtitle={navState.lessonTitle || t('Practise speaking with your AI teacher')}
-        fallback="/practice"
-        action={<Link to={`/ai-teacher/${sessionId}`} className={pillLinkClass}>{t('Text chat')}</Link>}
-      />
-
-      {navState.practice && <PracticeBanner practice={navState.practice} />}
-      {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
-      {navState.lastSessionRecap && (
-        <Banner variant="success">
-          <strong>{t('Welcome back.')}</strong> {navState.lastSessionRecap}
+  const stageBanners = (
+    <div className="flex w-full max-w-xl flex-col gap-2 empty:hidden text-start">
+      {live.status === 'unsupported' && (
+        <Banner variant="warning">
+          {t("Live voice isn't available in this browser. Use a recent version of Chrome, Edge, Firefox or Safari over a secure (https) connection. You can still type to your teacher below.")}
         </Banner>
       )}
+      {live.status === 'denied' && (
+        <Banner variant="error">
+          {t('Microphone permission was denied. Allow microphone access for this site in your browser settings, then try again.')}{' '}
+          <button type="button" className="bg-transparent border-none p-0 underline font-semibold text-inherit cursor-pointer" onClick={handleMicToggle}>
+            {t('Try again')}
+          </button>
+        </Banner>
+      )}
+      {live.status === 'error' && live.errorMessage && <Banner variant="error">{live.errorMessage}</Banner>}
+      {turnError && <Banner variant="error">{turnError}</Banner>}
+      {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
+      {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
+    </div>
+  );
 
-      <section
-        className="relative overflow-hidden rounded-2xl bg-surface px-5 py-8 ring-1 ring-line flex flex-col items-center text-center gap-3 sm:px-8"
-        aria-label={t('Voice conversation')}
-      >
-        <span
-          className="rounded-full px-3 py-1 text-sm font-medium text-ink-muted ring-1 ring-line-strong"
-          role="status"
-          aria-live="polite"
+  const renderMessage = (msg: VoiceMessage) => {
+    const isTeacher = msg.role === 'teacher';
+    const source = sourceForMessage(msg);
+    const key = source ? sourceKey(source) : null;
+    const entry = feedback[msg.id];
+    return (
+      <div key={msg.id} className={`flex max-w-[92%] flex-col ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}>
+        <div
+          className={`whitespace-pre-wrap break-words rounded-2xl p-3.5 text-base leading-relaxed ${
+            isTeacher ? 'rounded-es-none bg-surface-sunken text-ink ring-1 ring-line' : 'rounded-ee-none bg-brand text-on-brand'
+          }`}
         >
-          {t('Status: {status}', { status: status.label })}
-        </span>
-        <p className="lp-display m-0 text-[1.75rem] font-semibold leading-snug text-ink sm:text-[2.25rem]">
-          {status.heading}
-        </p>
-
-        {lastTeacher && !showTranscript && (
-          <p className="m-0 max-w-xl text-sm leading-relaxed text-ink-soft bg-surface dark:bg-surface-sunken/60 ring-1 ring-line/80 rounded-2xl rounded-es-none p-4 text-start">
-            {lastTeacher.text}
-          </p>
-        )}
-
-        <div className="w-full max-w-md flex flex-col gap-2 empty:hidden text-start">
-          {recorder.status === 'unsupported' && (
-            <Banner variant="warning">
-              {t("Voice recording isn't available in this browser. Use a recent version of Chrome, Edge, Firefox or Safari over a secure (https) connection.")}{' '}
-              <Link to={`/ai-teacher/${sessionId}`}>{t('Continue in text chat')}</Link>
-            </Banner>
-          )}
-          {recorder.status === 'denied' && (
-            <Banner variant="error">
-              {t('Microphone permission was denied. Allow microphone access for this site in your browser settings, then try again.')}{' '}
-              <button type="button" className="bg-transparent border-none p-0 underline font-semibold text-inherit cursor-pointer" onClick={recorder.reset}>
-                {t('Try again')}
-              </button>
-            </Banner>
-          )}
-          {recorder.status === 'error' && recorder.errorMessage && (
-            <Banner variant="error">{recorder.errorMessage}</Banner>
-          )}
-          {turnError && <Banner variant="error">{turnError}</Banner>}
-          {fallbackText && <Banner variant="warning">{fallbackText}</Banner>}
-          {playbackNotice && <Banner variant="info">{playbackNotice}</Banner>}
+          {isTeacher ? <><Markdown text={balanceMarkdown(textOf(msg))} />{isTyping(msg) && <span className="vr-caret" aria-hidden="true" />}</> : msg.text}
         </div>
-
-        <div className="flex flex-col items-center justify-center py-4">
-          <div className="flex items-end gap-1.5 h-10 mb-6" aria-hidden="true">
-            {WAVE_HEIGHTS.map((h, i) => (
-              <div
-                key={i}
-                className={`w-1.5 rounded-full transition-all duration-200 ${
-                  waveActive ? 'bg-brand dark:bg-brand-ink animate-pulse' : 'bg-surface-strong'
-                }`}
-                style={{ height: `${waveActive ? h * 1.5 : 8}px` }}
-              />
-            ))}
-          </div>
-
-          <div className="relative">
-            {isRecording && (
-              <>
-                <div className="absolute -inset-6 rounded-full bg-brand/10 animate-ping" aria-hidden="true" />
-                <div className="absolute -inset-3 rounded-full bg-brand/20" aria-hidden="true" />
-              </>
-            )}
+        <div className="mt-1 flex items-center gap-2 px-1 text-xs text-ink-muted">
+          <span className="inline-flex items-center gap-1">
+            {msg.channel === 'voice' && <MicIcon className="size-3" />}
+            {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
+          </span>
+          {source && key && (
             <button
               type="button"
-              onClick={handleMicClick}
-              disabled={submitting || micBlocked || recorder.status === 'requesting'}
-              aria-pressed={isRecording}
-              aria-label={isRecording ? t('Stop recording and send') : t('Start recording')}
-              className={`size-28 rounded-full border-none cursor-pointer flex items-center justify-center relative transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-                isRecording
-                  ? 'bg-danger text-white'
-                  : 'bg-brand text-white ring-8 ring-brand/15 hover:bg-brand-hover'
-              }`}
+              className={buttonClasses('secondary', 'sm')}
+              onClick={() => (playingKey === key ? stopPlayback() : play(source))}
+              disabled={loadingKey === key}
+              aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}
             >
-              {submitting ? (
-                <span className="text-3xl font-black leading-none" aria-hidden="true">…</span>
-              ) : isRecording ? (
-                <span className="size-8 rounded-md bg-white" aria-hidden="true" />
-              ) : (
-                <MicIcon className="size-10 text-white" />
-              )}
+              {loadingKey === key ? t('Loading…') : playingKey === key ? `■ ${t('Stop')}` : `▶ ${t('Play')}`}
             </button>
+          )}
+        </div>
+        {isTeacher && !msg.id.startsWith('local-') && (
+          <div className="mt-1 flex items-center gap-2 px-1">
+            <span className="text-xs text-ink-muted">{entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}</span>
+            <ThumbButton kind="up" active={entry?.rating === 'helpful'} disabled={!!entry} onClick={() => submitFeedback(msg.id, 'helpful')} label={t('Mark reply as helpful')} />
+            <ThumbButton kind="down" active={entry?.rating === 'not_helpful'} disabled={!!entry} onClick={() => submitFeedback(msg.id, 'not_helpful')} label={t('Mark reply as not helpful')} />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Phones: one column (the conversation list above the text box). Wide screens: the lesson on the left, with the AIM robot
+  // and the text box at the bottom of it, and the conversation as a full-height read-only panel on the right edge whose
+  // width can be dragged.
+  const col = 'mx-auto w-full max-w-3xl lg:max-w-none'
+  const latestTeacher = [...messages].reverse().find((m) => m.role === 'teacher') ?? null;
+  const thought = latestTeacher ? { id: latestTeacher.id, text: textOf(latestTeacher), typing: isTyping(latestTeacher) } : null;
+
+  return (
+    <div
+      data-sheet={showTranscript ? 'open' : 'closed'}
+      className="-mb-24 flex min-h-[calc(100dvh-1.5rem)] w-full flex-col md:-mb-8 md:min-h-[calc(100dvh-5rem)] lg:-mx-8 lg:-mt-6 lg:grid lg:h-[calc(100dvh-3.5rem)] lg:w-auto lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_var(--chat-w)] lg:grid-rows-[minmax(0,1fr)_auto] lg:overflow-hidden max-lg:pt-[max(1.5rem,env(safe-area-inset-top))] max-lg:pb-[var(--sheet-pad)] max-lg:transition-[padding] max-lg:duration-300 max-lg:ease-out"
+      style={{ ['--chat-w' as string]: `${panel.width}px`, ['--sheet-h' as string]: 'min(52dvh, 30rem)', ['--sheet-pad' as string]: showTranscript ? 'var(--sheet-h)' : '0px' }}
+    >
+      {/* Left: title, notices and the quick answer */}
+      <div className="flex min-w-0 flex-1 flex-col gap-4 lg:flex-none lg:col-start-1 lg:row-start-1 lg:overflow-y-auto lg:ps-8 lg:pe-6 lg:pt-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 lg:max-w-none">
+          <div className="[&_h1]:!text-[1.3rem] sm:[&_h1]:!text-2xl">
+            <PageTitleBar
+              title={isLesson ? navState.lessonTitle! : t('Voice Teacher')}
+              fallback={navState.lessonId ? `/lessons/${navState.lessonId}` : '/practice'}
+            />
           </div>
 
-          <p className={`mb-0 mt-5 text-base font-semibold ${isRecording ? 'text-danger-ink' : 'text-ink-muted'}`}>
-            {recorder.status === 'requesting'
-              ? t('Waiting for microphone permission…')
-              : isRecording
-                ? t('Listening… tap to send')
-                : submitting
-                  ? t('Sending your answer…')
-                  : t('Tap to speak')}
-          </p>
-          {isRecording && (
-            <span className="lp-num mt-1 text-sm font-semibold tracking-widest text-ink">
-              {formatSeconds(recorder.elapsedMs)} / {formatSeconds(MAX_RECORDING_MS)}
-            </span>
+          {navState.practice && <PracticeBanner practice={navState.practice} />}
+          {navState.focusRecap && <Banner variant="info">{navState.focusRecap}</Banner>}
+          {navState.lastSessionRecap && (
+            <Banner variant="success">
+              <strong>{t('Welcome back.')}</strong> {navState.lastSessionRecap}
+            </Banner>
           )}
         </div>
 
-        {isSpeaking && (
-          <Button variant="secondary" size="sm" onClick={stopPlayback}>
-            {t('Stop audio')}
-          </Button>
-        )}
-      </section>
+        <section className={`${col} flex flex-1 flex-col items-center justify-end gap-4 py-2 text-center`} aria-label={t('Voice conversation')}>
+          {/* The robot and the heading say it on screen; this is for screen readers. */}
+          <span className="sr-only" role="status" aria-live="polite">
+            {t('Status: {status}', { status: status.label })} {status.heading}
+          </span>
 
-      <div className="flex justify-center">
-        <Button variant="ghost" size="sm" onClick={() => setShowTranscript((v) => !v)} aria-expanded={showTranscript}>
-          {showTranscript ? t('Hide messages') : t('Messages ({n})', { n: messages.length })}
-        </Button>
+          {stageBanners}
+
+          {/* One tap to answer the teacher's "ready to start?" */}
+          {onlyGreeting && !submitting && !isHearing && !isTyping(messages[0]) && (
+            <Button variant="primary" size="md" onClick={() => void submitText(t('Yes, let’s start.'))}>
+              {t('Yes, let’s start')}
+            </Button>
+          )}
+
+        </section>
       </div>
 
-      {showTranscript && (
-        <div className="flex flex-col gap-3.5" role="log" aria-label={t('Voice conversation messages')}>
-          {messages.length === 0 && (
-            <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone to start.')}</p>
-          )}
-          {messages.map((msg) => {
-            const isTeacher = msg.role === 'teacher';
-            const source = sourceForMessage(msg);
-            const key = source ? sourceKey(source) : null;
-            const entry = feedback[msg.id];
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col max-w-[88%] sm:max-w-[78%] ${isTeacher ? 'self-start items-start' : 'self-end items-end'}`}
-              >
-                <div
-                  className={`p-4 rounded-2xl text-base leading-relaxed whitespace-pre-wrap break-words ${
-                    isTeacher
-                      ? 'bg-surface ring-1 ring-line text-ink rounded-es-none'
-                      : 'bg-brand text-white rounded-ee-none'
-                  }`}
-                >
-                  {isTeacher ? <Markdown text={msg.text} /> : msg.text}
-                </div>
-                <div className="mt-1 flex items-center gap-2 px-1 text-xs text-ink-muted">
-                  <span className="inline-flex items-center gap-1">
-                    {msg.channel === 'voice' && <MicIcon className="size-3" />}
-                    {formatTime(new Date(msg.createdAt), { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  {source && key && (
-                    <button
-                      type="button"
-                      className={buttonClasses('secondary', 'sm')}
-                      onClick={() => (playingKey === key ? stopPlayback() : play(source))}
-                      disabled={loadingKey === key || isRecording}
-                      aria-label={playingKey === key ? t('Stop audio') : t('Play audio')}
-                    >
-                      {loadingKey === key ? t('Loading…') : playingKey === key ? `■ ${t('Stop')}` : `▶ ${t('Play')}`}
-                    </button>
-                  )}
-                </div>
-                {isTeacher && (
-                  <div className="flex items-center gap-2 mt-1 px-1">
-                    <span className="text-xs text-ink-muted">
-                      {entry?.status === 'done' ? t('Thanks for your feedback') : t('Was this helpful?')}
-                    </span>
-                    <ThumbButton
-                      kind="up"
-                      active={entry?.rating === 'helpful'}
-                      disabled={!!entry}
-                      onClick={() => submitFeedback(msg.id, 'helpful')}
-                      label={t('Mark reply as helpful')}
-                    />
-                    <ThumbButton
-                      kind="down"
-                      active={entry?.rating === 'not_helpful'}
-                      disabled={!!entry}
-                      onClick={() => submitFeedback(msg.id, 'not_helpful')}
-                      label={t('Mark reply as not helpful')}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* Right: the conversation, a full-height read-only side panel (on phones it flows into the page above the text box) */}
+      <div className="contents lg:relative lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:flex lg:flex-col lg:border-s lg:border-line lg:bg-surface">
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('Resize the conversation panel')}
+          aria-valuenow={panel.width}
+          aria-valuemin={PANEL_MIN}
+          aria-valuemax={PANEL_MAX}
+          tabIndex={0}
+          title={t('Drag to resize. Double-click to reset.')}
+          onPointerDown={panel.onPointerDown}
+          onKeyDown={panel.onKeyDown}
+          onDoubleClick={panel.reset}
+          className="group absolute inset-y-0 -start-1.5 z-20 hidden w-3 cursor-col-resize touch-none outline-none lg:block"
+        >
+          <span className={`mx-auto block h-full w-0.5 transition-colors group-hover:bg-brand group-focus-visible:bg-brand ${panel.dragging ? 'bg-brand' : 'bg-transparent'}`} />
         </div>
-      )}
+
+        <aside
+          aria-label={t('Conversation')}
+          aria-hidden={showTranscript ? undefined : true}
+          className={`fixed inset-x-0 bottom-0 z-30 flex h-[var(--sheet-h)] flex-col rounded-t-3xl bg-surface shadow-[0_-8px_32px_rgb(0_0_0/0.14)] ring-1 ring-line transition-[transform,visibility] duration-300 ease-out ${showTranscript ? 'visible translate-y-0' : 'invisible translate-y-full'} lg:visible lg:static lg:h-auto lg:min-h-0 lg:flex-1 lg:translate-y-0 lg:rounded-none lg:shadow-none lg:ring-0`}
+        >
+          <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+            <h2 className="m-0 text-base font-semibold text-ink">{t('Conversation')}</h2>
+            <span className="text-xs text-ink-muted max-lg:hidden">{t('Messages ({n})', { n: messages.length })}</span>
+            <button type="button" onClick={() => setShowTranscript(false)} aria-label={t('Hide messages')} title={t('Hide messages')} className="grid size-9 cursor-pointer place-items-center rounded-full border-0 bg-surface-strong text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden">
+              <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+          </div>
+          <div ref={listRef} role="log" aria-label={t('Voice conversation messages')} className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-4 text-start">
+            {messages.length === 0 && (
+              <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone or type to start.')}</p>
+            )}
+            {messages.map(renderMessage)}
+            {submitting && (
+              <div className="self-start rounded-2xl rounded-es-none bg-surface-sunken px-4 py-3 text-sm text-ink-muted ring-1 ring-line" role="status">
+                {t('Your teacher is thinking…')}
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+
+      {/* The text box with the AIM robot on its top-left corner (bottom of the left side on wide screens) */}
+      <VoiceComposer
+        draft={draft}
+        onDraftChange={setDraft}
+        onSend={() => void submitText(draft)}
+        micState={micState}
+        onMicToggle={handleMicToggle}
+        busy={submitting}
+        muted={muted}
+        onToggleMute={toggleMute}
+        robotState={robotState}
+        level={live.level}
+        thought={thought}
+        footer={
+          <button
+            type="button"
+            onClick={() => setShowTranscript((v) => !v)}
+            aria-expanded={showTranscript}
+            className="mx-auto mt-2 flex cursor-pointer items-center gap-2 rounded-full border-0 bg-surface-strong px-4 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden"
+          >
+            <svg aria-hidden="true" className={`size-4 transition-transform ${showTranscript ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 15l6-6 6 6" /></svg>
+            {showTranscript ? t('Hide messages') : t('Messages ({n})', { n: messages.length })}
+          </button>
+        }
+      />
     </div>
   );
 }

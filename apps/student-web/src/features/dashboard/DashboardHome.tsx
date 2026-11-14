@@ -142,8 +142,10 @@ export function DashboardHome() {
   useEffect(() => { load(); }, [load]);
 
   // The student's own course drives "what's next", so the panel and the lessons card always agree.
+  // Re-use courses loaded by LevelProvider to avoid a duplicate fetchStudentCourses() call.
+  const { courses: levelCourses } = useLearnerLevel();
   const activeCourseId = data?.enrollment?.found ? data.enrollment.courseId : null;
-  const current = useCurrentChapter(activeCourseId);
+  const current = useCurrentChapter(activeCourseId, levelCourses);
 
   const stats = data?.stats ?? null;
   const goal = data?.summary?.goal ?? null;
@@ -218,7 +220,7 @@ export function DashboardHome() {
               ) : (
                 <RoadmapEmpty courseId={courseId} courseTitle={courseTitle} unavailable={!!activeCourseId} />
               )}
-            <section aria-label={t('Your stats')} className="grid grid-cols-2 gap-5">
+            <section data-tour="xp-stats" aria-label={t('Your stats')} className="grid grid-cols-2 gap-5">
               {stats ? (
                 <>
                   <StatTile
@@ -242,7 +244,7 @@ export function DashboardHome() {
             <aside className="contents lg:col-span-5 lg:flex lg:min-w-0 lg:flex-col lg:gap-5" aria-label={t('Today')}>
               {/* First card on phones; on desktop it keeps its place at the top of the right column. */}
               <div className="order-first lg:order-none"><WordOfDayWidget /></div>
-            <section aria-label={t('Today')} className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-6">
+            <section data-tour="daily-goal" aria-label={t('Today')} className="flex flex-col items-center gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-6">
               {goal ? (
                 <>
                   <GoalRing done={goal.completedToday} target={goalTarget} met={goalMet} label={t('Daily goal progress')} />

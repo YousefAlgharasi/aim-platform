@@ -13,6 +13,7 @@ import { navItems } from './navItems';
 import { useRouteAccessibility } from '../hooks/useRouteAccessibility';
 import { useI18n } from '../i18n/I18nContext';
 import { StreakCelebrationHost } from '../interaction';
+import { GuidedTour } from '../features/tour/GuidedTour';
 import '../features/landing/landing.css';
 
 // Full-screen flows (chat, voice, lessons, practice, test attempts) hide the bottom tab bar
@@ -24,7 +25,7 @@ import '../features/landing/landing.css';
  */
 const AUTO_BACK = /^\/ai-teacher\/(?!history\/?$)[^/]+\/?$/;
 
-const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/(?!speaking|writing)|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
+const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/(?!speaking|writing)|improve\/retry\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
 
 export function AppLayout() {
   const { t } = useI18n();
@@ -75,6 +76,7 @@ export function AppLayout() {
         </main>
 
         <StreakCelebrationHost />
+        <GuidedTour />
         {showTabBar && <BottomTabBar onMenu={() => setMenuOpen(true)} />}
       </div>
     </div>

@@ -48,7 +48,9 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
 import 'package:aim_mobile/features/lessons/logic/entity/lessons_entities.dart';
+import 'package:aim_mobile/features/stories/ui/widgets/story_widgets.dart';
 import 'package:aim_mobile/features/lessons/logic/provider/lessons_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import '../widgets/lessons_widgets.dart';
@@ -134,6 +136,7 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
           bearerToken: token,
           chapterId: widget.chapterId,
         );
+    ref.invalidate(chapterStoryProvider(widget.chapterId));
     await _loadQuiz();
   }
 
@@ -157,6 +160,8 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
         : const <LessonProgress>[];
     final loadingLabel =
         AppLocalizations.of(context).lessonsLoadingLessonsSemantic;
+    // This chapter's part of the course story (null when the course has none, or it cannot load).
+    final story = ref.watch(chapterStoryProvider(widget.chapterId)).valueOrNull;
 
     return Scaffold(
       body: SafeArea(
@@ -181,6 +186,7 @@ class _LessonListPageState extends ConsumerState<LessonListPage> {
                     onRefresh: _refresh,
                     quiz: _quiz,
                     onQuizTap: _onQuizTap,
+                    story: story,
                   ),
                 AppAsyncIdle() => _idleBody(loadingLabel),
               },
@@ -302,12 +308,14 @@ class _LessonListContent extends StatelessWidget {
     required this.onRefresh,
     required this.quiz,
     required this.onQuizTap,
+    this.story,
   });
 
   final List<LessonProgress> lessons;
   final Future<void> Function() onRefresh;
   final ChapterQuizSummary? quiz;
   final VoidCallback onQuizTap;
+  final ChapterStory? story;
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +328,8 @@ class _LessonListContent extends StatelessWidget {
       );
     }
 
-    final itemCount = lessons.length + (quiz != null ? 1 : 0);
+    final storyItems = story != null ? 1 : 0;
+    final itemCount = lessons.length + storyItems + (quiz != null ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -333,7 +342,11 @@ class _LessonListContent extends StatelessWidget {
         separatorBuilder: (_, __) =>
             const SizedBox(height: AimSpacing.listItemGap),
         itemBuilder: (context, index) {
-          if (index >= lessons.length) {
+          // After the lessons: this chapter's story part, then its quiz.
+          if (index == lessons.length && story != null) {
+            return StoryPartTile(story: story!);
+          }
+          if (index >= lessons.length + storyItems) {
             return ChapterQuizTile(model: quiz!, onTap: onQuizTap);
           }
           final lesson = lessons[index];

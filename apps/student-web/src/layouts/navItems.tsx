@@ -75,16 +75,15 @@ export const navSections: NavSection[] = [
     items: [
       { to: '/', label: 'Dashboard', icon: icon(HomeIcon) },
       { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
-      { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
-      { to: '/assessments', label: 'Assessments', icon: icon(ClipboardIcon) },
+      { to: '/vocabulary-library', label: 'Vocabulary', icon: icon(BookIcon) },
+      { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
     ],
   },
   {
     title: 'Practice',
     items: [
       { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
-      { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
-      { to: '/vocabulary-library', label: 'Vocabulary', icon: icon(BookIcon) },
+      { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
       { to: '/vocabulary', label: 'My words', icon: icon(LightbulbIcon) },
       { to: '/mistakes', label: 'My mistakes', icon: icon(RetryIcon) },
     ],
@@ -93,6 +92,7 @@ export const navSections: NavSection[] = [
     title: 'Progress',
     items: [
       { to: '/progress', label: 'Progress', icon: icon(ChartIcon) },
+      { to: '/assessments', label: 'Assessments', icon: icon(ClipboardIcon) },
       { to: '/achievements', label: 'Achievements', icon: icon(TrophyIcon) },
       { to: '/certificates', label: 'Certificates', icon: icon(AcademicIcon) },
     ],

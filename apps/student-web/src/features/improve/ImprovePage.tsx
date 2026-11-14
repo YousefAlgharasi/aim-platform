@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FilterPills } from '../../components/common/FilterPills';
 import { FixedCelebration } from './FixedCelebration';
 import { WeeklyRecap } from './WeeklyRecap';
 import { Link } from 'react-router-dom';
@@ -21,7 +20,7 @@ import {
   type SkillStateEntry,
   type WeaknessRecordEntry,
 } from '../progress/aimApi';
-import { mistakesApi, type MistakeItem } from '../learner/learnerApi';
+import { mistakesApi, recoveryApi, type MistakeItem, type RecoverySkill, type SkillGroup } from '../learner/learnerApi';
 import * as ui from '../progress/ui';
 
 const OPEN = new Set(['open', 'improving']);
@@ -94,6 +93,32 @@ export const categoryOf = (skillId: string): Category => {
   return CATEGORIES.find((c) => id.includes(c)) ?? (id.includes('vocab') ? 'vocabulary' : id.includes('grammar') ? 'grammar' : 'other');
 };
 
+/** The 6 main skills the student sees. Pronunciation and functional language fold into speaking. */
+export const GROUPS: SkillGroup[] = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'];
+export const GROUP_LABEL: Record<SkillGroup, string> = {
+  grammar: 'Grammar', vocabulary: 'Vocabulary', reading: 'Reading', listening: 'Listening', writing: 'Writing', speaking: 'Speaking',
+};
+const CATEGORY_TO_GROUP: Record<Category, SkillGroup> = {
+  grammar: 'grammar', vocabulary: 'vocabulary', reading: 'reading', listening: 'listening', writing: 'writing',
+  speaking: 'speaking', pronunciation: 'speaking', comprehension: 'reading', other: 'vocabulary',
+};
+/** Server mapping when we have it (skill_group_map); the key-name guess only when the recovery call failed. */
+const KEY_SEGMENT_GROUP: Record<string, SkillGroup> = {
+  gra: 'grammar', grammar: 'grammar', voc: 'vocabulary', vocabulary: 'vocabulary', read: 'reading', reading: 'reading',
+  lis: 'listening', listening: 'listening', write: 'writing', writing: 'writing', spe: 'speaking', speaking: 'speaking',
+  pho: 'speaking', pronunciation: 'speaking', func: 'speaking', functional_language: 'speaking',
+};
+export const groupOf = (skillId: string, recovery?: Map<string, RecoverySkill>): SkillGroup => {
+  const mapped = recovery?.get(skillId)?.group;
+  if (mapped) return mapped;
+  // Keys look like "en.a2.gra.comparatives" or "placement.listening.dialogue": read the segments before guessing by name.
+  const seg = skillId.toLowerCase().split('.').map((x) => KEY_SEGMENT_GROUP[x]).find(Boolean);
+  return seg ?? CATEGORY_TO_GROUP[categoryOf(skillId)];
+};
+
+/** Whole days left until `iso`, rounded up (never below 1 while still locked). */
+export const daysUntil = (iso: string, now: number = Date.now()): number => Math.max(1, Math.ceil((new Date(iso).getTime() - now) / 86_400_000));
+
 const sevTone = { critical: ui.tone.error, developing: ui.tone.warning, emerging: ui.tone.neutral } as const;
 const sevLabel = { critical: 'Needs focus', developing: 'Getting there', emerging: 'Just spotted' } as const;
 
@@ -109,7 +134,7 @@ function Stat({ value, label, tone = '' }: { value: string | number; label: stri
   );
 }
 
-export function SpotCard({ spot, mistakes }: { spot: WeakSpot; mistakes: MistakeItem[] }) {
+export function SpotCard({ spot, mistakes, recovery }: { spot: WeakSpot; mistakes: MistakeItem[]; recovery?: RecoverySkill }) {
   const { t, plural } = useI18n();
   const name = prettifySkillId(spot.skillId);
   const pct = spot.skill ? toPercent(spot.skill.masteryScore) : null;
@@ -161,9 +186,28 @@ export function SpotCard({ spot, mistakes }: { spot: WeakSpot; mistakes: Mistake
                 </li>
               ))}
             </ul>
-            <Link to={`/mistakes?skill=${encodeURIComponent(spot.skillId)}`} className={ui.link}>
-              {mistakes.length > 2 ? t('See all {n} and fix them', { n: mistakes.length }) : t('Fix them')}
-            </Link>
+            {!recovery && (
+              <Link to={`/mistakes?skill=${encodeURIComponent(spot.skillId)}`} className={ui.link}>
+                {mistakes.length > 2 ? t('See all {n} and fix them', { n: mistakes.length }) : t('Fix them')}
+              </Link>
+            )}
+          </div>
+        )}
+
+        {recovery && recovery.openMistakes > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl bg-surface-muted p-3" aria-label={t('Recovery steps')}>
+            <ol className="m-0 flex list-none items-center gap-2 p-0 text-xs font-bold">
+              <li className="rounded-full bg-brand-soft px-2.5 py-1 text-brand-ink">1 · {t('Learn')}</li>
+              <li className={`rounded-full px-2.5 py-1 ${recovery.unlocked ? 'bg-success-soft text-success-ink' : 'bg-control text-ink-muted'}`}>2 · {recovery.unlocked ? `✓ ${t('Ready')}` : t('Wait')}</li>
+              <li className={`rounded-full px-2.5 py-1 ${recovery.unlocked ? 'bg-brand-soft text-brand-ink' : 'bg-control text-ink-muted'}`}>3 · {t('Retry')}</li>
+            </ol>
+            {recovery.unlocked ? (
+              <Link to={`/improve/retry/${encodeURIComponent(spot.skillId)}`} className={buttonClasses('primary', 'sm')}>{t('Retry now')}</Link>
+            ) : (
+              <p className="m-0 text-xs text-ink-muted">
+                {t('Retry opens in {n} days. Spacing it out helps you remember. Learn it with the AI Teacher in the meantime.', { n: daysUntil(recovery.retryAvailableAt ?? new Date().toISOString()) })}
+              </p>
+            )}
           </div>
         )}
 
@@ -189,11 +233,17 @@ export function ImprovePage() {
   const { data, loading, error, reload } = useAimResults();
   const [mistakes, setMistakes] = useState<number | null>(null);
   const [mistakeItems, setMistakeItems] = useState<MistakeItem[]>([]);
-  const [cat, setCat] = useState<Category | 'all'>('all');
+  const [cat, setCat] = useState<SkillGroup | 'all'>('all');
+  const [recoverySkills, setRecoverySkills] = useState<RecoverySkill[] | null>(null);
 
   useEffect(() => {
     mistakesApi.list().then((r) => { setMistakes(r.total); setMistakeItems(r.items); }).catch(() => setMistakes(null));
   }, []);
+
+  useEffect(() => {
+    recoveryApi.overview().then((r) => setRecoverySkills(r.skills)).catch(() => setRecoverySkills(null));
+  }, []);
+  const recoveryBySkill = useMemo(() => new Map((recoverySkills ?? []).map((r) => [r.skillKey, r])), [recoverySkills]);
 
   const spots = useMemo(() => (data ? buildWeakSpots(data) : []), [data]);
   // The real wrong answers, grouped under the skill they belong to.
@@ -209,9 +259,13 @@ export function ImprovePage() {
 
   const fixed = data.weaknessRecords.filter((w) => w.status.toLowerCase() === 'resolved');
   const dueReviews = data.reviewSchedules.filter((r) => ['due', 'pending', 'rescheduled'].includes(r.status.toLowerCase()) && new Date(r.dueAt).getTime() <= Date.now());
-  const counts = spots.reduce<Partial<Record<Category, number>>>((m, s) => ({ ...m, [categoryOf(s.skillId)]: (m[categoryOf(s.skillId)] ?? 0) + 1 }), {});
-  const cats = (Object.keys(counts) as Category[]).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0));
-  const visible = cat === 'all' ? spots : spots.filter((s) => categoryOf(s.skillId) === cat);
+  const groupStats = GROUPS.map((g) => {
+    const inGroup = spots.filter((sp) => groupOf(sp.skillId, recoveryBySkill) === g);
+    const scored = inGroup.filter((sp) => sp.skill);
+    const avg = scored.length ? scored.reduce((n, sp) => n + (sp.skill?.masteryScore ?? 0), 0) / scored.length : null;
+    return { group: g, count: inGroup.length, avg, ready: inGroup.filter((sp) => recoveryBySkill.get(sp.skillId)?.unlocked && (recoveryBySkill.get(sp.skillId)?.openMistakes ?? 0) > 0).length };
+  });
+  const visible = cat === 'all' ? spots : spots.filter((s) => groupOf(s.skillId, recoveryBySkill) === cat);
   const top = spots[0];
   const topLesson = top?.lessonId;
 
@@ -270,12 +324,29 @@ export function ImprovePage() {
           <EmptyState title={t('No weaknesses detected')} message={t('Great work — no areas to improve have been detected yet.')} />
         ) : (
           <>
-            {cats.length > 1 && (
-              <FilterPills label={t('Filter by skill type')} value={cat} onChange={setCat}
-                options={(['all', ...cats] as Array<Category | 'all'>).map((c) => ({ key: c, label: c === 'all' ? `${t('All')} (${spots.length})` : `${t(CATEGORY_LABEL[c])} (${counts[c]})` }))} />
-            )}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label={t('Filter by skill type')}>
+              {groupStats.map((g) => {
+                const active = cat === g.group;
+                return (
+                  <button
+                    key={g.group}
+                    type="button"
+                    disabled={g.count === 0}
+                    aria-pressed={active}
+                    onClick={() => setCat(active ? 'all' : g.group)}
+                    className={`flex min-h-[4.5rem] cursor-pointer flex-col items-start gap-1 rounded-2xl border-0 p-3 text-start ring-1 transition-colors disabled:cursor-default disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${active ? 'bg-brand-soft ring-brand' : 'bg-surface ring-line hover:bg-surface-muted'}`}
+                  >
+                    <span className="text-sm font-bold text-ink">{t(GROUP_LABEL[g.group])}</span>
+                    <span className="text-xs font-semibold text-ink-muted">
+                      {g.count === 0 ? t('All good') : [t('{n} to work on', { n: g.count }), g.avg !== null ? t('Mastery {pct}%', { pct: toPercent(g.avg) }) : ''].filter(Boolean).join(' · ')}
+                    </span>
+                    {g.ready > 0 && <span className={ui.badge(ui.tone.success)}>{t('{n} ready to retry', { n: g.ready })}</span>}
+                  </button>
+                );
+              })}
+            </div>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {visible.map((s) => <SpotCard key={s.skillId} spot={s} mistakes={mistakesBySkill.get(s.skillId) ?? []} />)}
+              {visible.map((s) => <SpotCard key={s.skillId} spot={s} mistakes={mistakesBySkill.get(s.skillId) ?? []} recovery={recoveryBySkill.get(s.skillId)} />)}
             </div>
           </>
         )}

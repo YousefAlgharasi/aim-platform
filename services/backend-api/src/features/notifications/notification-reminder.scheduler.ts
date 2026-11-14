@@ -28,14 +28,26 @@ export class NotificationReminderScheduler {
     await this.jobLock.runExclusive('reminders.fire-due', async () => {
       const dueSchedules = await this.scheduleService.getDueSchedules(100);
 
+      // One reminder per student per run: several due reviews for the same student are all marked done together.
+      const byOwner = new Map<string, typeof dueSchedules>();
       for (const schedule of dueSchedules) {
+        if (schedule.kind !== 'review' && schedule.kind !== 'learning_plan') continue;
+        byOwner.set(schedule.owner_id, [...(byOwner.get(schedule.owner_id) ?? []), schedule]);
+      }
+
+      for (const [ownerId, schedules] of byOwner) {
         try {
-          if (schedule.kind === 'review' || schedule.kind === 'learning_plan') {
-            await this.learningReminderIntegration.fireLearningReminder(schedule.owner_id);
-            await this.scheduleService.cancelSchedule(schedule.id, schedule.owner_id);
-          }
+          await this.learningReminderIntegration.fireLearningReminder(ownerId);
         } catch (error) {
-          this.logger.error(`Failed to fire reminder schedule=${schedule.id}`, error as Error);
+          this.logger.error(`Failed to fire reminder for owner=${ownerId}`, error as Error);
+          continue; // leave the schedules active so the next tick retries
+        }
+        for (const schedule of schedules) {
+          try {
+            await this.scheduleService.cancelSchedule(schedule.id, schedule.owner_id);
+          } catch (error) {
+            this.logger.error(`Failed to close reminder schedule=${schedule.id}`, error as Error);
+          }
         }
       }
     });

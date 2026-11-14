@@ -14,6 +14,7 @@ import {
   dismissNotification,
   isUnread,
   categoryLabel,
+  safeInternalLink,
   INBOX_PAGE_SIZE,
   type NotificationEvent,
 } from './notificationsApi';
@@ -200,6 +201,15 @@ export function NotificationCenterPage() {
                   <span className="text-xs font-semibold text-ink-muted">
                     {categoryLabel(notif.category)} · {formatDateTime(notif.created_at)}
                   </span>
+                  {safeInternalLink(notif.payload?.link) && (
+                    <Link
+                      to={safeInternalLink(notif.payload?.link) as string}
+                      onClick={e => e.stopPropagation()}
+                      className="mt-1 inline-flex w-fit items-center rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white no-underline hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                    >
+                      {t('Go to Improve')}
+                    </Link>
+                  )}
                 </div>
                 <button
                   type="button"

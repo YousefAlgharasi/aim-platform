@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
-import { CheckIcon, ClipboardIcon } from '../../components/common/Icons';
+import { BookIcon, CheckIcon, ClipboardIcon } from '../../components/common/Icons';
 import { LockIcon } from '../curriculum/CurriculumIcons';
 
 export type RowStatus = 'completed' | 'current' | 'available' | 'locked';
@@ -9,7 +9,7 @@ export type RowStatus = 'completed' | 'current' | 'available' | 'locked';
 /** One stop on the road: a lesson or the chapter quiz. */
 export interface RoadStop {
   key: string;
-  kind: 'lesson' | 'quiz';
+  kind: 'lesson' | 'quiz' | 'story';
   status: RowStatus;
   /** Bold line next to the stop, e.g. "Lesson 3" or "Chapter quiz". */
   label: string;
@@ -65,7 +65,7 @@ export function RoadMap({ stops, courseId, scrollToCurrent = false, className = 
   useEffect(() => () => { if (nudgeTimer.current !== null) window.clearTimeout(nudgeTimer.current); }, []);
   function explainLocked(i: number) {
     const stop = stops[i];
-    const text = stop.kind === 'quiz' ? t('Finish every lesson to unlock the quiz') : t('Finish {lesson} first', { lesson: stops[i - 1]?.label ?? '' });
+    const text = stop.kind === 'quiz' ? t('Finish every lesson to unlock the quiz') : stop.kind === 'story' ? t('Finish this chapter\'s lessons to unlock the story') : t('Finish {lesson} first', { lesson: stops[i - 1]?.label ?? '' });
     if (nudgeTimer.current !== null) window.clearTimeout(nudgeTimer.current);
     setNudge((cur) => ({ key: stop.key, text, n: (cur?.n ?? 0) + 1 }));
     nudgeTimer.current = window.setTimeout(() => setNudge(null), 2600);
@@ -115,6 +115,7 @@ export function RoadMap({ stops, courseId, scrollToCurrent = false, className = 
         {stops.map((stop, i) => {
           const status = stop.status;
           const isQuiz = stop.kind === 'quiz';
+          const isStory = stop.kind === 'story';
           const shape = isQuiz ? 'rounded-2xl' : 'rounded-full';
           const locked = status === 'locked';
           const current = status === 'current';
@@ -127,7 +128,7 @@ export function RoadMap({ stops, courseId, scrollToCurrent = false, className = 
             <>
               <span className={`relative shrink-0 ${current ? 'lp-pulse' : ''}`}>
                 <span key={nudge?.key === stop.key ? nudge.n : 0} aria-hidden="true" className={`lp-node grid size-[68px] place-items-center ${shape} bg-surface ${tone} border-solid ${ring} ${nudge?.key === stop.key ? 'lp-shake' : ''}`} style={{ borderWidth: RING }}>
-                  {status === 'completed' ? <CheckIcon className="size-6" /> : locked ? <LockIcon className="size-5" /> : isQuiz ? <ClipboardIcon className="size-6" /> : <span className="lp-num text-xl font-semibold">{stop.n}</span>}
+                  {status === 'completed' ? <CheckIcon className="size-6" /> : locked ? <LockIcon className="size-5" /> : isQuiz ? <ClipboardIcon className="size-6" /> : isStory ? <BookIcon className="size-6" /> : <span className="lp-num text-xl font-semibold">{stop.n}</span>}
                 </span>
                 {current && (
                   <span aria-hidden="true" className="absolute -bottom-1 -end-1 grid size-7 place-items-center rounded-full bg-brand text-white ring-2 ring-surface">
@@ -153,13 +154,13 @@ export function RoadMap({ stops, courseId, scrollToCurrent = false, className = 
               role="listitem"
               data-status={status}
               aria-disabled={locked ? true : undefined}
-              title={locked ? (isQuiz ? t('Complete every lesson in this chapter to unlock the quiz') : t('Complete the previous lesson first')) : undefined}
+              title={locked ? (isQuiz ? t('Complete every lesson in this chapter to unlock the quiz') : isStory ? t('Complete every lesson in this chapter to unlock the story') : t('Complete the previous lesson first')) : undefined}
               className="relative h-[116px]"
             >
               {locked ? (
                 <button type="button" aria-disabled="true" onClick={() => explainLocked(i)} className={`${row} cursor-not-allowed rounded-full border-0 bg-transparent p-0 opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus`} style={pos}>{inner}</button>
               ) : (
-                <Link to={stop.to} state={isQuiz || !courseId ? undefined : { courseId }} className={`${row} rounded-full no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus`} style={pos}>
+                <Link to={stop.to} state={isQuiz || isStory || !courseId ? undefined : { courseId }} className={`${row} rounded-full no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus`} style={pos}>
                   {inner}
                 </Link>
               )}

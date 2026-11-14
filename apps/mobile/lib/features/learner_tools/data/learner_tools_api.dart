@@ -194,6 +194,344 @@ class DueReview {
   final String? lessonTitle;
 }
 
+/// The 6 main skills the Improve page groups weak skills under.
+const recoveryGroups = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'];
+
+/// A weak skill with its retry state (`GET /student/recovery`). The server owns
+/// the group, the 3-day wait and the unlock; this only displays them.
+class RecoverySkill {
+  const RecoverySkill({
+    required this.skillKey,
+    required this.title,
+    required this.group,
+    required this.openMistakes,
+    required this.unlocked,
+    this.masteryScore,
+    this.retryAvailableAt,
+  });
+
+  final String skillKey;
+  final String title;
+  final String group;
+  final int openMistakes;
+  final bool unlocked;
+  final double? masteryScore;
+
+  /// Null when there is nothing to wait for.
+  final DateTime? retryAvailableAt;
+
+  /// Whole days left until the retry opens, never below 1 while it is locked.
+  int daysLeft([DateTime? now]) {
+    final at = retryAvailableAt;
+    if (at == null) return 0;
+    final ms = at.difference(now ?? DateTime.now()).inMilliseconds;
+    final days = (ms / Duration.millisecondsPerDay).ceil();
+    return days < 1 ? 1 : days;
+  }
+
+  factory RecoverySkill.fromJson(Map<String, dynamic> j) {
+    final group = j['group']?.toString() ?? 'vocabulary';
+    return RecoverySkill(
+      skillKey: j['skillKey']?.toString() ?? '',
+      title: j['title']?.toString() ?? '',
+      group: recoveryGroups.contains(group) ? group : 'vocabulary',
+      openMistakes: (j['openMistakes'] as num?)?.round() ?? 0,
+      unlocked: j['unlocked'] != false,
+      masteryScore: (j['masteryScore'] as num?)?.toDouble(),
+      retryAvailableAt: DateTime.tryParse(j['retryAvailableAt']?.toString() ?? ''),
+    );
+  }
+}
+
+/// One question of a retry session. No correctness data, by contract.
+class RecoveryQuestion {
+  const RecoveryQuestion({
+    required this.itemId,
+    required this.type,
+    required this.prompt,
+    required this.options,
+  });
+
+  final String itemId;
+  final String type;
+  final String prompt;
+  final List<MistakeOption> options;
+
+  factory RecoveryQuestion.fromJson(Map<String, dynamic> j) => RecoveryQuestion(
+        itemId: j['itemId']?.toString() ?? '',
+        type: j['type']?.toString() ?? 'multiple_choice',
+        prompt: j['prompt']?.toString() ?? '',
+        options: (j['options'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map((o) => MistakeOption(id: o['id']?.toString() ?? '', text: o['text']?.toString() ?? ''))
+            .toList(),
+      );
+}
+
+/// A started retry session (`POST /student/recovery/start`). Answers are sent
+/// through the normal session attempt call, so the AIM engine updates mastery.
+class RecoveryStart {
+  const RecoveryStart({required this.sessionId, required this.skillKey, required this.questions});
+
+  final String sessionId;
+  final String skillKey;
+  final List<RecoveryQuestion> questions;
+}
+
+/// A skill the student can practise in grammar, listening or reading
+/// (`GET /student/practice/skills`). The server picks what is allowed at their
+/// level and which skill is recommended.
+class PracticeSkill {
+  const PracticeSkill({
+    required this.skillKey,
+    required this.title,
+    required this.recommended,
+    this.masteryScore,
+  });
+
+  final String skillKey;
+  final String title;
+  final bool recommended;
+  final double? masteryScore;
+
+  factory PracticeSkill.fromJson(Map<String, dynamic> j) => PracticeSkill(
+        skillKey: j['skillKey']?.toString() ?? '',
+        title: j['title']?.toString() ?? '',
+        recommended: j['recommended'] == true,
+        masteryScore: (j['masteryScore'] as num?)?.toDouble(),
+      );
+}
+
+/// A started practice session (`POST /student/practice/start`). Answers are sent
+/// through the normal session attempt call, so the AIM engine updates mastery.
+class PracticeStart {
+  const PracticeStart({
+    required this.sessionId,
+    required this.skillKey,
+    required this.title,
+    required this.questions,
+    this.passage,
+  });
+
+  final String sessionId;
+  final String skillKey;
+  final String title;
+
+  /// Reading only: shown once above the questions.
+  final String? passage;
+  final List<RecoveryQuestion> questions;
+}
+
+/// One line of a story: a friend speaking, or the narrator.
+class StoryLine {
+  const StoryLine({required this.speaker, required this.text});
+
+  /// `narrator`, `sarah`, `adam`, `yasmin` or `tariq`.
+  final String speaker;
+  final String text;
+
+  factory StoryLine.fromJson(Map<String, dynamic> j) => StoryLine(
+        speaker: j['speaker']?.toString().toLowerCase() ?? 'narrator',
+        text: j['text']?.toString() ?? '',
+      );
+}
+
+/// One scene of a story with its questions (no correctness data).
+class StoryScene {
+  const StoryScene({
+    required this.position,
+    required this.setting,
+    required this.lines,
+    required this.questions,
+    required this.done,
+    this.settingAr,
+  });
+
+  final int position;
+  final String setting;
+  final String? settingAr;
+  final List<StoryLine> lines;
+  final List<RecoveryQuestion> questions;
+  final bool done;
+
+  factory StoryScene.fromJson(Map<String, dynamic> j) => StoryScene(
+        position: (j['position'] as num?)?.round() ?? 0,
+        setting: j['setting']?.toString() ?? '',
+        settingAr: j['settingAr'] as String?,
+        lines: (j['lines'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StoryLine.fromJson)
+            .where((l) => l.text.trim().isNotEmpty)
+            .toList(),
+        questions: (j['questions'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RecoveryQuestion.fromJson)
+            .toList(),
+        done: j['done'] == true,
+      );
+}
+
+/// A story card (`GET /student/stories`). Progress comes from the student's real answers.
+class StorySummary {
+  const StorySummary({
+    this.courseId,
+    required this.storyId,
+    required this.courseTitle,
+    required this.title,
+    required this.summary,
+    required this.scenes,
+    required this.questions,
+    required this.answered,
+    required this.minutes,
+    required this.locked,
+    required this.completed,
+    this.cefrCode,
+    this.titleAr,
+    this.summaryAr,
+  });
+
+  final String? courseId;
+  final String storyId;
+  final String courseTitle;
+  final String? cefrCode;
+  final String title;
+  final String? titleAr;
+  final String summary;
+  final String? summaryAr;
+  final int scenes;
+  final int questions;
+  final int answered;
+  final int minutes;
+  final bool locked;
+  final bool completed;
+
+  /// 0..100 from the real answers.
+  int get percent => questions <= 0 ? 0 : ((answered / questions) * 100).round().clamp(0, 100);
+
+  factory StorySummary.fromJson(Map<String, dynamic> j) => StorySummary(
+        courseId: j['courseId'] as String?,
+        storyId: j['storyId']?.toString() ?? '',
+        courseTitle: j['courseTitle']?.toString() ?? '',
+        cefrCode: j['cefrCode'] as String?,
+        title: j['title']?.toString() ?? '',
+        titleAr: j['titleAr'] as String?,
+        summary: j['summary']?.toString() ?? '',
+        summaryAr: j['summaryAr'] as String?,
+        scenes: (j['scenes'] as num?)?.round() ?? 0,
+        questions: (j['questions'] as num?)?.round() ?? 0,
+        answered: (j['answered'] as num?)?.round() ?? 0,
+        minutes: (j['minutes'] as num?)?.round() ?? 1,
+        locked: j['locked'] == true,
+        completed: j['completed'] == true,
+      );
+}
+
+/// A whole story (`GET /student/stories/:id`).
+class StoryDetail {
+  const StoryDetail({
+    required this.summary,
+    required this.sceneList,
+    required this.resumeScene,
+    this.part,
+    this.partCount = 1,
+  });
+
+  final StorySummary summary;
+  final List<StoryScene> sceneList;
+  final int resumeScene;
+
+  /// Set when only one chapter's part of the story was asked for.
+  final int? part;
+  final int partCount;
+
+  factory StoryDetail.fromJson(Map<String, dynamic> j) => StoryDetail(
+        summary: StorySummary.fromJson(j),
+        sceneList: (j['sceneList'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StoryScene.fromJson)
+            .toList(),
+        resumeScene: (j['resumeScene'] as num?)?.round() ?? 0,
+        part: (j['part'] as num?)?.round(),
+        partCount: (j['partCount'] as num?)?.round() ?? 1,
+      );
+}
+
+/// One chapter's part of a course story. The server decides when it unlocks (the chapter's lessons are finished).
+class StoryPart {
+  const StoryPart({
+    required this.index,
+    required this.chapterId,
+    required this.scenes,
+    required this.questions,
+    required this.answered,
+    required this.unlocked,
+    required this.done,
+  });
+
+  final int index;
+  final String chapterId;
+  final int scenes;
+  final int questions;
+  final int answered;
+  final bool unlocked;
+  final bool done;
+
+  factory StoryPart.fromJson(Map<String, dynamic> j) => StoryPart(
+        index: (j['index'] as num?)?.round() ?? 0,
+        chapterId: j['chapterId']?.toString() ?? '',
+        scenes: (j['scenes'] as num?)?.round() ?? 0,
+        questions: (j['questions'] as num?)?.round() ?? 0,
+        answered: (j['answered'] as num?)?.round() ?? 0,
+        unlocked: j['unlocked'] == true,
+        done: j['done'] == true,
+      );
+}
+
+/// A course's story with one part per chapter (`GET /student/courses/:id/story`).
+class CourseStory {
+  const CourseStory({required this.summary, required this.parts, required this.partsRead});
+
+  final StorySummary summary;
+  final List<StoryPart> parts;
+  final int partsRead;
+
+  /// The part to open next: the first one that is unlocked and not finished.
+  StoryPart? get next {
+    for (final p in parts) {
+      if (p.unlocked && !p.done) return p;
+    }
+    return null;
+  }
+
+  factory CourseStory.fromJson(Map<String, dynamic> j) => CourseStory(
+        summary: StorySummary.fromJson(j),
+        parts: (j['parts'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StoryPart.fromJson)
+            .toList(),
+        partsRead: (j['partsRead'] as num?)?.round() ?? 0,
+      );
+}
+
+/// One chapter's story part, for the chapter's lesson list (`GET /student/chapters/:id/story`).
+class ChapterStory {
+  const ChapterStory({required this.storyId, required this.title, required this.part, this.titleAr, this.courseId});
+
+  final String storyId;
+  final String title;
+  final String? titleAr;
+  final String? courseId;
+  final StoryPart part;
+
+  factory ChapterStory.fromJson(Map<String, dynamic> j) => ChapterStory(
+        storyId: j['storyId']?.toString() ?? '',
+        title: j['title']?.toString() ?? '',
+        titleAr: j['titleAr'] as String?,
+        courseId: j['courseId'] as String?,
+        part: StoryPart.fromJson(j['part'] as Map<String, dynamic>? ?? const {}),
+      );
+}
+
 /// Talks to the same endpoints the web app uses for My words and My mistakes.
 /// Correctness and review scheduling are decided by the backend only.
 class LearnerToolsApi {
@@ -375,6 +713,135 @@ class LearnerToolsApi {
     );
     return r.data!;
   }
+  /// Weak skills with their group, 3-day wait and retry state.
+  Future<List<RecoverySkill>> recoveryOverview() async {
+    final r = await _client.get<List<RecoverySkill>>(
+      '/student/recovery',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['skills'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RecoverySkill.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// Starts a retry session for [skillKey]. The server answers 403 while the wait is running.
+  Future<RecoveryStart> startRecovery(String skillKey) async {
+    final r = await _client.post<RecoveryStart>(
+      '/student/recovery/start',
+      body: {'skillKey': skillKey},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return RecoveryStart(
+          sessionId: m['sessionId']?.toString() ?? '',
+          skillKey: m['skillKey']?.toString() ?? skillKey,
+          questions: (m['questions'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(RecoveryQuestion.fromJson)
+              .toList(),
+        );
+      },
+    );
+    return r.data!;
+  }
+  /// The skills the student can practise in [mode] (`grammar`, `listening` or `reading`).
+  Future<List<PracticeSkill>> practiceSkills(String mode) async {
+    final r = await _client.get<List<PracticeSkill>>(
+      '/student/practice/skills',
+      queryParameters: {'mode': mode},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['skills'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(PracticeSkill.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// Starts a scored practice session. The server writes the questions at the student's level.
+  Future<PracticeStart> startPractice(String mode, String skillKey) async {
+    final r = await _client.post<PracticeStart>(
+      '/student/practice/start',
+      body: {'mode': mode, 'skillKey': skillKey},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return PracticeStart(
+          sessionId: m['sessionId']?.toString() ?? '',
+          skillKey: m['skillKey']?.toString() ?? skillKey,
+          title: m['title']?.toString() ?? '',
+          passage: m['passage'] as String?,
+          questions: (m['questions'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(RecoveryQuestion.fromJson)
+              .toList(),
+        );
+      },
+    );
+    return r.data!;
+  }
+  /// Published stories with this student's progress and lock state.
+  Future<List<StorySummary>> stories() async {
+    final r = await _client.get<List<StorySummary>>(
+      '/student/stories',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['stories'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StorySummary.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// The course's story split into one part per chapter, or null when the course has none.
+  Future<CourseStory?> courseStory(String courseId) async {
+    final r = await _client.get<CourseStory?>(
+      '/student/courses/${Uri.encodeComponent(courseId)}/story',
+      decodeData: (json) {
+        final m = (json as Map<String, dynamic>? ?? const {})['story'];
+        return m is Map<String, dynamic> ? CourseStory.fromJson(m) : null;
+      },
+    );
+    return r.data;
+  }
+
+  /// This chapter's part of its course story, or null when the course has none.
+  Future<ChapterStory?> chapterStory(String chapterId) async {
+    final r = await _client.get<ChapterStory?>(
+      '/student/chapters/${Uri.encodeComponent(chapterId)}/story',
+      decodeData: (json) {
+        final m = (json as Map<String, dynamic>? ?? const {})['story'];
+        return m is Map<String, dynamic> ? ChapterStory.fromJson(m) : null;
+      },
+    );
+    return r.data;
+  }
+
+  /// One story with its scenes (only one chapter's part when [part] is given). The server answers 403 while it is locked.
+  Future<StoryDetail> story(String id, {int? part}) async {
+    final r = await _client.get<StoryDetail>(
+      '/student/stories/${Uri.encodeComponent(id)}',
+      queryParameters: part == null ? null : {'part': '$part'},
+      decodeData: (json) => StoryDetail.fromJson(json as Map<String, dynamic>? ?? const {}),
+    );
+    return r.data!;
+  }
+
+  /// Starts a reading session; answers go through the normal session attempt call.
+  Future<String> startStory(String id, {int? part}) async {
+    final r = await _client.post<String>(
+      '/student/stories/${Uri.encodeComponent(id)}/start',
+      body: part == null ? const <String, Object?>{} : {'part': part},
+      decodeData: (json) => ((json as Map<String, dynamic>? ?? const {})['sessionId'] ?? '').toString(),
+    );
+    return r.data ?? '';
+  }
 }
 
 final learnerToolsApiProvider = Provider<LearnerToolsApi>(
@@ -419,6 +886,33 @@ final dueReviewsProvider = FutureProvider.autoDispose<List<DueReview>>((ref) asy
   };
   if (studentId == null) return const [];
   return ref.watch(learnerToolsApiProvider).dueReviews(studentId);
+});
+
+/// Weak skills with their retry state. A failure is not an error for the page:
+/// it falls back to the plain list (no groups from the server, no retry steps).
+final recoveryProvider = FutureProvider.autoDispose<List<RecoverySkill>>((ref) async {
+  try {
+    return await ref.watch(learnerToolsApiProvider).recoveryOverview();
+  } catch (_) {
+    return const <RecoverySkill>[];
+  }
+});
+
+/// A failed story request is never an error for the course screens: the story is a bonus, so it just does not show.
+final courseStoryProvider = FutureProvider.autoDispose.family<CourseStory?, String>((ref, courseId) async {
+  try {
+    return await ref.watch(learnerToolsApiProvider).courseStory(courseId);
+  } catch (_) {
+    return null;
+  }
+});
+
+final chapterStoryProvider = FutureProvider.autoDispose.family<ChapterStory?, String>((ref, chapterId) async {
+  try {
+    return await ref.watch(learnerToolsApiProvider).chapterStory(chapterId);
+  } catch (_) {
+    return null;
+  }
 });
 
 final mistakesProvider =

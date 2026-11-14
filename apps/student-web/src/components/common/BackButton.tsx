@@ -6,6 +6,8 @@ interface BackButtonProps {
   fallback?: string;
   /** Extra classes, e.g. for alignment. */
   className?: string;
+  /** Replaces the default "go back" behaviour (e.g. step back inside a flow instead of leaving it). */
+  onBack?: () => void;
 }
 
 /**
@@ -13,11 +15,12 @@ interface BackButtonProps {
  * current page there is nothing to go back to, so it goes to `fallback` instead.
  * The arrow flips automatically in right-to-left layouts.
  */
-export function BackButton({ fallback = '/', className = '' }: BackButtonProps) {
+export function BackButton({ fallback = '/', className = '', onBack }: BackButtonProps) {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   function goBack() {
+    if (onBack) { onBack(); return; }
     // BrowserRouter keeps an index in history.state; 0 means this tab started on this page.
     if ((window.history.state?.idx ?? 0) > 0) navigate(-1);
     else navigate(fallback, { replace: true });

@@ -91,6 +91,33 @@ class VoiceTeacherRemoteDatasourceImpl implements VoiceTeacherRemoteDatasource {
   }
 
   @override
+  Future<VoiceAudioSubmitResponseModel> submitText({
+    required String bearerToken,
+    required String sessionId,
+    required String message,
+  }) async {
+    final envelope = await _apiClient.post<VoiceAudioSubmitResponseModel>(
+      BackendApiPaths.aiTeacherSessionMessages(sessionId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+      body: {'message': message},
+      decodeData: (json) =>
+          VoiceAudioSubmitResponseModel.fromJson(_requireMap(json)),
+    );
+    return envelope.data!;
+  }
+
+  @override
+  Future<List<int>> getMessageAudio({
+    required String bearerToken,
+    required String messageId,
+  }) {
+    return _apiClient.getBytes(
+      BackendApiPaths.voiceTeacherMessageAudio(messageId),
+      headers: {'authorization': 'Bearer $bearerToken'},
+    );
+  }
+
+  @override
   Future<VoiceFeedbackResponseModel> submitFeedback({
     required String bearerToken,
     required String sessionId,

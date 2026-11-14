@@ -6,7 +6,6 @@ import '../../../core/localization/inline_tr.dart';
 import '../../../core/routing/app_route_paths.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../learner_tools/data/learner_tools_api.dart';
-import '../../shell/logic/main_shell_tab_provider.dart';
 import 'widgets/practice_widgets.dart';
 
 /// Practice — one place to see every way to practice, with what is waiting
@@ -39,11 +38,6 @@ class PracticeHubPage extends ConsumerWidget {
 
     final surfaces = aimSurfacesOf(context);
 
-    void openCourses() {
-      ref.read(mainShellTabIndexProvider.notifier).state = 1;
-      context.go(AppRoutePaths.mainShell);
-    }
-
     final skills = [
       PracticeSkillTile(
         icon: Icons.mic_rounded,
@@ -60,18 +54,32 @@ class PracticeHubPage extends ConsumerWidget {
         onTap: () => context.push(AppRoutePaths.practiceWriting),
       ),
       PracticeSkillTile(
+        icon: Icons.spellcheck_rounded,
+        tone: const Color(0xFF0EA5E9),
+        title: context.tr('Grammar', 'القواعد'),
+        subtitle: context.tr('Drills matched to your level', 'تمارين مناسبة لمستواك'),
+        onTap: () => context.push('${AppRoutePaths.skillPractice}?mode=grammar'),
+      ),
+      PracticeSkillTile(
+        icon: Icons.translate_rounded,
+        tone: const Color(0xFFEC4899),
+        title: context.tr('Vocabulary', 'المفردات'),
+        subtitle: context.tr('Hear and save words', 'استمع إلى الكلمات واحفظها'),
+        onTap: () => context.push(AppRoutePaths.vocabularyLibrary),
+      ),
+      PracticeSkillTile(
         icon: Icons.headphones_rounded,
         tone: const Color(0xFF10B981),
         title: context.tr('Listen', 'استمع'),
-        subtitle: context.tr('Hear words and sentences', 'استمع إلى الكلمات والجمل'),
-        onTap: () => context.push(AppRoutePaths.vocabularyLibrary),
+        subtitle: context.tr('Listen and answer questions', 'استمع وأجب عن الأسئلة'),
+        onTap: () => context.push('${AppRoutePaths.skillPractice}?mode=listening'),
       ),
       PracticeSkillTile(
         icon: Icons.menu_book_rounded,
         tone: const Color(0xFFF59E0B),
         title: context.tr('Read', 'اقرأ'),
-        subtitle: context.tr('Read and learn', 'اقرأ وتعلّم'),
-        onTap: openCourses,
+        subtitle: context.tr('Read and answer questions', 'اقرأ وأجب عن الأسئلة'),
+        onTap: () => context.push('${AppRoutePaths.skillPractice}?mode=reading'),
       ),
     ];
 
@@ -149,6 +157,17 @@ class PracticeHubPage extends ConsumerWidget {
                     Expanded(child: skills[2]),
                     const SizedBox(width: AimSpacing.componentGap),
                     Expanded(child: skills[3]),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AimSpacing.componentGap),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: skills[4]),
+                    const SizedBox(width: AimSpacing.componentGap),
+                    Expanded(child: skills[5]),
                   ],
                 ),
               ),

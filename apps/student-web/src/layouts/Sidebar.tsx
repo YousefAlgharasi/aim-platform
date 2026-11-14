@@ -135,8 +135,8 @@ export function SidebarContent({
                     className={({ isActive }) =>
                       `relative flex items-center rounded-lg ${collapsed ? 'justify-center h-11' : 'gap-3.5 px-3.5 py-2.5'} font-medium text-[15px] no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${
                         isActive
-                          ? 'bg-surface-strong font-semibold text-ink before:absolute before:start-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-ink'
-                          : 'text-ink-muted hover:text-ink hover:bg-surface-muted'
+                          ? 'bg-brand-soft font-semibold text-brand-ink before:absolute before:start-0 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-brand'
+                          : 'text-ink-muted hover:bg-brand-soft hover:text-brand-ink'
                       }`
                     }
                   >
@@ -192,6 +192,7 @@ export function Sidebar({ forceCollapsed = false }: { forceCollapsed?: boolean }
 
   return (
     <aside
+      data-tour="nav"
       aria-label={t('Sidebar')}
       className={`hidden md:block shrink-0 sticky top-0 z-10 h-screen overflow-hidden bg-page border-e border-line shadow-[1px_0_4px_rgba(0,0,0,0.06)] rtl:shadow-[-1px_0_4px_rgba(0,0,0,0.06)] transition-[width] duration-300 ease-in-out motion-reduce:transition-none ${
         collapsed ? 'w-[76px]' : 'w-64'

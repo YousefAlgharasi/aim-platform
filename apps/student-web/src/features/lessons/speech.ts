@@ -36,3 +36,27 @@ export function speakItem(text: string, isolated: boolean): Promise<void> {
     synth.speak(u);
   });
 }
+
+/** Speak a whole sentence (a line of a dialogue) with a chosen pitch; resolves when it ends or is interrupted. */
+export function speakLine(text: string, opts: { pitch?: number; rate?: number } = {}): Promise<void> {
+  return new Promise(resolve => {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(toSpoken(text, false));
+    u.lang = 'en-US';
+    u.rate = opts.rate ?? 0.9;
+    u.pitch = opts.pitch ?? 1;
+    const v = englishVoice();
+    if (v) u.voice = v;
+    // Some browsers (or machines with no voices installed) never report the end; never leave the caller waiting forever.
+    const watchdog = window.setTimeout(resolve, 3000 + text.length * 110);
+    const done = () => { window.clearTimeout(watchdog); resolve(); };
+    u.onend = done;
+    u.onerror = done;
+    synth.speak(u);
+  });
+}
+
+export function stopSpeaking(): void {
+  if (canSpeak()) window.speechSynthesis.cancel();
+}

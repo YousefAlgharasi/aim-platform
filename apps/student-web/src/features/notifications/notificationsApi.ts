@@ -49,6 +49,11 @@ export function categoryLabel(category: string): string {
   return key ? t(key) : category;
 }
 
+/** An in-app path from a notification payload (e.g. "/improve"); anything else (external, protocol-relative) is ignored. */
+export function safeInternalLink(value: unknown): string | null {
+  return typeof value === 'string' && /^\/(?!\/)[\w\-./?=&%]*$/.test(value) ? value : null;
+}
+
 export interface NotificationEvent {
   id: string;
   recipient_id: string;

@@ -347,7 +347,7 @@ describe('SessionsController.submitAttempt (P5-067)', () => {
   it('resolves item fields backend-side and passes them to recordAttempt', async () => {
     const { ctrl, las, sqs } = makeCtrl();
     await ctrl.submitAttempt(JWT_USER, SESSION_ID, BODY, '');
-    expect(sqs.resolveItemForAttempt).toHaveBeenCalledWith(BODY.itemId, BODY.answerValue);
+    expect(sqs.resolveItemForAttempt).toHaveBeenCalledWith(BODY.itemId, BODY.answerValue, expect.any(String));
     expect(las.recordAttempt).toHaveBeenCalledWith(expect.objectContaining({
       itemType: 'lesson_question',
       answerFormat: 'multiple_choice',

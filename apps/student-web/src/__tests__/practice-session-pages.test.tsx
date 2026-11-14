@@ -39,28 +39,30 @@ describe('My mistakes session', () => {
   it('marks the right and wrong rows with a tick and a cross, explains, then moves on', async () => {
     mockCheck.mockResolvedValue({ correct: false, correctChoiceId: 'a1', correctText: 'bit', explanation: 'Short i as in sit.' });
     render(<MistakesPage />);
-    expect(await screen.findByRole('heading', { name: 'Prompt 1' })).toBeInTheDocument();
+    expect(await screen.findByText('Prompt 1')).toBeInTheDocument();
     expect(screen.getByText('Question 1 of 2')).toBeInTheDocument();
     expect(screen.getByText('Last time you answered: ⁨bat⁩')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /but/ }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Not quite');
+    fireEvent.click(screen.getByRole('radio', { name: /but/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Wrong');
     expect(screen.getByRole('status')).toHaveTextContent('Correct answer: ⁨bit⁩');
     expect(screen.getByRole('status')).toHaveTextContent('Short i as in sit.');
     // the right row is flagged by a tick, and answers are locked
-    expect(screen.getByRole('button', { name: /bit/ })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: /bit/ })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next question' }));
-    expect(await screen.findByRole('heading', { name: 'Prompt 2' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Next question/ }));
+    expect(await screen.findByText('Prompt 2')).toBeInTheDocument();
   });
 
   it('ends on a finish screen with the score and next steps', async () => {
     mockList.mockResolvedValue({ total: 1, items: [q(1)] });
     mockCheck.mockResolvedValue({ correct: true, correctChoiceId: 'a1', correctText: 'bit', explanation: null });
     render(<MistakesPage />);
-    fireEvent.click(await screen.findByRole('button', { name: /bit/ }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Correct — fixed!');
-    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    fireEvent.click(await screen.findByRole('radio', { name: /bit/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Right');
+    fireEvent.click(screen.getByRole('button', { name: 'Finish practice' }));
 
     expect(await screen.findByRole('heading', { name: 'Round complete' })).toBeInTheDocument();
     expect(screen.getByText('You fixed every one. Nice work.')).toBeInTheDocument();
@@ -72,9 +74,10 @@ describe('My mistakes session', () => {
     mockList.mockResolvedValue({ total: 1, items: [q(1)] });
     mockCheck.mockResolvedValue({ correct: false, correctChoiceId: 'a1', correctText: 'bit', explanation: null });
     render(<MistakesPage />);
-    fireEvent.click(await screen.findByRole('button', { name: /but/ }));
+    fireEvent.click(await screen.findByRole('radio', { name: /but/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }));
     await screen.findByRole('status');
-    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Finish practice' }));
     expect(await screen.findByText('You fixed 0 of 1.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try the rest' })).toBeInTheDocument();
   });

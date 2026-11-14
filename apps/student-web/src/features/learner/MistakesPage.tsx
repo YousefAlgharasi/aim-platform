@@ -7,8 +7,11 @@ import { ErrorState } from '../../components/common/ErrorState';
 import { QuestionSkeleton } from '../../components/common/Skeleton';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
 import { mistakesApi, type MistakeCheck, type MistakeItem } from './learnerApi';
-import { ChoiceRow, PILL_PRIMARY, PILL_SECONDARY, SessionComplete, SessionProgress, type ChoiceState } from './sessionUi';
-import { ResultIcon, playSound, resultCue } from '../../interaction';
+import { PILL_PRIMARY, PILL_SECONDARY, SessionComplete } from './sessionUi';
+import { Button } from '../../components/common/Button';
+import { LevelBadge } from '../level/LevelBadge';
+import { QuestionRenderer } from '../practice/QuestionRenderer';
+import { ResultIcon, SoundToggleButton, playSound, resultCue } from '../../interaction';
 import { prettifySkillId } from '../progress/aimApi';
 import { loadSkillTitles } from '../progress/skillTitles';
 
@@ -69,11 +72,11 @@ export function MistakesPage() {
   }
 
   const item = items[index];
-  async function check(optionId: string) {
-    if (result || busy) return;
-    setPicked(optionId); setBusy(true);
+  async function check() {
+    if (!picked || result || busy) return;
+    setBusy(true);
     try {
-      const r = await mistakesApi.check(item.itemId, optionId);
+      const r = await mistakesApi.check(item.itemId, picked);
       setResult(r);
       const cue = resultCue(r.correct);
       if (cue) playSound(cue);
@@ -83,48 +86,97 @@ export function MistakesPage() {
   }
   function next() { setPicked(null); setResult(null); setIndex((i) => i + 1); }
 
-  const stateOf = (id: string): ChoiceState => {
-    if (!result) return picked === id ? 'picked' : 'idle';
-    if (result.correctChoiceId === id) return 'right';
-    return picked === id ? 'wrong' : 'dim';
+  // Same question component as lesson practice, so both look and behave the same.
+  const question = {
+    id: item.itemId,
+    type: item.type === 'listening_choice' ? 'multiple_choice' : item.type,
+    stem: item.prompt,
+    difficulty: '',
+    tags: [],
+    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i })),
   };
+  const progressPct = Math.round(((index + (result ? 1 : 0)) / items.length) * 100);
+  const heading = skill ? t('{skill}: {n} to fix', { skill: prettifySkillId(skill), n: total }) : t('{n} to fix', { n: total });
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <PageTitleBar title={quick ? t('5-minute fix session') : t('My mistakes')} subtitle={skill ? t('{skill}: {n} to fix', { skill: prettifySkillId(skill), n: total }) : t('{n} to fix', { n: total })} />
-      <SessionProgress done={index} total={items.length} label={t('Round progress')} text={t('Question {n} of {total}', { n: index + 1, total: items.length })} />
-
-      <section className="flex flex-col gap-6 rounded-2xl bg-surface p-5 ring-1 ring-line sm:p-8" aria-label={t('Question {n} of {total}', { n: index + 1, total: items.length })}>
-        <div className="flex flex-col gap-2">
-          <h2 className="lp-display m-0 text-[1.625rem] font-semibold leading-snug text-ink [unicode-bidi:plaintext] sm:text-[2rem]">{item.prompt}</h2>
-          {item.yourAnswer && !result && (
-            <p className="m-0 text-sm text-ink-muted">{t('Last time you answered: {answer}', { answer: `⁨${item.yourAnswer}⁩` })}</p>
-          )}
+    <div className="flex w-full flex-col gap-6">
+      <div className="flex items-center gap-3">
+        <Link
+          to="/improve"
+          aria-label={t('Exit practice')}
+          title={t('Exit practice')}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-ink-soft no-underline ring-1 ring-line-strong transition-colors hover:bg-danger-soft hover:text-danger-ink hover:ring-danger-line focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">✕</span>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <h1 className="m-0 text-sm font-medium text-ink-muted">{quick ? t('5-minute fix session') : t('My mistakes')}</h1>
+          <span className="block truncate text-lg font-semibold text-ink">{heading}</span>
         </div>
+        <span className="flex shrink-0 items-center gap-2">
+          <SoundToggleButton />
+          <LevelBadge showName={false} />
+          <span className="lp-num text-base font-semibold text-ink">{index + 1}<span className="text-ink-muted">/{items.length}</span></span>
+        </span>
+      </div>
 
-        <div className="flex flex-col gap-3" role="group" aria-label={t('Answer options')}>
-          {item.options.map((o, i) => (
-            <ChoiceRow key={o.id} letter={String.fromCharCode(65 + i)} text={o.text} state={stateOf(o.id)} disabled={!!result || busy} onClick={() => void check(o.id)} />
-          ))}
-        </div>
+      <div
+        className="h-2 overflow-hidden rounded-full bg-ink/10"
+        role="progressbar"
+        aria-valuenow={progressPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t('Round progress')}
+      >
+        <div className="h-full rounded-full bg-brand transition-[width] duration-500 ease-out" style={{ width: `${progressPct}%` }} />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {item.yourAnswer && !result && (
+          <p className="m-0 text-sm text-ink-muted">{t('Last time you answered: {answer}', { answer: `⁨${item.yourAnswer}⁩` })}</p>
+        )}
+        <QuestionRenderer
+          key={item.itemId}
+          question={question}
+          questionNumber={index + 1}
+          questionTotal={items.length}
+          selectedAnswer={picked ?? ''}
+          onAnswerChange={setPicked}
+          disabled={busy || !!result}
+          result={result ? result.correct : undefined}
+        />
 
         {result && (
-          <div role="status" className={`flex items-start gap-3 rounded-2xl p-4 text-sm ${result.correct ? 'ix-fade-up bg-success-soft text-success-ink' : 'ix-settle bg-danger-soft text-danger-ink'}`}>
-            <ResultIcon correct={result.correct} className="mt-0.5 size-6" />
+          <div
+            key={item.itemId}
+            className={`flex items-start gap-3 rounded-2xl p-4 ring-1 ${
+              result.correct
+                ? 'ix-fade-up bg-success-soft ring-success-line text-success-ink'
+                : 'ix-settle bg-danger-soft ring-danger-line text-danger-ink'
+            }`}
+            role="status"
+          >
+            <ResultIcon correct={result.correct} className="mt-0.5 size-7" />
             <div className="min-w-0">
-              <p className="m-0 text-base font-semibold">{result.correct ? t('Correct — fixed!') : t('Not quite')}</p>
-              {!result.correct && result.correctText && <p className="m-0 mt-1">{t('Correct answer: {answer}', { answer: `⁨${result.correctText}⁩` })}</p>}
-              {result.explanation && <p className="m-0 mt-1 opacity-90 [unicode-bidi:plaintext]">{result.explanation}</p>}
+              <p className="m-0 text-lg font-semibold">{result.correct ? t('Right') : t('Wrong')}</p>
+              {!result.correct && result.correctText && <p className="m-0 mt-1 text-base">{t('Correct answer: {answer}', { answer: `⁨${result.correctText}⁩` })}</p>}
+              {result.explanation && <p className="m-0 mt-1 text-base opacity-90 [unicode-bidi:plaintext]">{result.explanation}</p>}
             </div>
           </div>
         )}
 
-        {result && (
-          <button type="button" onClick={next} className={`${PILL_PRIMARY} self-center`}>
-            {index + 1 >= items.length ? t('Finish') : t('Next question')}
-          </button>
-        )}
-      </section>
+        <div className="sticky bottom-3 z-10 -mx-1 rounded-2xl bg-page/85 p-1 backdrop-blur-md">
+          {result ? (
+            <Button variant="primary" size="lg" fullWidth onClick={next}>
+              {index + 1 < items.length ? t('Next question →') : t('Finish practice')}
+            </Button>
+          ) : (
+            <Button variant="primary" size="lg" fullWidth onClick={() => void check()} disabled={!picked} loading={busy}>
+              {busy ? t('Checking…') : t('Check answer')}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

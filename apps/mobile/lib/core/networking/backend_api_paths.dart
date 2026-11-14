@@ -391,6 +391,10 @@ class BackendApiPaths {
   static String voiceTeacherAudio(String audioRef) =>
       '/voice-teacher/audio/$audioRef';
 
+  /// GET /voice-teacher/messages/:messageId/audio — lazily synthesises (or reuses) a reply's spoken audio.
+  static String voiceTeacherMessageAudio(String messageId) =>
+      '/voice-teacher/messages/$messageId/audio';
+
   // ---------------------------------------------------------------------------
   // Billing — subscriptions, pricing, invoices
   // Backend is the final authority for plan/price/entitlement state. Flutter

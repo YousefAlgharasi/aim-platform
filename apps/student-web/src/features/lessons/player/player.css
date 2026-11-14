@@ -1,0 +1,20 @@
+/* Lesson player: rounded display type and pressable tiles. All colours come from the semantic tokens,
+   so light, dark and the brand stay in sync. Action buttons use the app's own button styles. */
+.lpl-display { font-family: 'Fredoka', 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif; }
+
+/* A card in the same flat style as the app's answer options: tappable (the AI tutor link) or, with .lpl-tile-static, read-only (example sentences). */
+.lpl-tile {
+  display: flex; align-items: center; gap: 0.875rem; width: 100%; padding: 1rem; text-align: start;
+  color: rgb(var(--c-ink)); background: rgb(var(--c-surface)); border: 0; border-radius: 1rem;
+  box-shadow: inset 0 0 0 1px rgb(var(--c-line)); cursor: pointer;
+  transition: background-color 150ms, box-shadow 150ms;
+}
+.lpl-tile:hover { background: rgb(var(--c-surface-muted)); box-shadow: inset 0 0 0 1px rgb(var(--c-line-strong)); }
+.lpl-tile:focus-visible { outline: 3px solid rgb(var(--c-focus)); outline-offset: 2px; }
+.lpl-tile-static { cursor: default; }
+.lpl-tile-static:hover { background: rgb(var(--c-surface)); box-shadow: inset 0 0 0 1px rgb(var(--c-line)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lpl-tile { transition: none; }
+}
+html[data-motion='reduce'] .lpl-tile { transition: none; }

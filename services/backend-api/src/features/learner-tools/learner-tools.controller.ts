@@ -10,6 +10,9 @@ import { VocabularyService } from './vocabulary.service';
 import { StudyPlanService } from './study-plan.service';
 import { MistakesService } from './mistakes.service';
 import { SearchService } from './search.service';
+import { RecoveryService } from './recovery.service';
+import { SkillPracticeService } from './skill-practice.service';
+import { StoriesService } from './stories.service';
 
 const locale = (v?: string): 'en' | 'ar' => (v === 'ar' ? 'ar' : 'en');
 
@@ -24,6 +27,9 @@ export class LearnerToolsController {
     private readonly plan: StudyPlanService,
     private readonly mistakes: MistakesService,
     private readonly search: SearchService,
+    private readonly recovery: RecoveryService,
+    private readonly skillPractice: SkillPracticeService,
+    private readonly stories: StoriesService,
   ) {}
 
   @Get('vocabulary')
@@ -74,6 +80,65 @@ export class LearnerToolsController {
   @ApiOperation({ summary: 'Check a retry answer. Drill only: records no attempt and no mastery.' })
   checkMistake(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { itemId?: unknown; answerId?: unknown }) {
     return this.mistakes.check([id, authId], body?.itemId, body?.answerId);
+  }
+
+  @Get('student/recovery')
+  @ApiOperation({ summary: 'Weak skills with their 6-group, cooldown and retry state (read-only).' })
+  recoveryOverview(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string) {
+    return this.recovery.overview([id, authId]);
+  }
+
+  @Post('student/recovery/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a retry session for a weak skill (403 until the 3-day cooldown ends). Answers go through /sessions/:id/attempt.' })
+  recoveryStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { skillKey?: unknown }) {
+    return this.recovery.start(authId, id, body?.skillKey);
+  }
+
+  @Get('student/practice/skills')
+  @ApiOperation({ summary: 'Skills the student can practise in grammar, listening or reading (at or below their level), weakest first.' })
+  practiceSkills(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Query('mode') mode?: string) {
+    return this.skillPractice.skills([id, authId], mode);
+  }
+
+  @Post('student/practice/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a scored practice session (grammar, listening or reading). Answers go through /sessions/:id/attempt.' })
+  practiceStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { mode?: unknown; skillKey?: unknown }) {
+    return this.skillPractice.start(authId, id, body?.mode, body?.skillKey);
+  }
+
+  @Get('student/stories')
+  @ApiOperation({ summary: 'Published stories (one per course) with this student\'s progress and lock state.' })
+  listStories(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string) {
+    return this.stories.list(authId, [id, authId]);
+  }
+
+  @Get('student/courses/:courseId/story')
+  @ApiOperation({ summary: "The course's story, split into one part per chapter, with what each part needs to unlock. story is null when the course has none." })
+  async courseStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('courseId', ParseUUIDPipe) courseId: string) {
+    return { story: await this.stories.forCourse(authId, id, courseId) };
+  }
+
+  @Get('student/chapters/:chapterId/story')
+  @ApiOperation({ summary: "This chapter's part of its course story (null when the course has none)." })
+  async chapterStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('chapterId', ParseUUIDPipe) chapterId: string) {
+    return { story: await this.stories.forChapter(authId, id, chapterId) };
+  }
+
+  @Get('student/stories/:storyId')
+  @ApiOperation({ summary: 'One story with its scenes and questions (no answers). With ?part=N only that chapter\'s part. 403 while its course or part is locked.' })
+  getStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string, @Query('part') part?: string) {
+    const n = part !== undefined && part !== '' ? Number(part) : undefined;
+    return this.stories.get(authId, [id, authId], storyId, n !== undefined && Number.isInteger(n) && n >= 0 ? n : undefined);
+  }
+
+  @Post('student/stories/:storyId/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a reading session for a story. Answers go through /sessions/:id/attempt.' })
+  startStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string, @Body() body: { part?: unknown }) {
+    const n = typeof body?.part === 'number' && Number.isInteger(body.part) && body.part >= 0 ? body.part : undefined;
+    return this.stories.start(authId, id, storyId, n);
   }
 
   @Get('search')

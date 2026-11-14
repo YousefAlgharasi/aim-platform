@@ -3,6 +3,13 @@
 // Mirrors the backend's NotificationEventEntity. `title`/`body` are rendered
 // server-side from approved templates — Flutter never renders raw AIM
 // output, answers, or secrets here; it only displays what the backend sends.
+/// An in-app route from a notification payload. Anything else (a full URL,
+/// a protocol-relative path, odd characters) is ignored.
+String? safeInternalLink(Object? value) {
+  if (value is! String) return null;
+  return RegExp(r'^/(?!/)[\w\-./?=&%]*$').hasMatch(value) ? value : null;
+}
+
 class NotificationEventModel {
   const NotificationEventModel({
     required this.id,
@@ -17,6 +24,7 @@ class NotificationEventModel {
     required this.readAt,
     required this.dismissedAt,
     required this.createdAt,
+    this.link,
   });
 
   /// Reads a notification row as the backend sends it: the readable text lives
@@ -47,6 +55,7 @@ class NotificationEventModel {
       readAt: json['read_at'] as String?,
       dismissedAt: json['dismissed_at'] as String?,
       createdAt: (json['created_at'] as String?) ?? DateTime.now().toUtc().toIso8601String(),
+      link: safeInternalLink(payload['link']),
     );
   }
 
@@ -62,6 +71,9 @@ class NotificationEventModel {
   final String? readAt;
   final String? dismissedAt;
   final String createdAt;
+
+  /// An in-app path from the payload (e.g. `/improve`), or null.
+  final String? link;
 
   bool get isUnread =>
       readAt == null && dismissedAt == null && status != 'read' && status != 'dismissed';

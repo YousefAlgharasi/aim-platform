@@ -146,7 +146,7 @@ export function VocabularyLibraryPage() {
         subtitle={t('Browse words with their Arabic meaning, listen to how they sound and save the ones you want to learn.')}
       />
 
-      <div className="flex flex-col gap-3">
+      <div data-tour="vocab-search" className="flex flex-col gap-3">
         <input
           type="search" value={query} onChange={(e) => setQuery(e.target.value)} dir="auto"
           placeholder={t('Search words')} aria-label={t('Search words')}
@@ -173,7 +173,7 @@ export function VocabularyLibraryPage() {
       ) : words.length === 0 ? (
         <EmptyState title={t('No words found')} message={t('Try another level or search.')} />
       ) : (
-        <section aria-label={t('Vocabulary')} className="flex flex-col gap-4">
+        <section data-tour="vocab-list" aria-label={t('Vocabulary')} className="flex flex-col gap-4">
           <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
             {words.map((w) => (
               <li key={w.id} className="flex flex-col gap-3 rounded-2xl bg-surface p-5 ring-1 ring-line">
