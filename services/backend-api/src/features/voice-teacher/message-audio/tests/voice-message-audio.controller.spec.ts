@@ -92,6 +92,24 @@ describe('VoiceMessageAudioController', () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
+  it('makes the audio again when the row points at a clip that is no longer stored (restart / other instance)', async () => {
+    messageAudioService.ensureAudio
+      .mockResolvedValueOnce({ messageId: 'msg-1', audioRef: 'tts_lost', audioDurationMs: 800, synthesized: false })
+      .mockResolvedValueOnce({ messageId: 'msg-1', audioRef: 'tts_fresh', audioDurationMs: 800, synthesized: true });
+    audioStorage.retrieveAudio
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ data: Buffer.from('fresh-bytes'), contentType: 'audio/wav' });
+    const res = mockRes();
+
+    await controller.getMessageAudio('msg-1', studentId, res, undefined);
+
+    expect(messageAudioService.ensureAudio).toHaveBeenLastCalledWith('msg-1', 'student-1', 'ar', {
+      forceRegenerate: true,
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith(Buffer.from('fresh-bytes'));
+  });
+
   it('passes through an explicit languageCode query param', async () => {
     messageAudioService.ensureAudio.mockResolvedValue({
       messageId: 'msg-1',

@@ -54,18 +54,24 @@ export class VoiceMessageAudioController {
     @Res() res: Response,
     @Query('languageCode') languageCode?: string,
   ): Promise<void> {
-    const result = await this.messageAudioService.ensureAudio(
-      messageId,
-      studentId,
-      languageCode?.trim() || DEFAULT_LANGUAGE_CODE,
-    );
+    const language = languageCode?.trim() || DEFAULT_LANGUAGE_CODE;
+    const result = await this.messageAudioService.ensureAudio(messageId, studentId, language);
 
     if (!result.audioRef) {
       res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not available' });
       return;
     }
 
-    const audio = await this.audioStorage.retrieveAudio(result.audioRef, studentId);
+    let audio = await this.audioStorage.retrieveAudio(result.audioRef, studentId);
+
+    if (!audio && !result.synthesized) {
+      // The row points at a clip that is no longer in memory (restart, or another server instance made it). Make the
+      // audio again rather than leaving the student's reply silent.
+      const again = await this.messageAudioService.ensureAudio(messageId, studentId, language, {
+        forceRegenerate: true,
+      });
+      if (again.audioRef) audio = await this.audioStorage.retrieveAudio(again.audioRef, studentId);
+    }
 
     if (!audio) {
       res.status(HttpStatus.NOT_FOUND).json({ error: 'Audio not found' });

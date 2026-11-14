@@ -13,6 +13,14 @@ const ALLOWED_CONTENT_TYPES = new Set([
   'audio/mp4',
 ]);
 
+/**
+ * How long a synthesized reply stays in memory, and how many clips are kept at most. The clips are only needed for
+ * the moment the student plays the reply; without a limit every reply ever synthesized stayed in memory for as long
+ * as the process lived. The oldest clips are dropped first.
+ */
+const AUDIO_TTL_MS = 30 * 60 * 1000;
+const MAX_STORED_CLIPS = 300;
+
 @Injectable()
 export class TtsAudioStorageService {
   private readonly logger = new Logger(TtsAudioStorageService.name);
@@ -36,6 +44,7 @@ export class TtsAudioStorageService {
         };
       }
 
+      this.evictStale();
       this.store.set(input.audioRef, {
         data: input.audioData,
         contentType: input.contentType,
@@ -62,12 +71,30 @@ export class TtsAudioStorageService {
     }
   }
 
+  /** Drops expired clips, then the oldest ones beyond the capacity (a Map iterates in insertion order). */
+  private evictStale(): void {
+    const now = Date.now();
+    for (const [ref, entry] of this.store) {
+      if (now - entry.storedAt > AUDIO_TTL_MS) this.store.delete(ref);
+    }
+    while (this.store.size >= MAX_STORED_CLIPS) {
+      const oldest = this.store.keys().next().value;
+      if (oldest === undefined) break;
+      this.store.delete(oldest);
+    }
+  }
+
   async retrieveAudio(
     audioRef: string,
     studentId: string,
   ): Promise<{ data: Buffer; contentType: string } | null> {
     const entry = this.store.get(audioRef);
     if (!entry) {
+      return null;
+    }
+
+    if (Date.now() - entry.storedAt > AUDIO_TTL_MS) {
+      this.store.delete(audioRef);
       return null;
     }
 

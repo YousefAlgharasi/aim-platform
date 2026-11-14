@@ -65,4 +65,21 @@ describe('TtsAudioStorageService', () => {
     });
     expect(result.stored).toBe(false);
   });
+
+  it('forgets a clip once it is older than its time to live', async () => {
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    await service.storeAudio(validInput);
+    now.mockReturnValue(1_000_000 + 31 * 60 * 1000);
+    expect(await service.retrieveAudio('tts_abc123_xyz', 'student-1')).toBeNull();
+    now.mockRestore();
+  });
+
+  it('keeps memory bounded: the oldest clips are dropped past the capacity', async () => {
+    for (let i = 0; i < 305; i += 1) {
+      await service.storeAudio({ ...validInput, audioRef: `tts_${i}` });
+    }
+    expect(await service.retrieveAudio('tts_0', 'student-1')).toBeNull();
+    expect(await service.retrieveAudio('tts_304', 'student-1')).not.toBeNull();
+  });
 });
