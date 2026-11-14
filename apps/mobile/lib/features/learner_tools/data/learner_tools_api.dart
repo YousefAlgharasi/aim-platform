@@ -278,6 +278,50 @@ class RecoveryStart {
   final List<RecoveryQuestion> questions;
 }
 
+/// A skill the student can practise in grammar, listening or reading
+/// (`GET /student/practice/skills`). The server picks what is allowed at their
+/// level and which skill is recommended.
+class PracticeSkill {
+  const PracticeSkill({
+    required this.skillKey,
+    required this.title,
+    required this.recommended,
+    this.masteryScore,
+  });
+
+  final String skillKey;
+  final String title;
+  final bool recommended;
+  final double? masteryScore;
+
+  factory PracticeSkill.fromJson(Map<String, dynamic> j) => PracticeSkill(
+        skillKey: j['skillKey']?.toString() ?? '',
+        title: j['title']?.toString() ?? '',
+        recommended: j['recommended'] == true,
+        masteryScore: (j['masteryScore'] as num?)?.toDouble(),
+      );
+}
+
+/// A started practice session (`POST /student/practice/start`). Answers are sent
+/// through the normal session attempt call, so the AIM engine updates mastery.
+class PracticeStart {
+  const PracticeStart({
+    required this.sessionId,
+    required this.skillKey,
+    required this.title,
+    required this.questions,
+    this.passage,
+  });
+
+  final String sessionId;
+  final String skillKey;
+  final String title;
+
+  /// Reading only: shown once above the questions.
+  final String? passage;
+  final List<RecoveryQuestion> questions;
+}
+
 /// Talks to the same endpoints the web app uses for My words and My mistakes.
 /// Correctness and review scheduling are decided by the backend only.
 class LearnerToolsApi {
@@ -484,6 +528,43 @@ class LearnerToolsApi {
         return RecoveryStart(
           sessionId: m['sessionId']?.toString() ?? '',
           skillKey: m['skillKey']?.toString() ?? skillKey,
+          questions: (m['questions'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(RecoveryQuestion.fromJson)
+              .toList(),
+        );
+      },
+    );
+    return r.data!;
+  }
+  /// The skills the student can practise in [mode] (`grammar`, `listening` or `reading`).
+  Future<List<PracticeSkill>> practiceSkills(String mode) async {
+    final r = await _client.get<List<PracticeSkill>>(
+      '/student/practice/skills',
+      queryParameters: {'mode': mode},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['skills'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(PracticeSkill.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// Starts a scored practice session. The server writes the questions at the student's level.
+  Future<PracticeStart> startPractice(String mode, String skillKey) async {
+    final r = await _client.post<PracticeStart>(
+      '/student/practice/start',
+      body: {'mode': mode, 'skillKey': skillKey},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return PracticeStart(
+          sessionId: m['sessionId']?.toString() ?? '',
+          skillKey: m['skillKey']?.toString() ?? skillKey,
+          title: m['title']?.toString() ?? '',
+          passage: m['passage'] as String?,
           questions: (m['questions'] as List<dynamic>? ?? const [])
               .whereType<Map<String, dynamic>>()
               .map(RecoveryQuestion.fromJson)

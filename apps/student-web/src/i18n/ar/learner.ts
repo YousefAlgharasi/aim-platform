@@ -1,5 +1,28 @@
 // Saved words, mistakes retry, onboarding, journey, search, landing page, offline, display settings, receipts.
 export const learner: Record<string, string> = {
+  // Skill practice (grammar / listening / reading)
+  'Grammar practice': 'تدريب القواعد',
+  'Short drills on one grammar point, matched to your level.': 'تمارين قصيرة على قاعدة واحدة، مناسبة لمستواك.',
+  'Listening practice': 'تدريب الاستماع',
+  'Listen to a short recording, then answer questions about it.': 'استمع إلى تسجيل قصير، ثم أجب عن الأسئلة.',
+  'Reading practice': 'تدريب القراءة',
+  'Read a short passage, then answer questions about it.': 'اقرأ نصًا قصيرًا، ثم أجب عن الأسئلة.',
+  'Could not load your practice': 'تعذّر تحميل التدريب',
+  'We could not prepare this practice right now. Please try again in a moment.': 'تعذّر تجهيز هذا التدريب الآن. حاول مرة أخرى بعد قليل.',
+  'No practice is available for this skill area yet': 'لا يوجد تدريب متاح لهذه المهارة بعد',
+  'Start practice': 'ابدأ التدريب',
+  'Preparing…': 'جارٍ التجهيز…',
+  'Choose a skill': 'اختر مهارة',
+  'Not practised yet': 'لم تتدرّب عليها بعد',
+  'Back to Practice': 'العودة إلى التدريب',
+  'Choose another skill': 'اختر مهارة أخرى',
+  'Reading passage': 'نص القراءة',
+  'Train a skill': 'درّب مهارة',
+  'Practice Grammar': 'تدرّب على القواعد',
+  'Practice Listening': 'تدرّب على الاستماع',
+  'Practice Reading': 'تدرّب على القراءة',
+  'Listen to a short recording and answer questions.': 'استمع إلى تسجيل قصير وأجب عن الأسئلة.',
+  'Read a short passage and answer questions.': 'اقرأ نصًا قصيرًا وأجب عن الأسئلة.',
   // Improve recovery loop (3-day retry)
   'Go to Improve': 'اذهب إلى التحسين',
   'Recovery steps': 'خطوات التعافي',

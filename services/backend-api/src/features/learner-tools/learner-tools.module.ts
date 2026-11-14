@@ -11,6 +11,7 @@ import { MistakesService } from './mistakes.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { RecoveryService } from './recovery.service';
 import { RecoveryNudgeService } from './recovery-nudge.service';
+import { SkillPracticeService } from './skill-practice.service';
 import { PublicCatalogController } from './public-catalog.controller';
 import { PublicCatalogService } from './public-catalog.service';
 import { SearchService } from './search.service';
@@ -21,6 +22,6 @@ import { VocabularyService } from './vocabulary.service';
 @Module({
   imports: [DatabaseModule, AuthModule, RolesModule, UsersModule, SessionsModule, AiTeacherGovernanceModule, ProviderGatewayModule, NotificationsModule],
   controllers: [LearnerToolsController, PublicCatalogController],
-  providers: [VocabularyService, StudyPlanService, MistakesService, RecoveryService, RecoveryNudgeService, SearchService, PublicCatalogService],
+  providers: [VocabularyService, StudyPlanService, MistakesService, RecoveryService, RecoveryNudgeService, SkillPracticeService, SearchService, PublicCatalogService],
 })
 export class LearnerToolsModule {}

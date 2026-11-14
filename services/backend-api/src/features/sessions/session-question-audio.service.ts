@@ -76,6 +76,14 @@ export class SessionQuestionAudioService implements OnApplicationBootstrap {
     );
   }
 
+  private async isOwnStudentQuestion(questionId: string, studentId: string): Promise<boolean> {
+    const r = await this.db.query(
+      `SELECT 1 FROM recovery_questions WHERE question_id = $1 AND student_id = $2::uuid LIMIT 1`,
+      [questionId, studentId],
+    );
+    return (r.rowCount ?? 0) > 0;
+  }
+
   async ensureAudio(
     questionId: string,
     studentId: string,
@@ -90,7 +98,10 @@ export class SessionQuestionAudioService implements OnApplicationBootstrap {
     );
 
     const question = result.rows[0];
-    if (!question || question.status !== 'published') {
+    // A student's own AI-written practice question is an unpublished draft: only that student may hear it.
+    const ownDraft =
+      !!question && question.status !== 'published' && (await this.isOwnStudentQuestion(questionId, studentId));
+    if (!question || (question.status !== 'published' && !ownDraft)) {
       throw new AppError({
         code: ApiErrorCode.NOT_FOUND,
         message: `Question not found: ${questionId}`,
