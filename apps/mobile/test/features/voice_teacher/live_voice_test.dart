@@ -36,10 +36,13 @@ Uint8List _pcm(double amplitude, {double ms = _frame}) {
 }
 
 class _FakeLiveVoiceClient implements LiveVoiceClient {
-  _FakeLiveVoiceClient({this.permission = true, this.startThrows = false});
+  _FakeLiveVoiceClient({this.permission = true, this.startThrows = false, this.startGate});
 
   final bool permission;
   final bool startThrows;
+
+  /// When given, start() waits for it, so a test can stop or dispose while the microphone is still opening.
+  final Completer<void>? startGate;
   final _frames = StreamController<Uint8List>.broadcast();
   bool stopped = false;
   bool disposed = false;
@@ -50,6 +53,7 @@ class _FakeLiveVoiceClient implements LiveVoiceClient {
   @override
   Future<Stream<Uint8List>> start() async {
     if (startThrows) throw StateError('no microphone');
+    await startGate?.future;
     return _frames.stream;
   }
 
@@ -246,6 +250,22 @@ void main() {
       aiSpeaking = false; // the teacher was cut off
       feed(c, _quiet, 1300);
       expect(utterances, hasLength(1));
+      c.dispose();
+    });
+
+    test('a mic switched off while it is still opening is released, not left on', () async {
+      final gate = Completer<void>();
+      final client = _FakeLiveVoiceClient(startGate: gate);
+      final c = make(client);
+      final starting = c.start();
+      await Future<void>.delayed(Duration.zero);
+      expect(c.status, LiveStatus.starting);
+      await c.stop();
+      client.stopped = false;
+      gate.complete();
+      await starting;
+      expect(c.status, LiveStatus.off);
+      expect(client.stopped, isTrue);
       c.dispose();
     });
 

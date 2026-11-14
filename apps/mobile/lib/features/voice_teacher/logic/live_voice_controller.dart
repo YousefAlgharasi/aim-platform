@@ -47,6 +47,10 @@ class LiveVoiceController extends ChangeNotifier {
   DateTime _lastLevelAt = DateTime.fromMillisecondsSinceEpoch(0);
   bool _disposed = false;
 
+  /// Bumped by every stop/dispose. A start() still waiting for the permission or the microphone checks it afterwards,
+  /// so a mic that was switched off (or a screen that was closed) meanwhile is released instead of left open.
+  int _startToken = 0;
+
   LiveStatus get status => _status;
 
   /// How loud the student is right now (0..1), for a gentle visual cue.
@@ -65,12 +69,22 @@ class LiveVoiceController extends ChangeNotifier {
   Future<void> start() async {
     if (_sub != null || _status == LiveStatus.starting) return;
     _set(LiveStatus.starting);
+    final token = ++_startToken;
     try {
       if (!await _client.hasPermission()) {
-        _set(LiveStatus.denied);
+        if (token == _startToken) _set(LiveStatus.denied);
         return;
       }
       final stream = await _client.start();
+      if (token != _startToken) {
+        // Stopped (or the screen was left) while the microphone was opening.
+        try {
+          await _client.stop();
+        } catch (_) {
+          // Already stopped.
+        }
+        return;
+      }
       _vad
         ..reset()
         ..startCalibration();
@@ -80,7 +94,7 @@ class LiveVoiceController extends ChangeNotifier {
       });
       _set(LiveStatus.listening);
     } catch (_) {
-      _fail();
+      if (token == _startToken) _fail();
     }
   }
 
@@ -90,6 +104,7 @@ class LiveVoiceController extends ChangeNotifier {
   }
 
   Future<void> stop() async {
+    _startToken++;
     await _close();
     if (_status != LiveStatus.denied) _set(LiveStatus.off);
   }
@@ -174,6 +189,7 @@ class LiveVoiceController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _startToken++;
     unawaited(_close());
     _client.dispose();
     super.dispose();

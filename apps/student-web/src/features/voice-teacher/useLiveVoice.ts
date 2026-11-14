@@ -51,11 +51,17 @@ export function useLiveVoice({ onUtterance, onBargeIn, isAiSpeaking }: Options) 
   const sentence = useRef<Float32Array[]>([]);
   const mutedRef = useRef(false);
   const lastLevelAt = useRef(0);
+  // Bumped by every stop/teardown. A start() that is still waiting for the browser's microphone permission checks it
+  // afterwards, so a mic that was switched off (or a page that was closed) meanwhile is released instead of left open.
+  const startToken = useRef(0);
+  const startingRef = useRef(false);
   // Latest callbacks, so the audio node (created once) never calls stale ones.
   const handlers = useRef({ onUtterance, onBargeIn, isAiSpeaking });
   handlers.current = { onUtterance, onBargeIn, isAiSpeaking };
 
   const teardown = useCallback(() => {
+    startToken.current += 1;
+    startingRef.current = false;
     nodeRef.current?.disconnect();
     nodeRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -75,8 +81,10 @@ export function useLiveVoice({ onUtterance, onBargeIn, isAiSpeaking }: Options) 
   }, [teardown]);
 
   const start = useCallback(async () => {
-    if (ctxRef.current) return;
+    if (ctxRef.current || startingRef.current) return;
     if (!isLiveVoiceSupported()) { setStatus('unsupported'); return; }
+    startingRef.current = true;
+    const token = ++startToken.current;
     setStatus('starting');
     setErrorMessage('');
     let stream: MediaStream;
@@ -85,15 +93,27 @@ export function useLiveVoice({ onUtterance, onBargeIn, isAiSpeaking }: Options) 
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
       });
     } catch (err) {
+      if (token !== startToken.current) return;
+      startingRef.current = false;
       const name = (err as { name?: string } | null)?.name;
       if (name === 'NotAllowedError' || name === 'SecurityError' || name === 'PermissionDeniedError') setStatus('denied');
       else { setStatus('error'); setErrorMessage(t('Could not start the microphone. Check that it is connected and not used by another app.')); }
+      return;
+    }
+    if (token !== startToken.current) {
+      // Stopped (or the page was left) while the browser was asking for the microphone.
+      stream.getTracks().forEach((track) => track.stop());
       return;
     }
     try {
       const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new Ctor();
       if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
+      if (token !== startToken.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        void ctx.close().catch(() => undefined);
+        return;
+      }
       const source = ctx.createMediaStreamSource(stream);
       const node = ctx.createScriptProcessor(BUFFER_SIZE, 1, 1);
       const silent = ctx.createGain();
@@ -157,8 +177,10 @@ export function useLiveVoice({ onUtterance, onBargeIn, isAiSpeaking }: Options) 
       ctxRef.current = ctx;
       streamRef.current = stream;
       nodeRef.current = node;
+      startingRef.current = false;
       setStatus('listening');
     } catch {
+      startingRef.current = false;
       stream.getTracks().forEach((track) => track.stop());
       setStatus('error');
       setErrorMessage(t('Could not start the microphone. Check that it is connected and not used by another app.'));
