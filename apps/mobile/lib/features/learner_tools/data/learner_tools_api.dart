@@ -194,6 +194,90 @@ class DueReview {
   final String? lessonTitle;
 }
 
+/// The 6 main skills the Improve page groups weak skills under.
+const recoveryGroups = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'];
+
+/// A weak skill with its retry state (`GET /student/recovery`). The server owns
+/// the group, the 3-day wait and the unlock; this only displays them.
+class RecoverySkill {
+  const RecoverySkill({
+    required this.skillKey,
+    required this.title,
+    required this.group,
+    required this.openMistakes,
+    required this.unlocked,
+    this.masteryScore,
+    this.retryAvailableAt,
+  });
+
+  final String skillKey;
+  final String title;
+  final String group;
+  final int openMistakes;
+  final bool unlocked;
+  final double? masteryScore;
+
+  /// Null when there is nothing to wait for.
+  final DateTime? retryAvailableAt;
+
+  /// Whole days left until the retry opens, never below 1 while it is locked.
+  int daysLeft([DateTime? now]) {
+    final at = retryAvailableAt;
+    if (at == null) return 0;
+    final ms = at.difference(now ?? DateTime.now()).inMilliseconds;
+    final days = (ms / Duration.millisecondsPerDay).ceil();
+    return days < 1 ? 1 : days;
+  }
+
+  factory RecoverySkill.fromJson(Map<String, dynamic> j) {
+    final group = j['group']?.toString() ?? 'vocabulary';
+    return RecoverySkill(
+      skillKey: j['skillKey']?.toString() ?? '',
+      title: j['title']?.toString() ?? '',
+      group: recoveryGroups.contains(group) ? group : 'vocabulary',
+      openMistakes: (j['openMistakes'] as num?)?.round() ?? 0,
+      unlocked: j['unlocked'] != false,
+      masteryScore: (j['masteryScore'] as num?)?.toDouble(),
+      retryAvailableAt: DateTime.tryParse(j['retryAvailableAt']?.toString() ?? ''),
+    );
+  }
+}
+
+/// One question of a retry session. No correctness data, by contract.
+class RecoveryQuestion {
+  const RecoveryQuestion({
+    required this.itemId,
+    required this.type,
+    required this.prompt,
+    required this.options,
+  });
+
+  final String itemId;
+  final String type;
+  final String prompt;
+  final List<MistakeOption> options;
+
+  factory RecoveryQuestion.fromJson(Map<String, dynamic> j) => RecoveryQuestion(
+        itemId: j['itemId']?.toString() ?? '',
+        type: j['type']?.toString() ?? 'multiple_choice',
+        prompt: j['prompt']?.toString() ?? '',
+        options: (j['options'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map((o) => MistakeOption(id: o['id']?.toString() ?? '', text: o['text']?.toString() ?? ''))
+            .toList(),
+      );
+}
+
+/// A started retry session (`POST /student/recovery/start`). Answers are sent
+/// through the normal session attempt call, so the AIM engine updates mastery.
+class RecoveryStart {
+  const RecoveryStart({required this.sessionId, required this.skillKey, required this.questions});
+
+  final String sessionId;
+  final String skillKey;
+  final List<RecoveryQuestion> questions;
+}
+
 /// Talks to the same endpoints the web app uses for My words and My mistakes.
 /// Correctness and review scheduling are decided by the backend only.
 class LearnerToolsApi {
@@ -375,6 +459,40 @@ class LearnerToolsApi {
     );
     return r.data!;
   }
+  /// Weak skills with their group, 3-day wait and retry state.
+  Future<List<RecoverySkill>> recoveryOverview() async {
+    final r = await _client.get<List<RecoverySkill>>(
+      '/student/recovery',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['skills'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RecoverySkill.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// Starts a retry session for [skillKey]. The server answers 403 while the wait is running.
+  Future<RecoveryStart> startRecovery(String skillKey) async {
+    final r = await _client.post<RecoveryStart>(
+      '/student/recovery/start',
+      body: {'skillKey': skillKey},
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return RecoveryStart(
+          sessionId: m['sessionId']?.toString() ?? '',
+          skillKey: m['skillKey']?.toString() ?? skillKey,
+          questions: (m['questions'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(RecoveryQuestion.fromJson)
+              .toList(),
+        );
+      },
+    );
+    return r.data!;
+  }
 }
 
 final learnerToolsApiProvider = Provider<LearnerToolsApi>(
@@ -419,6 +537,16 @@ final dueReviewsProvider = FutureProvider.autoDispose<List<DueReview>>((ref) asy
   };
   if (studentId == null) return const [];
   return ref.watch(learnerToolsApiProvider).dueReviews(studentId);
+});
+
+/// Weak skills with their retry state. A failure is not an error for the page:
+/// it falls back to the plain list (no groups from the server, no retry steps).
+final recoveryProvider = FutureProvider.autoDispose<List<RecoverySkill>>((ref) async {
+  try {
+    return await ref.watch(learnerToolsApiProvider).recoveryOverview();
+  } catch (_) {
+    return const <RecoverySkill>[];
+  }
 });
 
 final mistakesProvider =

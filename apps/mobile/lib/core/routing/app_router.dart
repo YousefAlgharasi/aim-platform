@@ -76,6 +76,7 @@ import '../../features/certificates/ui/pages/certificate_detail_page.dart';
 
 import '../../features/home/ui/pages/leaderboard_page.dart';
 import '../../features/improve/ui/improve_page.dart';
+import '../../features/improve/ui/recovery_retry_page.dart';
 import '../../features/learner_tools/ui/mistakes_page.dart';
 import '../../features/learner_tools/ui/vocabulary_library_page.dart';
 import '../../features/learner_tools/ui/vocabulary_page.dart';
@@ -482,6 +483,12 @@ class AppRouter {
             builder: (context, state) => const ImprovePage(),
           ),
           GoRoute(
+            path: AppRoutePaths.recoveryRetry,
+            builder: (context, state) => RecoveryRetryPage(
+              skillKey: state.uri.queryParameters['skill'] ?? '',
+            ),
+          ),
+          GoRoute(
             path: AppRoutePaths.practiceHub,
             builder: (context, state) => const PracticeHubPage(),
           ),
@@ -871,6 +878,7 @@ class AppRouter {
     AppRoutePaths.certificates,
     AppRoutePaths.certificateDetail,
     AppRoutePaths.improve,
+    AppRoutePaths.recoveryRetry,
     AppRoutePaths.practiceHub,
     AppRoutePaths.vocabulary,
     AppRoutePaths.vocabularyLibrary,
