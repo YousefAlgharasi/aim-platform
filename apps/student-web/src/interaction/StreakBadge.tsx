@@ -80,7 +80,7 @@ function WeekPanel({ summary }: { summary: EngagementSummary | null }) {
       .then((s) => { if (!cancelled) setFallback(weekFromActivity(s?.weeklyActivity ?? [])); })
       .catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
-  }, [fromSummary === null]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fromSummary === null]);
 
   const days = fromSummary ?? fallback;
   const streak = summary?.goal.streakDays ?? 0;
