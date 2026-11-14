@@ -7,7 +7,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/light_markdown.dart';
 

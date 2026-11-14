@@ -35,6 +35,11 @@ class LessonStartView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final surfaces = aimSurfacesOf(context);
+    // The live-lesson card is the soft brand tint with a brand line around it, exactly like the web lesson start
+    // (light: brand-50 / brand-200, dark: the dark soft / line brand shades), instead of a bold gradient.
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = dark ? const Color(0xFF25335B) : const Color(0xFFE9EEFE);
+    final cardLine = dark ? const Color(0xFF3A4E9A) : const Color(0xFFC5D1FC);
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -101,8 +106,9 @@ class LessonStartView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                   decoration: BoxDecoration(
-                    gradient: AimGradients.gzHero,
-                    borderRadius: BorderRadius.circular(28),
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: cardLine),
                   ),
                   child: Column(
                     children: [
@@ -111,11 +117,11 @@ class LessonStartView extends StatelessWidget {
                       Text(
                         l10n.lessonPlayerLiveTitle,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           height: 1.2,
                           fontWeight: FontWeight.w800,
-                          color: AimColors.neutral0,
+                          color: surfaces.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -125,7 +131,7 @@ class LessonStartView extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           height: 1.4,
-                          color: AimColors.neutral0.withValues(alpha: 0.9),
+                          color: surfaces.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -134,8 +140,8 @@ class LessonStartView extends StatelessWidget {
                         child: FilledButton(
                           onPressed: onStartLive,
                           style: FilledButton.styleFrom(
-                            backgroundColor: AimColors.neutral0,
-                            foregroundColor: AimColors.primary600,
+                            backgroundColor: AimColors.primary600,
+                            foregroundColor: AimColors.neutral0,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                           ),
