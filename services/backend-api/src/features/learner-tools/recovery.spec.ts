@@ -83,3 +83,40 @@ describe('nudgeText', () => {
     expect(nudgeText([sk({ group: 'speaking' })], 'en').extra).toBe('');
   });
 });
+
+import { parseGeneratedSet, skillLevelRank } from './skill-practice.service';
+
+describe('skillLevelRank', () => {
+  it('reads the level tag from the skill key', () => {
+    expect(skillLevelRank('en.a1.gra.articles_a_an')).toBe(0);
+    expect(skillLevelRank('en.a2.read.short_paragraphs')).toBe(1);
+    expect(skillLevelRank('en.a3.gra.present_perfect')).toBe(2);
+    expect(skillLevelRank('en.b2.gra.third_conditional')).toBe(3);
+    expect(skillLevelRank('en.c2.lis.extended_natural_pace')).toBe(4);
+  });
+  it('treats keys without a tag as available from the start', () => {
+    expect(skillLevelRank('grammar.past_simple.forms')).toBe(0);
+  });
+});
+
+describe('parseGeneratedSet', () => {
+  const q = { stem: 'Where does Sam work?', options: ['A bank', 'A school', 'A shop'], correctIndex: 1, explanation: 'He teaches.' };
+  const passage = 'Sam works at a school near his house. He teaches young children every morning and walks home at noon.';
+  it('accepts a passage with questions, even inside stray text', () => {
+    const out = parseGeneratedSet(`Sure!\n${JSON.stringify({ passage, questions: [q, { ...q, stem: 'When does Sam walk home?' }] })}`, 'passage', new Set());
+    expect(out?.text).toBe(passage);
+    expect(out?.questions).toHaveLength(2);
+  });
+  it('uses the script key for listening', () => {
+    expect(parseGeneratedSet(JSON.stringify({ script: passage, questions: [q, { ...q, stem: 'What does Sam do?' }] }), 'script', new Set())).not.toBeNull();
+    expect(parseGeneratedSet(JSON.stringify({ passage, questions: [q, { ...q, stem: 'What does Sam do?' }] }), 'script', new Set())).toBeNull();
+  });
+  it('rejects a too-short passage or fewer than two valid questions', () => {
+    expect(parseGeneratedSet(JSON.stringify({ passage: 'Too short.', questions: [q, q] }), 'passage', new Set())).toBeNull();
+    expect(parseGeneratedSet(JSON.stringify({ passage, questions: [q] }), 'passage', new Set())).toBeNull();
+  });
+  it('never throws on garbage', () => {
+    expect(parseGeneratedSet('nope', 'passage', new Set())).toBeNull();
+    expect(parseGeneratedSet('{"passage":', 'passage', new Set())).toBeNull();
+  });
+});

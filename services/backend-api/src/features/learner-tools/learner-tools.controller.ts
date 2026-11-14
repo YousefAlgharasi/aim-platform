@@ -11,6 +11,7 @@ import { StudyPlanService } from './study-plan.service';
 import { MistakesService } from './mistakes.service';
 import { SearchService } from './search.service';
 import { RecoveryService } from './recovery.service';
+import { SkillPracticeService } from './skill-practice.service';
 
 const locale = (v?: string): 'en' | 'ar' => (v === 'ar' ? 'ar' : 'en');
 
@@ -26,6 +27,7 @@ export class LearnerToolsController {
     private readonly mistakes: MistakesService,
     private readonly search: SearchService,
     private readonly recovery: RecoveryService,
+    private readonly skillPractice: SkillPracticeService,
   ) {}
 
   @Get('vocabulary')
@@ -89,6 +91,19 @@ export class LearnerToolsController {
   @ApiOperation({ summary: 'Start a retry session for a weak skill (403 until the 3-day cooldown ends). Answers go through /sessions/:id/attempt.' })
   recoveryStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { skillKey?: unknown }) {
     return this.recovery.start(authId, id, body?.skillKey);
+  }
+
+  @Get('student/practice/skills')
+  @ApiOperation({ summary: 'Skills the student can practise in grammar, listening or reading (at or below their level), weakest first.' })
+  practiceSkills(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Query('mode') mode?: string) {
+    return this.skillPractice.skills([id, authId], mode);
+  }
+
+  @Post('student/practice/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a scored practice session (grammar, listening or reading). Answers go through /sessions/:id/attempt.' })
+  practiceStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { mode?: unknown; skillKey?: unknown }) {
+    return this.skillPractice.start(authId, id, body?.mode, body?.skillKey);
   }
 
   @Get('search')
