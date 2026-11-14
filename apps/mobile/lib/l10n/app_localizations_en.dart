@@ -4152,6 +4152,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lessonPlayerPrevious => 'Previous';
 
   @override
+  String get lessonPlayerNextLesson => 'Next lesson';
+
+  @override
+  String get lessonPlayerBackToCourse => 'Back to course';
+
+  @override
+  String get lessonPlayerNextLocked => 'Complete this lesson to unlock the next one';
+
+  @override
   String get lessonPlayerProgress => 'Lesson progress';
 
   @override
