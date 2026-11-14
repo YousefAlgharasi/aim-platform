@@ -35,3 +35,87 @@
   .vr-orb, .vr-orb::before, .vr-orb::after, .vr-bar { animation: none !important; }
 }
 html[data-motion='reduce'] .vr-orb, html[data-motion='reduce'] .vr-orb::before, html[data-motion='reduce'] .vr-orb::after, html[data-motion='reduce'] .vr-bar { animation: none !important; }
+
+/* The teacher's latest message appears with a small pop, and a soft caret blinks while it is being written. */
+.vr-pop { animation: vr-pop 220ms ease-out both; }
+@keyframes vr-pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.vr-caret { display: inline-block; width: 0.5ch; height: 1.05em; margin-inline-start: 2px; vertical-align: text-bottom; background: rgb(var(--c-brand)); border-radius: 1px; animation: vr-blink 900ms steps(2, start) infinite; }
+@keyframes vr-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .vr-pop, .vr-caret { animation: none; } }
+html[data-motion='reduce'] .vr-pop, html[data-motion='reduce'] .vr-caret { animation: none; }
+
+/* ── The AIM robot, its thought bubbles and the text box it sits on ─────────────────────────────────────── */
+.vr-robot { position: relative; display: block; flex: none; height: var(--rh, 8rem); aspect-ratio: 658 / 760; }
+.vr-body { position: absolute; inset: 0; z-index: 1; display: block; transform-origin: 50% 100%; animation: vr-float 5s ease-in-out infinite; }
+.vr-robot img { position: relative; z-index: 1; display: block; width: auto; height: 100%; user-select: none; }
+.vr-robot::before {
+  content: ''; position: absolute; inset: 6% 2% 14% 2%; border-radius: 9999px; opacity: 0; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(var(--c-brand) / 0.5), transparent 72%); transition: opacity 300ms;
+}
+.vr-robot[data-state='speaking']::before { opacity: 1; animation: vr-glow 1.8s ease-in-out infinite; }
+.vr-robot[data-state='listening']::before { opacity: 1; background: radial-gradient(closest-side, rgb(var(--c-danger) / 0.45), transparent 72%); }
+.vr-robot[data-state='thinking']::before { opacity: 0.7; animation: vr-glow 1.2s ease-in-out infinite; }
+.vr-robot[data-state='idle'][data-live='true']::before { opacity: calc(var(--vr-level, 0) * 0.9); transition: opacity 90ms linear; }
+@keyframes vr-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+/* The bubble grows upward from just above the robot's head, to the right of it. */
+.vr-thoughts { position: absolute; z-index: 20; inset-inline-start: calc(var(--rh) * 0.6 + 1.1rem); inset-inline-end: 0; bottom: calc(100% - var(--rh) * 0.3); max-width: 36rem; pointer-events: none; }
+.vr-thoughts > * { pointer-events: auto; }
+.vr-bubble { position: relative; padding: 1rem 1.25rem; border-radius: 1.5rem; background: rgb(var(--c-surface)); box-shadow: 0 0 0 1px rgb(var(--c-line-strong)), 0 8px 24px rgb(0 0 0 / 0.08); text-align: start; }
+.vr-bubble-in { animation: vr-bubble-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both; transform-origin: 0% 100%; }
+.vr-bubble-out { position: absolute; inset-inline: 0; bottom: 0; z-index: -1; animation: vr-bubble-out 500ms ease-in forwards; transform-origin: 0% 100%; }
+@keyframes vr-bubble-in { from { opacity: 0; transform: translateY(12px) scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes vr-bubble-out { from { opacity: 0.9; transform: none; } to { opacity: 0; transform: translateY(-10px) scale(0.9); } }
+.vr-dot { position: absolute; border-radius: 9999px; background: rgb(var(--c-surface)); box-shadow: 0 0 0 1px rgb(var(--c-line-strong)); }
+.vr-dot-1 { width: 0.9rem; height: 0.9rem; inset-inline-start: -0.6rem; bottom: -0.55rem; }
+.vr-dot-2 { width: 0.62rem; height: 0.62rem; inset-inline-start: -1.35rem; bottom: -1.2rem; }
+.vr-dot-3 { width: 0.4rem; height: 0.4rem; inset-inline-start: -1.9rem; bottom: -1.75rem; }
+[dir='rtl'] .vr-dot { transform: scaleX(-1); }
+@media (prefers-reduced-motion: reduce) { .vr-robot::before, .vr-bubble-in, .vr-bubble-out { animation: none !important; } }
+html[data-motion='reduce'] .vr-robot::before, html[data-motion='reduce'] .vr-bubble-in, html[data-motion='reduce'] .vr-bubble-out { animation: none !important; }
+
+/* Room above the text box for the robot that sits on its top-left corner. */
+.vr-seat { padding-top: calc(var(--rh) - 0.6rem); }
+
+/* ── The robot's face: blinking, glancing eyes and a talking mouth ──────────────────────────────────────── */
+.vr-face { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.vr-face * { transform-box: fill-box; transform-origin: center; }
+.vr-eye { stroke: #46e3ff; stroke-width: 11; filter: drop-shadow(0 0 5px rgb(40 190 255 / 0.9)); }
+.vr-brow { stroke: #b8bdee; stroke-width: 7; opacity: 0.9; }
+.vr-mouth { fill: #2eeaf3; filter: drop-shadow(0 0 5px rgb(40 220 255 / 0.8)); transform-origin: 50% 0; }
+.vr-eyes { animation: vr-look 7s ease-in-out infinite; }
+.vr-eye { animation: vr-blink 4.6s infinite; }
+.vr-eye-b { animation-delay: 0.04s; }
+.vr-brows { animation: vr-look 7s ease-in-out infinite; }
+.vr-mouth-wrap { animation: vr-look-small 7s ease-in-out infinite; }
+@keyframes vr-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+@keyframes vr-look { 0%, 12%, 100% { transform: translate(0, 0); } 24%, 40% { transform: translate(-9px, -2px); } 54%, 70% { transform: translate(9px, -3px); } 82% { transform: translate(0, 2px); } }
+@keyframes vr-look-small { 0%, 12%, 100% { transform: translate(0, 0); } 24%, 40% { transform: translate(-3px, 0); } 54%, 70% { transform: translate(3px, 0); } }
+@keyframes vr-talk { 0%, 100% { transform: scale(1, 0.55); } 14% { transform: scale(1.12, 1.55); } 30% { transform: scale(0.92, 0.8); } 46% { transform: scale(1.18, 1.9); } 62% { transform: scale(0.95, 0.65); } 78% { transform: scale(1.08, 1.4); } }
+@keyframes vr-brow-talk { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-5px); } 55% { transform: translateY(-2px); } 80% { transform: translateY(-6px); } }
+@keyframes vr-eye-talk { 0%, 100% { transform: scaleY(1); } 20% { transform: scaleY(1.12); } 55% { transform: scaleY(0.92); } }
+.vr-robot[data-state='speaking'] .vr-eyes { animation: vr-look 3.2s ease-in-out infinite; }
+.vr-robot[data-state='speaking'] .vr-brows { animation: vr-look 3.2s ease-in-out infinite, vr-brow-talk 0.9s ease-in-out infinite; }
+.vr-robot[data-state='speaking'] .vr-mouth-wrap { animation: vr-look-small 3.2s ease-in-out infinite; }
+.vr-robot[data-state='speaking'] .vr-mouth { animation: vr-talk 0.62s ease-in-out infinite; }
+.vr-robot[data-state='listening'] .vr-eye { animation: vr-blink 4.6s infinite; transform-origin: 50% 100%; }
+.vr-robot[data-state='listening'] .vr-eyes { animation: none; transform: scale(1.08); }
+.vr-robot[data-state='listening'] .vr-brows { animation: none; transform: translateY(-5px); }
+.vr-robot[data-state='thinking'] .vr-eyes, .vr-robot[data-state='thinking'] .vr-brows { animation: none; transform: translate(8px, -7px); }
+.vr-robot[data-state='thinking'] .vr-mouth { transform: scale(0.7, 0.35); }
+@media (prefers-reduced-motion: reduce) { .vr-face * { animation: none !important; } }
+html[data-motion='reduce'] .vr-face * { animation: none !important; }
+
+/* ── Whole-body motion. The base stays put (it sits behind the text box); the robot breathes, sways and bounces. ── */
+@keyframes vr-float { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1); } 50% { transform: translateY(-1.5%) rotate(0.8deg) scale(1.012); } }
+@keyframes vr-sway { 0%, 100% { transform: translateY(0) rotate(-1.6deg) scale(1); } 25% { transform: translateY(-2.2%) rotate(0deg) scale(1.02); } 50% { transform: translateY(0) rotate(1.6deg) scale(1); } 75% { transform: translateY(-2.2%) rotate(0deg) scale(1.02); } }
+@keyframes vr-lean { 0%, 100% { transform: translateY(0) rotate(1deg) scale(1.03); } 50% { transform: translateY(-0.8%) rotate(2deg) scale(1.045); } }
+@keyframes vr-ponder { 0%, 100% { transform: rotate(-2deg) scale(1); } 50% { transform: rotate(-3.5deg) scale(1.01); } }
+.vr-robot[data-state='speaking'] .vr-body { animation: vr-sway 1.25s ease-in-out infinite; }
+.vr-robot[data-state='listening'] .vr-body { animation: vr-lean 2.4s ease-in-out infinite; }
+.vr-robot[data-state='thinking'] .vr-body { animation: vr-ponder 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .vr-body { animation: none !important; } }
+html[data-motion='reduce'] .vr-body { animation: none !important; }
+
+/* On phones the open chat already shows what the robot said, so its bubble steps aside. */
+@media (max-width: 1023px) { [data-sheet='open'] .vr-thoughts { display: none; } }

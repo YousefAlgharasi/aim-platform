@@ -25,7 +25,7 @@ import '../features/landing/landing.css';
  */
 const AUTO_BACK = /^\/ai-teacher\/(?!history\/?$)[^/]+\/?$/;
 
-const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/(?!speaking|writing)|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
+const TAB_BAR_HIDDEN = /^\/(ai-teacher\/|voice-teacher|lessons\/|practice\/(?!speaking|writing)|improve\/retry\/|placement\/|assessments\/[^/]+\/attempt\/|billing\/checkout\/)/;
 
 export function AppLayout() {
   const { t } = useI18n();

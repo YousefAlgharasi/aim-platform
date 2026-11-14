@@ -40,6 +40,7 @@ describe('VoiceComposer', () => {
   const props = {
     draft: '', onDraftChange: jest.fn(), onSend: jest.fn(), onMicToggle: jest.fn(),
     micState: 'on' as const, busy: false, muted: false, onToggleMute: jest.fn(),
+    robotState: 'idle' as const, level: 0, thought: null,
   };
   beforeEach(() => jest.clearAllMocks());
 
@@ -67,13 +68,36 @@ describe('VoiceComposer', () => {
     expect(screen.getByPlaceholderText('Type or talk to your teacher')).toBeInTheDocument();
   });
 
-  it('becomes a send button once something is typed', () => {
+  it('sends only once something is typed (the send button is disabled while the box is empty)', () => {
     const { rerender } = render(<VoiceComposer {...props} />);
-    expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send message' })).toBeDisabled();
     rerender(<VoiceComposer {...props} draft="Hello teacher" />);
-    expect(screen.queryByRole('button', { name: 'Mute your microphone' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    const send = screen.getByRole('button', { name: 'Send message' });
+    expect(send).toBeEnabled();
+    fireEvent.click(send);
     expect(props.onSend).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the microphone and the teacher-voice buttons inside the box even while typing', () => {
+    render(<VoiceComposer {...props} draft="Hello" />);
+    expect(screen.getByRole('button', { name: 'Mute your microphone' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mute the teacher’s voice' })).toBeInTheDocument();
+  });
+
+  it('shows what the robot is saying as a thought bubble, and a newer message replaces it', () => {
+    const { rerender, container } = render(<VoiceComposer {...props} robotState="speaking" thought={{ id: 'a', text: 'We use the present simple for habits.', typing: false }} />);
+    expect(screen.getByText('We use the present simple for habits.')).toBeInTheDocument();
+    expect(container.querySelector('.vr-robot')).toHaveAttribute('data-state', 'speaking');
+    rerender(<VoiceComposer {...props} robotState="speaking" thought={{ id: 'b', text: 'Now say a sentence.', typing: true }} />);
+    expect(screen.getByText('Now say a sentence.')).toBeInTheDocument();
+    // The old bubble is still there for a moment, fading behind the new one.
+    expect(container.querySelector('.vr-bubble-out')).not.toBeNull();
+    expect(container.querySelector('.vr-caret')).not.toBeNull();
+  });
+
+  it('shows no bubble when the robot has nothing to say yet', () => {
+    const { container } = render(<VoiceComposer {...props} />);
+    expect(container.querySelector('.vr-bubble')).toBeNull();
   });
 
   it('sends on Enter, keeps Shift+Enter for a new line, and ignores empty text', () => {

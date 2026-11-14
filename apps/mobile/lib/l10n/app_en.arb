@@ -4904,5 +4904,11 @@
   "voiceLiveMicOn": "Turn your microphone on",
   "@voiceLiveMicOn": {"description": "Tooltip of the microphone button while it is muted."},
   "voiceLiveMicStart": "Start live conversation",
-  "@voiceLiveMicStart": {"description": "Tooltip of the microphone button while the microphone is off."}
+  "@voiceLiveMicStart": {"description": "Tooltip of the microphone button while the microphone is off."},
+  "voiceLiveMessagesCount": "Messages ({n})",
+  "@voiceLiveMessagesCount": {"description": "Button under the text box that opens the conversation sheet; n is the number of messages.", "placeholders": {"n": {"type": "int"}}},
+  "voiceLiveHideMessages": "Hide messages",
+  "@voiceLiveHideMessages": {"description": "Button under the text box that closes the conversation sheet."},
+  "voiceLiveConversation": "Conversation",
+  "@voiceLiveConversation": {"description": "Title of the conversation sheet in the live lesson."}
 }

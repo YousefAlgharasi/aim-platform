@@ -4224,4 +4224,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceLiveMicStart => 'Start live conversation';
+
+  @override
+  String voiceLiveMessagesCount(int n) {
+    return 'Messages ($n)';
+  }
+
+  @override
+  String get voiceLiveHideMessages => 'Hide messages';
+
+  @override
+  String get voiceLiveConversation => 'Conversation';
 }

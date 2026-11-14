@@ -318,6 +318,7 @@ export class SessionsController {
     const resolvedItem = await this.sessionQuestionsService.resolveItemForAttempt(
       body.itemId,
       body.answerValue,
+      user.id, // JWT-resolved: lets a student answer their own recovery questions
     );
 
     // Guard against client clock skew: if client device clock is ahead of server,

@@ -33,6 +33,7 @@ const VocabularyPage = lazy(() => import('../features/learner/VocabularyPage').t
 const VocabularyLibraryPage = lazy(() => import('../features/learner/VocabularyLibraryPage').then((m) => ({ default: m.VocabularyLibraryPage })));
 const MistakesPage = lazy(() => import('../features/learner/MistakesPage').then((m) => ({ default: m.MistakesPage })));
 const PracticeHubPage = lazy(() => import('../features/practice-hub/PracticeHubPage').then((m) => ({ default: m.PracticeHubPage })));
+const RecoveryRetryPage = lazy(() => import('../features/improve/RecoveryRetryPage').then((m) => ({ default: m.RecoveryRetryPage })));
 const ImprovePage = lazy(() => import('../features/improve/ImprovePage').then((m) => ({ default: m.ImprovePage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const ProgressSummary = lazy(() => import('../features/progress/ProgressSummary').then((m) => ({ default: m.ProgressSummary })));
@@ -264,6 +265,14 @@ export function AppRoutes() {
           element={
             <Suspense fallback={<AppShellSkeleton />}>
               <ImprovePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/improve/retry/:skillKey"
+          element={
+            <Suspense fallback={<AppShellSkeleton />}>
+              <RecoveryRetryPage />
             </Suspense>
           }
         />

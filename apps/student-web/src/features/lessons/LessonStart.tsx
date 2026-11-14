@@ -5,6 +5,7 @@ import { CheckIcon } from '../../components/common/Icons';
 import { buttonClasses } from '../../components/common/buttonStyles';
 import { useI18n } from '../../i18n/I18nContext';
 import type { Character } from './dialogue/characters';
+import { AimRobot } from '../voice-teacher/AimRobot';
 import '../voice-teacher/voice-room.css';
 import './player/player.css';
 
@@ -50,7 +51,7 @@ export function LessonStart({ lessonId, title, guide, completed, locked, courseI
 
       {/* Main: live lesson with the AI teacher */}
       <section aria-labelledby="lesson-live-title" className="flex flex-col items-center gap-5 rounded-3xl bg-brand-soft p-6 text-center ring-1 ring-brand-line sm:p-8">
-        <span aria-hidden="true" className="vr-orb" data-state="speaking" style={{ ['--vr-size' as string]: '8rem' }} />
+        <AimRobot state="speaking" className="[--rh:10rem]" />
         <div className="flex flex-col gap-2">
           <h2 id="lesson-live-title" className="m-0 text-2xl font-semibold leading-snug text-ink sm:text-[1.75rem]">{t('Start the lesson with your AI teacher')}</h2>
           <p className="m-0 text-base leading-relaxed text-ink-soft">{t('Your teacher talks you through the lesson out loud. Answer by speaking or typing.')}</p>
