@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { PageTitleBar } from '../../components/common/PageTitleBar';
-import { LightbulbIcon, MicIcon, PencilIcon } from '../../components/common/Icons';
+import { BookIcon, HeadphonesIcon, LightbulbIcon, MicIcon, PencilIcon } from '../../components/common/Icons';
 import { RetryIcon, TargetIcon } from '../../layouts/navItems';
 import { mistakesApi, vocabularyApi } from '../learner/learnerApi';
 
@@ -96,6 +96,15 @@ export function PracticeHubPage() {
         )}
       </section>
 
+      <Group
+        title="Train a skill"
+        tour="practice-skills"
+        modes={[
+          { to: '/practice/skill/grammar', title: 'Practice Grammar', body: 'Short drills on one grammar point, matched to your level.', icon: <LightbulbIcon className={ic} />, tone: 'bg-info-soft text-info-ink' },
+          { to: '/practice/skill/listening', title: 'Practice Listening', body: 'Listen to a short recording and answer questions.', icon: <HeadphonesIcon className={ic} />, tone: 'bg-accent-soft text-accent-ink' },
+          { to: '/practice/skill/reading', title: 'Practice Reading', body: 'Read a short passage and answer questions.', icon: <BookIcon className={ic} />, tone: 'bg-success-soft text-success-ink' },
+        ]}
+      />
       <Group
         title="Speak and write"
         tour="practice-speak"
