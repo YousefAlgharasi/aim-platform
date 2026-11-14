@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/question_answer/data/models/question_answer_models.dart';
@@ -54,6 +55,7 @@ class QuestionPage extends ConsumerStatefulWidget {
     required this.questionId,
     this.initialQuestion,
     this.onNext,
+    this.passage,
     super.key,
   });
 
@@ -73,6 +75,9 @@ class QuestionPage extends ConsumerStatefulWidget {
   /// acknowledges the attempt — used by the practice session flow to advance
   /// to the next delivered question.
   final VoidCallback? onNext;
+
+  /// Reading practice: a passage shown above the question.
+  final String? passage;
 
   @override
   ConsumerState<QuestionPage> createState() => _QuestionPageState();
@@ -186,6 +191,10 @@ class _QuestionPageState extends ConsumerState<QuestionPage> {
           ),
           const SizedBox(height: AimSpacing.space8),
         ],
+        if (widget.passage != null && widget.passage!.trim().isNotEmpty) ...[
+          _PassageCard(passage: widget.passage!),
+          const SizedBox(height: AimSpacing.componentGap),
+        ],
         QuestionStemCard(question: question),
         if (question.type == 'listening_choice') ...[
           const SizedBox(height: AimSpacing.componentGap),
@@ -298,6 +307,38 @@ class _PracticeHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Reading practice: the passage the questions are about.
+class _PassageCard extends StatelessWidget {
+  const _PassageCard({required this.passage});
+
+  final String passage;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsetsDirectional.all(AimSpacing.space12),
+      decoration: BoxDecoration(
+        color: surfaces.surfaceSunken,
+        borderRadius: BorderRadius.circular(AimRadius.md),
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr('Reading passage', 'نص القراءة'),
+            style: AimTextStyles.caption.copyWith(color: surfaces.textMuted, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AimSpacing.space4),
+          Text(passage, style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary, height: 1.5)),
+        ],
       ),
     );
   }
