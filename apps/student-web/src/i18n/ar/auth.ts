@@ -90,6 +90,7 @@ export const auth: Record<string, string> = {
   'Remembered your password?': 'تذكرت كلمة المرور؟',
   'We sent a password reset link to {email}. Open it to continue.':
     'أرسلنا رابط إعادة تعيين كلمة المرور إلى {email}. افتحه للمتابعة.',
+  'Resend email in {seconds}s': 'يمكنك إعادة الإرسال بعد {seconds} ث',
   "Didn't get it? Resend email": 'لم يصلك؟ أعد إرسال البريد',
   'Request failed': 'فشل الطلب',
   'Reset Password': 'إعادة تعيين كلمة المرور',
