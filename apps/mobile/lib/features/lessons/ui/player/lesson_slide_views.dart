@@ -393,6 +393,10 @@ class FinishSlideView extends StatelessWidget {
     required this.completed,
     required this.onAskTutor,
     required this.onVoicePractice,
+    required this.hasNextLesson,
+    required this.nextLessonUnlocked,
+    required this.onNextLesson,
+    required this.onBackToCourse,
     super.key,
   });
 
@@ -400,6 +404,12 @@ class FinishSlideView extends StatelessWidget {
   final bool completed;
   final VoidCallback onAskTutor;
   final VoidCallback onVoicePractice;
+
+  /// Whether the chapter has a lesson after this one, and whether the student may open it yet.
+  final bool hasNextLesson;
+  final bool nextLessonUnlocked;
+  final VoidCallback onNextLesson;
+  final VoidCallback onBackToCourse;
 
   @override
   Widget build(BuildContext context) {
@@ -441,6 +451,39 @@ class FinishSlideView extends StatelessWidget {
           title: completed ? l10n.lessonsRelearnWithVoice : l10n.lessonsStartLearningNow,
           onTap: onVoicePractice,
         ),
+        const SizedBox(height: 10),
+        if (hasNextLesson) ...[
+          OutlinedButton.icon(
+            onPressed: nextLessonUnlocked ? onNextLesson : null,
+            icon: Icon(
+              nextLessonUnlocked ? Icons.skip_next_rounded : Icons.lock_rounded,
+              size: 20,
+            ),
+            label: Text(l10n.lessonPlayerNextLesson),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              side: BorderSide(color: surfaces.borderStrong, width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            ),
+          ),
+          if (!nextLessonUnlocked) ...[
+            const SizedBox(height: 6),
+            Text(
+              l10n.lessonPlayerNextLocked,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: surfaces.textMuted),
+            ),
+          ],
+        ] else
+          OutlinedButton(
+            onPressed: onBackToCourse,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              side: BorderSide(color: surfaces.borderStrong, width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            ),
+            child: Text(l10n.lessonPlayerBackToCourse),
+          ),
       ],
     );
   }

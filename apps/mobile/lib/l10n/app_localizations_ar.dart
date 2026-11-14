@@ -4187,6 +4187,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lessonPlayerPrevious => 'السابق';
 
   @override
+  String get lessonPlayerNextLesson => 'الدرس التالي';
+
+  @override
+  String get lessonPlayerBackToCourse => 'العودة إلى الدورة';
+
+  @override
+  String get lessonPlayerNextLocked => 'أكمل هذا الدرس لفتح الدرس التالي';
+
+  @override
   String get lessonPlayerProgress => 'تقدّم الدرس';
 
   @override

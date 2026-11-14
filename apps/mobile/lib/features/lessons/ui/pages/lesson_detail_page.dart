@@ -73,6 +73,11 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
   bool _completed = false;
   bool _practiceCheckStarted = false;
 
+  // The lesson after this one in the chapter (from the same backend chapter list) and whether the student may open
+  // it: it is completed or current, or this lesson is completed. Display/navigation only; the backend still gates it.
+  LessonProgress? _next;
+  bool _nextUnlocked = false;
+
   @override
   void initState() {
     super.initState();
@@ -122,14 +127,20 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
             chapterId: detail.lesson.chapterId,
           );
       LessonProgress? match;
-      for (final l in lessons) {
-        if (l.id == detail.lesson.id) {
-          match = l;
+      LessonProgress? next;
+      for (var i = 0; i < lessons.length; i++) {
+        if (lessons[i].id == detail.lesson.id) {
+          match = lessons[i];
+          if (i + 1 < lessons.length) next = lessons[i + 1];
           break;
         }
       }
       if (mounted && match != null) {
-        setState(() => _completed = match!.completed);
+        setState(() {
+          _completed = match!.completed;
+          _next = next;
+          _nextUnlocked = next != null && (next.completed || next.current || match.completed);
+        });
       }
     } catch (_) {
       // Leave _completed as it is (not completed).
@@ -194,6 +205,15 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
     }
   }
 
+  void _openNextLesson() {
+    final next = _next;
+    if (next == null || !_nextUnlocked) return;
+    context.pushReplacement(
+      AppRoutePaths.lessonDetail,
+      extra: {'lessonId': next.id, 'lessonTitle': next.title},
+    );
+  }
+
   void _startVoicePractice(LessonDetail detail) {
     context.push(
       AppRoutePaths.voiceTeacher,
@@ -241,6 +261,9 @@ class _LessonDetailPageState extends ConsumerState<LessonDetailPage> {
                 onAskTutor: () => _startPractice(data),
                 onStartQuestionPractice: () => _startQuestionPractice(data),
                 onStartVoicePractice: () => _startVoicePractice(data),
+                hasNextLesson: _next != null,
+                nextLessonUnlocked: _nextUnlocked,
+                onNextLesson: _openNextLesson,
               );
             },
           ),

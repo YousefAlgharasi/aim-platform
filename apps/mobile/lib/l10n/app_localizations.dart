@@ -7062,6 +7062,24 @@ abstract class AppLocalizations {
   /// **'Previous'**
   String get lessonPlayerPrevious;
 
+  /// Button on the last card that opens the next lesson of the chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next lesson'**
+  String get lessonPlayerNextLesson;
+
+  /// Button on the last card of a chapter's final lesson that returns to the course.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to course'**
+  String get lessonPlayerBackToCourse;
+
+  /// Hint shown while the next lesson is still locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete this lesson to unlock the next one'**
+  String get lessonPlayerNextLocked;
+
   /// Screen-reader label of the lesson player progress bar.
   ///
   /// In en, this message translates to:

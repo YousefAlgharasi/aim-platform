@@ -23,6 +23,9 @@ class LessonPlayer extends StatefulWidget {
     required this.onAskTutor,
     required this.onStartQuestionPractice,
     required this.onStartVoicePractice,
+    required this.hasNextLesson,
+    required this.nextLessonUnlocked,
+    required this.onNextLesson,
     super.key,
   });
 
@@ -37,6 +40,11 @@ class LessonPlayer extends StatefulWidget {
   final VoidCallback onAskTutor;
   final VoidCallback onStartQuestionPractice;
   final VoidCallback onStartVoicePractice;
+
+  /// Next lesson of the chapter (from the student's chapter list), and whether it is open to the student yet.
+  final bool hasNextLesson;
+  final bool nextLessonUnlocked;
+  final VoidCallback onNextLesson;
 
   @override
   State<LessonPlayer> createState() => _LessonPlayerState();
@@ -225,6 +233,10 @@ class _LessonPlayerState extends State<LessonPlayer> {
           completed: widget.completed,
           onAskTutor: widget.onAskTutor,
           onVoicePractice: widget.onStartVoicePractice,
+          hasNextLesson: widget.hasNextLesson,
+          nextLessonUnlocked: widget.nextLessonUnlocked,
+          onNextLesson: widget.onNextLesson,
+          onBackToCourse: widget.onBack,
         ),
     };
   }
