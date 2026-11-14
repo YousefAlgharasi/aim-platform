@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:aim_mobile/core/localization/localization.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
 import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
-import 'package:aim_mobile/features/stories/ui/stories_page.dart';
+import 'package:aim_mobile/features/stories/ui/widgets/story_widgets.dart';
 import 'package:aim_mobile/features/stories/ui/widgets/story_scene_view.dart';
 
 StorySummary _story(String id, {int answered = 0, bool locked = false, bool completed = false, String? titleAr}) => StorySummary(
@@ -25,6 +25,12 @@ StorySummary _story(String id, {int answered = 0, bool locked = false, bool comp
       locked: locked,
       completed: completed,
     );
+
+StoryPart _part(int i, {bool unlocked = false, bool done = false}) =>
+    StoryPart(index: i, chapterId: 'c$i', scenes: 1, questions: 2, answered: done ? 2 : 0, unlocked: unlocked, done: done);
+
+CourseStory _course(List<StoryPart> parts, {int read = 0}) =>
+    CourseStory(summary: _story('1', titleAr: 'مسابقة الطبخ الخيرية'), parts: parts, partsRead: read);
 
 Widget _app(Widget home, {required Locale locale, required ThemeData theme, List<Override> overrides = const [], double scale = 1}) {
   return ProviderScope(
@@ -81,32 +87,54 @@ void main() {
     });
   });
 
-  testWidgets('each story shows the right action', (tester) async {
-    final stories = [
-      _story('1'),
-      _story('2', answered: 6),
-      _story('3', answered: 21, completed: true),
-      _story('4', locked: true),
-    ];
-    await tester.pumpWidget(_app(const StoriesPage(),
-        locale: const Locale('en'), theme: AppTheme.light, overrides: [storiesProvider.overrideWith((ref) async => stories)]));
-    await tester.pumpAndSettle();
-    tester.view.physicalSize = const Size(400, 3000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await tester.pumpAndSettle();
-    expect(find.text('Start reading', skipOffstage: false), findsOneWidget);
-    expect(find.text('Continue', skipOffstage: false), findsOneWidget);
-    expect(find.text('Read again', skipOffstage: false), findsOneWidget);
-    expect(find.textContaining('Unlocks when you reach B1.1', skipOffstage: false), findsOneWidget);
-    expect(tester.takeException(), isNull);
+  group('story parts', () {
+    test('CourseStory.next is the first unlocked part that is not finished', () {
+      final c = _course([_part(0, unlocked: true, done: true), _part(1, unlocked: true), _part(2)], read: 1);
+      expect(c.next?.index, 1);
+      expect(_course([_part(0), _part(1)]).next, isNull);
+      expect(_course([_part(0, unlocked: true, done: true)], read: 1).next, isNull);
+    });
+
+    test('StoryPart / ChapterStory parse the server fields', () {
+      final cs = ChapterStory.fromJson({
+        'storyId': 's1', 'title': 'The First Day', 'courseId': 'co1',
+        'part': {'index': 2, 'chapterId': 'ch3', 'scenes': 2, 'questions': 4, 'answered': 1, 'unlocked': true, 'done': false},
+      });
+      expect((cs.storyId, cs.part.index, cs.part.unlocked, cs.part.done, cs.part.questions), ('s1', 2, true, false, 4));
+      expect(StoryPart.fromJson({}).unlocked, isFalse);
+    });
+
+    test('a part opens its own route', () {
+      expect(storyPartRoute('abc', 2), '/stories/read?id=abc&part=2');
+    });
   });
 
-  testWidgets('an empty list shows a friendly message', (tester) async {
-    await tester.pumpWidget(_app(const StoriesPage(),
-        locale: const Locale('en'), theme: AppTheme.light, overrides: [storiesProvider.overrideWith((ref) async => const <StorySummary>[])]));
+  testWidgets('the course card offers the next part, or says what unlocks it', (tester) async {
+    await tester.pumpWidget(_app(Scaffold(body: CourseStoryCard(story: _course([_part(0, unlocked: true), _part(1)]))), locale: const Locale('en'), theme: AppTheme.light));
     await tester.pumpAndSettle();
-    expect(find.text('No stories yet'), findsOneWidget);
+    expect(find.text('Start the story'), findsOneWidget);
+    expect(find.text('0 of 2 parts read'), findsOneWidget);
+
+    await tester.pumpWidget(_app(Scaffold(body: CourseStoryCard(story: _course([_part(0), _part(1)]))), locale: const Locale('en'), theme: AppTheme.light));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Finish a chapter to unlock the next part'), findsOneWidget);
+    expect(find.text('Start the story'), findsNothing);
+
+    await tester.pumpWidget(_app(Scaffold(body: CourseStoryCard(story: _course([_part(0, unlocked: true, done: true)], read: 1))), locale: const Locale('en'), theme: AppTheme.light));
+    await tester.pumpAndSettle();
+    expect(find.text('Read again'), findsOneWidget);
+  });
+
+  testWidgets('the chapter tile shows locked, ready and finished', (tester) async {
+    ChapterStory cs(StoryPart p) => ChapterStory(storyId: 's', title: 'The First Day', part: p);
+    for (final (part, expected) in [(_part(0), 'Story part 1'), (_part(1, unlocked: true), 'Story part 2'), (_part(2, unlocked: true, done: true), 'Story part 3')]) {
+      await tester.pumpWidget(_app(Scaffold(body: StoryPartTile(story: cs(part))), locale: const Locale('en'), theme: AppTheme.light));
+      await tester.pumpAndSettle();
+      expect(find.text(expected), findsOneWidget);
+    }
+    await tester.pumpWidget(_app(Scaffold(body: StoryPartTile(story: cs(_part(0)))), locale: const Locale('en'), theme: AppTheme.light));
+    await tester.pumpAndSettle();
+    expect(find.textContaining("Finish this chapter's lessons to unlock"), findsOneWidget);
   });
 
   const lines = [
@@ -126,14 +154,17 @@ void main() {
             tester.view.devicePixelRatio = 1;
             addTearDown(tester.view.reset);
 
-            // The list, with a story that has an Arabic title.
-            await tester.pumpWidget(_app(const StoriesPage(),
-                locale: loc,
-                theme: dark ? AppTheme.dark : AppTheme.light,
-                scale: scale,
-                overrides: [
-                  storiesProvider.overrideWith((ref) async => [_story('1', answered: 6, titleAr: 'مسابقة الطبخ الخيرية'), _story('2', locked: true)]),
-                ]));
+            // The course card and a chapter tile, with a story that has an Arabic title.
+            await tester.pumpWidget(_app(
+              Scaffold(body: ListView(padding: const EdgeInsets.all(16), children: [
+                CourseStoryCard(story: _course([_part(0, unlocked: true, done: true), _part(1, unlocked: true), _part(2)], read: 1)),
+                const SizedBox(height: 12),
+                StoryPartTile(story: ChapterStory(storyId: 's', title: 'The Charity Cook-off', titleAr: 'مسابقة الطبخ الخيرية', part: _part(1, unlocked: true))),
+                const SizedBox(height: 12),
+                StoryPartTile(story: ChapterStory(storyId: 's', title: 'The Charity Cook-off', titleAr: 'مسابقة الطبخ الخيرية', part: _part(2))),
+              ])),
+              locale: loc, theme: dark ? AppTheme.dark : AppTheme.light, scale: scale,
+            ));
             await tester.pumpAndSettle();
             expect(tester.takeException(), isNull);
 

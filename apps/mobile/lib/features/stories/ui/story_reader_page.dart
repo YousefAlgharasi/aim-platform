@@ -19,9 +19,12 @@ import 'widgets/story_scene_view.dart';
 enum _Phase { intro, scene, questions, done }
 
 class StoryReaderPage extends ConsumerStatefulWidget {
-  const StoryReaderPage({required this.storyId, super.key});
+  const StoryReaderPage({required this.storyId, this.part, super.key});
 
   final String storyId;
+
+  /// The chapter's part of the story to read; null reads the whole story.
+  final int? part;
 
   @override
   ConsumerState<StoryReaderPage> createState() => _StoryReaderPageState();
@@ -50,7 +53,7 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
       _story = null;
     });
     try {
-      final s = await ref.read(learnerToolsApiProvider).story(widget.storyId);
+      final s = await ref.read(learnerToolsApiProvider).story(widget.storyId, part: widget.part);
       if (mounted) setState(() => _story = s);
     } catch (e) {
       if (!mounted) return;
@@ -70,7 +73,7 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
       _error = null;
     });
     try {
-      final sid = await ref.read(learnerToolsApiProvider).startStory(widget.storyId);
+      final sid = await ref.read(learnerToolsApiProvider).startStory(widget.storyId, part: widget.part);
       if (!mounted) return;
       if (sid.isEmpty) throw StateError('no session');
       setState(() {
@@ -87,6 +90,9 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
   }
 
   void _goNextScene() {
+    // The road and the course card show how many parts are read, so refresh them as scenes get finished.
+    ref.invalidate(courseStoryProvider);
+    ref.invalidate(chapterStoryProvider);
     final total = _story!.sceneList.length;
     setState(() {
       if (_scene + 1 >= total) {
@@ -154,14 +160,14 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
     if (_locked) {
       body = AIMEmptyState(
         icon: const Icon(Icons.lock_rounded),
-        title: context.tr('This story is locked', 'هذه القصة مقفلة'),
+        title: context.tr('This part of the story is locked', 'هذا الجزء من القصة مقفل'),
         subtitle: context.tr(
-          'Finish the earlier courses to unlock it. Meanwhile, read the stories that are open.',
-          'أنهِ الدورات السابقة لفتحها. في هذه الأثناء، اقرأ القصص المفتوحة.',
+          "Finish this chapter's lessons to unlock it. The story grows as you learn.",
+          'أنهِ دروس هذا الفصل لفتحه. تنمو القصة كلما تعلّمت.',
         ),
         action: AIMButton(
           onPressed: () => context.pop(),
-          child: Text(context.tr('Back to stories', 'العودة إلى القصص')),
+          child: Text(context.tr('Back to the course', 'العودة إلى الدورة')),
         ),
       );
     } else if (_error != null && story == null) {
@@ -193,9 +199,18 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
     final surfaces = aimSurfacesOf(context);
     final s = story.summary;
     final summary = (_ar && (s.summaryAr ?? '').isNotEmpty) ? s.summaryAr! : s.summary;
-    final label = s.completed
+    final scenes = story.sceneList;
+    final questions = scenes.fold<int>(0, (n, sc) => n + sc.questions.length);
+    final words = scenes.fold<int>(0, (n, sc) => n + sc.lines.fold<int>(0, (m, l) => m + l.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length));
+    final minutes = (words / 120 + questions * 0.4).round().clamp(1, 999);
+    final partDone = scenes.isNotEmpty && scenes.every((sc) => sc.done);
+    final partStarted = scenes.any((sc) => sc.done);
+    final partLabel = story.part == null
+        ? null
+        : fill(context.tr('Part {n} of {total}', 'الجزء {n} من {total}'), {'n': story.part! + 1, 'total': story.partCount});
+    final label = partDone
         ? context.tr('Read again', 'اقرأ مجددًا')
-        : s.answered > 0
+        : partStarted
             ? context.tr('Continue', 'تابع')
             : context.tr('Start reading', 'ابدأ القراءة');
     return ListView(
@@ -205,7 +220,7 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
         const Center(child: StoryCast(size: 52)),
         const SizedBox(height: AimSpacing.sectionGap),
         Text(
-          s.cefrCode ?? s.courseTitle,
+          [s.cefrCode ?? s.courseTitle, if (partLabel != null) partLabel].join(' · '),
           textAlign: TextAlign.center,
           style: AimTextStyles.caption.copyWith(color: AimColors.primary500, fontWeight: FontWeight.w800),
         ),
@@ -214,9 +229,9 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
         const SizedBox(height: AimSpacing.space8),
         Text(
           [
-            fill(context.tr('{n} scenes', '{n} مشاهد'), {'n': s.scenes}),
-            fill(context.tr('{n} min', '{n} د'), {'n': s.minutes}),
-            fill(context.tr('{n} questions', '{n} أسئلة'), {'n': s.questions}),
+            fill(context.tr('{n} scenes', '{n} مشاهد'), {'n': scenes.length}),
+            fill(context.tr('{n} min', '{n} د'), {'n': minutes}),
+            fill(context.tr('{n} questions', '{n} أسئلة'), {'n': questions}),
           ].join(' · '),
           textAlign: TextAlign.center,
           style: AimTextStyles.caption.copyWith(color: surfaces.textMuted, fontWeight: FontWeight.w600),
@@ -228,7 +243,7 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
         const SizedBox(height: AimSpacing.sectionGap),
         AIMButton(
           fullWidth: true,
-          onPressed: _starting ? null : () => _begin(fromStart: s.completed),
+          onPressed: _starting ? null : () => _begin(fromStart: partDone),
           child: Text(_starting ? context.tr('Preparing…', 'جارٍ التجهيز…') : label),
         ),
       ],
@@ -250,7 +265,11 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                fill(context.tr('Scene {n} of {total}', 'المشهد {n} من {total}'), {'n': _scene + 1, 'total': total}),
+                [
+                  if (story.part != null)
+                    fill(context.tr('Part {n} of {total}', 'الجزء {n} من {total}'), {'n': story.part! + 1, 'total': story.partCount}),
+                  fill(context.tr('Scene {n} of {total}', 'المشهد {n} من {total}'), {'n': _scene + 1, 'total': total}),
+                ].join(' · '),
                 style: AimTextStyles.caption.copyWith(color: surfaces.textMuted, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
@@ -292,15 +311,15 @@ class _StoryReaderPageState extends ConsumerState<StoryReaderPage> {
       action: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AIMButton(onPressed: () => _begin(fromStart: true), child: Text(context.tr('Read again', 'اقرأ مجددًا'))),
+          AIMButton(
+            onPressed: () => context.pop(),
+            child: Text(context.tr('Back to the course', 'العودة إلى الدورة')),
+          ),
           const SizedBox(height: AimSpacing.space8),
           AIMButton(
             variant: AIMButtonVariant.secondary,
-            onPressed: () {
-              ref.invalidate(storiesProvider);
-              context.pop();
-            },
-            child: Text(context.tr('Back to stories', 'العودة إلى القصص')),
+            onPressed: () => _begin(fromStart: true),
+            child: Text(context.tr('Read again', 'اقرأ مجددًا')),
           ),
           const SizedBox(height: AimSpacing.space8),
           AIMButton(
