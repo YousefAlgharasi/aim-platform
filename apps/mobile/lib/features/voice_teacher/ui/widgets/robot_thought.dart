@@ -8,10 +8,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
 import 'package:aim_mobile/features/lessons/ui/widgets/light_markdown.dart';
 
 class RobotThought extends StatelessWidget {
-  const RobotThought({required this.messageId, required this.text, required this.typing, super.key});
+  const RobotThought({
+    required this.messageId,
+    required this.text,
+    required this.typing,
+    this.maxHeight,
+    super.key,
+  });
+
+  /// The tallest the bubble may be. The screen passes what is left above the text box, so the bubble never pushes
+  /// the layout past the screen (for example while the keyboard is open); longer text scrolls inside the bubble.
+  final double? maxHeight;
 
   /// Identifies the message: a new id means a new bubble.
   final String? messageId;
@@ -40,16 +51,17 @@ class RobotThought extends StatelessWidget {
       ),
       child: words == null || words.isEmpty || id == null
           ? const SizedBox.shrink(key: ValueKey('none'))
-          : _Bubble(key: ValueKey(id), text: words, typing: typing),
+          : _Bubble(key: ValueKey(id), text: words, typing: typing, maxHeight: maxHeight),
     );
   }
 }
 
 class _Bubble extends StatefulWidget {
-  const _Bubble({required this.text, required this.typing, super.key});
+  const _Bubble({required this.text, required this.typing, this.maxHeight, super.key});
 
   final String text;
   final bool typing;
+  final double? maxHeight;
 
   @override
   State<_Bubble> createState() => _BubbleState();
@@ -101,42 +113,44 @@ class _BubbleState extends State<_Bubble> {
 
   @override
   Widget build(BuildContext context) {
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.3;
+    final surfaces = aimSurfacesOf(context);
+    final maxHeight = widget.maxHeight ?? MediaQuery.sizeOf(context).height * 0.3;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         Container(
           constraints: BoxConstraints(maxHeight: maxHeight),
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+          // Same look as the web voice room: the page's surface colour with a thin strong line around it.
           decoration: BoxDecoration(
-            color: AimColors.neutral0,
+            color: surfaces.surface,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.6)),
-            boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 22, offset: Offset(0, 8))],
+            border: Border.all(color: surfaces.borderStrong),
+            boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 24, offset: Offset(0, 8))],
           ),
           child: SingleChildScrollView(
             controller: _scroll,
             child: LightMarkdown(
               text: _visible,
-              style: const TextStyle(fontSize: 16, height: 1.45, color: AimColors.neutral900),
+              style: TextStyle(fontSize: 16, height: 1.45, color: surfaces.textPrimary),
             ),
           ),
         ),
         // Small circles trailing down toward the robot's head, like a thought.
-        PositionedDirectional(start: -10, bottom: -8, child: _dot(14)),
-        PositionedDirectional(start: -22, bottom: -19, child: _dot(10)),
-        PositionedDirectional(start: -31, bottom: -28, child: _dot(6)),
+        PositionedDirectional(start: -10, bottom: -8, child: _dot(surfaces, 14)),
+        PositionedDirectional(start: -22, bottom: -19, child: _dot(surfaces, 10)),
+        PositionedDirectional(start: -31, bottom: -28, child: _dot(surfaces, 6)),
       ],
     );
   }
 
-  Widget _dot(double size) => Container(
+  Widget _dot(AimSurfaceTheme surfaces, double size) => Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
-          color: AimColors.neutral0,
+        decoration: BoxDecoration(
+          color: surfaces.surface,
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Color(0x22000000), blurRadius: 4)],
+          border: Border.all(color: surfaces.borderStrong),
         ),
       );
 }
