@@ -27,7 +27,7 @@ export function RobotThoughts({ thought }: { thought: Thought | null }) {
       return () => window.clearTimeout(timer);
     }
     return undefined;
-  }, [thought?.id, thought?.text]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [thought?.id, thought?.text]);
 
   // Keep the newest words in view while a long reply is written.
   useEffect(() => {

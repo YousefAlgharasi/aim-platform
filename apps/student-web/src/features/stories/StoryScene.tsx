@@ -13,8 +13,8 @@ function useReadAloud(lines: StoryLine[]) {
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
   const stop = () => { token.current++; if (supported) window.speechSynthesis.cancel(); setPlaying(false); };
-  useEffect(() => stop, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { stop(); }, [lines]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => stop, []);
+  useEffect(() => { stop(); }, [lines]);
 
   const play = () => {
     if (!supported) return;
