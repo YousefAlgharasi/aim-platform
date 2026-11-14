@@ -10,6 +10,7 @@ import { VocabularyService } from './vocabulary.service';
 import { StudyPlanService } from './study-plan.service';
 import { MistakesService } from './mistakes.service';
 import { SearchService } from './search.service';
+import { RecoveryService } from './recovery.service';
 
 const locale = (v?: string): 'en' | 'ar' => (v === 'ar' ? 'ar' : 'en');
 
@@ -24,6 +25,7 @@ export class LearnerToolsController {
     private readonly plan: StudyPlanService,
     private readonly mistakes: MistakesService,
     private readonly search: SearchService,
+    private readonly recovery: RecoveryService,
   ) {}
 
   @Get('vocabulary')
@@ -74,6 +76,19 @@ export class LearnerToolsController {
   @ApiOperation({ summary: 'Check a retry answer. Drill only: records no attempt and no mastery.' })
   checkMistake(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { itemId?: unknown; answerId?: unknown }) {
     return this.mistakes.check([id, authId], body?.itemId, body?.answerId);
+  }
+
+  @Get('student/recovery')
+  @ApiOperation({ summary: 'Weak skills with their 6-group, cooldown and retry state (read-only).' })
+  recoveryOverview(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string) {
+    return this.recovery.overview([id, authId]);
+  }
+
+  @Post('student/recovery/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a retry session for a weak skill (403 until the 3-day cooldown ends). Answers go through /sessions/:id/attempt.' })
+  recoveryStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { skillKey?: unknown }) {
+    return this.recovery.start(authId, id, body?.skillKey);
   }
 
   @Get('search')

@@ -63,15 +63,13 @@ import 'package:aim_mobile/features/voice_teacher/logic/provider/voice_teacher_p
 import 'package:aim_mobile/features/voice_teacher/data/datasources/live_voice_client_impl.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/live_voice_client.dart';
 import 'package:aim_mobile/features/voice_teacher/logic/live_voice_controller.dart';
+import '../widgets/aim_robot.dart';
+import '../widgets/live_dock.dart';
 import '../widgets/voice_error_state.dart';
 import '../widgets/voice_teacher_avatar.dart';
 import '../widgets/voice_text_fallback.dart';
 import '../widgets/voice_transcript_list.dart';
-import '../widgets/voice_waveform_indicator.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
-
-/// The live microphone as the student sees it: on and listening, hearing them talk, muted, or off.
-enum MicMode { live, hearing, muted, off }
 
 class VoiceTeacherPage extends ConsumerStatefulWidget {
   const VoiceTeacherPage({required this.contextRef, this.liveClient, this.practice, super.key});
@@ -639,196 +637,29 @@ class _VoiceTutorContent extends StatelessWidget {
                 ? VoiceAvatarMood.recording
                 : VoiceAvatarMood.listening;
 
-    if (showTranscript) {
-      final surfaces = aimSurfacesOf(context);
-      return Column(
-        children: [
-          // Shorter gradient header bar for visual continuity with the call
-          // view, instead of a jarring gradient→plain-white cut.
-          SizedBox(
-            width: double.infinity,
-            height: AimSpacing.space32,
-            child: DecoratedBox(
-              decoration: const BoxDecoration(gradient: AimGradients.gzHero),
-              child: Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
-                  child: _VoiceTranscriptToggleButton(
-                    label: AppLocalizations.of(context).voiceTeacherBackToCall,
-                    icon: Icons.mic_none_rounded,
-                    onTap: onToggleTranscript,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: surfaces.background),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: VoiceTranscriptList(
-                      messages: sessionState.history,
-                      onPlayAudio: (audioRef) => onPlayReply(audioRef),
-                      onFeedback: onFeedback,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AimSpacing.screenPaddingMobile,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        VoiceWaveformIndicator(active: isRecording || isPlaying),
-                        const SizedBox(height: AimSpacing.innerGap),
-                        if (isError)
-                          VoiceErrorState(
-                            errorType: VoiceErrorType.microphoneError,
-                            onRetry: () => onRetry(),
-                          )
-                        else if (hasFallback)
-                          VoiceTextFallback(
-                            fallbackText: lastTurn.text,
-                            originalAudioError: 'audio_unavailable',
-                          ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(AimSpacing.screenPaddingMobile),
-                    child: _VoiceComposerBar(
-                      controller: draft,
-                      muted: muted,
-                      busy: isSubmitting || sendingText || isRecording,
-                      micMode: micMode,
-                      onToggleMute: onToggleMute,
-                      onToggleMic: onToggleMic,
-                      onSend: onSendText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    }
+    final onlyGreeting =
+        sessionState.history.length == 1 && sessionState.history.first.isGreeting;
+    final l10n = AppLocalizations.of(context);
 
-    // Default surface every time the session is (re)opened: the avatar call
-    // view, never the transcript list — the student opts into seeing the
-    // message history via the button below instead.
-    // The teacher's latest message, shown as text so the student can read along.
-    String? caption;
+    // The robot says the teacher's latest message.
+    VoiceMessage? latestTeacher;
     for (final m in sessionState.history.reversed) {
       if (m.role == VoiceMessageRole.teacher) {
-        caption = m.text;
+        latestTeacher = m;
         break;
       }
     }
-    final onlyGreeting =
-        sessionState.history.length == 1 && sessionState.history.first.isGreeting;
-    final l10nLive = AppLocalizations.of(context);
-
-    final stage = _VoiceAvatarStage(
-      mood: mood,
-      recording: isRecording,
-      processing: processing,
-      caption: caption,
-      onQuickStart: onlyGreeting && !processing && !isRecording
-          ? () => onSendText(l10nLive.voiceLiveYesStartMessage)
-          : null,
-      micMode: micMode,
-      onViewMessages: sessionState.history.isEmpty ? null : onToggleTranscript,
-      errorOrFallback: isError
-          ? VoiceErrorState(
-              errorType: VoiceErrorType.microphoneError,
-              onRetry: () => onRetry(),
-            )
-          : hasFallback
-              ? VoiceTextFallback(
-                  fallbackText: lastTurn.text,
-                  originalAudioError: 'audio_unavailable',
-                )
-              : null,
-    );
-
-    return Column(
-      children: [
-        Expanded(child: stage),
-        _VoiceComposerBar(
-          controller: draft,
-          muted: muted,
-          busy: processing || isRecording,
-          micMode: micMode,
-          onToggleMute: onToggleMute,
-          onToggleMic: onToggleMic,
-          onSend: onSendText,
-        ),
-      ],
-    );
-  }
-}
-
-/// Full-page avatar call view: the illustrated AI-teacher avatar reacts to
-/// [mood] (speaking/listening/recording/processing), with a status pill,
-/// heading, the teacher's words as a caption, and a static subtitle beneath.
-/// Matches the "full page with a character that changes state" reference
-/// the redesign was requested against, using an abstract brand-gradient
-/// avatar (VoiceTeacherAvatar) instead of a stock photo.
-class _VoiceAvatarStage extends StatelessWidget {
-  const _VoiceAvatarStage({
-    required this.mood,
-    required this.recording,
-    required this.processing,
-    required this.micMode,
-    this.caption,
-    this.onQuickStart,
-    this.onViewMessages,
-    this.errorOrFallback,
-  });
-
-  /// What the teacher last said, as text.
-  final String? caption;
-
-  /// One tap to answer the teacher's "ready to start?". Null when it does not apply.
-  final VoidCallback? onQuickStart;
-
-  final VoiceAvatarMood mood;
-  final bool recording;
-  final bool processing;
-
-  /// Whether the live microphone is on, muted or off: decides what the heading says while it is the student's turn.
-  final MicMode micMode;
-
-  /// Null when there's no history yet to view (nothing to show). Non-null
-  /// once at least one turn exists — tapping it reveals the transcript,
-  /// which is opt-in rather than shown automatically every time this
-  /// session is (re)opened.
-  final VoidCallback? onViewMessages;
-
-  /// The microphone-error or TTS-fallback strip, when present — surfaced
-  /// here too so it's visible without needing to open the transcript.
-  final Widget? errorOrFallback;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final (label, heading) = switch (mood) {
-      VoiceAvatarMood.speaking => (
-          l10n.voiceTeacherStatusSpeaking,
-          l10n.voiceTeacherHeadingSpeaking,
-        ),
-      VoiceAvatarMood.recording => (
-          l10n.voiceTeacherStatusRecording,
-          l10n.voiceTeacherHeadingRecording,
-        ),
-      VoiceAvatarMood.processing => (
-          l10n.voiceTeacherStatusProcessing,
-          l10n.voiceTeacherHeadingProcessing,
-        ),
+    final robotMood = switch (mood) {
+      VoiceAvatarMood.speaking => RobotMood.speaking,
+      VoiceAvatarMood.processing => RobotMood.thinking,
+      VoiceAvatarMood.recording => RobotMood.listening,
+      VoiceAvatarMood.listening => RobotMood.idle,
+    };
+    // The robot and its bubble say it on screen; this is the same status for screen readers.
+    final (statusLabel, statusHeading) = switch (mood) {
+      VoiceAvatarMood.speaking => (l10n.voiceTeacherStatusSpeaking, l10n.voiceTeacherHeadingSpeaking),
+      VoiceAvatarMood.recording => (l10n.voiceTeacherStatusRecording, l10n.voiceTeacherHeadingRecording),
+      VoiceAvatarMood.processing => (l10n.voiceTeacherStatusProcessing, l10n.voiceTeacherHeadingProcessing),
       VoiceAvatarMood.listening => (
           l10n.voiceTeacherStatusReady,
           switch (micMode) {
@@ -839,392 +670,186 @@ class _VoiceAvatarStage extends StatelessWidget {
         ),
     };
 
-    return Stack(
-      children: [
-        Column(
+    final notice = isError
+        ? VoiceErrorState(
+            errorType: VoiceErrorType.microphoneError,
+            onRetry: () => onRetry(),
+          )
+        : hasFallback
+            ? VoiceTextFallback(
+                fallbackText: lastTurn.text,
+                originalAudioError: 'audio_unavailable',
+              )
+            : null;
+
+    return LayoutBuilder(
+      builder: (context, box) {
+        final sheetHeight = (box.maxHeight * 0.52).clamp(0.0, 480.0);
+        return Column(
           children: [
-            // Only this top part scrolls (a long teacher message); the microphone below stays where it is.
+            // Room above the robot: the notices and the one-tap "yes, let's start".
             Expanded(
-              child: Center(
+              child: Semantics(
+                container: true,
+                liveRegion: true,
+                label: '${l10n.voiceTeacherStatusSemantic(statusLabel)}. $statusHeading',
                 child: SingleChildScrollView(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AimSpacing.screenPaddingMobile,
-                    vertical: AimSpacing.componentGap,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _VoiceStatusPill(label: label),
-                      const SizedBox(height: AimSpacing.componentGap),
-                      VoiceTeacherAvatar(mood: mood, size: 120),
-                      const SizedBox(height: AimSpacing.componentGap),
-                      Text(
-                        heading,
-                        style: AimTextStyles.h2.copyWith(color: AimColors.neutral0),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (caption != null && caption!.isNotEmpty) ...[
-                        const SizedBox(height: AimSpacing.componentGap),
-                        _TeacherCaption(text: caption!),
-                      ],
-                      if (onQuickStart != null) ...[
-                        const SizedBox(height: AimSpacing.componentGap),
-                        FilledButton(
-                          onPressed: onQuickStart,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AimColors.neutral0,
-                            foregroundColor: AimColors.primary600,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  padding: const EdgeInsetsDirectional.symmetric(horizontal: AimSpacing.screenPaddingMobile, vertical: AimSpacing.space8),
+                  reverse: true,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: box.maxHeight * 0.1),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (notice != null) notice,
+                        if (onlyGreeting && !processing && !isRecording) ...[
+                          const SizedBox(height: AimSpacing.componentGap),
+                          FilledButton(
+                            onPressed: () => onSendText(l10n.voiceLiveYesStartMessage),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AimColors.neutral0,
+                              foregroundColor: AimColors.primary600,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            ),
+                            child: Text(
+                              l10n.voiceLiveYesStart,
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                            ),
                           ),
-                          child: Text(
-                            l10n.voiceLiveYesStart,
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                          ),
-                        ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AimSpacing.screenPaddingMobile,
+            LiveDock(
+              controller: draft,
+              muted: muted,
+              busy: processing || isRecording,
+              micMode: micMode,
+              mood: robotMood,
+              thoughtId: latestTeacher?.id,
+              thoughtText: latestTeacher?.text,
+              thoughtTyping: true,
+              showThought: !showTranscript,
+              messageCount: sessionState.history.length,
+              messagesOpen: showTranscript,
+              onToggleMessages: onToggleTranscript,
+              onToggleMute: onToggleMute,
+              onToggleMic: onToggleMic,
+              onSend: onSendText,
+            ),
+            // The conversation slides up from the bottom; the robot and the text box rise with it.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              height: showTranscript ? sheetHeight : 0,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: aimSurfacesOf(context).background,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: AimSpacing.space8),
-                  if (errorOrFallback != null)
-                    errorOrFallback!
-                  else
-                    Text(
-                      l10n.voiceTeacherPracticeSubtitle,
-                      style: AimTextStyles.bodySm.copyWith(
-                        color: AimColors.neutral0.withValues(alpha: 0.85),
+              // The conversation is always laid out at its full height; the slide only reveals it.
+              child: showTranscript
+                  ? OverflowBox(
+                      alignment: Alignment.topCenter,
+                      minHeight: sheetHeight,
+                      maxHeight: sheetHeight,
+                      child: _ConversationSheet(
+                        messages: sessionState.history,
+                        onClose: onToggleTranscript,
+                        onPlayAudio: (audioRef) => onPlayReply(audioRef),
+                        onFeedback: onFeedback,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  const SizedBox(height: AimSpacing.space8),
-                ],
-              ),
+                    )
+                  : null,
             ),
           ],
-        ),
-        if (onViewMessages != null)
-          PositionedDirectional(
-            top: AimSpacing.space4,
-            end: AimSpacing.screenPaddingMobile,
-            child: _VoiceTranscriptToggleButton(
-              label: l10n.voiceTeacherMessagesButton,
-              icon: Icons.chat_bubble_outline_rounded,
-              onTap: onViewMessages!,
-            ),
-          ),
-      ],
+        );
+      },
     );
   }
 }
 
-/// Translucent-white pill button used to move between the hands-free call
-/// view and the text transcript — shown over the gradient hero in the call
-/// view ("Messages") and over the shorter gradient bar in the transcript
-/// view ("Back to call").
-class _VoiceTranscriptToggleButton extends StatelessWidget {
-  const _VoiceTranscriptToggleButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
+/// The conversation, newest message at the bottom, scrolled to it.
+class _ConversationSheet extends StatefulWidget {
+  const _ConversationSheet({
+    required this.messages,
+    required this.onClose,
+    required this.onPlayAudio,
+    required this.onFeedback,
   });
 
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
+  final List<VoiceMessage> messages;
+  final VoidCallback onClose;
+  final void Function(String audioRef) onPlayAudio;
+  final void Function(String messageId, String rating, String? comment) onFeedback;
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AimRadius.borderPill,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AimColors.neutral0.withValues(alpha: 0.18),
-            border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.3)),
-            borderRadius: AimRadius.borderPill,
-          ),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AimSpacing.space12,
-              vertical: AimSpacing.space8,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: AimSizes.iconSm, color: AimColors.neutral0),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  label,
-                  style: AimTextStyles.caption.copyWith(
-                    color: AimColors.neutral0,
-                    fontWeight: AimFontWeights.semibold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<_ConversationSheet> createState() => _ConversationSheetState();
 }
 
-/// Translucent-white status pill ("READY"/"RECORDING"/"PROCESSING") shown
-/// over the gradient hero.
-///
-/// `AIMBadge` resolves its background and status-dot color from `tone` with
-/// no override — only the text style of its `child` can be overridden by
-/// the caller — so a neutral/soft `AIMBadge` with a white-text override
-/// still renders its default near-white background and grey dot in light
-/// mode (both driven by theme colors, not the text style), which is
-/// low-contrast against a white label and doesn't match the translucent
-/// all-white pill in the design screenshots. This bespoke pill overrides
-/// background, border, and dot together instead.
-class _VoiceStatusPill extends StatelessWidget {
-  const _VoiceStatusPill({required this.label});
+class _ConversationSheetState extends State<_ConversationSheet> {
+  final ScrollController _scroll = ScrollController();
 
-  final String label;
+  @override
+  void initState() {
+    super.initState();
+    _toEnd();
+  }
+
+  @override
+  void didUpdateWidget(_ConversationSheet old) {
+    super.didUpdateWidget(old);
+    if (old.messages.length != widget.messages.length) _toEnd();
+  }
+
+  void _toEnd() => WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scroll.hasClients) _scroll.jumpTo(_scroll.position.maxScrollExtent);
+      });
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Semantics(
-      label: l10n.voiceTeacherStatusSemantic(label),
-      child: ExcludeSemantics(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AimColors.neutral0.withValues(alpha: 0.18),
-            border: Border.all(
-              color: AimColors.neutral0.withValues(alpha: 0.3),
-            ),
-            borderRadius: AimRadius.borderPill,
-          ),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AimSpacing.space12,
-              vertical: AimSpacing.space4,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox.square(
-                  dimension: 6,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AimColors.neutral0,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AimSpacing.space4),
-                Text(
-                  label.toUpperCase(),
-                  style: AimTextStyles.caption.copyWith(
-                    color: AimColors.neutral0,
-                    fontWeight: AimFontWeights.semibold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// What the teacher last said, as text, on a soft translucent card over the gradient.
-class _TeacherCaption extends StatelessWidget {
-  const _TeacherCaption({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(maxWidth: 560),
-      padding: const EdgeInsets.all(AimSpacing.space16),
-      decoration: BoxDecoration(
-        color: AimColors.neutral0.withValues(alpha: 0.16),
-        border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.28)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: AimTextStyles.bodyMd.copyWith(color: AimColors.neutral0, height: 1.45),
-      ),
-    );
-  }
-}
-
-/// The bottom bar of the live lesson: a mute toggle for the teacher's voice, a text box, and one round button that is
-/// the live microphone while the box is empty (tap to mute / unmute; the conversation is hands-free) and "send" once
-/// something is typed.
-class _VoiceComposerBar extends StatelessWidget {
-  const _VoiceComposerBar({
-    required this.controller,
-    required this.muted,
-    required this.busy,
-    required this.micMode,
-    required this.onToggleMute,
-    required this.onToggleMic,
-    required this.onSend,
-  });
-
-  final TextEditingController controller;
-  final bool muted;
-  final bool busy;
-
-  /// The live microphone: on, hearing the student, muted, or off.
-  final MicMode micMode;
-  final VoidCallback onToggleMute;
-  final VoidCallback onToggleMic;
-  final Future<void> Function(String message) onSend;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AimSpacing.space12,
-        AimSpacing.space4,
-        AimSpacing.space12,
-        AimSpacing.space12,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _RoundIconButton(
-            icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-            tooltip: muted ? l10n.voiceLiveUnmute : l10n.voiceLiveMute,
-            selected: muted,
-            onTap: onToggleMute,
-          ),
-          const SizedBox(width: AimSpacing.space8),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              enabled: !busy,
-              minLines: 1,
-              maxLines: 4,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (v) => onSend(v),
-              style: const TextStyle(color: AimColors.neutral0, fontSize: 16),
-              cursorColor: AimColors.neutral0,
-              decoration: InputDecoration(
-                hintText: l10n.voiceLiveComposerHint,
-                hintStyle: TextStyle(color: AimColors.neutral0.withValues(alpha: 0.7)),
-                filled: true,
-                fillColor: AimColors.neutral0.withValues(alpha: 0.18),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(26),
-                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(26),
-                  borderSide: BorderSide(color: AimColors.neutral0.withValues(alpha: 0.3)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(26),
-                  borderSide: const BorderSide(color: AimColors.neutral0, width: 1.5),
+    final surfaces = aimSurfacesOf(context);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(AimSpacing.screenPaddingMobile, AimSpacing.space12, AimSpacing.space8, AimSpacing.space8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.voiceLiveConversation,
+                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: AimSpacing.space8),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: controller,
-            builder: (context, value, _) {
-              final hasText = value.text.trim().isNotEmpty;
-              if (hasText) {
-                return _RoundIconButton(
-                  icon: Icons.arrow_upward_rounded,
-                  tooltip: l10n.voiceLiveSend,
-                  filled: true,
-                  onTap: busy ? null : () => onSend(controller.text),
-                );
-              }
-              // Nothing typed: the round button is the live microphone (tap to mute / unmute).
-              return switch (micMode) {
-                MicMode.live || MicMode.hearing => _RoundIconButton(
-                    icon: Icons.mic_rounded,
-                    tooltip: l10n.voiceLiveMicMute,
-                    filled: true,
-                    onTap: onToggleMic,
-                  ),
-                MicMode.muted => _RoundIconButton(
-                    icon: Icons.mic_off_rounded,
-                    tooltip: l10n.voiceLiveMicOn,
-                    selected: true,
-                    onTap: onToggleMic,
-                  ),
-                MicMode.off => _RoundIconButton(
-                    icon: Icons.mic_none_rounded,
-                    tooltip: l10n.voiceLiveMicStart,
-                    onTap: onToggleMic,
-                  ),
-              };
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-    this.selected = false,
-    this.filled = false,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onTap;
-  final bool selected;
-  final bool filled;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    final background = filled
-        ? AimColors.neutral0.withValues(alpha: enabled ? 1 : 0.35)
-        : AimColors.neutral0.withValues(alpha: selected ? 0.34 : 0.18);
-    final foreground = filled ? AimColors.primary600 : AimColors.neutral0;
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: tooltip,
-      child: Tooltip(
-        message: tooltip,
-        child: InkResponse(
-          onTap: onTap,
-          radius: 28,
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(color: background, shape: BoxShape.circle),
-            child: Icon(icon, color: foreground, size: 24),
+              IconButton(
+                onPressed: widget.onClose,
+                tooltip: l10n.voiceLiveHideMessages,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded),
+              ),
+            ],
           ),
         ),
-      ),
+        const Divider(height: 1),
+        Expanded(
+          child: VoiceTranscriptList(
+            controller: _scroll,
+            messages: widget.messages,
+            onPlayAudio: widget.onPlayAudio,
+            onFeedback: widget.onFeedback,
+          ),
+        ),
+      ],
     );
   }
 }

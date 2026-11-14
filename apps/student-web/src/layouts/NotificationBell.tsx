@@ -6,6 +6,7 @@ import {
   categoryLabel,
   fetchInbox,
   isUnread,
+  safeInternalLink,
   type NotificationEvent,
 } from '../features/notifications/notificationsApi';
 
@@ -57,7 +58,7 @@ function NotificationPreview({ onNavigate }: { onNavigate: () => void }) {
             return (
               <li key={n.id}>
                 <Link
-                  to="/notifications"
+                  to={safeInternalLink(n.payload?.link) ?? '/notifications'}
                   onClick={onNavigate}
                   className="flex items-start gap-2.5 rounded-xl p-2 no-underline transition-colors hover:bg-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
                 >

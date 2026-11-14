@@ -1,5 +1,27 @@
 // Saved words, mistakes retry, onboarding, journey, search, landing page, offline, display settings, receipts.
 export const learner: Record<string, string> = {
+  // Improve recovery loop (3-day retry)
+  'Go to Improve': 'اذهب إلى التحسين',
+  'Recovery steps': 'خطوات التعافي',
+  'Wait': 'انتظر',
+  'Retry now': 'أعد المحاولة الآن',
+  'Retry opens in {n} days. Spacing it out helps you remember. Learn it with the AI Teacher in the meantime.': 'تفتح إعادة المحاولة بعد {n} أيام. التباعد يساعدك على التذكّر. تعلّمها مع المعلم الذكي في هذه الأثناء.',
+  '{n} to work on': '{n} للعمل عليها',
+  'All good': 'كل شيء جيد',
+  '{n} ready to retry': '{n} جاهزة لإعادة المحاولة',
+  'Grammar': 'القواعد',
+  'Writing': 'الكتابة',
+  'Speaking': 'المحادثة',
+  'Could not start your retry': 'تعذّر بدء إعادة المحاولة',
+  'Retry opens soon': 'إعادة المحاولة ستفتح قريبًا',
+  'Spacing your retry helps you remember it for good. It opens on {date}. Until then, learn it with the AI Teacher.': 'التباعد في إعادة المحاولة يثبّت المعلومة. ستفتح في {date}. حتى ذلك الحين، تعلّمها مع المعلم الذكي.',
+  'Back to Improve': 'العودة إلى التحسين',
+  'Retry complete': 'اكتملت إعادة المحاولة',
+  'You got {right} of {total} right on {skill}.': 'أجبت {right} من {total} إجابة صحيحة في {skill}.',
+  'Mastery {from}% → {to}%': 'الإتقان {from}% ← {to}%',
+  'Your mastery is being updated.': 'جارٍ تحديث مستوى إتقانك.',
+  'Not quite': 'ليس تمامًا',
+  'Finish retry': 'إنهاء إعادة المحاولة',
   // Words & flashcards
   // Vocabulary library
   'Level': 'المستوى',

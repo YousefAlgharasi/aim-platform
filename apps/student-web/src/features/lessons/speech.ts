@@ -48,8 +48,11 @@ export function speakLine(text: string, opts: { pitch?: number; rate?: number } 
     u.pitch = opts.pitch ?? 1;
     const v = englishVoice();
     if (v) u.voice = v;
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
+    // Some browsers (or machines with no voices installed) never report the end; never leave the caller waiting forever.
+    const watchdog = window.setTimeout(resolve, 3000 + text.length * 110);
+    const done = () => { window.clearTimeout(watchdog); resolve(); };
+    u.onend = done;
+    u.onerror = done;
     synth.speak(u);
   });
 }
