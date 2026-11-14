@@ -130,4 +130,27 @@ describe('VoiceMessageAudioService', () => {
     expect(result.audioRef).toBeNull();
     expect(result.synthesized).toBe(false);
   });
+
+  it('runs one synthesis for two simultaneous requests for the same message', async () => {
+    const { service, ttsGateway } = buildService();
+
+    const [a, b] = await Promise.all([
+      service.ensureAudio('msg-1', studentId, 'ar'),
+      service.ensureAudio('msg-1', studentId, 'ar'),
+    ]);
+
+    expect((ttsGateway as { synthesize: jest.Mock }).synthesize).toHaveBeenCalledTimes(1);
+    expect(a.audioRef).toBe('tts_abc');
+    expect(b.audioRef).toBe('tts_abc');
+  });
+
+  it('forceRegenerate synthesizes again even though the row already has an audio_ref', async () => {
+    const findById = jest.fn().mockResolvedValue({ ...baseMessage, audio_ref: 'tts_lost', audio_duration_ms: 900 });
+    const { service, ttsGateway } = buildService({ findById });
+
+    const result = await service.ensureAudio('msg-1', studentId, 'ar', { forceRegenerate: true });
+
+    expect((ttsGateway as { synthesize: jest.Mock }).synthesize).toHaveBeenCalledTimes(1);
+    expect(result.synthesized).toBe(true);
+  });
 });
