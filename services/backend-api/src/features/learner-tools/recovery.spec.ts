@@ -147,3 +147,26 @@ describe('estimateMinutes', () => {
     expect(estimateMinutes(2000, 30)).toBeGreaterThan(estimateMinutes(200, 8));
   });
 });
+
+import { partRanges } from './stories.service';
+
+describe('partRanges (story scenes over chapters)', () => {
+  it('spreads scenes evenly and in order', () => {
+    expect(partRanges(6, 4).map((r) => r.to - r.from)).toEqual([1, 2, 1, 2]);
+    expect(partRanges(4, 4).map((r) => r.to - r.from)).toEqual([1, 1, 1, 1]);
+    expect(partRanges(11, 4).map((r) => r.to - r.from)).toEqual([2, 3, 3, 3]);
+  });
+  it('covers every scene exactly once', () => {
+    for (const [s, c] of [[5, 5], [8, 4], [9, 5], [10, 4], [11, 4]]) {
+      const r = partRanges(s, c);
+      expect(r[0].from).toBe(0);
+      expect(r[r.length - 1].to).toBe(s);
+      r.slice(1).forEach((x, i) => expect(x.from).toBe(r[i].to));
+    }
+  });
+  it('skips chapters that would get no scene, and handles no chapters', () => {
+    expect(partRanges(2, 4)).toHaveLength(2);
+    expect(partRanges(5, 0)).toEqual([{ chapterIndex: -1, from: 0, to: 5 }]);
+    expect(partRanges(0, 4)).toEqual([]);
+  });
+});
