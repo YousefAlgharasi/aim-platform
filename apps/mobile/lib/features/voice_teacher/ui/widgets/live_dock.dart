@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'aim_robot.dart';
 import 'robot_thought.dart';
@@ -36,8 +37,13 @@ class LiveDock extends StatelessWidget {
     required this.onToggleMute,
     required this.onToggleMic,
     required this.onSend,
+    this.availableHeight,
     super.key,
   });
+
+  /// The height this dock may use. With the keyboard open there is far less of it, and the robot and the bubble
+  /// shrink to fit instead of overflowing the screen. Null means no limit beyond the screen size.
+  final double? availableHeight;
 
   final TextEditingController controller;
   final bool muted;
@@ -63,7 +69,16 @@ class LiveDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final robotH = robotHeightFor(MediaQuery.sizeOf(context));
+    final screen = MediaQuery.sizeOf(context);
+    final available = availableHeight;
+    // Text box + the messages button + the gap between them (the robot and the bubble get what is left).
+    const chrome = 112.0;
+    var robotH = robotHeightFor(screen);
+    if (available != null) robotH = math.min(robotH, math.max(72.0, (available - chrome) * 0.42));
+    final defaultBubbleMax = screen.height * 0.3;
+    final bubbleMax = available == null
+        ? defaultBubbleMax
+        : math.min(defaultBubbleMax, math.max(56.0, available - chrome - robotH * 0.5));
     const overlap = 10.0;
 
     return Padding(
@@ -84,7 +99,7 @@ class LiveDock extends StatelessWidget {
                   child: Align(
                     alignment: AlignmentDirectional.bottomStart,
                     child: showThought
-                        ? RobotThought(messageId: thoughtId, text: thoughtText, typing: thoughtTyping)
+                        ? RobotThought(messageId: thoughtId, text: thoughtText, typing: thoughtTyping, maxHeight: bubbleMax)
                         : const SizedBox.shrink(),
                   ),
                 ),
@@ -143,12 +158,14 @@ class _ComposerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: AimColors.neutral0,
+        color: surfaces.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 14, offset: Offset(0, 4))],
+        border: Border.all(color: surfaces.borderStrong),
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -192,12 +209,13 @@ class _ComposerBox extends StatelessWidget {
               maxLines: 4,
               textInputAction: TextInputAction.send,
               onSubmitted: (v) => onSend(v),
-              style: const TextStyle(color: AimColors.neutral900, fontSize: 16),
+              style: TextStyle(color: surfaces.textPrimary, fontSize: 16),
               cursorColor: AimColors.primary600,
               decoration: InputDecoration(
                 isDense: true,
+                filled: false,
                 hintText: l10n.voiceLiveComposerHint,
-                hintStyle: const TextStyle(color: AimColors.neutral500, fontSize: 15),
+                hintStyle: TextStyle(color: surfaces.textMuted, fontSize: 15),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -243,9 +261,10 @@ class _SquareButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
     final filled = style == _ButtonStyle.filled;
-    final background = filled ? AimColors.primary600 : (style == _ButtonStyle.soft ? AimColors.neutral100 : Colors.transparent);
-    final foreground = filled ? AimColors.neutral0 : AimColors.neutral700;
+    final background = filled ? AimColors.primary600 : (style == _ButtonStyle.soft ? surfaces.surfaceSunken : Colors.transparent);
+    final foreground = filled ? AimColors.neutral0 : surfaces.textSecondary;
     return Semantics(
       button: true,
       enabled: onTap != null,
@@ -261,10 +280,10 @@ class _SquareButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: background,
               borderRadius: BorderRadius.circular(12),
-              border: style == _ButtonStyle.outlined ? Border.all(color: AimColors.neutral300) : null,
+              border: style == _ButtonStyle.outlined ? Border.all(color: surfaces.borderStrong) : null,
               boxShadow: ring ? [BoxShadow(color: AimColors.primary600.withValues(alpha: 0.3), spreadRadius: 4)] : null,
             ),
-            child: Icon(icon, size: 21, color: onTap == null && !filled ? AimColors.neutral400 : foreground),
+            child: Icon(icon, size: 21, color: onTap == null && !filled ? surfaces.disabledFg : foreground),
           ),
         ),
       ),
@@ -281,6 +300,7 @@ class _MessagesButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
     return Semantics(
       button: true,
       label: label,
@@ -289,8 +309,8 @@ class _MessagesButton extends StatelessWidget {
         borderRadius: AimRadius.borderPill,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AimColors.neutral0.withValues(alpha: 0.2),
-            border: Border.all(color: AimColors.neutral0.withValues(alpha: 0.32)),
+            color: surfaces.surface,
+            border: Border.all(color: surfaces.borderStrong),
             borderRadius: AimRadius.borderPill,
           ),
           child: Padding(
@@ -301,12 +321,12 @@ class _MessagesButton extends StatelessWidget {
                 AnimatedRotation(
                   turns: open ? 0.5 : 0,
                   duration: const Duration(milliseconds: 250),
-                  child: const Icon(Icons.keyboard_arrow_up_rounded, size: 20, color: AimColors.neutral0),
+                  child: Icon(Icons.keyboard_arrow_up_rounded, size: 20, color: surfaces.textPrimary),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   label,
-                  style: AimTextStyles.caption.copyWith(color: AimColors.neutral0, fontWeight: AimFontWeights.semibold, fontSize: 14),
+                  style: AimTextStyles.caption.copyWith(color: surfaces.textPrimary, fontWeight: AimFontWeights.semibold, fontSize: 14),
                 ),
               ],
             ),

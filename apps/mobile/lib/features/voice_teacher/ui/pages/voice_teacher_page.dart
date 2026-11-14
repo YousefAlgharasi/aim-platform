@@ -433,7 +433,15 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
       bottomNavigationBar:
           widget.practice == null ? null : PracticeSessionBar(practice: widget.practice!),
       body: DecoratedBox(
-        decoration: const BoxDecoration(gradient: AimGradients.gzHero),
+        // The same page colour as the rest of the app (and the web voice room), with the soft brand wash at the top.
+        decoration: BoxDecoration(
+          color: aimSurfacesOf(context).background,
+          gradient: RadialGradient(
+            center: const Alignment(0, -1.25),
+            radius: 1.2,
+            colors: [AimColors.primary500.withValues(alpha: 0.14), AimColors.primary500.withValues(alpha: 0)],
+          ),
+        ),
         child: SafeArea(
           child: switch (sessionState) {
             AppAsyncLoading() => AIMFullScreenLoading(
@@ -493,6 +501,7 @@ class _VoiceTeacherHeader extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final surfaces = aimSurfacesOf(context);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return SafeArea(
@@ -519,8 +528,9 @@ class _VoiceTeacherHeader extends StatelessWidget
                   customBorder: const CircleBorder(),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AimColors.neutral0.withValues(alpha: 0.18),
+                      color: surfaces.surface,
                       shape: BoxShape.circle,
+                      border: Border.all(color: surfaces.borderStrong),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(AimSpacing.space12),
@@ -529,7 +539,7 @@ class _VoiceTeacherHeader extends StatelessWidget
                           ? Icons.chevron_right_rounded
                           : Icons.chevron_left_rounded,
                         size: AimSizes.iconMd,
-                        color: AimColors.neutral0,
+                        color: surfaces.textPrimary,
                       ),
                     ),
                   ),
@@ -541,7 +551,7 @@ class _VoiceTeacherHeader extends StatelessWidget
                   l10n.voiceTeacherTitle,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  style: AimTextStyles.h3.copyWith(color: AimColors.neutral0),
+                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 ),
               ),
             ],
@@ -708,8 +718,8 @@ class _VoiceTutorContent extends StatelessWidget {
                           FilledButton(
                             onPressed: () => onSendText(l10n.voiceLiveYesStartMessage),
                             style: FilledButton.styleFrom(
-                              backgroundColor: AimColors.neutral0,
-                              foregroundColor: AimColors.primary600,
+                              backgroundColor: AimColors.primary600,
+                              foregroundColor: AimColors.neutral0,
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                             ),
                             child: Text(
@@ -725,6 +735,8 @@ class _VoiceTutorContent extends StatelessWidget {
               ),
             ),
             LiveDock(
+              // What is left for the robot and its bubble: with the keyboard open they shrink instead of overflowing.
+              availableHeight: box.maxHeight - (showTranscript ? sheetHeight : 0),
               controller: draft,
               muted: muted,
               busy: processing || isRecording,
