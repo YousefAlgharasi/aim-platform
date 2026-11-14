@@ -367,7 +367,13 @@ export class SessionQuestionsService {
           AND (status = 'published'
                OR ($2::uuid IS NOT NULL AND EXISTS (
                      SELECT 1 FROM recovery_questions rq
-                      WHERE rq.question_id = question_bank.id AND rq.student_id = $2::uuid)))
+                      WHERE rq.question_id = question_bank.id AND rq.student_id = $2::uuid))
+               -- a story question is answerable only through a PUBLISHED story
+               OR EXISTS (
+                     SELECT 1 FROM story_scene_questions sq
+                       JOIN story_scenes sc ON sc.id = sq.scene_id
+                       JOIN stories st ON st.id = sc.story_id
+                      WHERE sq.question_id = question_bank.id AND st.status = 'published'))
         LIMIT 1`,
       [itemId, studentId ?? null],
     );

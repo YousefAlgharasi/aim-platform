@@ -503,29 +503,11 @@ export class LessonProgressService {
   }
 
   /**
-   * P20-010 course gating check, shared with other student-facing features
-   * (e.g. the sessions feature's lesson question delivery) so the CEFR
-   * unlock ceiling is enforced by one implementation, not duplicated.
-   * Throws 403 when the lesson's course is above the student's unlocked
-   * CEFR rank for its track (default rank 1 when no state row exists).
+   * The highest course rank this student may open in [trackSlug]: the larger of their level-state ceiling and
+   * one above the highest course they have fully completed. Shared by lesson gating and the Stories list, so a
+   * story is locked exactly when its course is.
    */
-  async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
-    const courseResult = await this.db.query<LessonCourseGatingRow>(
-      `SELECT COALESCE(co.track_slug, 'english') AS track_slug, co.cefr_rank
-       FROM lessons l
-       JOIN chapters c ON c.id = l.chapter_id
-       JOIN levels lv ON lv.id = c.level_id
-       JOIN courses co ON co.id = lv.course_id
-       WHERE l.id = $1`,
-      [lessonId],
-    );
-
-    const course = courseResult.rows[0];
-    if (!course || course.cefr_rank === null) {
-      return;
-    }
-
-    const trackSlug = course.track_slug || 'english';
+  async effectiveUnlockedRank(studentId: string, trackSlug: string): Promise<number> {
     const stateResult = await this.db.query<LevelStateRow>(
       `WITH resolved_student AS (
          SELECT sp.id AS profile_id, sp.user_id, u.supabase_auth_uid
@@ -596,6 +578,34 @@ export class LessonProgressService {
       maxUnlockedFromState,
       highestCompletedRank > 0 ? highestCompletedRank + 1 : 1,
     );
+    return effectiveMaxUnlockedRank;
+  }
+
+  /**
+   * P20-010 course gating check, shared with other student-facing features
+   * (e.g. the sessions feature's lesson question delivery) so the CEFR
+   * unlock ceiling is enforced by one implementation, not duplicated.
+   * Throws 403 when the lesson's course is above the student's unlocked
+   * CEFR rank for its track (default rank 1 when no state row exists).
+   */
+  async assertCourseUnlockedForLesson(studentId: string, lessonId: string): Promise<void> {
+    const courseResult = await this.db.query<LessonCourseGatingRow>(
+      `SELECT COALESCE(co.track_slug, 'english') AS track_slug, co.cefr_rank
+       FROM lessons l
+       JOIN chapters c ON c.id = l.chapter_id
+       JOIN levels lv ON lv.id = c.level_id
+       JOIN courses co ON co.id = lv.course_id
+       WHERE l.id = $1`,
+      [lessonId],
+    );
+
+    const course = courseResult.rows[0];
+    if (!course || course.cefr_rank === null) {
+      return;
+    }
+
+    const trackSlug = course.track_slug || 'english';
+    const effectiveMaxUnlockedRank = await this.effectiveUnlockedRank(studentId, trackSlug);
 
     if (course.cefr_rank > effectiveMaxUnlockedRank) {
       throw new ForbiddenException('This course is locked for this student');

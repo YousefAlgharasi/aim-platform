@@ -33,6 +33,8 @@ const VocabularyPage = lazy(() => import('../features/learner/VocabularyPage').t
 const VocabularyLibraryPage = lazy(() => import('../features/learner/VocabularyLibraryPage').then((m) => ({ default: m.VocabularyLibraryPage })));
 const MistakesPage = lazy(() => import('../features/learner/MistakesPage').then((m) => ({ default: m.MistakesPage })));
 const PracticeHubPage = lazy(() => import('../features/practice-hub/PracticeHubPage').then((m) => ({ default: m.PracticeHubPage })));
+const StoriesPage = lazy(() => import('../features/stories/StoriesPage').then((m) => ({ default: m.StoriesPage })));
+const StoryReaderPage = lazy(() => import('../features/stories/StoryReaderPage').then((m) => ({ default: m.StoryReaderPage })));
 const SkillPracticePage = lazy(() => import('../features/practice/SkillPracticePage').then((m) => ({ default: m.SkillPracticePage })));
 const RecoveryRetryPage = lazy(() => import('../features/improve/RecoveryRetryPage').then((m) => ({ default: m.RecoveryRetryPage })));
 const ImprovePage = lazy(() => import('../features/improve/ImprovePage').then((m) => ({ default: m.ImprovePage })));
@@ -266,6 +268,22 @@ export function AppRoutes() {
           element={
             <Suspense fallback={<AppShellSkeleton />}>
               <ImprovePage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/stories"
+          element={
+            <Suspense fallback={<AppShellSkeleton />}>
+              <StoriesPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/stories/:storyId"
+          element={
+            <Suspense fallback={<AppShellSkeleton />}>
+              <StoryReaderPage />
             </Suspense>
           }
         />

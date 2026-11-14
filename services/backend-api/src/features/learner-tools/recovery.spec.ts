@@ -120,3 +120,30 @@ describe('parseGeneratedSet', () => {
     expect(parseGeneratedSet('{"passage":', 'passage', new Set())).toBeNull();
   });
 });
+
+import { cleanLines, estimateMinutes } from './stories.service';
+
+describe('cleanLines', () => {
+  it('keeps known speakers with text and drops everything else', () => {
+    expect(cleanLines([
+      { speaker: 'Sarah', text: ' Hello! ' },
+      { speaker: 'narrator', text: 'The bell rang.' },
+      { speaker: 'teacher', text: 'Not a cast member' },
+      { speaker: 'adam', text: '   ' },
+      { speaker: 'yasmin' },
+      null,
+    ])).toEqual([{ speaker: 'sarah', text: 'Hello!' }, { speaker: 'narrator', text: 'The bell rang.' }]);
+  });
+  it('never throws on a bad value', () => {
+    expect(cleanLines(null)).toEqual([]);
+    expect(cleanLines('x')).toEqual([]);
+  });
+});
+
+describe('estimateMinutes', () => {
+  it('grows with the story and is never below one minute', () => {
+    expect(estimateMinutes(0, 0)).toBe(1);
+    expect(estimateMinutes(120, 0)).toBe(1);
+    expect(estimateMinutes(2000, 30)).toBeGreaterThan(estimateMinutes(200, 8));
+  });
+});

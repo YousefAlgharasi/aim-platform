@@ -134,6 +134,8 @@ class AppRoutePaths {
   static const String recoveryRetry = '/improve/retry';
   static const String practiceHub = '/practice';
   static const String skillPractice = '/practice/skill';
+  static const String stories = '/stories';
+  static const String storyReader = '/stories/read';
   static const String vocabulary = '/vocabulary';
   static const String vocabularyLibrary = '/vocabulary-library';
   static const String mistakes = '/mistakes';

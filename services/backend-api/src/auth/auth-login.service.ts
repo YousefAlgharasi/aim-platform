@@ -493,10 +493,12 @@ export class AuthLoginService {
 
     if (!response.ok) {
       if (response.status === 429) {
+        const retryAfter = Number.parseInt(response.headers?.get?.('retry-after') ?? '', 10);
         throw new AppError({
           code: ApiErrorCode.TOO_MANY_REQUESTS,
           message: 'Too many attempts. Please wait a moment and try again.',
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          details: { retryAfterSeconds: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 60 },
         });
       }
 

@@ -322,6 +322,125 @@ class PracticeStart {
   final List<RecoveryQuestion> questions;
 }
 
+/// One line of a story: a friend speaking, or the narrator.
+class StoryLine {
+  const StoryLine({required this.speaker, required this.text});
+
+  /// `narrator`, `sarah`, `adam`, `yasmin` or `tariq`.
+  final String speaker;
+  final String text;
+
+  factory StoryLine.fromJson(Map<String, dynamic> j) => StoryLine(
+        speaker: j['speaker']?.toString().toLowerCase() ?? 'narrator',
+        text: j['text']?.toString() ?? '',
+      );
+}
+
+/// One scene of a story with its questions (no correctness data).
+class StoryScene {
+  const StoryScene({
+    required this.position,
+    required this.setting,
+    required this.lines,
+    required this.questions,
+    required this.done,
+    this.settingAr,
+  });
+
+  final int position;
+  final String setting;
+  final String? settingAr;
+  final List<StoryLine> lines;
+  final List<RecoveryQuestion> questions;
+  final bool done;
+
+  factory StoryScene.fromJson(Map<String, dynamic> j) => StoryScene(
+        position: (j['position'] as num?)?.round() ?? 0,
+        setting: j['setting']?.toString() ?? '',
+        settingAr: j['settingAr'] as String?,
+        lines: (j['lines'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StoryLine.fromJson)
+            .where((l) => l.text.trim().isNotEmpty)
+            .toList(),
+        questions: (j['questions'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RecoveryQuestion.fromJson)
+            .toList(),
+        done: j['done'] == true,
+      );
+}
+
+/// A story card (`GET /student/stories`). Progress comes from the student's real answers.
+class StorySummary {
+  const StorySummary({
+    required this.storyId,
+    required this.courseTitle,
+    required this.title,
+    required this.summary,
+    required this.scenes,
+    required this.questions,
+    required this.answered,
+    required this.minutes,
+    required this.locked,
+    required this.completed,
+    this.cefrCode,
+    this.titleAr,
+    this.summaryAr,
+  });
+
+  final String storyId;
+  final String courseTitle;
+  final String? cefrCode;
+  final String title;
+  final String? titleAr;
+  final String summary;
+  final String? summaryAr;
+  final int scenes;
+  final int questions;
+  final int answered;
+  final int minutes;
+  final bool locked;
+  final bool completed;
+
+  /// 0..100 from the real answers.
+  int get percent => questions <= 0 ? 0 : ((answered / questions) * 100).round().clamp(0, 100);
+
+  factory StorySummary.fromJson(Map<String, dynamic> j) => StorySummary(
+        storyId: j['storyId']?.toString() ?? '',
+        courseTitle: j['courseTitle']?.toString() ?? '',
+        cefrCode: j['cefrCode'] as String?,
+        title: j['title']?.toString() ?? '',
+        titleAr: j['titleAr'] as String?,
+        summary: j['summary']?.toString() ?? '',
+        summaryAr: j['summaryAr'] as String?,
+        scenes: (j['scenes'] as num?)?.round() ?? 0,
+        questions: (j['questions'] as num?)?.round() ?? 0,
+        answered: (j['answered'] as num?)?.round() ?? 0,
+        minutes: (j['minutes'] as num?)?.round() ?? 1,
+        locked: j['locked'] == true,
+        completed: j['completed'] == true,
+      );
+}
+
+/// A whole story (`GET /student/stories/:id`).
+class StoryDetail {
+  const StoryDetail({required this.summary, required this.sceneList, required this.resumeScene});
+
+  final StorySummary summary;
+  final List<StoryScene> sceneList;
+  final int resumeScene;
+
+  factory StoryDetail.fromJson(Map<String, dynamic> j) => StoryDetail(
+        summary: StorySummary.fromJson(j),
+        sceneList: (j['sceneList'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StoryScene.fromJson)
+            .toList(),
+        resumeScene: (j['resumeScene'] as num?)?.round() ?? 0,
+      );
+}
+
 /// Talks to the same endpoints the web app uses for My words and My mistakes.
 /// Correctness and review scheduling are decided by the backend only.
 class LearnerToolsApi {
@@ -574,6 +693,39 @@ class LearnerToolsApi {
     );
     return r.data!;
   }
+  /// Published stories with this student's progress and lock state.
+  Future<List<StorySummary>> stories() async {
+    final r = await _client.get<List<StorySummary>>(
+      '/student/stories',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        return (m['stories'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(StorySummary.fromJson)
+            .toList();
+      },
+    );
+    return r.data ?? const [];
+  }
+
+  /// One story with its scenes. The server answers 403 while its course is locked.
+  Future<StoryDetail> story(String id) async {
+    final r = await _client.get<StoryDetail>(
+      '/student/stories/${Uri.encodeComponent(id)}',
+      decodeData: (json) => StoryDetail.fromJson(json as Map<String, dynamic>? ?? const {}),
+    );
+    return r.data!;
+  }
+
+  /// Starts a reading session; answers go through the normal session attempt call.
+  Future<String> startStory(String id) async {
+    final r = await _client.post<String>(
+      '/student/stories/${Uri.encodeComponent(id)}/start',
+      body: const <String, Object?>{},
+      decodeData: (json) => ((json as Map<String, dynamic>? ?? const {})['sessionId'] ?? '').toString(),
+    );
+    return r.data ?? '';
+  }
 }
 
 final learnerToolsApiProvider = Provider<LearnerToolsApi>(
@@ -629,6 +781,10 @@ final recoveryProvider = FutureProvider.autoDispose<List<RecoverySkill>>((ref) a
     return const <RecoverySkill>[];
   }
 });
+
+final storiesProvider = FutureProvider.autoDispose<List<StorySummary>>(
+  (ref) => ref.watch(learnerToolsApiProvider).stories(),
+);
 
 final mistakesProvider =
     FutureProvider.autoDispose.family<MistakeList, String?>(
