@@ -106,13 +106,6 @@ export function PracticeHubPage() {
         ]}
       />
       <Group
-        title="Read and learn"
-        tour="practice-stories"
-        modes={[
-          { to: '/stories', title: 'Read a Story', body: 'Follow Sarah, Adam, Yasmin and Tariq, and answer questions as you read. Every course has its own story.', icon: <BookIcon className={ic} />, tone: 'bg-warning-soft text-warning-ink' },
-        ]}
-      />
-      <Group
         title="Speak and write"
         tour="practice-speak"
         modes={[
