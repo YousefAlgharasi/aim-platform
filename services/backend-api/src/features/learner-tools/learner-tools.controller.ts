@@ -12,6 +12,7 @@ import { MistakesService } from './mistakes.service';
 import { SearchService } from './search.service';
 import { RecoveryService } from './recovery.service';
 import { SkillPracticeService } from './skill-practice.service';
+import { StoriesService } from './stories.service';
 
 const locale = (v?: string): 'en' | 'ar' => (v === 'ar' ? 'ar' : 'en');
 
@@ -28,6 +29,7 @@ export class LearnerToolsController {
     private readonly search: SearchService,
     private readonly recovery: RecoveryService,
     private readonly skillPractice: SkillPracticeService,
+    private readonly stories: StoriesService,
   ) {}
 
   @Get('vocabulary')
@@ -104,6 +106,25 @@ export class LearnerToolsController {
   @ApiOperation({ summary: 'Start a scored practice session (grammar, listening or reading). Answers go through /sessions/:id/attempt.' })
   practiceStart(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Body() body: { mode?: unknown; skillKey?: unknown }) {
     return this.skillPractice.start(authId, id, body?.mode, body?.skillKey);
+  }
+
+  @Get('student/stories')
+  @ApiOperation({ summary: 'Published stories (one per course) with this student\'s progress and lock state.' })
+  listStories(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string) {
+    return this.stories.list(authId, [id, authId]);
+  }
+
+  @Get('student/stories/:storyId')
+  @ApiOperation({ summary: 'One story with its scenes and questions (no answers). 403 while its course is locked.' })
+  getStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string) {
+    return this.stories.get(authId, [id, authId], storyId);
+  }
+
+  @Post('student/stories/:storyId/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Start a reading session for a story. Answers go through /sessions/:id/attempt.' })
+  startStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string) {
+    return this.stories.start(authId, id, storyId);
   }
 
   @Get('search')
