@@ -55,6 +55,7 @@ const ALL_NAV_GROUPS: NavGroup[] = [
       { label: 'Reviews', href: '/admin/reviews', icon: 'clipboard' },
       { label: 'AI Teacher', href: '/admin/ai-teacher', icon: 'spark' },
       { label: 'Practice Topics', href: '/admin/practice', icon: 'academic' },
+      { label: 'Stories', href: '/admin/stories', icon: 'academic' },
       { label: 'Vocabulary', href: '/admin/vocabulary', icon: 'clipboard' },
       { label: 'Achievements & Challenges', href: '/admin/engagement', icon: 'academic' },
     ],
