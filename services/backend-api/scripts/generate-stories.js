@@ -8,6 +8,11 @@
  *   node scripts/generate-stories.js --only "A1.1,B2.1"   just these courses (by title)
  *   node scripts/generate-stories.js --force              replace an existing DRAFT story (never a published one)
  *   node scripts/generate-stories.js --dry-run --out DIR  write JSON files into DIR and touch nothing in the database
+ *   node scripts/generate-stories.js --publish            save finished stories as PUBLISHED (students see them) instead of draft
+ *   node scripts/generate-stories.js --budget 60000 --ledger FILE
+ *        never spend more than N AI tokens in any rolling 24 hours (tracked in FILE, so it survives restarts); when the
+ *        budget is used up it WAITS, then carries on. The AI account has a 200,000 tokens/day limit shared with the live
+ *        AI Teacher and student practice, so keep this well under half.
  *
  * Uses the same env as the backend: DATABASE_URL, AI_PROVIDER_BASE_URL, AI_PROVIDER_API_KEY, AI_PROVIDER_MODEL.
  * The questions are saved as question_bank rows that STAY 'draft' (tags story / story-only): they are answerable only
@@ -57,6 +62,9 @@ const FORCE = flag('--force');
 const DRY = flag('--dry-run');
 const OUT = opt('--out') || '/tmp/stories-out';
 const CONCURRENCY = Number(opt('--concurrency') || 1);
+const PUBLISH = flag('--publish');
+const BUDGET = Number(opt('--budget') || 0); // tokens per rolling 24h; 0 = no own budget
+const LEDGER = opt('--ledger') || '/tmp/stories-ledger.json';
 
 const url = process.env.AI_PROVIDER_BASE_URL;
 const key = process.env.AI_PROVIDER_API_KEY;
@@ -96,12 +104,43 @@ function parseWait(v) {
   return (Number(m[1] || 0) * 60 + Number(m[2] || 0)) * 1000 + Number(m[3] || 0);
 }
 
+const DAY = 24 * 60 * 60 * 1000;
+function readLedger() {
+  try { return JSON.parse(fs.readFileSync(LEDGER, 'utf8')).filter((e) => Date.now() - e.t < DAY); } catch { return []; }
+}
+function addLedger(tokens) {
+  const l = readLedger();
+  l.push({ t: Date.now(), tokens });
+  try { fs.writeFileSync(LEDGER, JSON.stringify(l)); } catch (e) { console.error('ledger write failed:', e.message); }
+}
+/** Wait until spending EST_TOKENS more stays inside the 24h budget. */
+async function budgetGate() {
+  if (!BUDGET) return;
+  let said = false;
+  for (;;) {
+    const l = readLedger();
+    const spent = l.reduce((n, e) => n + e.tokens, 0);
+    if (spent + EST_TOKENS <= BUDGET) return;
+    if (!said) { console.log(`daily budget reached (${spent}/${BUDGET} tokens in 24h); waiting for it to free up`); said = true; }
+    await sleep(5 * 60 * 1000);
+  }
+}
+
 async function ai(prompt) {
   for (let attempt = 1; attempt <= 10; attempt++) {
+    await budgetGate();
     await pace();
     try {
       const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` }, body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], reasoning_effort: EFFORT }) });
       if (r.status === 429) {
+        const body = await r.text().catch(() => '');
+        if (/per day|TPD/i.test(body)) {
+          // The whole account's daily limit is used up (live AI included): back off for a long while and do not burn attempts.
+          console.log('AI daily limit reached; waiting 20 minutes');
+          await sleep(20 * 60 * 1000);
+          attempt -= 1;
+          continue;
+        }
         const wait = Math.min(120000, Math.max(parseWait(r.headers.get('retry-after')) , parseWait(r.headers.get('x-ratelimit-reset-tokens')), 5000)) + 1000;
         used.push({ t: Date.now(), tokens: TPM }); // back off: treat the minute as full
         await sleep(wait);
@@ -109,7 +148,9 @@ async function ai(prompt) {
       }
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const j = await r.json();
-      used.push({ t: Date.now(), tokens: Number(j?.usage?.total_tokens) || EST_TOKENS });
+      const spent = Number(j?.usage?.total_tokens) || EST_TOKENS;
+      used.push({ t: Date.now(), tokens: spent });
+      if (BUDGET) addLedger(spent);
       const text = j?.choices?.[0]?.message?.content ?? '';
       if (text.trim()) return text;
       throw new Error('empty reply');
@@ -232,8 +273,8 @@ async function save(db, courseId, skills, story) {
       await client.query('DELETE FROM stories WHERE id = $1', [existing.rows[0].id]);
     }
     const st = await client.query(
-      `INSERT INTO stories (course_id, title, title_ar, summary, summary_ar, status) VALUES ($1, $2, $3, $4, $5, 'draft') RETURNING id`,
-      [courseId, story.title, story.title_ar, story.summary, story.summary_ar]);
+      `INSERT INTO stories (course_id, title, title_ar, summary, summary_ar, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [courseId, story.title, story.title_ar, story.summary, story.summary_ar, PUBLISH ? 'published' : 'draft']);
     for (let i = 0; i < story.scenes.length; i++) {
       const sc = story.scenes[i];
       const sr = await client.query(
@@ -293,7 +334,7 @@ async function main() {
         console.log(`start ${course.title}`);
         const story = await buildStory(course, skills);
         if (DRY) fs.writeFileSync(path.join(OUT, `${course.title.replace(/[^\w+.-]/g, '_')}.json`), JSON.stringify({ ...story, skills: skills.map((s) => s.title) }, null, 2));
-        else { const id = await save(db, course.id, skills, story); console.log(`saved ${course.title} -> story ${id} (draft)`); }
+        else { const id = await save(db, course.id, skills, story); console.log(`saved ${course.title} -> story ${id} (${PUBLISH ? 'published' : 'draft'})`); }
       } catch (e) {
         console.error(`FAILED ${course.title}: ${e.message}`);
         failures.push(course.title);

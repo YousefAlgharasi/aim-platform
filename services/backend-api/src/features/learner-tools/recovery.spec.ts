@@ -170,3 +170,55 @@ describe('partRanges (story scenes over chapters)', () => {
     expect(partRanges(0, 4)).toEqual([]);
   });
 });
+
+import { difficultyForCourseRank, validateStoryInput } from './admin-stories.validation';
+
+const goodScene = () => ({
+  setting: 'At school, morning',
+  lines: [{ speaker: 'narrator', text: 'The bell rang.' }, { speaker: 'sarah', text: 'Hello, Adam!' }],
+  questions: [{ stem: 'Who said hello?', explanation: 'Sarah did.', options: [{ text: 'Sarah', correct: true }, { text: 'Adam', correct: false }] }],
+});
+const goodStory = (over: Record<string, unknown> = {}) => ({ title: 'The First Day', summary: 'Four friends meet.', status: 'draft', scenes: [goodScene()], ...over });
+
+describe('validateStoryInput (admin)', () => {
+  it('accepts a complete story and trims it', () => {
+    const r = validateStoryInput(goodStory({ title: '  The First Day  ', titleAr: '' }));
+    expect(r.ok).toBe(true);
+    if (r.ok) { expect(r.value.title).toBe('The First Day'); expect(r.value.titleAr).toBeNull(); expect(r.value.scenes[0].lines[1].speaker).toBe('sarah'); }
+  });
+  it('reports every problem at once, in plain words', () => {
+    const r = validateStoryInput({ title: '', summary: '', status: 'nope', scenes: [{ setting: '', lines: [{ speaker: 'teacher', text: '' }], questions: [{ stem: 'x', options: [{ text: 'a', correct: true }, { text: 'a', correct: true }] }] }] });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      const all = r.errors.join(' | ');
+      expect(all).toMatch(/needs a title/); expect(all).toMatch(/summary/); expect(all).toMatch(/Status must be/);
+      expect(all).toMatch(/Scene 1 needs a place/); expect(all).toMatch(/pick narrator, Sarah, Adam, Yasmin or Tariq/); expect(all).toMatch(/line 1 is empty/);
+      expect(all).toMatch(/write the question/); expect(all).toMatch(/two answers are the same/); expect(all).toMatch(/exactly one correct/);
+    }
+  });
+  it('needs one correct answer and 2-4 answers per question', () => {
+    const bad = (options: unknown[]) => validateStoryInput(goodStory({ scenes: [{ ...goodScene(), questions: [{ stem: 'Who said hello?', options }] }] }));
+    expect(bad([{ text: 'a', correct: false }, { text: 'b', correct: false }]).ok).toBe(false);
+    expect(bad([{ text: 'a', correct: true }]).ok).toBe(false);
+    expect(bad([1, 2, 3, 4, 5].map((n) => ({ text: `o${n}`, correct: n === 1 }))).ok).toBe(false);
+    expect(bad([{ text: 'a', correct: true }, { text: 'b', correct: false }, { text: 'c', correct: false }]).ok).toBe(true);
+  });
+  it('a published story needs a question in every scene, a draft does not', () => {
+    const noQ = { ...goodScene(), questions: [] };
+    expect(validateStoryInput(goodStory({ status: 'published', scenes: [noQ] })).ok).toBe(false);
+    expect(validateStoryInput(goodStory({ status: 'draft', scenes: [noQ] })).ok).toBe(true);
+  });
+  it('needs at least one scene and ignores bad ids', () => {
+    expect(validateStoryInput(goodStory({ scenes: [] })).ok).toBe(false);
+    const r = validateStoryInput(goodStory({ scenes: [{ ...goodScene(), id: 'not-a-uuid' }] }));
+    expect(r.ok && r.value.scenes[0].id).toBeUndefined();
+    expect(validateStoryInput(null).ok).toBe(false);
+  });
+});
+
+describe('difficultyForCourseRank', () => {
+  it('climbs with the course ladder', () => {
+    expect([1, 4, 5, 8, 12, 17].map(difficultyForCourseRank)).toEqual(['beginner', 'beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced']);
+    expect(difficultyForCourseRank(null)).toBe('beginner');
+  });
+});
