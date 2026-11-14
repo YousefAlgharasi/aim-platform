@@ -30,6 +30,10 @@ class VoicePlaybackNotifier extends ChangeNotifier {
   /// needing to diff provider state externally.
   VoidCallback? _onFinished;
 
+  /// Identifies the latest play request. Fetching a reply's audio takes a moment; if the student interrupts (stop) or
+  /// a newer reply starts meanwhile, the older request must not then start playing on top of it, or late.
+  int _request = 0;
+
   PlaybackState get state => _state;
   String? get currentAudioRef => _currentAudioRef;
   double get progress => _progress;
@@ -47,6 +51,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
       return;
     }
 
+    final request = ++_request;
     _onFinished = onFinished;
     _currentAudioRef = audioRef;
     _state = PlaybackState.loading;
@@ -56,20 +61,25 @@ class VoicePlaybackNotifier extends ChangeNotifier {
 
     try {
       final bytes = await fetchAudioFn(audioRef);
+      if (request != _request) return; // stopped or replaced while the audio was downloading
       await _player.playBytes(bytes);
+      if (request != _request) return;
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {
+      if (request != _request) return;
       if (fallbackText != null && fallbackText.trim().isNotEmpty) {
         final encoded = Uri.encodeComponent(fallbackText.trim());
         final ttsUrl =
             'https://translate.google.com/translate_tts?ie=UTF-8&q=$encoded&tl=en&client=tw-ob';
         try {
           await _player.playUrl(ttsUrl);
+          if (request != _request) return;
           _state = PlaybackState.playing;
           notifyListeners();
           return;
         } catch (_) {}
+        if (request != _request) return;
       }
       _onFinished = null;
       _state = PlaybackState.error;
@@ -82,6 +92,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     required String url,
     VoidCallback? onFinished,
   }) async {
+    final request = ++_request;
     _onFinished = onFinished;
     _currentAudioRef = url;
     _state = PlaybackState.loading;
@@ -91,9 +102,11 @@ class VoicePlaybackNotifier extends ChangeNotifier {
 
     try {
       await _player.playUrl(url);
+      if (request != _request) return;
       _state = PlaybackState.playing;
       notifyListeners();
     } catch (e) {
+      if (request != _request) return;
       _onFinished = null;
       _state = PlaybackState.error;
       _errorMessage = e.toString();
@@ -146,6 +159,7 @@ class VoicePlaybackNotifier extends ChangeNotifier {
     // An explicit stop (e.g. barge-in) is not a natural finish — never fire
     // a pending onFinished continuation (e.g. "start listening next") for
     // audio that was deliberately cut off instead of allowed to end.
+    _request++; // also cancels a reply whose audio is still downloading
     _onFinished = null;
     unawaited(_player.stop());
     _state = PlaybackState.idle;
