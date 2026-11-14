@@ -357,13 +357,19 @@ export class SessionQuestionsService {
   async resolveItemForAttempt(
     itemId: string,
     answerValue: string,
+    studentId?: string,
   ): Promise<ResolvedAttemptItem> {
+    // A recovery question is an unpublished draft written for ONE student: only that student may answer it.
     const questionResult = await this.db.query<QuestionRow>(
       `SELECT id, type, difficulty, stem, tags
          FROM question_bank
-        WHERE id = $1 AND status = 'published'
+        WHERE id = $1
+          AND (status = 'published'
+               OR ($2::uuid IS NOT NULL AND EXISTS (
+                     SELECT 1 FROM recovery_questions rq
+                      WHERE rq.question_id = question_bank.id AND rq.student_id = $2::uuid)))
         LIMIT 1`,
-      [itemId],
+      [itemId, studentId ?? null],
     );
     const question = questionResult.rows[0];
     if (!question) {
