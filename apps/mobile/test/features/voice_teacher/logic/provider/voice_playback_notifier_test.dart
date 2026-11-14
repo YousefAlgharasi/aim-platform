@@ -67,6 +67,36 @@ void main() {
       expect(notifier.state, PlaybackState.playing);
     });
 
+    test('a reply stopped while its audio is still downloading never starts playing', () async {
+      final player = _FakePlayer();
+      final notifier = VoicePlaybackNotifier(player: player);
+      final download = Completer<Uint8List>();
+
+      final loading = notifier.loadAndPlay(audioRef: 'ref-1', fetchAudioFn: (_) => download.future);
+      expect(notifier.state, PlaybackState.loading);
+      notifier.stop();
+      download.complete(Uint8List.fromList([1, 2, 3]));
+      await loading;
+
+      expect(player.playedBytes, isNull);
+      expect(notifier.state, PlaybackState.idle);
+    });
+
+    test('an older reply that finishes downloading late does not play over the newer one', () async {
+      final player = _FakePlayer();
+      final notifier = VoicePlaybackNotifier(player: player);
+      final slow = Completer<Uint8List>();
+
+      final first = notifier.loadAndPlay(audioRef: 'old', fetchAudioFn: (_) => slow.future);
+      await notifier.loadAndPlay(audioRef: 'new', fetchAudioFn: (_) async => Uint8List.fromList([7]));
+      slow.complete(Uint8List.fromList([9]));
+      await first;
+
+      expect(player.playedBytes, [7]);
+      expect(notifier.currentAudioRef, 'new');
+      expect(notifier.state, PlaybackState.playing);
+    });
+
     test('goes to error state without crashing when playback itself throws', () async {
       final player = _FakePlayer()..playThrows = Exception('no output device');
       final notifier = VoicePlaybackNotifier(player: player);
