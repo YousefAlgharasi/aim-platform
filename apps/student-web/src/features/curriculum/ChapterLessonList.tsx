@@ -9,6 +9,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
 import { CheckIcon, TrophyIcon } from '../../components/common/Icons';
 import { RoadMap, type RoadStop, type RowStatus } from '../roadmap/RoadMap';
+import { storyPartPath, type CourseStory, type StoryPart } from '../stories/storiesApi';
 
 /** Navigation state passed to the lesson player so it can link back to this course. */
 export interface LessonNavState {
@@ -22,10 +23,12 @@ interface ChapterPathProps {
   chapter: StudentChapter;
   number: number;
   locked: boolean;
+  /** This chapter's part of the course story, when the course has one. */
+  story?: { storyId: string; title: string; part: StoryPart } | null;
 }
 
 /** One chapter: its heading, then the same road as the dashboard's roadmap (no card around it). */
-function ChapterPath({ courseId, chapter, number, locked }: ChapterPathProps) {
+function ChapterPath({ courseId, chapter, number, locked, story }: ChapterPathProps) {
   const { t } = useI18n();
   const isCompleted = chapter.status === 'completed';
   const [data, setData] = useState<StudentLessonsResponse | null>(null);
@@ -71,6 +74,17 @@ function ChapterPath({ courseId, chapter, number, locked }: ChapterPathProps) {
               : 'available';
       stops.push({ key: lesson.id, kind: 'lesson', status, label: t('Lesson {n}', { n: i + 1 }), title: lesson.title, to: `/lessons/${lesson.id}`, n: i + 1 });
     });
+    if (story) {
+      stops.push({
+        key: `story-${story.part.index}`,
+        kind: 'story',
+        status: locked || !story.part.unlocked ? 'locked' : story.part.done ? 'completed' : 'available',
+        label: t('Story part {n}', { n: story.part.index + 1 }),
+        title: story.title,
+        to: storyPartPath(story.storyId, story.part.index),
+        n: lessons.length + 1,
+      });
+    }
     const quiz = data.quiz;
     if (quiz) {
       const quizLocked = locked || (quiz.locked && !quiz.completed);
@@ -88,6 +102,9 @@ function ChapterPath({ courseId, chapter, number, locked }: ChapterPathProps) {
     // While the lessons load (or if they fail), a locked chapter still shows one placeholder per lesson.
     for (let i = 0; i < chapter.lessonCount; i += 1) {
       stops.push({ key: `p${i}`, kind: 'lesson', status: 'locked', label: t('Lesson {n}', { n: i + 1 }), title: '', to: '', n: i + 1 });
+    }
+    if (story) {
+      stops.push({ key: 'ps', kind: 'story', status: 'locked', label: t('Story part {n}', { n: story.part.index + 1 }), title: '', to: '', n: chapter.lessonCount + 1 });
     }
     if (chapter.quizCount > 0) {
       stops.push({ key: 'pq', kind: 'quiz', status: 'locked', label: t('Chapter quiz'), title: '', to: '', n: chapter.lessonCount + 1 });
@@ -185,13 +202,16 @@ interface ChapterLessonListProps {
   courseId: string;
   levels: LevelWithChapters[];
   finalExam: FinalExamSummary | null;
+  /** The course's story (one part per chapter), when it has one. */
+  story?: CourseStory | null;
 }
 
-export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLessonListProps) {
+export function ChapterLessonList({ courseId, levels, finalExam, story = null }: ChapterLessonListProps) {
   // Same rule as Flutter's chapter list: a chapter is locked until the chapter
   // before it (in course order) is fully complete (backend-computed status,
   // which includes passing the chapter quiz). The backend independently
   // enforces the previous-lesson gate on progress/completion.
+  const { locale } = useI18n();
   const ordered = levels.flatMap((l) => l.chapters);
   const lockedById = new Map<string, boolean>();
   ordered.forEach((ch, i) => {
@@ -219,6 +239,10 @@ export function ChapterLessonList({ courseId, levels, finalExam }: ChapterLesson
                 chapter={chapter}
                 number={chapterNumber}
                 locked={!!lockedById.get(chapter.chapterId)}
+                story={(() => {
+                  const part = story?.parts.find((p) => p.chapterId === chapter.chapterId);
+                  return story && part ? { storyId: story.storyId, title: (locale === 'ar' && story.titleAr) || story.title, part } : null;
+                })()}
               />
             );
           })}

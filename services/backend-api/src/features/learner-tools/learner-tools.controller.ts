@@ -114,17 +114,31 @@ export class LearnerToolsController {
     return this.stories.list(authId, [id, authId]);
   }
 
+  @Get('student/courses/:courseId/story')
+  @ApiOperation({ summary: "The course's story, split into one part per chapter, with what each part needs to unlock. story is null when the course has none." })
+  async courseStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('courseId', ParseUUIDPipe) courseId: string) {
+    return { story: await this.stories.forCourse(authId, id, courseId) };
+  }
+
+  @Get('student/chapters/:chapterId/story')
+  @ApiOperation({ summary: "This chapter's part of its course story (null when the course has none)." })
+  async chapterStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('chapterId', ParseUUIDPipe) chapterId: string) {
+    return { story: await this.stories.forChapter(authId, id, chapterId) };
+  }
+
   @Get('student/stories/:storyId')
-  @ApiOperation({ summary: 'One story with its scenes and questions (no answers). 403 while its course is locked.' })
-  getStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string) {
-    return this.stories.get(authId, [id, authId], storyId);
+  @ApiOperation({ summary: 'One story with its scenes and questions (no answers). With ?part=N only that chapter\'s part. 403 while its course or part is locked.' })
+  getStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string, @Query('part') part?: string) {
+    const n = part !== undefined && part !== '' ? Number(part) : undefined;
+    return this.stories.get(authId, [id, authId], storyId, n !== undefined && Number.isInteger(n) && n >= 0 ? n : undefined);
   }
 
   @Post('student/stories/:storyId/start')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Start a reading session for a story. Answers go through /sessions/:id/attempt.' })
-  startStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string) {
-    return this.stories.start(authId, id, storyId);
+  startStory(@ResolvedInternalUserId() id: string, @CurrentUser('id') authId: string, @Param('storyId', ParseUUIDPipe) storyId: string, @Body() body: { part?: unknown }) {
+    const n = typeof body?.part === 'number' && Number.isInteger(body.part) && body.part >= 0 ? body.part : undefined;
+    return this.stories.start(authId, id, storyId, n);
   }
 
   @Get('search')

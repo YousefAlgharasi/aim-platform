@@ -1,6 +1,19 @@
 // Saved words, mistakes retry, onboarding, journey, search, landing page, offline, display settings, receipts.
 export const learner: Record<string, string> = {
   // Stories
+  'Story part {n}': 'جزء القصة {n}',
+  'Finish this chapter\'s lessons to unlock the story': 'أنهِ دروس هذا الفصل لفتح القصة',
+  'Complete every lesson in this chapter to unlock the story': 'أكمل كل دروس هذا الفصل لفتح القصة',
+  'Course story': 'قصة الدورة',
+  '{done} of {total} parts read': 'قرأت {done} من {total} أجزاء',
+  'Finish a chapter to unlock the next part': 'أنهِ فصلًا لفتح الجزء التالي',
+  'Start the story': 'ابدأ القصة',
+  'Read part {n}': 'اقرأ الجزء {n}',
+  'Part {n} of {total}': 'الجزء {n} من {total}',
+  'This part of the story is locked': 'هذا الجزء من القصة مقفل',
+  'Finish this chapter\'s lessons to unlock it. The story grows as you learn.': 'أنهِ دروس هذا الفصل لفتحه. تنمو القصة كلما تعلّمت.',
+  'Back to the course': 'العودة إلى الدورة',
+  'You finished {part} of "{title}". Your answers count toward your skills.': 'أنهيت {part} من "{title}". إجاباتك تُحتسب ضمن مهاراتك.',
   'Stories': 'القصص',
   'Read a story with Sarah, Adam, Yasmin and Tariq, and answer questions as you go. Each course has its own story, and they get longer and harder as you move up.': 'اقرأ قصة مع سارة وآدم وياسمين وطارق، وأجب عن الأسئلة أثناء القراءة. لكل دورة قصتها الخاصة، وتصبح أطول وأصعب كلما ارتقيت.',
   'Could not load the stories': 'تعذّر تحميل القصص',

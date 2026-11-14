@@ -26,6 +26,8 @@ import { useLearnerLevel } from '../level/LevelContext';
 import { bandOf, relationTo } from '../level/bands';
 import { BookIcon } from '../../components/common/Icons';
 import { CourseInfoPopover } from './CourseInfoPopover';
+import { storiesApi, type CourseStory } from '../stories/storiesApi';
+import { CourseStoryCard } from '../stories/CourseStoryCard';
 
 /** Route: /curriculum/:subjectId — the param is a course id. */
 export function CourseDetailPage() {
@@ -38,6 +40,7 @@ export function CourseDetailPage() {
   const [levels, setLevels] = useState<LevelWithChapters[]>([]);
   const [finalExam, setFinalExam] = useState<FinalExamSummary | null>(null);
   const [allCourses, setAllCourses] = useState<StudentCourse[]>([]);
+  const [story, setStory] = useState<CourseStory | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +66,8 @@ export function CourseDetailPage() {
           setFinalExam(null);
           return;
         }
+        // The story is a bonus: if it cannot load, the course still shows.
+        storiesApi.forCourse(courseId).then((r) => setStory(r.story)).catch(() => setStory(null));
         const levelList = await fetchCourseLevels(courseId);
         const perLevel = await Promise.all(levelList.map(level => fetchStudentChapters(level.id)));
         setLevels(levelList.map((level, i) => ({ level, chapters: perLevel[i].chapters })));
@@ -135,6 +140,7 @@ export function CourseDetailPage() {
               <div className="h-full rounded-full bg-brand transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${course.percent}%` }} />
             </div>
           </div>
+          {!course.locked && story && <CourseStoryCard story={story} />}
           <p className="m-0 hidden text-sm text-ink-muted sm:block">
             {[
               totalChapters > 0 ? plural(totalChapters, { one: t('1 chapter'), two: t('2 chapters'), few: t('{n} chapters [few]', { n: totalChapters }), other: t('{n} chapters', { n: totalChapters }) }) : null,
@@ -190,7 +196,7 @@ export function CourseDetailPage() {
           {totalChapters === 0 ? (
             <EmptyState title={t('No chapters available')} message={t("This course doesn't have any published chapters yet.")} />
           ) : (
-            <ChapterLessonList courseId={course.courseId} levels={levels} finalExam={finalExam} />
+            <ChapterLessonList courseId={course.courseId} levels={levels} finalExam={finalExam} story={story} />
           )}
         </>
       )}

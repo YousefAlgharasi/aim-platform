@@ -78,7 +78,6 @@ import '../../features/home/ui/pages/leaderboard_page.dart';
 import '../../features/improve/ui/improve_page.dart';
 import '../../features/improve/ui/recovery_retry_page.dart';
 import '../../features/practice_hub/ui/skill_practice_page.dart';
-import '../../features/stories/ui/stories_page.dart';
 import '../../features/stories/ui/story_reader_page.dart';
 import '../../features/learner_tools/ui/mistakes_page.dart';
 import '../../features/learner_tools/ui/vocabulary_library_page.dart';
@@ -492,13 +491,10 @@ class AppRouter {
             ),
           ),
           GoRoute(
-            path: AppRoutePaths.stories,
-            builder: (context, state) => const StoriesPage(),
-          ),
-          GoRoute(
             path: AppRoutePaths.storyReader,
             builder: (context, state) => StoryReaderPage(
               storyId: state.uri.queryParameters['id'] ?? '',
+              part: int.tryParse(state.uri.queryParameters['part'] ?? ''),
             ),
           ),
           GoRoute(
@@ -899,7 +895,6 @@ class AppRouter {
     AppRoutePaths.improve,
     AppRoutePaths.recoveryRetry,
     AppRoutePaths.skillPractice,
-    AppRoutePaths.stories,
     AppRoutePaths.storyReader,
     AppRoutePaths.practiceHub,
     AppRoutePaths.vocabulary,

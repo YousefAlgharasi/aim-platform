@@ -1,21 +1,20 @@
 jest.mock('../api/client', () => ({ apiClient: {} }));
-import { resumeLabelKey, storyPercent, type StorySummary } from '../features/stories/storiesApi';
+import { nextPartToRead, storyPartPath, type StoryPart } from '../features/stories/storiesApi';
 
-const base: StorySummary = {
-  storyId: 's', courseTitle: 'A1.1', cefrCode: 'A1', title: 'T', titleAr: null, summary: 'S', summaryAr: null,
-  scenes: 5, questions: 10, answered: 0, words: 300, minutes: 4, locked: false, completed: false,
-};
+const part = (index: number, o: Partial<StoryPart> = {}): StoryPart => ({
+  index, chapterId: `c${index}`, chapterTitle: `Chapter ${index + 1}`, scenes: 1, questions: 2, answered: 0, unlocked: false, done: false, ...o,
+});
 
-describe('stories helpers', () => {
-  it('labels the button from the real progress', () => {
-    expect(resumeLabelKey(base)).toBe('Start reading');
-    expect(resumeLabelKey({ ...base, answered: 3 })).toBe('Continue');
-    expect(resumeLabelKey({ ...base, answered: 10, completed: true })).toBe('Read again');
+describe('story parts', () => {
+  it('opens the first part that is unlocked and not finished', () => {
+    expect(nextPartToRead([part(0, { unlocked: true, done: true }), part(1, { unlocked: true }), part(2)])?.index).toBe(1);
   });
-  it('turns answers into a 0 to 100 progress, safely', () => {
-    expect(storyPercent({ questions: 10, answered: 0 })).toBe(0);
-    expect(storyPercent({ questions: 10, answered: 5 })).toBe(50);
-    expect(storyPercent({ questions: 10, answered: 12 })).toBe(100);
-    expect(storyPercent({ questions: 0, answered: 0 })).toBe(0);
+  it('has nothing to open while every part is locked or already read', () => {
+    expect(nextPartToRead([part(0), part(1)])).toBeNull();
+    expect(nextPartToRead([part(0, { unlocked: true, done: true })])).toBeNull();
+    expect(nextPartToRead([])).toBeNull();
+  });
+  it('links a part by its index', () => {
+    expect(storyPartPath('abc', 2)).toBe('/stories/abc?part=2');
   });
 });

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
 import { getErrorMessage } from '../../api/client';
 import { Button } from '../../components/common/Button';
@@ -20,6 +20,9 @@ type Phase = 'intro' | 'scene' | 'questions' | 'done';
  */
 export function StoryReaderPage() {
   const { storyId = '' } = useParams();
+  const [search] = useSearchParams();
+  const partParam = search.get('part');
+  const part = partParam !== null && /^\d+$/.test(partParam) ? Number(partParam) : undefined;
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const [story, setStory] = useState<StoryDetail | null>(null);
@@ -39,18 +42,18 @@ export function StoryReaderPage() {
 
   const load = useCallback(() => {
     setError(''); setLocked(false); setStory(null);
-    storiesApi.get(storyId).then(setStory).catch((e: unknown) => {
+    storiesApi.get(storyId, part).then(setStory).catch((e: unknown) => {
       const status = (e as { statusCode?: number; status?: number })?.statusCode ?? (e as { status?: number })?.status;
       if (status === 403) setLocked(true); else setError(getErrorMessage(e, t('Could not load this story')));
     });
-  }, [storyId, t]);
+  }, [storyId, part, t]);
   useEffect(() => { load(); }, [load]);
 
   async function begin(fromStart: boolean) {
     if (!story || starting) return;
     setStarting(true); setError('');
     try {
-      const { sessionId: sid } = await storiesApi.start(story.storyId);
+      const { sessionId: sid } = await storiesApi.start(story.storyId, part);
       setSessionId(sid); setRight(0); setAsked(0); setQIndex(0); setPicked(''); setVerdict(null);
       setScene(fromStart ? 0 : story.resumeScene); setPhase('scene');
     } catch (e) { setError(getErrorMessage(e, t('Could not start this story'))); }
@@ -60,8 +63,8 @@ export function StoryReaderPage() {
   if (locked) {
     return (
       <div className="flex w-full flex-col gap-6">
-        <SessionComplete title={t('This story is locked')} score={0} total={0} summary={t('Finish the earlier courses to unlock it. Meanwhile, read the stories that are open.')}>
-          <Link to="/stories" className={PILL_PRIMARY}>{t('Back to stories')}</Link>
+        <SessionComplete title={t('This part of the story is locked')} score={0} total={0} summary={t("Finish this chapter's lessons to unlock it. The story grows as you learn.")}>
+          <Link to="/curriculum" className={PILL_PRIMARY}>{t('Back to the course')}</Link>
         </SessionComplete>
       </div>
     );
@@ -71,7 +74,14 @@ export function StoryReaderPage() {
 
   const title = (locale === 'ar' && story.titleAr) || story.title;
   const summary = (locale === 'ar' && story.summaryAr) || story.summary;
+  const courseHref = story.courseId ? `/curriculum/${story.courseId}` : '/curriculum';
   const total = story.sceneList.length;
+  const partQuestions = story.sceneList.reduce((n, sc) => n + sc.questions.length, 0);
+  const partWords = story.sceneList.reduce((n, sc) => n + sc.lines.reduce((m, l) => m + l.text.split(/\s+/).filter(Boolean).length, 0), 0);
+  const partMinutes = Math.max(1, Math.round(partWords / 120 + partQuestions * 0.4));
+  const partDone = story.sceneList.length > 0 && story.sceneList.every((sc) => sc.done);
+  const partStarted = story.sceneList.some((sc) => sc.done);
+  const partLabel = story.part !== null ? t('Part {n} of {total}', { n: story.part + 1, total: story.partCount }) : null;
   const current = story.sceneList[scene];
 
   if (phase === 'intro') {
@@ -79,16 +89,16 @@ export function StoryReaderPage() {
       <div className="flex w-full flex-col gap-6">
         <section className="flex flex-col items-center gap-4 rounded-2xl bg-surface px-6 py-8 text-center ring-1 ring-line">
           <Cast size="size-14" />
-          <p className="m-0 text-sm font-bold text-brand-ink">{story.cefrCode ?? story.courseTitle}</p>
+          <p className="m-0 text-sm font-bold text-brand-ink">{[story.cefrCode ?? story.courseTitle, partLabel].filter(Boolean).join(' · ')}</p>
           <h1 className="lp-display m-0 text-[1.75rem] font-semibold text-ink [unicode-bidi:plaintext] sm:text-[2.25rem]">{title}</h1>
           <p className="m-0 max-w-prose text-base leading-relaxed text-ink-muted [unicode-bidi:plaintext]">{summary}</p>
-          <p className="m-0 text-xs font-semibold text-ink-muted">{t('{n} scenes', { n: story.scenes })} · {t('{n} min', { n: story.minutes })} · {t('{n} questions', { n: story.questions })}</p>
+          <p className="m-0 text-xs font-semibold text-ink-muted">{t('{n} scenes', { n: total })} · {t('{n} min', { n: partMinutes })} · {t('{n} questions', { n: partQuestions })}</p>
           {error && <p role="alert" className="m-0 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger-ink">{error}</p>}
           <div className="flex flex-wrap justify-center gap-3">
-            <button type="button" className={PILL_PRIMARY} disabled={starting} onClick={() => void begin(story.completed)}>
-              {starting ? t('Preparing…') : story.completed ? t('Read again') : story.answered > 0 ? t('Continue') : t('Start reading')}
+            <button type="button" className={PILL_PRIMARY} disabled={starting} onClick={() => void begin(partDone)}>
+              {starting ? t('Preparing…') : partDone ? t('Read again') : partStarted ? t('Continue') : t('Start reading')}
             </button>
-            <Link to="/stories" className={PILL_SECONDARY}>{t('Back to stories')}</Link>
+            <Link to={courseHref} className={PILL_SECONDARY}>{t('Back to the course')}</Link>
           </div>
         </section>
       </div>
@@ -99,9 +109,9 @@ export function StoryReaderPage() {
     return (
       <div className="flex w-full flex-col gap-6">
         <SessionComplete title={t('Story complete')} score={right} total={asked}
-          summary={t('You finished "{title}". Your answers count toward your skills.', { title })}>
-          <button type="button" className={PILL_PRIMARY} onClick={() => void begin(true)}>{t('Read again')}</button>
-          <Link to="/stories" className={PILL_SECONDARY}>{t('Back to stories')}</Link>
+          summary={t(partLabel ? 'You finished {part} of "{title}". Your answers count toward your skills.' : 'You finished "{title}". Your answers count toward your skills.', { title, part: partLabel ?? '' })}>
+          <Link to={courseHref} className={PILL_PRIMARY}>{t('Back to the course')}</Link>
+          <button type="button" className={PILL_SECONDARY} onClick={() => void begin(true)}>{t('Read again')}</button>
           <Link to="/improve" className={PILL_SECONDARY}>{t('See my skills')}</Link>
         </SessionComplete>
       </div>
@@ -124,13 +134,13 @@ export function StoryReaderPage() {
   const header = (
     <>
       <div className="flex items-center gap-3">
-        <button type="button" aria-label={t('Exit story')} title={t('Exit story')} onClick={() => navigate('/stories')}
+        <button type="button" aria-label={t('Exit story')} title={t('Exit story')} onClick={() => navigate(courseHref)}
           className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-ink-soft ring-1 ring-line-strong transition-colors hover:bg-danger-soft hover:text-danger-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span aria-hidden="true" className="text-lg leading-none">✕</span>
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="m-0 truncate text-sm font-medium text-ink-muted [unicode-bidi:plaintext]">{title}</h1>
-          <span className="block text-lg font-semibold text-ink">{t('Scene {n} of {total}', { n: scene + 1, total })}</span>
+          <span className="block text-lg font-semibold text-ink">{partLabel ? `${partLabel} · ` : ''}{t('Scene {n} of {total}', { n: scene + 1, total })}</span>
         </div>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-ink/10" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t('Story progress')}>
