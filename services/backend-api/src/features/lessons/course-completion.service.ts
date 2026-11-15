@@ -55,7 +55,15 @@ export class CourseCompletionService {
          COUNT(*) AS total,
          COUNT(*) FILTER (WHERE lp.completed) AS completed_count
        FROM course_lessons cl
-       LEFT JOIN lesson_progress lp ON lp.lesson_id = cl.id AND lp.student_id = $1`,
+       LEFT JOIN LATERAL (
+         -- Progress is keyed by the sign-in id, but callers (e.g. the admin views) may pass users.id: match both.
+         SELECT bool_or(p.completed) AS completed FROM lesson_progress p
+          WHERE p.lesson_id = cl.id
+            AND p.student_id IN (
+              SELECT $1::uuid
+              UNION SELECT u.id FROM users u WHERE u.id = $1::uuid OR u.supabase_auth_uid = $1::uuid
+              UNION SELECT u.supabase_auth_uid FROM users u WHERE u.id = $1::uuid OR u.supabase_auth_uid = $1::uuid)
+       ) lp ON TRUE`,
       [studentId, courseId],
     );
 
