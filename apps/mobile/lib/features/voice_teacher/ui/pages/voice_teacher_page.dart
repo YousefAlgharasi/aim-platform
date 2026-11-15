@@ -154,6 +154,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   /// Turns the live mic on, or mutes / unmutes it (the conversation itself is hands-free).
   void _toggleMic() {
     final status = _live.status;
+    if (status == LiveStatus.starting) return; // the microphone is still opening
     if (status == LiveStatus.off || status == LiveStatus.denied || status == LiveStatus.error) {
       ref.read(voiceRecordSubmitProvider).reset();
       _live.setMuted(false);

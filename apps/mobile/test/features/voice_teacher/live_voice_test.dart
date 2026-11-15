@@ -112,6 +112,24 @@ void main() {
     });
   });
 
+  group('Vad: the teacher speaking while the mic opens', () {
+    test('does not mistake the teacher\'s own voice for the room noise', () {
+      final vad = Vad()..startCalibration();
+      // The teacher talks loudly through the speaker right as the mic opens.
+      expect(_feed(vad, 0.3, 3000, aiSpeaking: true), isEmpty);
+      // Once it is quiet, the room is learned as it really is, so the student's voice is still heard.
+      _feed(vad, _quiet, 1000);
+      expect(vad.threshold(false), lessThan(0.03));
+      expect(_feed(vad, _loud, 800).single, isA<SpeechStart>());
+    });
+
+    test('never assumes a room louder than the cap', () {
+      final vad = Vad()..startCalibration();
+      _feed(vad, 0.5, 8000);
+      expect(vad.noiseFloor, lessThanOrEqualTo(Vad.maxNoiseFloor));
+    });
+  });
+
   group('Vad: talking over the teacher', () {
     test('needs a longer, louder burst while the teacher is speaking', () {
       final vad = Vad();
