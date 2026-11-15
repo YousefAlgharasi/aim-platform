@@ -11,9 +11,9 @@ class VadOptions {
     this.endSilenceMs = 1100,
     this.minSpeechMs = 350,
     this.maxUtteranceMs = 60000,
-    this.minLevel = 0.012,
-    this.noiseFactor = 2.8,
-    this.bargeInFactor = 2.2,
+    this.minLevel = 0.008,
+    this.noiseFactor = 2.2,
+    this.bargeInFactor = 1.8,
     this.calibrationMs = 600,
   });
 
