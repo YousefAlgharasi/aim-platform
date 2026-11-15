@@ -408,6 +408,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
           // Chapters List (Expandable Accordion Cards)
           for (final (index, chapter) in visibleChapters) ...[
             _ExpandableChapterCard(
+              key: ValueKey(chapter.chapterId),
               chapter: chapter,
               index: index,
               allChapters: chapters,
@@ -652,6 +653,7 @@ class _ChapterListPageState extends ConsumerState<ChapterListPage> {
 
 class _ExpandableChapterCard extends ConsumerStatefulWidget {
   const _ExpandableChapterCard({
+    super.key,
     required this.chapter,
     required this.index,
     this.allChapters = const [],
@@ -684,6 +686,14 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
   @override
   void didUpdateWidget(covariant _ExpandableChapterCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // A different chapter must never show the previous chapter's lessons.
+    if (oldWidget.chapter.chapterId != widget.chapter.chapterId) {
+      _lessons = null;
+      _quiz = null;
+      _loadError = null;
+      if (_isExpanded) _fetchLessons(force: true);
+      return;
+    }
     if (oldWidget.chapter.completedLessonCount != widget.chapter.completedLessonCount ||
         oldWidget.chapter.percent != widget.chapter.percent) {
       _fetchLessons(force: true);
@@ -1192,6 +1202,12 @@ class _ExpandableChapterCardState extends ConsumerState<_ExpandableChapterCard> 
                         },
                       ),
                     ],
+                  // This chapter's part of the course story, after the lessons and before the quiz.
+                  if (ref.watch(chapterStoryProvider(widget.chapter.chapterId)).valueOrNull
+                      case final story?) ...[
+                    const SizedBox(height: 4),
+                    StoryPartTile(story: story),
+                  ],
                   if (_quiz != null) ...[
                     const SizedBox(height: 4),
                     Builder(
