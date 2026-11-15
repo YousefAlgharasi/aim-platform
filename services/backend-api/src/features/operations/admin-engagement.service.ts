@@ -1,9 +1,18 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { ACHIEVEMENT_RULE_LABELS, ACHIEVEMENT_RULE_TYPES, isRuleType } from '../achievements/achievement-rules';
 
 export interface AdminAchievement {
   id: string; key: string; title: string; description: string; icon: string; category: string; isActive: boolean;
+  ruleType: string | null; ruleThreshold: number | null; unlockedCount: number;
 }
+
+export const ACHIEVEMENT_CATEGORIES = ['lessons', 'streak', 'assessment', 'milestone'] as const;
+const ACH_COLS = 'id, key, title, description, icon, category, is_active, rule_type, rule_threshold';
+const toAchievement = (x: any, unlockedCount = 0): AdminAchievement => ({
+  id: x.id, key: x.key, title: x.title, description: x.description, icon: x.icon, category: x.category,
+  isActive: x.is_active, ruleType: x.rule_type ?? null, ruleThreshold: x.rule_threshold ?? null, unlockedCount,
+});
 export interface AdminChallenge {
   id: string; key: string; title: string; description: string; challengeType: string; targetCount: number; isActive: boolean;
 }
@@ -19,9 +28,8 @@ const str = (v: unknown, field: string, max: number): string => {
 
 /**
  * Admin control of the data behind the student Achievements page and Daily Challenge card.
- * Achievements: edit text/icon and activate/deactivate only — unlocking is event-driven in code
- * by `key`, so a brand-new key could never be earned. Challenges are fully data-driven
- * (type + target), so they can be created and edited.
+ * Achievements and challenges are both data-driven: an achievement carries an unlock rule
+ * (rule type + threshold, see achievement-rules.ts), so admins can create and edit them.
  */
 @Injectable()
 export class AdminEngagementService {
@@ -37,11 +45,52 @@ export class AdminEngagementService {
     },
   };
 
+  ruleOptions() {
+    return ACHIEVEMENT_RULE_TYPES.map((value) => ({ value, label: ACHIEVEMENT_RULE_LABELS[value] }));
+  }
+
   async listAchievements(): Promise<AdminAchievement[]> {
     const r = await this.db.query<any>(
-      `SELECT id, key, title, description, icon, category, is_active FROM achievement_definitions ORDER BY created_at, key`,
+      `SELECT ${ACH_COLS.split(', ').map((c) => `d.${c}`).join(', ')},
+              (SELECT count(*) FROM student_achievements sa WHERE sa.achievement_id = d.id)::int AS unlocked_count
+         FROM achievement_definitions d ORDER BY d.created_at, d.key`,
     );
-    return r.rows.map((x) => ({ id: x.id, key: x.key, title: x.title, description: x.description, icon: x.icon, category: x.category, isActive: x.is_active }));
+    return r.rows.map((x) => toAchievement(x, x.unlocked_count));
+  }
+
+  private rule(body: Record<string, unknown>): { type: string; threshold: number } {
+    if (!isRuleType(body.ruleType)) throw new BadRequestException(`ruleType must be one of: ${ACHIEVEMENT_RULE_TYPES.join(', ')}`);
+    const t = body.ruleThreshold;
+    if (typeof t !== 'number' || !Number.isInteger(t) || t < 1 || t > 1_000_000) {
+      throw new BadRequestException('ruleThreshold must be an integer from 1 to 1000000');
+    }
+    return { type: body.ruleType, threshold: t };
+  }
+
+  private category(v: unknown): string {
+    if (typeof v !== 'string' || !(ACHIEVEMENT_CATEGORIES as readonly string[]).includes(v)) {
+      throw new BadRequestException(`category must be one of: ${ACHIEVEMENT_CATEGORIES.join(', ')}`);
+    }
+    return v;
+  }
+
+  async createAchievement(body: Record<string, unknown>, adminId: string): Promise<AdminAchievement> {
+    const key = str(body.key, 'key', 60);
+    if (!/^[a-z0-9_]+$/.test(key)) throw new BadRequestException('key may only contain a-z, 0-9 and _');
+    const rule = this.rule(body);
+    try {
+      const r = await this.db.query<any>(
+        `INSERT INTO achievement_definitions (key, title, description, icon, category, is_active, rule_type, rule_threshold)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING ${ACH_COLS}`,
+        [key, str(body.title, 'title', 80), str(body.description, 'description', 240), str(body.icon ?? 'emoji_events', 'icon', 60),
+         this.category(body.category ?? 'milestone'), body.isActive !== false, rule.type, rule.threshold],
+      );
+      await this.audit.logAction(adminId, 'achievement.created', 'achievement_definition', r.rows[0].id, { key, rule });
+      return toAchievement(r.rows[0]);
+    } catch (e: any) {
+      if (e?.code === '23505') throw new ConflictException(`An achievement with key '${key}' already exists`);
+      throw e;
+    }
   }
 
   async updateAchievement(id: string, body: Record<string, unknown>, adminId: string): Promise<AdminAchievement> {
@@ -51,6 +100,12 @@ export class AdminEngagementService {
     if (body.title !== undefined) add('title', str(body.title, 'title', 80));
     if (body.description !== undefined) add('description', str(body.description, 'description', 240));
     if (body.icon !== undefined) add('icon', str(body.icon, 'icon', 60));
+    if (body.category !== undefined) add('category', this.category(body.category));
+    if (body.ruleType !== undefined || body.ruleThreshold !== undefined) {
+      const rule = this.rule(body);
+      add('rule_type', rule.type);
+      add('rule_threshold', rule.threshold);
+    }
     if (body.isActive !== undefined) {
       if (typeof body.isActive !== 'boolean') throw new BadRequestException('isActive must be a boolean');
       add('is_active', body.isActive);
@@ -58,14 +113,13 @@ export class AdminEngagementService {
     if (!sets.length) throw new BadRequestException('No editable fields supplied');
     vals.push(id);
     const r = await this.db.query<any>(
-      `UPDATE achievement_definitions SET ${sets.join(', ')} WHERE id = $${vals.length}
-       RETURNING id, key, title, description, icon, category, is_active`,
+      `UPDATE achievement_definitions SET ${sets.join(', ')} WHERE id = $${vals.length} RETURNING ${ACH_COLS}`,
       vals,
     );
     const x = r.rows[0];
     if (!x) throw new NotFoundException('Achievement not found');
     await this.audit.logAction(adminId, 'achievement.updated', 'achievement_definition', id, { changes: body });
-    return { id: x.id, key: x.key, title: x.title, description: x.description, icon: x.icon, category: x.category, isActive: x.is_active };
+    return toAchievement(x);
   }
 
   async listChallenges(): Promise<AdminChallenge[]> {

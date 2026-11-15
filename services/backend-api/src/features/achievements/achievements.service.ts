@@ -6,6 +6,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { AchievementsRepository } from './achievements.repository';
+import { isRuleType } from './achievement-rules';
 import { AchievementSummary, AchievementsResponse } from './achievements.types';
 
 @Injectable()
@@ -13,33 +14,23 @@ export class AchievementsService {
   constructor(private readonly repository: AchievementsRepository) {}
 
   async getAchievements(studentId: string): Promise<AchievementsResponse> {
-    const [definitions, unlockState, completedLessons, passedAssessments] = await Promise.all([
+    const [definitions, unlockState, counters] = await Promise.all([
       this.repository.findActiveDefinitions(),
       this.repository.findUnlockStateForStudent(studentId),
-      this.repository.countCompletedLessons(studentId),
-      this.repository.countPassedAssessments(studentId),
+      this.repository.getCounters(studentId),
     ]);
 
     const unlockedByAchievementId = new Map(
       unlockState.map((row) => [row.achievement_id, row.unlocked_at]),
     );
 
+    // Data-driven rules: an achievement unlocks when its counter reaches its threshold.
+    // Definitions without a rule are never auto-unlocked.
     for (const def of definitions) {
       if (unlockedByAchievementId.has(def.id)) continue;
-
-      let shouldUnlock = false;
-      const key = def.key.toLowerCase();
-      if ((key.includes('first') || key.includes('lesson') || key.includes('step')) && completedLessons >= 1) {
-        shouldUnlock = true;
-      } else if ((key.includes('getting') || key.includes('started') || key.includes('5')) && completedLessons >= 5) {
-        shouldUnlock = true;
-      } else if ((key.includes('quiz') || key.includes('whiz') || key.includes('assessment')) && passedAssessments >= 1) {
-        shouldUnlock = true;
-      }
-
-      if (shouldUnlock) {
-        const now = new Date();
-        unlockedByAchievementId.set(def.id, now);
+      if (!isRuleType(def.rule_type) || def.rule_threshold === null || def.rule_threshold === undefined) continue;
+      if ((counters[def.rule_type] ?? 0) >= def.rule_threshold) {
+        unlockedByAchievementId.set(def.id, new Date());
         this.repository.unlockAchievement(studentId, def.id).catch(() => {});
       }
     }

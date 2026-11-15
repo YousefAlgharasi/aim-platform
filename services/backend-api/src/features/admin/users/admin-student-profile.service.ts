@@ -17,6 +17,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { AppError } from '../../../common/errors/app-error';
 import { ApiErrorCode } from '../../../common/errors/api-error-code';
 import { DatabaseService } from '../../../database/database.service';
+import { resolveStudentIds } from './admin-student-ids';
 import { CourseCompletionService } from '../../lessons/course-completion.service';
 import { PlacementResultReadService } from '../../placement/placement-result-read.service';
 import { SubscriptionService } from '../../billing/subscription.service';
@@ -192,12 +193,13 @@ export class AdminStudentProfileService {
       });
     }
 
+    const ids = await resolveStudentIds(this.db, studentId);
     const [placement, subscriptions, courses, assessmentResults, weaknesses, aiSessions] = await Promise.all([
       this.getPlacementSummary(studentId),
       this.subscriptionService.getUserSubscriptions(studentId),
-      this.getCourseHistory(studentId),
-      this.getAllAssessmentResults(studentId),
-      this.getWeaknesses(studentId),
+      this.getCourseHistory(studentId, ids),
+      this.getAllAssessmentResults(ids),
+      this.getWeaknesses(ids),
       this.getRecentAiSessions(studentId),
     ]);
 
@@ -276,20 +278,22 @@ export class AdminStudentProfileService {
     return result.rows[0]?.title ?? null;
   }
 
-  private async getCourseHistory(studentId: string): Promise<AdminStudentCourse[]> {
+  private async getCourseHistory(studentId: string, ids: string[]): Promise<AdminStudentCourse[]> {
     const enrollments = await this.db.query<EnrollmentRow>(
       `SELECT ce.id, ce.course_id, co.title AS course_title, ce.status, ce.enrolled_at
        FROM course_enrollments ce
        JOIN courses co ON co.id = ce.course_id
-       WHERE ce.student_id = $1
+       WHERE ce.student_id = ANY($1::uuid[])
        ORDER BY ce.enrolled_at DESC`,
-      [studentId],
+      [ids],
     );
+    const seenCourses = new Set<string>();
+    const uniqueEnrollments = enrollments.rows.filter((e) => (seenCourses.has(e.course_id) ? false : (seenCourses.add(e.course_id), true)));
 
     return Promise.all(
-      enrollments.rows.map(async (row) => {
+      uniqueEnrollments.map(async (row) => {
         const [lessonCounts, assessments] = await Promise.all([
-          this.getCourseLessonCounts(studentId, row.course_id),
+          this.getCourseLessonCounts(ids, row.course_id),
           this.certificateService.getCourseAssessmentResults(studentId, row.course_id),
         ]);
 
@@ -318,7 +322,7 @@ export class AdminStudentProfileService {
   }
 
   private async getCourseLessonCounts(
-    studentId: string,
+    studentIds: string[],
     courseId: string,
   ): Promise<{ total: number; completed: number }> {
     const result = await this.db.query<LessonCountRow>(
@@ -336,8 +340,11 @@ export class AdminStudentProfileService {
          COUNT(*) AS total,
          COUNT(*) FILTER (WHERE lp.completed) AS completed_count
        FROM course_lessons cl
-       LEFT JOIN lesson_progress lp ON lp.lesson_id = cl.id AND lp.student_id = $1`,
-      [studentId, courseId],
+       LEFT JOIN LATERAL (
+         SELECT bool_or(completed) AS completed FROM lesson_progress
+          WHERE lesson_id = cl.id AND student_id = ANY($1::uuid[])
+       ) lp ON TRUE`,
+      [studentIds, courseId],
     );
     const row = result.rows[0];
     return {
@@ -353,7 +360,7 @@ export class AdminStudentProfileService {
    * without this a student's quiz/exam history could look empty just
    * because nobody has assigned those assessments to a course.
    */
-  private async getAllAssessmentResults(studentId: string): Promise<AdminStudentAssessmentResult[]> {
+  private async getAllAssessmentResults(ids: string[]): Promise<AdminStudentAssessmentResult[]> {
     const result = await this.db.query<AllAssessmentResultRow>(
       `SELECT ar.id, ar.assessment_id, a.title, a.type, ar.score, ar.max_score, ar.passed,
               ar.created_at AS attempted_at,
@@ -364,9 +371,9 @@ export class AdminStudentProfileService {
        LEFT JOIN chapters c ON c.id = a.chapter_id
        LEFT JOIN levels lv ON lv.id = c.level_id
        LEFT JOIN courses co2 ON co2.id = lv.course_id
-       WHERE ar.student_id = $1
+       WHERE ar.student_id = ANY($1::uuid[])
        ORDER BY ar.created_at DESC`,
-      [studentId],
+      [ids],
     );
     return result.rows.map((r) => {
       const score = Number(r.score);
@@ -386,15 +393,15 @@ export class AdminStudentProfileService {
     });
   }
 
-  private async getWeaknesses(studentId: string): Promise<AdminStudentProfile['weaknesses']> {
+  private async getWeaknesses(ids: string[]): Promise<AdminStudentProfile['weaknesses']> {
     const result = await this.db.query<WeaknessRow>(
       `SELECT wr.id, wr.skill_id, s.title AS skill_title, wr.severity, wr.status,
               wr.detected_at, wr.resolved_at
        FROM weakness_records wr
        LEFT JOIN skills s ON s.key = wr.skill_id
-       WHERE wr.student_id = $1
+       WHERE wr.student_id = ANY($1::uuid[])
        ORDER BY wr.detected_at DESC`,
-      [studentId],
+      [ids],
     );
     return result.rows.map((r) => ({
       id: r.id,

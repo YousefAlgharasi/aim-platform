@@ -13,6 +13,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
+import { resolveStudentIds } from './admin-student-ids';
 
 export interface PracticeReportSession {
   readonly sessionId: string;
@@ -61,42 +62,49 @@ export class AdminStudentPracticeReportService {
   constructor(private readonly db: DatabaseService) {}
 
   async getReport(studentId: string): Promise<AdminStudentPracticeReport> {
-    const [sessionRows, skillRows, perSkillRows, directiveRows] = await Promise.all([
+    const ids = await resolveStudentIds(this.db, studentId);
+    const [sessionRows, skillRows, perSkillRows, directiveRows, totalRows] = await Promise.all([
       this.db.query<{ id: string; session_type: string; skill_focus_ids: unknown; started_at: string; attempts: string; correct: string }>(
         `SELECT ls.id, ls.session_type, ls.skill_focus_ids, ls.started_at,
                 count(la.id)::text AS attempts,
                 count(la.id) FILTER (WHERE la.is_correct)::text AS correct
            FROM learning_sessions ls
            JOIN lesson_attempts la ON la.learning_session_id = ls.id
-          WHERE ls.student_id = $1
+          WHERE ls.student_id = ANY($1::uuid[])
           GROUP BY ls.id
           ORDER BY ls.started_at DESC
           LIMIT ${RECENT_SESSIONS}`,
-        [studentId],
+        [ids],
       ),
       this.db.query<{ skill_id: string; title: string | null; mastery_score: string; previous_mastery_score: string | null; mastery_trend: string | null }>(
         `SELECT sss.skill_id, s.title, sss.mastery_score, sss.previous_mastery_score, sss.mastery_trend
            FROM student_skill_states sss
            LEFT JOIN skills s ON s.key = sss.skill_id
-          WHERE sss.student_id = $1
+          WHERE sss.student_id = ANY($1::uuid[])
           ORDER BY sss.skill_id ASC`,
-        [studentId],
+        [ids],
       ),
       this.db.query<{ skill_key: string; attempts: string; correct: string }>(
         `SELECT sk.skill_key, count(*)::text AS attempts, count(*) FILTER (WHERE la.is_correct)::text AS correct
            FROM lesson_attempts la
            CROSS JOIN LATERAL jsonb_array_elements_text(la.skill_ids) AS sk(skill_key)
-          WHERE la.student_id = $1
+          WHERE la.student_id = ANY($1::uuid[])
           GROUP BY sk.skill_key`,
-        [studentId],
+        [ids],
       ),
       this.db.query<{ skill_id: string; directive_text: string; source: string; generated_at: string; active: boolean }>(
         `SELECT skill_id, directive_text, source, generated_at, active
            FROM ai_focus_directives
-          WHERE student_id = $1
+          WHERE student_id = ANY($1::uuid[])
           ORDER BY active DESC, generated_at DESC
           LIMIT ${DIRECTIVES}`,
-        [studentId],
+        [ids],
+      ),
+      this.db.query<{ sessions: string; attempts: string; correct: string }>(
+        `SELECT count(DISTINCT la.learning_session_id)::text AS sessions, count(*)::text AS attempts,
+                count(*) FILTER (WHERE la.is_correct)::text AS correct
+           FROM lesson_attempts la WHERE la.student_id = ANY($1::uuid[])`,
+        [ids],
       ),
     ]);
 
@@ -135,11 +143,12 @@ export class AdminStudentPracticeReportService {
       skills.push({ skillKey, title: null, masteryPercent: null, previousMasteryPercent: null, trend: null, attempts: c.attempts, correct: c.correct, wrong: c.attempts - c.correct });
     }
 
-    const totalAttempts = sessions.reduce((n, s) => n + s.attempts, 0);
-    const totalCorrect = sessions.reduce((n, s) => n + s.correct, 0);
+    // Totals cover every answer ever given, not just the recent sessions listed below.
+    const totalAttempts = parseInt(totalRows.rows[0]?.attempts ?? '0', 10);
+    const totalCorrect = parseInt(totalRows.rows[0]?.correct ?? '0', 10);
     return {
       totals: {
-        sessions: sessions.length,
+        sessions: parseInt(totalRows.rows[0]?.sessions ?? '0', 10),
         attempts: totalAttempts,
         correct: totalCorrect,
         wrong: totalAttempts - totalCorrect,

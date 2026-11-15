@@ -17,9 +17,22 @@ export class AdminEngagementController {
   @ApiOperation({ summary: 'List achievement definitions (admin)' })
   listAchievements() { return this.svc.listAchievements(); }
 
+  @Get('achievements/rule-options')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Unlock rule types an achievement can use (admin)' })
+  ruleOptions() { return this.svc.ruleOptions(); }
+
+  @Post('achievements')
+  @HttpCode(HttpStatus.CREATED)
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Create an achievement with an unlock rule (admin)' })
+  createAchievement(@Req() req: AuthenticatedRequest, @Body() body: Record<string, unknown>) {
+    return this.svc.createAchievement(body ?? {}, req.internalUserId!);
+  }
+
   @Patch('achievements/:id')
   @OperationsAdminOnly()
-  @ApiOperation({ summary: 'Edit an achievement (title, description, icon, active) (admin)' })
+  @ApiOperation({ summary: 'Edit an achievement (title, description, icon, category, rule, active) (admin)' })
   updateAchievement(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string, @Body() body: Record<string, unknown>) {
     return this.svc.updateAchievement(id, body ?? {}, req.internalUserId!);
   }
