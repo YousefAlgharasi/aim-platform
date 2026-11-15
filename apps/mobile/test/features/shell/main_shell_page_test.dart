@@ -79,9 +79,7 @@ void main() {
       'Improve',
       'Assessments',
       'Practice',
-      'AI Teacher',
       'My words',
-      'My mistakes',
       'Progress',
       'Achievements',
       'Certificates',
@@ -94,6 +92,9 @@ void main() {
     }
 
     expect(inDrawer('Reports'), findsNothing); // Reports was removed.
+    for (final removed in const ['AI Teacher', 'My mistakes', 'Review']) {
+      expect(inDrawer(removed), findsNothing, reason: removed);
+    }
 
     await tester.tap(inDrawer('Courses'));
     await tester.pump();

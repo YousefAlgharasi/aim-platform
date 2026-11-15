@@ -83,20 +83,10 @@ class _AppMenuDrawerState
         items: [
           item(Icons.bolt_rounded, 'Practice', 'تدرّب',
               onTap: () => _navigateTo(AppRoutePaths.practiceHub)),
-          item(Icons.chat_bubble_outline_rounded, 'AI Teacher', 'المعلم الذكي',
-              onTap: () {
-            _close();
-            context.push(AppRoutePaths.aiTeacherChat,
-                extra: const {'contextRef': 'general'});
-          }),
           item(Icons.menu_book_outlined, 'Vocabulary', 'المفردات',
               onTap: () => _navigateTo(AppRoutePaths.vocabularyLibrary)),
           item(Icons.lightbulb_outline_rounded, 'My words', 'كلماتي',
               onTap: () => _navigateTo(AppRoutePaths.vocabulary)),
-          item(Icons.refresh_rounded, 'My mistakes', 'أخطائي',
-              onTap: () => _navigateTo(AppRoutePaths.mistakes)),
-          item(Icons.style_outlined, 'Review', 'المراجعة',
-              selected: selectedIndex == 2, onTap: () => _selectTab(2)),
         ],
       ),
       AIMDrawerSectionData(
