@@ -33,6 +33,7 @@ import { AdminStudentPracticeReportService, AdminStudentPracticeReport } from '.
 import { StudentSkillStateReadService } from '../../aim/result/student-skill-state-read.service';
 import { WeaknessRecordsReadService } from '../../aim/result/weakness-records-read.service';
 import { RecommendationReadService } from '../../aim/result/recommendation-read.service';
+import { AdminStudentCourseProgressService, AdminStudentCourseProgress } from './admin-student-course-progress.service';
 
 @ApiTags(OPENAPI_TAGS.admin)
 @ApiBearerAuth()
@@ -47,6 +48,7 @@ export class AdminStudentProgressController {
     private readonly weaknessRecordsRead: WeaknessRecordsReadService,
     private readonly recommendationRead: RecommendationReadService,
     private readonly practiceReport: AdminStudentPracticeReportService,
+    private readonly courseProgress: AdminStudentCourseProgressService,
   ) {}
 
   @Get(':id/profile')
@@ -58,6 +60,17 @@ export class AdminStudentProgressController {
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<AdminStudentProfile> {
     return this.studentProfile.getProfile(id);
+  }
+
+  @Get(':id/course-progress')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Per-course actual progress for a student: chapters, lessons, practice right/wrong per lesson, quizzes/exams, certificate, plus speaking/writing practice, mistakes and achievements (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Backend-graded progress; nothing is derived by the client.' })
+  async getCourseProgress(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<AdminStudentCourseProgress> {
+    return this.courseProgress.getCourseProgress(id);
   }
 
   @Get(':id/practice-report')

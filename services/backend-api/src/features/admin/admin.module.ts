@@ -30,11 +30,12 @@ import { AdminStudentProgressController } from './users/admin-student-progress.c
 import { AdminStudentProgressService } from './users/admin-student-progress.service';
 import { AdminStudentProfileService } from './users/admin-student-profile.service';
 import { AdminStudentPracticeReportService } from './users/admin-student-practice-report.service';
+import { AdminStudentCourseProgressService } from './users/admin-student-course-progress.service';
 
 @Module({
   imports: [AuthModule, DatabaseModule, RolesModule, UsersModule, LessonsModule, PlacementModule, BillingModule, CertificateModule, AimModule],
   controllers: [AdminController, AdminDataController, AdminParentsController, AdminRoleAssignmentController, AdminRolesController, AdminUsersController, AdminStudentProgressController, AdminStatsController],
-  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminStudentProfileService, AdminStudentPracticeReportService, AdminProfileService, AdminStatsService],
+  providers: [AdminService, AdminDataService, AdminParentsService, AdminRoleAssignmentService, AdminUsersService, AdminStudentProgressService, AdminStudentProfileService, AdminStudentPracticeReportService, AdminStudentCourseProgressService, AdminProfileService, AdminStatsService],
   exports: [AdminService, AdminDataService, AdminRoleAssignmentService, AdminProfileService],
 })
 export class AdminModule {}

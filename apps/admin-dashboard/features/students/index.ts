@@ -5,3 +5,4 @@ export * from './pages/student-progress-client';
 export * from './pages/student-session-summary-client';
 export * from './pages/weaknesses-recommendations-client';
 export * from './pages/student-practice-report-client';
+export * from './pages/student-course-progress-client';
