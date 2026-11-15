@@ -2,6 +2,13 @@ import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundEx
 import { DatabaseService } from '../../database/database.service';
 import { AiTeacherProviderGateway } from '../ai-teacher/governance/ai-teacher-provider.interface';
 import { ProviderGatewayConfigService } from '../ai-teacher/provider-gateway/provider-gateway.config';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 import { SessionsService } from '../sessions/sessions.service';
 
 /**
@@ -51,7 +58,8 @@ export interface RecoveryQuestion {
   itemId: string;
   type: string;
   prompt: string;
-  options: Array<{ id: string; text: string }>;
+  options: Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>;
+  translations?: Record<string, QuestionTextTranslation>;
   source: 'missed' | 'bank' | 'ai';
 }
 
@@ -211,24 +219,27 @@ export class RecoveryService {
     return (LEVELS as readonly string[]).includes(lvl) ? (lvl as Level) : 'beginner';
   }
 
-  private async withOptions(rows: Array<{ id: string; type: string; stem: string }>, source: RecoveryQuestion['source']): Promise<RecoveryQuestion[]> {
+  private async withOptions(rows: Array<{ id: string; type: string; stem: string; translations?: unknown }>, source: RecoveryQuestion['source']): Promise<RecoveryQuestion[]> {
     if (rows.length === 0) return [];
-    const c = await this.db.query<{ question_id: string; id: string; text: string }>(
-      `SELECT question_id, id, text FROM question_choices WHERE question_id = ANY($1::uuid[]) ORDER BY sort_order, created_at`,
+    const c = await this.db.query<{ question_id: string; id: string; text: string; translations?: unknown }>(
+      `SELECT question_id, id, text, translations FROM question_choices WHERE question_id = ANY($1::uuid[]) ORDER BY sort_order, created_at`,
       [rows.map((r) => r.id)]);
-    const by = new Map<string, Array<{ id: string; text: string }>>();
-    for (const o of c.rows) by.set(o.question_id, [...(by.get(o.question_id) ?? []), { id: o.id, text: o.text }]);
+    const typeById = new Map(rows.map((r) => [r.id, r.type]));
+    const by = new Map<string, Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>>();
+    for (const o of c.rows) {
+      by.set(o.question_id, [...(by.get(o.question_id) ?? []), { id: o.id, text: o.text, ...withTranslations(choiceTranslations(o.translations, typeById.get(o.question_id))) }]);
+    }
     // A question without options cannot be answered from this screen; skip it rather than ship a dead card.
-    return rows.filter((r) => (by.get(r.id)?.length ?? 0) >= 2).map((r) => ({ itemId: r.id, type: r.type, prompt: r.stem, options: by.get(r.id) ?? [], source }));
+    return rows.filter((r) => (by.get(r.id)?.length ?? 0) >= 2).map((r) => ({ itemId: r.id, type: r.type, prompt: r.stem, options: by.get(r.id) ?? [], ...withTranslations(questionTranslations(r.translations)), source }));
   }
 
   private async missedQuestions(ids: string[], skillKey: string, limit: number): Promise<RecoveryQuestion[]> {
-    const r = await this.db.query<{ id: string; type: string; stem: string }>(
+    const r = await this.db.query<{ id: string; type: string; stem: string; translations?: unknown }>(
       `WITH latest AS (
          SELECT DISTINCT ON (item_id) item_id, is_correct, submitted_at, skill_ids
            FROM lesson_attempts WHERE student_id = ANY($1::uuid[]) ORDER BY item_id, submitted_at DESC
        )
-       SELECT qb.id, qb.type, qb.stem
+       SELECT qb.id, qb.type, qb.stem, qb.translations
          FROM latest l JOIN question_bank qb ON qb.id = l.item_id AND qb.type = ANY($3)
         WHERE NOT l.is_correct AND l.skill_ids ? $2::text
           AND (qb.status = 'published' OR EXISTS (SELECT 1 FROM recovery_questions rq WHERE rq.question_id = qb.id AND rq.student_id = ANY($1::uuid[])))
@@ -241,8 +252,8 @@ export class RecoveryService {
   private async bankQuestions(ids: string[], skillKey: string, level: Level, limit: number, exclude: ReadonlySet<string>): Promise<RecoveryQuestion[]> {
     if (limit <= 0) return [];
     const allowed = LEVELS.slice(0, levelRank(level) + 1);
-    const r = await this.db.query<{ id: string; type: string; stem: string }>(
-      `SELECT qb.id, qb.type, qb.stem
+    const r = await this.db.query<{ id: string; type: string; stem: string; translations?: unknown }>(
+      `SELECT qb.id, qb.type, qb.stem, qb.translations
          FROM question_bank qb
          JOIN question_skills qs ON qs.question_id = qb.id
          JOIN skills s ON s.id = qs.skill_id AND s.key = $2

@@ -3,6 +3,7 @@ import { Banner } from '../../components/common/Banner';
 import { Button } from '../../components/common/Button';
 import type { SessionQuestion, SessionSummary } from './practiceApi';
 import { useI18n } from '../../i18n/I18nContext';
+import { ArText } from '../lessons/Bilingual';
 import { ResultIcon } from '../../interaction';
 import { linkButton, linkButtonPrimary, questionCard } from './practiceStyles';
 
@@ -99,6 +100,7 @@ export function PracticeFeedback({
               <p className="m-0 text-base font-semibold leading-snug text-ink">
                 {i + 1}. {byId.get(attempt.itemId)?.stem ?? t('Question')}
               </p>
+              <ArText text={byId.get(attempt.itemId)?.translations?.ar?.stem} className="text-base" />
               <div
                 className={`rounded-xl p-3 ring-1 ${
                   attempt.isCorrect

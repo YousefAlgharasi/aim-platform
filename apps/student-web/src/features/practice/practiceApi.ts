@@ -16,10 +16,15 @@ export interface StartSessionResponse {
   skillFocusIds: string[];
 }
 
+/** Additive Arabic supporting text; absent when the question has no translation. */
+export interface QuestionTranslations { ar?: { stem?: string; explanation?: string; hint?: string } }
+export interface OptionTranslations { ar?: { text?: string } }
+
 export interface SessionOption {
   id: string;
   text: string;
   order: number;
+  translations?: OptionTranslations | null;
 }
 
 export interface SessionQuestion {
@@ -30,6 +35,7 @@ export interface SessionQuestion {
   difficulty: string;
   tags: string[];
   options: SessionOption[];
+  translations?: QuestionTranslations | null;
 }
 
 export interface SessionQuestionsResponse {

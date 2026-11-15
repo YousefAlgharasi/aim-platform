@@ -48,13 +48,14 @@ export const studyPlanApi = {
 };
 
 // ── Mistakes retry ───────────────────────────────────────────────────────────
+import type { OptionTranslations, QuestionTranslations } from '../practice/practiceApi';
 export interface MistakeItem {
   itemId: string; type: string; prompt: string; listeningScript: string | null;
   /** Skill keys the question trains. Absent on older backends. */
   skillIds?: string[];
-  options: Array<{ id: string; text: string }>; yourAnswer: string | null; answeredAt: string;
+  options: Array<{ id: string; text: string; translations?: OptionTranslations | null }>; translations?: QuestionTranslations | null; yourAnswer: string | null; answeredAt: string;
 }
-export interface MistakeCheck { correct: boolean; correctChoiceId: string | null; correctText: string | null; explanation: string | null }
+export interface MistakeCheck { correct: boolean; correctChoiceId: string | null; correctText: string | null; explanation: string | null; translations?: QuestionTranslations | null }
 export const mistakesApi = {
   /** Wrong answers still to fix; pass a skill key to get only that skill's. */
   list: (skill?: string) => apiClient.get<{ total: number; items: MistakeItem[] }>(`/student/mistakes${skill ? `?skill=${encodeURIComponent(skill)}` : ''}`),
@@ -70,7 +71,7 @@ export interface RecoverySkill {
   retryAvailableAt: string | null; unlocked: boolean;
 }
 export interface RecoveryQuestion {
-  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string }>; source: 'missed' | 'bank' | 'ai';
+  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string; translations?: OptionTranslations | null }>; translations?: QuestionTranslations | null; source: 'missed' | 'bank' | 'ai';
 }
 export interface RecoveryStart { sessionId: string; skillKey: string; level: string; questions: RecoveryQuestion[] }
 export const recoveryApi = {

@@ -5,3 +5,4 @@ export * from './locale-resolver.service';
 export * from './locale-headers.interceptor';
 export * from './locale.module';
 export * from './course-text.sql';
+export * from './content-translations';

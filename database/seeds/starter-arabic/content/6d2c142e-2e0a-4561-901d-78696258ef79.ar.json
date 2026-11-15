@@ -1,0 +1,160 @@
+{
+  "lessonId": "6d2c142e-2e0a-4561-901d-78696258ef79",
+  "title": "عبارات البقاء اليومية",
+  "description": "تعلّم العبارات الأساسية: please, thank you, sorry, excuse me, yes, no.",
+  "explanation": {
+    "overview": "في هذا الدرس ستتعلّم كلمات مهذّبة وقصيرة تساعدك في المواقف اليومية. ستتمكّن من طلب المساعدة، وشكر الناس، والاعتذار، والإجابة عن أسئلة بسيطة بالإنجليزية.",
+    "sections": [
+      {
+        "heading": "الطلبات المهذّبة",
+        "body": "- استخدم **please** عندما تريد شيئًا.\n- قل **thank you** بعد أن يساعدك أحد.\n- كلتا الكلمتين تجعلانك تبدو ودودًا.",
+        "examples": [
+          {
+            "text": "Can you pass the salt, please?",
+            "note": "توضّح الطلب باستخدام please"
+          },
+          {
+            "text": "Thank you for your help.",
+            "note": "تعبّر عن الامتنان"
+          }
+        ]
+      },
+      {
+        "heading": "الاعتذار ولفت الانتباه",
+        "body": "- قل **sorry** عندما ترتكب خطأً.\n- استخدم **excuse me** للفت انتباه شخص أو للمرور.\n- كلتاهما مفيدتان في الأماكن المزدحمة.",
+        "examples": [
+          {
+            "text": "Sorry, I am late.",
+            "note": "اعتذار بسيط"
+          },
+          {
+            "text": "Excuse me, where is the bathroom?",
+            "note": "طلب المساعدة بأدب"
+          }
+        ]
+      },
+      {
+        "heading": "إجابات بسيطة وطلب التوضيح",
+        "body": "- **Yes** و**no** تجيبان عن الأسئلة مباشرة.\n- قل **I don’t understand** عندما تحتاج إلى مزيد من الشرح.\n- اجعل جملك قصيرة وواضحة.",
+        "examples": [
+          {
+            "text": "Do you speak English? Yes.",
+            "note": "إجابة بالإيجاب"
+          },
+          {
+            "text": "Do you need water? No.",
+            "note": "إجابة بالنفي"
+          },
+          {
+            "text": "I don’t understand the question.",
+            "note": "طلب التوضيح"
+          }
+        ]
+      }
+    ],
+    "keyPoints": [
+      "Please تضيف الأدب إلى الطلبات",
+      "Thank you تعبّر عن التقدير",
+      "Sorry للاعتذار عن خطأ",
+      "Excuse me للفت الانتباه أو لطلب المرور",
+      "Yes وno إجابتان واضحتان",
+      "I don’t understand لطلب المساعدة"
+    ],
+    "commonMistakes": [
+      {
+        "wrong": "Please thank you",
+        "right": "Thank you, please",
+        "why": "اعكس الترتيب؛ thank you تأتي أولًا"
+      },
+      {
+        "wrong": "Excuse me I am sorry",
+        "right": "Sorry, excuse me",
+        "why": "استخدم عبارة واحدة في كل مرة ليكون الكلام واضحًا"
+      },
+      {
+        "wrong": "Yes I no",
+        "right": "Yes or No",
+        "why": "لا تجمع بين إجابتين متعاكستين"
+      }
+    ],
+    "recap": "تدرّب على هذه العبارات الست في محادثات حقيقية حتى تصبح طبيعية عندك."
+  },
+  "assets": {
+    "b2b463d0-a595-4bbf-9b0b-5232cf7594a7": {
+      "title": "عبارات البقاء",
+      "description": "Please. (من فضلك) Thank you. (شكرًا) Sorry. (آسف) Excuse me. (عفوًا) Yes. (نعم) No. (لا) I don't understand. (لا أفهم.)"
+    }
+  },
+  "questions": {
+    "a484d9a9-c53d-5c89-9e47-65ebf67776d9": {
+      "stem": "تلقيت هدية. ماذا تقول؟",
+      "explanation": "\"Thank you\" تعبّر عن الشكر.",
+      "choices": {
+        "737153ee-f87c-5fd8-8a67-6b16dd38d8b3": "Thank you.",
+        "556c1b3c-dc71-5d86-9fd6-966fc127bcca": "Sorry.",
+        "2c7d936f-e5bd-589f-af7c-701fe38e3faf": "Goodbye.",
+        "90d0f3a3-662e-5cfb-a069-a8a4d4b7ba10": "No."
+      }
+    },
+    "f80835b9-4b16-54a7-9dea-0df7fd31564f": {
+      "stem": "دُست على قدم شخص ما. ماذا تقول؟",
+      "explanation": "\"Sorry\" تُقال عند الخطأ.",
+      "choices": {
+        "7db03d9f-6b3a-5d17-ae17-e987890a96d9": "Sorry.",
+        "4cedd633-3168-5cd1-a38b-0d85e92fdaa4": "Please.",
+        "87a2cf5b-f66c-50f7-87dc-d75cc08739b8": "Thank you.",
+        "afc16bac-7132-5f67-8a1f-93d1a38ffe8e": "Yes."
+      }
+    },
+    "96416abd-5a19-5032-8fc2-47a823813bae": {
+      "stem": "تريد لفت انتباه شخص ما بأدب. ماذا تقول؟",
+      "explanation": "\"Excuse me\" تلفت الانتباه.",
+      "choices": {
+        "864ff084-d116-5955-9b12-376564206ecf": "Excuse me.",
+        "a8a38aee-7ceb-50f1-b7e3-7deb54dcc9ac": "Sorry.",
+        "7efcc873-ab0c-5fb1-8e8d-3d8c4468a656": "Goodbye.",
+        "0310afba-ae43-5acb-9722-eb0dfdbb6184": "Thanks."
+      }
+    },
+    "beeabf06-6c43-517f-bb97-1e12add0c1ab": {
+      "stem": "تريد كوبًا من الماء بأدب. ماذا تقول؟",
+      "explanation": "\"Please\" تجعل الطلب مهذّبًا.",
+      "choices": {
+        "e10d4675-1d01-52ce-8564-d83b2cfb2cea": "Water, please.",
+        "0e2ffc67-7892-5616-863e-db835cc990e6": "Water, yes.",
+        "4b0077b6-5319-50ff-9ea4-839b588dac2a": "Water, no.",
+        "fa658ff8-7a3c-5ce3-a6d4-7219be00019a": "Water, sorry."
+      }
+    },
+    "fc01bd90-9a11-582c-bc82-0233b4dbc020": {
+      "stem": "سألك أحدهم: \"Do you want tea?\" وأنت تريد الشاي. تقول:",
+      "explanation": "\"Yes, please\" قبول مهذّب.",
+      "choices": {
+        "f3e465d9-fd5c-5c29-8287-ae9b41094b15": "Yes, please.",
+        "05c4f9a7-3f97-53d5-ae2e-5e2a9535c131": "No, thank you.",
+        "781859fd-9454-5d64-94b7-d22e8aebd0df": "Sorry.",
+        "f5b65d5b-9a68-52ac-865c-d5b870445b41": "Goodbye."
+      }
+    },
+    "d91dc3ee-c6ae-5f88-aab8-31ade705f938": {
+      "stem": "\"Please\" كلمة مهذّبة للطلب.",
+      "explanation": "\"Please\" تجعل الطلب مهذّبًا."
+    },
+    "dcb1c028-5723-5684-bed1-3ac16e455f34": {
+      "stem": "\"Yes\" تعني no.",
+      "explanation": "\"Yes\" تعني الموافقة."
+    },
+    "8c0fb3fe-fa44-5c85-9d08-ff58f41c7783": {
+      "stem": "Can I have some water, _____ ?",
+      "explanation": "Please تجعل الطلب مهذّبًا."
+    },
+    "59fd9b63-0d18-58c2-a890-5e9f95d787e0": {
+      "stem": "A: Do you like tea? B: _____ . I like coffee.",
+      "explanation": "B لا تحب الشاي."
+    },
+    "9c95cc19-ee25-5b1a-8981-cf2ff931e80b": {
+      "stem": "تأخّرت. تقول: \"_____ .\"",
+      "explanation": "قل sorry عند التأخر."
+    }
+  }
+}

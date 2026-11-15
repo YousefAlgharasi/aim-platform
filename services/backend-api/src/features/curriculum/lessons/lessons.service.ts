@@ -11,6 +11,7 @@ import {
   LessonListResponse,
   LessonRow,
   LessonSummary,
+  LessonTranslationView,
   UpdateLessonInput,
 } from './lessons.types';
 
@@ -44,6 +45,40 @@ function toLessonSummary(row: LessonRow): LessonSummary {
     locale: row.locale,
     availableLocales: row.available_locales ?? [],
   };
+}
+
+function toLessonDetail(row: LessonRow): LessonSummary {
+  const translations = toTranslationViews(row.other_translations);
+  return translations ? { ...toLessonSummary(row), translations } : toLessonSummary(row);
+}
+
+const OTHER_TRANSLATIONS_SQL = `COALESCE((SELECT json_agg(json_build_object(
+                'locale', ot.locale, 'title', ot.title, 'description', ot.description, 'content', ot.content)
+                ORDER BY ot.locale)
+              FROM lesson_translations ot WHERE ot.lesson_id = l.id AND ot.locale <> 'en'), '[]'::json) AS other_translations`;
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+/** Builds the additive `translations` map; malformed stored content is dropped, never thrown on. */
+export function toTranslationViews(
+  rows: LessonRow['other_translations'],
+): Record<string, LessonTranslationView> | undefined {
+  if (!Array.isArray(rows) || rows.length === 0) return undefined;
+  const out: Record<string, LessonTranslationView> = {};
+  for (const r of rows) {
+    if (!r || typeof r.locale !== 'string' || r.locale === 'en') continue;
+    const view: LessonTranslationView = { title: r.title, description: r.description ?? null };
+    const c = isPlainObject(r.content) ? r.content : null;
+    if (c) {
+      if (isPlainObject(c.explanation)) view.explanation = c.explanation as unknown as LessonTranslationView['explanation'];
+      if (Array.isArray(c.teachingOutline)) view.teachingOutline = c.teachingOutline.filter((t): t is string => typeof t === 'string');
+      if (isPlainObject(c.assets)) view.assets = c.assets as LessonTranslationView['assets'];
+    }
+    out[r.locale] = view;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function validateStatus(status: string): asserts status is CurriculumContentStatus {
@@ -138,7 +173,8 @@ export class LessonsService {
       `SELECT l.id, l.chapter_id, ${text.title} AS title, ${text.description} AS description,
               l.sort_order, l.status, l.xp_value, l.system_prompt, l.teaching_outline, l.explanation, l.created_at, l.updated_at,
               ${text.locale} AS locale,
-              ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales
+              ARRAY(SELECT al.locale FROM lesson_translations al WHERE al.lesson_id = l.id ORDER BY al.locale) AS available_locales,
+              ${OTHER_TRANSLATIONS_SQL}
          FROM lessons l
          ${text.joins}
          WHERE l.id = $1`,
@@ -153,7 +189,7 @@ export class LessonsService {
       });
     }
 
-    return toLessonSummary(result.rows[0]);
+    return toLessonDetail(result.rows[0]);
   }
 
   async createLesson(input: CreateLessonInput): Promise<LessonSummary> {

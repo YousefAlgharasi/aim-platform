@@ -2,6 +2,13 @@ import { BadRequestException, Injectable, Logger, NotFoundException, ServiceUnav
 import { DatabaseService } from '../../database/database.service';
 import { AiTeacherProviderGateway } from '../ai-teacher/governance/ai-teacher-provider.interface';
 import { ProviderGatewayConfigService } from '../ai-teacher/provider-gateway/provider-gateway.config';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 import { SessionsService } from '../sessions/sessions.service';
 import { parseGeneratedQuestions } from './recovery.service';
 
@@ -48,7 +55,7 @@ const PASSAGE_WORDS: Record<Level, string> = {
 
 export interface PracticeSkill { skillKey: string; title: string; masteryScore: number | null; questionCount: number; recommended: boolean }
 export interface PracticeQuestion {
-  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string }>; source: 'bank' | 'ai';
+  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>; translations?: Record<string, QuestionTextTranslation>; source: 'bank' | 'ai';
 }
 export interface PracticeStart {
   sessionId: string; mode: PracticeMode; skillKey: string; title: string; level: string;
@@ -166,13 +173,13 @@ export class SkillPracticeService {
   /** Published questions for the skill, never harder than the student's level; unseen first, then least recent. */
   private async bankQuestions(ids: string[], skillKey: string, level: Level, limit: number, types: string[]): Promise<PracticeQuestion[]> {
     const allowed = LEVELS.slice(0, levelRank(level) + 1);
-    const r = await this.db.query<{ id: string; type: string; stem: string }>(
-      `SELECT qb.id, qb.type, qb.stem
+    const r = await this.db.query<{ id: string; type: string; stem: string; translations?: unknown }>(
+      `SELECT qb.id, qb.type, qb.stem, qb.translations
          FROM question_bank qb
          JOIN question_skills qs ON qs.question_id = qb.id
          JOIN skills s ON s.id = qs.skill_id AND s.key = $2
         WHERE qb.status = 'published' AND qb.type = ANY($3) AND qb.difficulty = ANY($4)
-        GROUP BY qb.id, qb.type, qb.stem, qb.difficulty
+        GROUP BY qb.id, qb.type, qb.stem, qb.difficulty, qb.translations
         ORDER BY (SELECT max(la.submitted_at) FROM lesson_attempts la WHERE la.item_id = qb.id AND la.student_id = ANY($1::uuid[])) ASC NULLS FIRST,
                  array_position($4::text[], qb.difficulty) DESC, random()
         LIMIT $5`,
@@ -180,18 +187,21 @@ export class SkillPracticeService {
     return this.withOptions(r.rows, 'bank');
   }
 
-  private async withOptions(rows: Array<{ id: string; type: string; stem: string }>, source: PracticeQuestion['source']): Promise<PracticeQuestion[]> {
+  private async withOptions(rows: Array<{ id: string; type: string; stem: string; translations?: unknown }>, source: PracticeQuestion['source']): Promise<PracticeQuestion[]> {
     if (rows.length === 0) return [];
-    const c = await this.db.query<{ question_id: string; id: string; text: string }>(
-      `SELECT question_id, id, text FROM question_choices WHERE question_id = ANY($1::uuid[]) ORDER BY sort_order, created_at`, [rows.map((r) => r.id)]);
-    const by = new Map<string, Array<{ id: string; text: string }>>();
-    for (const o of c.rows) by.set(o.question_id, [...(by.get(o.question_id) ?? []), { id: o.id, text: o.text }]);
+    const c = await this.db.query<{ question_id: string; id: string; text: string; translations?: unknown }>(
+      `SELECT question_id, id, text, translations FROM question_choices WHERE question_id = ANY($1::uuid[]) ORDER BY sort_order, created_at`, [rows.map((r) => r.id)]);
+    const typeById = new Map(rows.map((r) => [r.id, r.type]));
+    const by = new Map<string, Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>>();
+    for (const o of c.rows) {
+      by.set(o.question_id, [...(by.get(o.question_id) ?? []), { id: o.id, text: o.text, ...withTranslations(choiceTranslations(o.translations, typeById.get(o.question_id))) }]);
+    }
     return rows
       .map((r): PracticeQuestion | null => {
         const opts = by.get(r.id) ?? [];
         const typed = r.type === 'fill_in_the_blank';
         if (typed ? opts.length > 0 : opts.length < 2) return null; // a typed question has no options; a choice question needs two
-        return { itemId: r.id, type: r.type, prompt: r.stem, options: r.type === 'true_false' ? opts : shuffle(opts), source };
+        return { itemId: r.id, type: r.type, prompt: r.stem, options: r.type === 'true_false' ? opts : shuffle(opts), ...withTranslations(questionTranslations(r.translations)), source };
       })
       .filter((q): q is PracticeQuestion => q !== null);
   }

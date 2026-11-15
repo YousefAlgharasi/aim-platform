@@ -46,6 +46,13 @@ import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { ApiErrorCode } from '../../common/errors/api-error-code';
 import { pickPreferringUnseen, seededRandom, shuffled } from '../../common/random/random-selection';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 import { LessonProgressService } from '../lessons/lesson-progress.service';
 import {
   AttemptAnswerFormat,
@@ -62,6 +69,8 @@ export interface DeliveredSessionOption {
   readonly id: string;
   readonly text: string;
   readonly order: number;
+  /** Additive: per-locale choice text, e.g. { ar: { text } }. Omitted when none. Never on true/false. */
+  readonly translations?: Record<string, ChoiceTextTranslation>;
 }
 
 /**
@@ -76,6 +85,8 @@ export interface DeliveredSessionQuestion {
   readonly difficulty: string;
   readonly tags: readonly string[];
   readonly options: readonly DeliveredSessionOption[];
+  /** Additive: per-locale stem/hint, e.g. { ar: { stem, hint? } }. Omitted when none. */
+  readonly translations?: Record<string, QuestionTextTranslation>;
 }
 
 export interface SessionLessonQuestionsResponse {
@@ -106,6 +117,7 @@ interface QuestionRow {
   readonly difficulty: string;
   readonly stem: string;
   readonly tags: readonly string[] | null;
+  readonly translations?: unknown;
 }
 
 interface ChoiceRow {
@@ -114,6 +126,7 @@ interface ChoiceRow {
   readonly text: string;
   readonly sort_order: number;
   readonly is_correct: boolean;
+  readonly translations?: unknown;
 }
 
 interface SkillLinkRow {
@@ -215,6 +228,7 @@ export class SessionQuestionsService {
         difficulty: q.difficulty,
         tags: this.extractTags(q.tags),
         options: this.presentOptions(sessionId, q, choicesByQuestion.get(q.id) ?? []),
+        ...withTranslations(questionTranslations(q.translations)),
       })),
     };
   }
@@ -260,7 +274,7 @@ export class SessionQuestionsService {
     lessonId: string,
   ): Promise<QuestionRow[]> {
     const result = await this.db.query<QuestionRow>(
-      `SELECT qb.id, qb.type, qb.difficulty, qb.stem, qb.tags
+      `SELECT qb.id, qb.type, qb.difficulty, qb.stem, qb.tags, qb.translations
          FROM session_questions sq
          JOIN question_bank qb ON qb.id = sq.question_id
         WHERE sq.session_id = $1 AND sq.lesson_id = $2 AND qb.status = 'published'
@@ -279,7 +293,7 @@ export class SessionQuestionsService {
    */
   private async loadLessonPool(lessonId: string): Promise<QuestionRow[]> {
     const result = await this.db.query<QuestionRow>(
-      `SELECT DISTINCT ON (lower(btrim(qb.stem)), qb.type) qb.id, qb.type, qb.difficulty, qb.stem, qb.tags
+      `SELECT DISTINCT ON (lower(btrim(qb.stem)), qb.type) qb.id, qb.type, qb.difficulty, qb.stem, qb.tags, qb.translations
          FROM question_bank qb
         WHERE qb.status = 'published'
           AND (
@@ -333,7 +347,12 @@ export class SessionQuestionsService {
       question.type === 'true_false'
         ? choices
         : shuffled(choices, seededRandom(`${sessionId}:${question.id}`));
-    return ordered.map((c, index) => ({ id: c.id, text: c.text, order: index }));
+    return ordered.map((c, index) => ({
+      id: c.id,
+      text: c.text,
+      order: index,
+      ...withTranslations(choiceTranslations(c.translations, question.type)),
+    }));
   }
 
   /**
@@ -473,7 +492,7 @@ export class SessionQuestionsService {
   ): Promise<Map<string, ChoiceRow[]>> {
     if (questionIds.length === 0) return new Map();
     const result = await this.db.query<ChoiceRow>(
-      `SELECT id, question_id, text, sort_order, is_correct
+      `SELECT id, question_id, text, sort_order, is_correct, translations
          FROM question_choices
         WHERE question_id = ANY($1)
         ORDER BY sort_order ASC, created_at ASC`,

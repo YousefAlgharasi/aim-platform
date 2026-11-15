@@ -13,6 +13,13 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 import { AssessmentRepository } from './assessment.repository';
 import { orderOptionsForAttempt } from './attempt-question-selection';
 
@@ -20,6 +27,8 @@ export interface DeliveredOption {
   readonly id: string;
   readonly label: string;
   readonly text: string;
+  /** Additive: per-locale choice text. Omitted when none; never on true/false. */
+  readonly translations?: Record<string, ChoiceTextTranslation>;
 }
 
 export interface DeliveredQuestion {
@@ -30,6 +39,8 @@ export interface DeliveredQuestion {
   readonly type: string;
   readonly prompt: string;
   readonly options: DeliveredOption[];
+  /** Additive: per-locale prompt/hint, e.g. { ar: { stem, hint? } }. Omitted when none. */
+  readonly translations?: Record<string, QuestionTextTranslation>;
 }
 
 interface QuestionRow {
@@ -39,6 +50,7 @@ interface QuestionRow {
   question_id: string;
   question_type: string;
   prompt: string;
+  q_translations?: unknown;
   randomize_options?: boolean;
   has_draw?: boolean;
 }
@@ -48,6 +60,7 @@ interface OptionRow {
   question_id: string;
   text: string;
   sort_order: number;
+  translations?: unknown;
 }
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -93,6 +106,7 @@ export class QuestionDeliveryService {
          q.id         AS question_id,
          q.type       AS question_type,
          q.stem       AS prompt,
+         q.translations AS q_translations,
          COALESCE((SELECT st.randomize_options FROM assessment_settings st
                     WHERE st.assessment_id = aq.assessment_id), true) AS randomize_options,
          EXISTS (SELECT 1 FROM assessment_attempt_questions d WHERE d.attempt_id = $2::uuid) AS has_draw
@@ -116,7 +130,7 @@ export class QuestionDeliveryService {
     const questionIds = qRes.rows.map(r => r.question_id);
 
     const optRes = await this.db.query<OptionRow>(
-      `SELECT id, question_id, text, sort_order
+      `SELECT id, question_id, text, sort_order, translations
        FROM question_choices
        WHERE question_id = ANY($1)
        ORDER BY sort_order ASC`,
@@ -143,7 +157,7 @@ export class QuestionDeliveryService {
       );
       optionsByQuestion.set(
         questionId,
-        ordered.map((o, i) => ({ id: o.id, label: OPTION_LABELS[i] ?? String(i + 1), text: o.text })),
+        ordered.map((o, i) => ({ id: o.id, label: OPTION_LABELS[i] ?? String(i + 1), text: o.text, ...withTranslations(choiceTranslations(o.translations, typeById.get(questionId))) })),
       );
     }
 
@@ -155,6 +169,7 @@ export class QuestionDeliveryService {
       type: q.question_type,
       prompt: q.prompt,
       options: optionsByQuestion.get(q.question_id) ?? [],
+      ...withTranslations(questionTranslations(q.q_translations)),
     }));
   }
 }

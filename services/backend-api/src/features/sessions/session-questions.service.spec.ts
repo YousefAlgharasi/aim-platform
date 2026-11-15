@@ -110,6 +110,35 @@ describe('SessionQuestionsService.listQuestionsForLesson', () => {
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 
+  it('adds ar translations to questions and choices (never on true/false), without leaking explanation', async () => {
+    const db = makeDb([
+      ['FROM learning_sessions', ACTIVE_SESSION_ROW],
+      ['FROM lessons', PUBLISHED_LESSON_ROW],
+      ['FROM lesson_skills', [{ ...QUESTION_ROW, translations: { ar: { stem: 'هو _____ معلم.', explanation: 'سر' } } }]],
+      ['FROM question_choices', [
+        { ...CHOICE_ROWS[0], translations: { ar: { text: 'يكون' } } },
+        CHOICE_ROWS[1],
+      ]],
+    ]);
+    const { service } = makeService(db);
+    const q = (await service.listQuestionsForLesson(STUDENT_ID, SESSION_ID, LESSON_ID)).questions[0];
+    expect(q.translations).toEqual({ ar: { stem: 'هو _____ معلم.' } });
+    const withT = q.options.find((o) => o.id === 'choice-1')!;
+    const without = q.options.find((o) => o.id === 'choice-2')!;
+    expect(withT.translations).toEqual({ ar: { text: 'يكون' } });
+    expect('translations' in without).toBe(false);
+    expect(JSON.stringify(q)).not.toContain('سر');
+
+    const tf = makeDb([
+      ['FROM learning_sessions', ACTIVE_SESSION_ROW],
+      ['FROM lessons', PUBLISHED_LESSON_ROW],
+      ['FROM lesson_skills', [{ ...QUESTION_ROW, type: 'true_false' }]],
+      ['FROM question_choices', [{ ...CHOICE_ROWS[0], text: 'True', translations: { ar: { text: 'صحيح' } } }]],
+    ]);
+    const t = (await makeService(tf).service.listQuestionsForLesson(STUDENT_ID, SESSION_ID, LESSON_ID)).questions[0];
+    expect('translations' in t.options[0]).toBe(false);
+  });
+
   it('delivers published questions with options and no correctness data', async () => {
     const db = makeDb([
       ['FROM learning_sessions', ACTIVE_SESSION_ROW],

@@ -9,6 +9,7 @@ import {
   LessonAssetRow,
   LessonAssetStatus,
   LessonAssetSummary,
+  LessonAssetTranslation,
   LessonAssetType,
   CreateLessonAssetInput,
   UpdateLessonAssetInput,
@@ -18,8 +19,33 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+/** Selected as `translations` by the read paths: {locale: assetEntry} merged from lesson content.assets. */
+const ASSET_TRANSLATIONS_SQL = `(SELECT jsonb_object_agg(lt.locale, lt.content -> 'assets' -> (la.id)::text)
+          FROM lesson_translations lt
+         WHERE lt.lesson_id = la.lesson_id AND lt.locale <> 'en'
+           AND jsonb_typeof(lt.content -> 'assets' -> (la.id)::text) = 'object') AS translations`;
+
+export function toAssetTranslations(raw: unknown): Record<string, LessonAssetTranslation> | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const out: Record<string, LessonAssetTranslation> = {};
+  for (const [locale, entry] of Object.entries(raw as Record<string, unknown>)) {
+    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) continue;
+    const e = entry as Record<string, unknown>;
+    const t: LessonAssetTranslation = {};
+    if (typeof e.title === 'string' && e.title.trim()) t.title = e.title;
+    if (typeof e.description === 'string' && e.description.trim()) t.description = e.description;
+    if (e.metadata !== null && typeof e.metadata === 'object' && !Array.isArray(e.metadata)) {
+      t.metadata = e.metadata as Record<string, unknown>;
+    }
+    if (Object.keys(t).length > 0) out[locale] = t;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 function toLessonAssetSummary(row: LessonAssetRow): LessonAssetSummary {
+  const translations = toAssetTranslations(row.translations);
   return {
+    ...(translations ? { translations } : {}),
     id: row.id,
     lessonId: row.lesson_id,
     type: row.type,
@@ -97,12 +123,12 @@ export class LessonAssetsService {
     const total = parseInt(countResult.rows[0]?.total ?? '0', 10);
 
     const dataResult = await this.db.query<LessonAssetRow>(
-      `SELECT id, lesson_id, type, title, description, url, mime_type, size_bytes,
-              duration_seconds, alt_text, thumbnail_url, "order", status, metadata,
-              created_at, updated_at
-         FROM lesson_assets
+      `SELECT la.id, la.lesson_id, la.type, la.title, la.description, la.url, la.mime_type, la.size_bytes,
+              la.duration_seconds, la.alt_text, la.thumbnail_url, la."order", la.status, la.metadata,
+              la.created_at, la.updated_at, ${ASSET_TRANSLATIONS_SQL}
+         FROM lesson_assets la
          ${where}
-         ORDER BY "order" ASC, created_at ASC
+         ORDER BY la."order" ASC, la.created_at ASC
          LIMIT $${idx++} OFFSET $${idx++}`,
       [...values, safeLimit, offset],
     );
@@ -117,10 +143,10 @@ export class LessonAssetsService {
 
   async getAsset(id: string): Promise<LessonAssetSummary> {
     const result = await this.db.query<LessonAssetRow>(
-      `SELECT id, lesson_id, type, title, description, url, mime_type, size_bytes,
-              duration_seconds, alt_text, thumbnail_url, "order", status, metadata,
-              created_at, updated_at
-         FROM lesson_assets WHERE id = $1`,
+      `SELECT la.id, la.lesson_id, la.type, la.title, la.description, la.url, la.mime_type, la.size_bytes,
+              la.duration_seconds, la.alt_text, la.thumbnail_url, la."order", la.status, la.metadata,
+              la.created_at, la.updated_at, ${ASSET_TRANSLATIONS_SQL}
+         FROM lesson_assets la WHERE la.id = $1`,
       [id],
     );
 

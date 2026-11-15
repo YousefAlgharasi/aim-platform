@@ -17,6 +17,8 @@ import {
 } from './assessmentsApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { assessmentErrorMessage, isErrorCode } from './assessmentErrors';
+import { ArText } from '../lessons/Bilingual';
+import '../lessons/player/player.css';
 import { BODY, CARD, ChoiceRow, EYEBROW, ProgressBar, TEXTAREA, TimerPill } from '../placement/ui';
 
 const SHELL = 'w-full flex flex-col gap-4';
@@ -240,6 +242,7 @@ export function AttemptScreen() {
       <div className={`${CARD} p-4 sm:p-5 flex flex-col gap-3.5`}>
         <span className={EYEBROW}>{t('Question {n}', { n: formatNumber(current + 1) })}</span>
         <h2 className="m-0 text-lg font-bold leading-snug text-ink [unicode-bidi:plaintext] sm:text-xl">{question.prompt}</h2>
+        <ArText text={question.translations?.ar?.stem} className="text-base" />
 
         {question.type === 'listening_choice' && (
           <QuestionAudio key={question.id} load={() => fetchAssessmentQuestionAudio(question.id)} />
@@ -280,7 +283,8 @@ export function AttemptScreen() {
               onChange={() => selectOption(linkId, option.id)}
               keyLabel={option.label}
             >
-              {option.text}
+              <span className="block">{option.text}</span>
+              <ArText text={option.translations?.ar?.text} as="span" className="mt-1 block text-sm font-normal" />
             </ChoiceRow>
           ))}
         </fieldset>

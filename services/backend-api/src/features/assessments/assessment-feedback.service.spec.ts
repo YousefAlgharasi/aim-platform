@@ -140,3 +140,41 @@ describe('AssessmentFeedbackService', () => {
     });
   });
 });
+
+describe('AssessmentFeedbackService review translations', () => {
+  function reviewDb(type: string) {
+    return {
+      query: jest.fn(async (sql: string) => {
+        if (sql.includes('assessment_results')) return { rows: [RESULT_ROW] };
+        if (sql.includes('assessment_settings') && sql.includes('feedback_policy')) return { rows: [{ feedback_policy: 'after_submission', result_visibility: 'immediate' }] };
+        if (sql.includes('assessment_result_breakdowns')) return { rows: BREAKDOWN_ROWS };
+        if (sql.includes('FROM assessment_attempts a')) return { rows: [{ assessment_id: 'as1', student_id: 'stu-1', type: 'quiz', course_id: null, max_attempts: 3 }] };
+        if (sql.includes('FROM assessment_questions aq')) {
+          return { rows: [{ link_id: 'ql-1', question_id: 'q1', prompt: 'Pick', q_type: type, q_translations: { ar: { stem: 'اختر', explanation: 'سر' } }, points: '5', response_value: 'c1' }] };
+        }
+        if (sql.includes('FROM question_choices')) {
+          return { rows: [
+            { id: 'c1', question_id: 'q1', text: 'went', translations: { ar: { text: 'ذهب' } }, is_correct: true },
+            { id: 'c2', question_id: 'q1', text: 'goed', translations: 'junk', is_correct: false },
+          ] };
+        }
+        if (sql.includes('COUNT(*)')) return { rows: [{ count: '1' }] };
+        return { rows: [] };
+      }),
+    };
+  }
+  it('adds additive stem/option translations to review items, never the explanation', async () => {
+    const svc = new AssessmentFeedbackService(reviewDb('multiple_choice') as any);
+    const out: any = await svc.getFeedback('att-1', 'stu-1');
+    const item = out.review[0];
+    expect(item.prompt).toBe('Pick');
+    expect(item.translations).toEqual({ ar: { stem: 'اختر' } });
+    expect(JSON.stringify(out)).not.toContain('سر');
+    expect(item.options[0].translations).toEqual({ ar: { text: 'ذهب' } });
+    expect(item.options[1]).not.toHaveProperty('translations');
+  });
+  it('never translates true/false option labels', async () => {
+    const out: any = await new AssessmentFeedbackService(reviewDb('true_false') as any).getFeedback('att-1', 'stu-1');
+    expect(out.review[0].options[0]).not.toHaveProperty('translations');
+  });
+});

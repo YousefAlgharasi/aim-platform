@@ -7,7 +7,8 @@ import { useI18n } from '../../../i18n/I18nContext';
 import { plural } from '../../../i18n';
 import { SelectToSave } from '../../learner/SelectToSave';
 import type { Character } from '../dialogue/characters';
-import type { Example, Mistake } from './slides';
+import type { Example, Mistake, SlideAr } from './slides';
+import { ArMarkdown, ArText, En, EnIsolated } from '../Bilingual';
 import { Presenter } from './Presenter';
 
 const H2 = 'lpl-display m-0 text-2xl font-semibold leading-tight text-ink sm:text-[1.75rem]';
@@ -16,24 +17,28 @@ const H2 = 'lpl-display m-0 text-2xl font-semibold leading-tight text-ink sm:tex
 export function ExampleTile({ example }: { example: Example }) {
   return (
     <div className="lpl-tile lpl-tile-static">
-      <span className="min-w-0">
-        <span dir="auto" className="lpl-display block text-xl font-medium leading-snug">{example.text}</span>
-        {example.note && <span dir="auto" className="mt-0.5 block text-sm text-ink-muted">{example.note}</span>}
+      <span className="flex min-w-0 flex-col gap-1">
+        <En className="lpl-display block text-xl font-medium leading-snug"><EnIsolated>{example.text}</EnIsolated></En>
+        {example.note && <En className="block text-sm text-ink-muted">{example.note}</En>}
+        <ArText text={example.ar?.text} as="span" className="block text-base" />
+        <ArText text={example.ar?.note} as="span" className="block text-sm text-ink-muted" />
       </span>
     </div>
   );
 }
 
-interface SayProps { guide: Character; title?: string; body: string; examples?: Example[] }
+interface SayProps { guide: Character; title?: string; body: string; examples?: Example[]; ar?: SlideAr }
 
-export function SaySlide({ guide, title, body, examples }: SayProps) {
+export function SaySlide({ guide, title, body, examples, ar }: SayProps) {
   return (
     <>
       <Presenter guide={guide}>
         <SelectToSave source="lesson">
           <div className="flex flex-col gap-3">
-            {title && <h2 className={H2}>{title}</h2>}
-            <Markdown text={body} className="text-lg leading-relaxed text-ink" />
+            {title && <h2 lang="en" dir="ltr" className={H2}>{title}</h2>}
+            <ArText text={ar?.title} as="p" className="lpl-display text-xl font-medium" />
+            <div lang="en" dir="ltr"><Markdown text={body} className="text-lg leading-relaxed text-ink" /></div>
+            <ArMarkdown text={ar?.body} className="text-base leading-relaxed" />
           </div>
         </SelectToSave>
       </Presenter>
@@ -48,7 +53,7 @@ export function SaySlide({ guide, title, body, examples }: SayProps) {
   );
 }
 
-export function PointsSlide({ guide, title, points }: { guide: Character; title: string; points: string[] }) {
+export function PointsSlide({ guide, title, points, arPoints }: { guide: Character; title: string; points: string[]; arPoints?: string[] }) {
   return (
     <Presenter guide={guide}>
       <SelectToSave source="lesson">
@@ -58,7 +63,10 @@ export function PointsSlide({ guide, title, points }: { guide: Character; title:
             {points.map((p, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span aria-hidden="true" className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-success text-white"><CheckIcon className="size-4 text-white" /></span>
-                <span dir="auto" className="text-lg leading-snug text-ink">{p}</span>
+                <span className="flex min-w-0 flex-col gap-1">
+                  <En className="text-lg leading-snug text-ink">{p}</En>
+                  <ArText text={arPoints?.[i]} as="span" className="block text-base" />
+                </span>
               </li>
             ))}
           </ul>
@@ -80,13 +88,14 @@ export function MistakesSlide({ guide, title, items }: { guide: Character; title
           <li key={i} className="flex flex-col gap-2 rounded-2xl border-2 border-line-strong bg-surface p-4">
             <p className="m-0 flex items-start gap-2.5 text-lg text-danger-ink">
               <span aria-hidden="true" className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-danger-soft text-sm font-bold">✕</span>
-              <span dir="auto" className="[text-decoration-thickness:2px] line-through"><span className="sr-only">{t('Wrong')}: </span>{m.wrong}</span>
+              <span className="min-w-0"><EnIsolated className="[text-decoration-thickness:2px] line-through"><span className="sr-only">{t('Wrong')}: </span>{m.wrong}</EnIsolated><ArText text={m.ar?.wrong} as="span" className="mt-0.5 block text-base font-normal" /></span>
             </p>
             <p className="m-0 flex items-start gap-2.5 text-lg font-semibold text-success-ink">
               <span aria-hidden="true" className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-success-soft"><CheckIcon className="size-3.5 text-success-ink" /></span>
-              <span dir="auto"><span className="sr-only">{t('Right')}: </span>{m.right}</span>
+              <span className="min-w-0"><EnIsolated><span className="sr-only">{t('Right')}: </span>{m.right}</EnIsolated><ArText text={m.ar?.right} as="span" className="mt-0.5 block text-base font-normal" /></span>
             </p>
-            <p dir="auto" className="m-0 text-base leading-snug text-ink-muted">{m.why}</p>
+            <En as="p" className="m-0 text-base leading-snug text-ink-muted">{m.why}</En>
+            <ArText text={m.ar?.why} className="text-base leading-snug" />
           </li>
         ))}
       </ul>
@@ -107,9 +116,9 @@ function TutorTile({ href, title, hint }: { href: string; title: string; hint?: 
   );
 }
 
-interface IntroProps { guide: Character; title: string; completed: boolean; locked: boolean; stepCount: number; minutes: number | null; xp: number }
+interface IntroProps { guide: Character; title: string; arTitle?: string; completed: boolean; locked: boolean; stepCount: number; minutes: number | null; xp: number }
 
-export function IntroSlide({ guide, title, completed, locked, stepCount, minutes, xp }: IntroProps) {
+export function IntroSlide({ guide, title, arTitle, completed, locked, stepCount, minutes, xp }: IntroProps) {
   const { t } = useI18n();
   const facts = [
     plural(stepCount, { one: t('1 step'), two: t('2 steps'), few: t('{n} steps', { n: stepCount }), other: t('{n} steps', { n: stepCount }) }),
@@ -122,6 +131,7 @@ export function IntroSlide({ guide, title, completed, locked, stepCount, minutes
         <div className="flex flex-col gap-3">
           <p className="lpl-display m-0 text-lg font-medium text-ink-muted">{t('Hi, I’m {name}!', { name: guide.name })}</p>
           <h1 dir="auto" className="lpl-display m-0 text-[2rem] font-semibold leading-tight text-ink [unicode-bidi:plaintext] sm:text-[2.5rem]">{title}</h1>
+          <ArText text={arTitle} className="lpl-display text-xl font-medium" />
           {/* Steps, minutes and XP are a tablet-and-up detail; phones keep the intro short. */}
           {facts.length > 0 && <p className="m-0 text-base text-ink-muted max-sm:hidden">{facts.join(', ')}</p>}
           {completed && (

@@ -21,6 +21,7 @@ interface StudentLessonRow {
   readonly title: string;
   readonly description: string | null;
   readonly locale: string;
+  readonly other_translations?: unknown;
   readonly xp_value: number;
   readonly sort_order: number;
   readonly completed: boolean;
@@ -47,6 +48,8 @@ export class StudentLessonsRepository {
          ${text.title} AS title,
          ${text.description} AS description,
          ${text.locale} AS locale,
+         COALESCE((SELECT json_agg(json_build_object('locale', ot.locale, 'title', ot.title, 'description', ot.description))
+                   FROM lesson_translations ot WHERE ot.lesson_id = l.id AND ot.locale <> 'en'), '[]'::json) AS other_translations,
          l.xp_value AS xp_value,
          l.sort_order AS sort_order,
          COALESCE(lp.completed, false) AS completed

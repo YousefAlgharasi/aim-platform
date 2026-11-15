@@ -1,0 +1,171 @@
+{
+  "lessonId": "ec07a074-825b-4d4d-91b6-c612b7a58df6",
+  "title": "تدريب على العدّ",
+  "description": "استمع إلى الأرقام المنطوقة وتدرّب على التعرّف عليها بالأذن.",
+  "explanation": {
+    "overview": "في هذا الدرس ستسمع الأرقام من صفر إلى عشرين. وستتعلم كيف تعرف أي رقم سمعته. وبعد التدريب ستستطيع التعرّف على أي رقم منطوق بين 0 و20.",
+    "sections": [
+      {
+        "heading": "استمع إلى كل رقم",
+        "body": "- اضغط تشغيل واستمع جيدًا.\n- عُدّ النبرات التي تسمعها.\n- لاحظ شكل كل كلمة.",
+        "examples": [
+          {
+            "text": "zero",
+            "note": "أول رقم ستسمعه"
+          },
+          {
+            "text": "seven",
+            "note": "رقم من الوسط بصوت قصير"
+          },
+          {
+            "text": "fifteen",
+            "note": "كلمة من مقطعين تُسمع كعبارة واحدة سلسة"
+          }
+        ]
+      },
+      {
+        "heading": "طابق الصوت بالرقم",
+        "body": "- بعد أن تسمع رقمًا، انظر إلى قائمة الأرقام من 0 إلى 20.\n- اختر الرقم الذي يطابق الصوت.\n- تأكد من صحة الرقم الذي اخترته.",
+        "examples": [
+          {
+            "text": "You hear \"four\" → write 4",
+            "note": "يربط الكلمة المنطوقة بالرقم المكتوب"
+          },
+          {
+            "text": "You hear \"eleven\" → write 11",
+            "note": "يوضح رقمًا من خانتين"
+          },
+          {
+            "text": "You hear \"nine\" → write 9",
+            "note": "مطابقة بسيطة لرقم من خانة واحدة"
+          }
+        ]
+      },
+      {
+        "heading": "انطق الأرقام بنفسك",
+        "body": "- انظر إلى رقم على الشاشة.\n- انطق الكلمة الإنجليزية بصوتٍ عالٍ.\n- قارن نطقك بالتسجيل الصوتي.",
+        "examples": [
+          {
+            "text": "12 → say \"twelve\"",
+            "note": "تدرّب على نطق رقم من أرقام الـ teen"
+          },
+          {
+            "text": "3 → say \"three\"",
+            "note": "تدرّب على صوت ساكن قصير"
+          },
+          {
+            "text": "20 → say \"twenty\"",
+            "note": "تدرّب على نطق النهاية \"ty\""
+          }
+        ]
+      }
+    ],
+    "keyPoints": [
+      "صفر هو أول رقم، ويُنطق \"zero\".",
+      "الأرقام من 1 إلى 9 كلمات مفردة، أما من 10 إلى 20 فهي ten وeleven وtwelve … twenty.",
+      "أصغِ إلى الصوت الأول لتعرف هل الرقم من خانة واحدة أم من أرقام الـ teen.",
+      "تدرّب على نطق كل رقم لتسمع الفرق بينها."
+    ],
+    "commonMistakes": [
+      {
+        "wrong": "Heard \"nine\" and wrote 19",
+        "right": "Heard \"nine\" and wrote 9",
+        "why": "صوتا nine وnineteen متشابهان"
+      },
+      {
+        "wrong": "Forgot to listen for zero",
+        "right": "Include zero when counting",
+        "why": "الصفر جزء من النطاق 0‑20"
+      },
+      {
+        "wrong": "Matched the spelling instead of the sound",
+        "right": "Match the spoken sound to the digit",
+        "why": "كثيرًا ما يعتمد المتحدثون بالعربية على الحروف لا على النطق"
+      },
+      {
+        "wrong": "Counted too fast and missed the number",
+        "right": "Pause after each number and count slowly",
+        "why": "الاستماع البطيء يرفع الدقة"
+      }
+    ],
+    "recap": "استمع، وطابق، وانطق كل رقم من 0 إلى 20؛ وكرّر حتى تتعرّف عليها فورًا."
+  },
+  "assets": {
+    "e045c0a9-ba7b-4213-bf1c-5122805224cf": {
+      "title": "استمع: العدّ من 0 إلى 20",
+      "description": "استمع وعُدّ معنا."
+    }
+  },
+  "questions": {
+    "4e6efaaa-af03-5ffb-8f18-c58b8f2c4534": {
+      "stem": "تسمع: \"seven\". ما هذا الرقم؟",
+      "explanation": "Seven هو 7.",
+      "choices": {
+        "6becd2b4-65da-5269-b581-5761011c43c1": "7",
+        "03a21420-2689-596a-984c-8f6bb131fbd5": "6",
+        "77d27937-8ed7-5462-a10c-b555087e72f2": "17",
+        "0d45a816-0056-5cf0-a182-1a578c74a13b": "70"
+      }
+    },
+    "29f332ed-8068-5cdf-9612-b26fa58bdd2a": {
+      "stem": "تسمع: \"fourteen\". ما هذا الرقم؟",
+      "explanation": "Fourteen هو 14.",
+      "choices": {
+        "ebdd1078-7424-566f-bdc2-8c5060722174": "14",
+        "09d30128-03d7-5892-9a8e-43165c1f32a4": "4",
+        "0b87e7f2-dc31-5bbf-a0d6-4bfb79fcf7c8": "40",
+        "74b1c50e-5a85-5a52-b2f8-ae641cfe386d": "41"
+      }
+    },
+    "484ab714-a007-50a2-8c13-2597f25929ba": {
+      "stem": "تسمع: \"nineteen\". ما هذا الرقم؟",
+      "explanation": "Nineteen هو 19.",
+      "choices": {
+        "ba72d011-0fa2-5abc-a7a2-8d112082972e": "19",
+        "785c473f-a26e-5893-bb1c-edee194485f3": "9",
+        "cc239aa0-ea3f-5f87-99aa-06b9459ee2f8": "90",
+        "0eb3e674-a820-557a-8ced-06f89be976c7": "91"
+      }
+    },
+    "8d5dcf29-c9d9-5301-bef2-d9a3f37a1ac6": {
+      "stem": "تسمع: \"twelve\". ما هذا الرقم؟",
+      "explanation": "Twelve هو 12.",
+      "choices": {
+        "6709a980-10f9-58e2-bf65-49add7a11ac1": "12",
+        "29665664-6dbc-56d7-baf0-055917774989": "2",
+        "d76c9d8e-09ad-51d9-819b-f04ce3daab23": "20",
+        "c1de3f88-6899-5a62-a34e-fcc5576ac7ee": "21"
+      }
+    },
+    "b36d1ec6-8afc-51ff-bb81-c657d07def28": {
+      "stem": "تسمع: \"zero\". ما هذا الرقم؟",
+      "explanation": "Zero هو 0.",
+      "choices": {
+        "7a03f018-09c5-5731-9f8c-94eb1a3bfdb4": "0",
+        "9169196d-523d-5f5a-bf33-b03f1eae4fbb": "1",
+        "9d81f73e-b1ec-5733-8ff3-f3bf324993c2": "10",
+        "f7417ae1-4705-5183-960f-7efa2bb25287": "2"
+      }
+    },
+    "90ae11d1-783d-5668-b655-603270fe9789": {
+      "stem": "كلمتا \"Thirteen\" و\"thirty\" متشابهتان قليلًا في النطق لكنهما رقمان مختلفان.",
+      "explanation": "13 و30 رقمان مختلفان."
+    },
+    "2f14a9f1-b1d8-51ab-bdb0-1aff9a24c0f2": {
+      "stem": "كلمة \"Eight\" تعني الرقم 18.",
+      "explanation": "Eight هو 8، أما eighteen فهو 18."
+    },
+    "8d4bdbf7-61fd-5565-a722-90bab77659ec": {
+      "stem": "تسمع: \"ten\" . اكتب الرقم: 1_ (الرقم الناقص)",
+      "explanation": "Ten هو 10."
+    },
+    "e4c4b0f7-729e-5e80-9179-f25ef34fecb8": {
+      "stem": "تسمع: \"sixteen\". اكتب الرقم الناقص: 1_",
+      "explanation": "Sixteen هو 16."
+    },
+    "a37c2627-8120-5513-ad22-f3f0212242d0": {
+      "stem": "تسمع: \"five\". اكتب الرقم: _",
+      "explanation": "Five هو 5."
+    }
+  }
+}

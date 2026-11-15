@@ -18,3 +18,15 @@
   .lpl-tile { transition: none; }
 }
 html[data-motion='reduce'] .lpl-tile { transition: none; }
+
+/* Arabic supporting text: sits under the English block, quieter and set off by a brand-tinted edge so English stays primary.
+   Logical properties only, so it works in both page directions. */
+.lpl-ar {
+  color: rgb(var(--c-ink-soft));
+  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  line-height: 1.85;
+  text-align: start;
+  padding-inline-start: 0.75rem;
+  border-inline-start: 3px solid rgb(var(--c-brand) / 0.45);
+  overflow-wrap: anywhere;
+}

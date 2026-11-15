@@ -20,6 +20,25 @@ export interface LessonExplanation {
   recap?: string;
 }
 
+/** Arabic supporting text for a lesson asset (all optional; English stays primary). */
+export interface AssetTranslation {
+  title?: string;
+  description?: string;
+  metadata?: Record<string, unknown> | null;
+}
+
+/** Arabic supporting text for a lesson; `explanation` mirrors the English shape. */
+export interface LessonTranslation {
+  title?: string;
+  description?: string;
+  explanation?: LessonExplanation | null;
+  teachingOutline?: unknown;
+  /** Keyed by lesson asset id. */
+  assets?: Record<string, AssetTranslation>;
+}
+
+export interface LessonTranslations { ar?: LessonTranslation }
+
 export interface LessonDetail {
   id: string;
   chapterId: string;
@@ -30,6 +49,8 @@ export interface LessonDetail {
   xpValue: number;
   /** Written teaching content; null until authored. */
   explanation?: LessonExplanation | null;
+  /** Supporting-language text; absent or partial when no translation exists. */
+  translations?: LessonTranslations | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +80,7 @@ export interface LessonAsset {
   order: number;
   status: string;
   metadata: Record<string, unknown> | null;
+  translations?: { ar?: AssetTranslation } | null;
   createdAt: string;
   updatedAt: string;
 }

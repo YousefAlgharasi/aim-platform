@@ -1,0 +1,185 @@
+{
+  "lessonId": "8e45a282-d726-48ef-97c5-897764156bb9",
+  "title": "الأرقام من 11 إلى 20",
+  "description": "تعلّم نطق الأرقام من 11 إلى 20 والتعرّف عليها.",
+  "explanation": {
+    "overview": "في هذا الدرس ستتعلم الكلمات الإنجليزية للأرقام من أحد عشر إلى عشرين. معرفة هذه الأرقام تتيح لك أن تتحدث عن العمر والمال والوقت وكثير من مواقف الحياة اليومية. وبعد الدرس ستستطيع نطق الأرقام من 11 إلى 20 والتعرّف عليها وكتابتها بشكل صحيح.",
+    "sections": [
+      {
+        "heading": "كلمات الأرقام من 11 إلى 20",
+        "body": "- eleven\n- twelve\n- thirteen\n- fourteen\n- fifteen\n- sixteen\n- seventeen\n- eighteen\n- nineteen\n- twenty",
+        "examples": [
+          {
+            "text": "I have eleven apples.",
+            "note": "يوضح كلمة eleven"
+          },
+          {
+            "text": "She bought twelve cookies.",
+            "note": "يوضح كلمة twelve"
+          },
+          {
+            "text": "We saw thirteen birds.",
+            "note": "يوضح كلمة thirteen"
+          },
+          {
+            "text": "He is fourteen years old.",
+            "note": "يوضح كلمة fourteen"
+          }
+        ]
+      },
+      {
+        "heading": "كيف تنطقها",
+        "body": "- صوت **th** في thirteen ناعم، كما في *think*: ضع طرف اللسان بين الأسنان وأخرج الهواء بلطف. هذا الصوت موجود في thirteen فقط، وليس في eleven ولا في fourteen إلى nineteen.\n- انتبه إلى النبر: في eleven يقع على المقطع الثاني (e-LEV-en)، أما twelve فمقطع واحد. وفي thirteen إلى nineteen يقع النبر على -teen عند نطقها وحدها (thir-TEEN)، وقبل الاسم كثيرًا ما ينتقل إلى المقطع الأول (THIR-teen PEO-ple).\n- انطق الكلمة كاملة، لا الرقم مع \"ten\" (مثلًا قل *eleven* وليس *one ten*).",
+        "examples": [
+          {
+            "text": "eleven",
+            "note": "النبر على المقطع الثاني: e-LEV-en"
+          },
+          {
+            "text": "thirteen",
+            "note": "صوت th الناعم، والنبر على -teen: thir-TEEN"
+          },
+          {
+            "text": "seventeen",
+            "note": "النبر على -teen عند نطقها وحدها: seven-TEEN"
+          }
+        ]
+      },
+      {
+        "heading": "استخدام الأرقام في الجمل",
+        "body": "- ضع كلمة الرقم قبل الاسم.\n- استخدم صيغة الجمع للاسم عندما يكون الرقم أكبر من واحد.\n- يمكنك أيضًا استخدام الرقم للتعبير عن العمر أو الوقت.",
+        "examples": [
+          {
+            "text": "My brother is fifteen years old.",
+            "note": "الرقم قبل الاسم \"years\""
+          },
+          {
+            "text": "They have sixteen chairs.",
+            "note": "الاسم بصيغة الجمع بعد الرقم"
+          },
+          {
+            "text": "The class starts at eleven o'clock.",
+            "note": "استخدام الرقم للتعبير عن الوقت"
+          }
+        ]
+      },
+      {
+        "heading": "كتابة الأرقام",
+        "body": "- اكتب الرقم بالأرقام (digits) كلما أمكن.\n- الرقم المكتوب يطابق الكلمة المنطوقة.\n- تدرّب على مطابقة الكلمة بالرقم.",
+        "examples": [
+          {
+            "text": "20 = twenty",
+            "note": "يوضح رقم twenty"
+          },
+          {
+            "text": "13 = thirteen",
+            "note": "يوضح رقم thirteen"
+          }
+        ]
+      }
+    ],
+    "keyPoints": [
+      "eleven إلى twenty كلمات مفردة، وليست مثل \"ten‑one\" وغيرها",
+      "صوت \"th\" في thirteen ناعم، كما في think",
+      "eleven يقع النبر فيها على المقطع الثاني (e-LEV-en)؛ وthirteen إلى nineteen يقع النبر فيها على -teen عند نطقها وحدها (thir-TEEN)، وقد ينتقل إلى المقطع الأول قبل الاسم",
+      "ضع كلمة الرقم قبل الاسم",
+      "الرقم 13 يطابق كلمة thirteen"
+    ],
+    "commonMistakes": [
+      {
+        "wrong": "one ten",
+        "right": "eleven",
+        "why": "كثيرًا ما يترجم المتحدثون بالعربية نمط 10 + 1"
+      },
+      {
+        "wrong": "twenty‑one for 20",
+        "right": "twenty",
+        "why": "كلمة twenty تقف وحدها، وهي ليست twenty‑one"
+      },
+      {
+        "wrong": "saying \"fifteenth\" for 15",
+        "right": "fifteen",
+        "why": "صيغة الترتيب (fifteenth) تختلف عن صيغة العدد (fifteen)"
+      }
+    ],
+    "recap": "تدرّب على نطق الأرقام من eleven إلى twenty والاستماع إليها وكتابتها حتى تصبح مألوفة لديك."
+  },
+  "assets": {
+    "b1ca9c85-ac6d-48cf-876d-1ab7f8ab3201": {
+      "title": "الأرقام من 11 إلى 20",
+      "description": "eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty"
+    }
+  },
+  "questions": {
+    "1c7070d9-52af-5726-ae9f-2070cbc4538f": {
+      "stem": "أي كلمة تمثل الرقم 11؟",
+      "explanation": "Eleven تعني 11.",
+      "choices": {
+        "d8b1a351-6b29-5608-8499-4e2780354db7": "eleven",
+        "72ccf3d9-718c-5a93-aade-1fb2b952c98f": "twelve",
+        "64b5087a-32d9-5970-8efd-2563de853a10": "ten",
+        "49c01deb-1587-5d7f-ab53-3d6a872eac6a": "twenty"
+      }
+    },
+    "c5eb4533-087e-5a2a-986c-6a3e8607fccb": {
+      "stem": "أي كلمة تمثل الرقم 15؟",
+      "explanation": "Fifteen تعني 15.",
+      "choices": {
+        "fdac430a-02c9-5f04-b492-21b865228037": "fifteen",
+        "80a8b1f3-273c-50d8-bb6d-a81153637ce8": "fifty",
+        "795e91de-135e-5004-82af-acd8599c4d3c": "five",
+        "a21dcc1f-3a57-5d2a-9892-4f6a115491ae": "fourteen"
+      }
+    },
+    "04a1995b-319d-5729-8cab-54d643ae5e13": {
+      "stem": "أي كلمة تمثل الرقم 13؟",
+      "explanation": "Thirteen تعني 13.",
+      "choices": {
+        "259d9e06-6b5a-5a6b-bf0b-b57df90953d8": "thirteen",
+        "cf6d11cd-9c45-5811-b48d-28448be4767e": "thirty",
+        "35e41226-724a-50ff-a38c-84690ec2b043": "three",
+        "d9dea612-872c-5588-b280-0acf270b6af4": "twelve"
+      }
+    },
+    "2d10bb27-14e5-556d-9b6d-7009df459cf7": {
+      "stem": "ما الرقم الذي يأتي بعد 19؟",
+      "explanation": "بعد 19 يأتي 20.",
+      "choices": {
+        "e4c89abc-c363-56a8-9ef5-b2f89a857039": "twenty",
+        "8c3c4b0f-9e7b-5ab8-a73f-f4edc0bb74ec": "eighteen",
+        "15674d8b-2a00-5225-8624-0582f48df41b": "ten",
+        "b02e71b9-47e0-50ec-ba40-a776cda1564e": "nine"
+      }
+    },
+    "b1a8d6f4-cfae-5b0f-8895-90ae36d9d2c0": {
+      "stem": "كثير من الأرقام من 13 إلى 19 تنتهي بـ:",
+      "explanation": "thirteen وfourteen وfifteen ... تنتهي بـ -teen.",
+      "choices": {
+        "2bf6203e-4529-5dae-86c3-c9c6cb19190a": "-teen",
+        "5196691b-1f34-5a72-920b-f360b9266e64": "-ty",
+        "244b0178-b944-520e-a4a6-7d13ec0bac12": "-ing",
+        "dba9b3ea-357a-512a-9461-668148f914cd": "-ed"
+      }
+    },
+    "76b7fc12-9e9b-5300-9b7b-a547c202063d": {
+      "stem": "كلمة \"Twelve\" تعني الرقم 12.",
+      "explanation": "Twelve = 12."
+    },
+    "8fd55b57-21e8-55da-9ed0-a8747e6acd94": {
+      "stem": "كلمة \"Sixteen\" تعني الرقم 60.",
+      "explanation": "Sixteen تعني 16."
+    },
+    "3755ad77-d8ff-5cdc-a726-d6ec64b76f67": {
+      "stem": "17 هو _____ . (كلمة)",
+      "explanation": "17 = seventeen."
+    },
+    "4ed05ef2-3d9b-5d97-b193-64578526e23c": {
+      "stem": "20 هو _____ . (كلمة)",
+      "explanation": "20 = twenty."
+    },
+    "73ed8906-b30a-54cd-aedf-9be4c02e4860": {
+      "stem": "14 هو _____ . (كلمة)",
+      "explanation": "14 = fourteen."
+    }
+  }
+}
