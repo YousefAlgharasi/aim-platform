@@ -29,6 +29,7 @@ import {
   StudentProgressSummary,
 } from '../../lessons/lesson-progress.types';
 import { AdminStudentProfileService, AdminStudentProfile } from './admin-student-profile.service';
+import { AdminStudentPracticeReportService, AdminStudentPracticeReport } from './admin-student-practice-report.service';
 import { StudentSkillStateReadService } from '../../aim/result/student-skill-state-read.service';
 import { WeaknessRecordsReadService } from '../../aim/result/weakness-records-read.service';
 import { RecommendationReadService } from '../../aim/result/recommendation-read.service';
@@ -45,6 +46,7 @@ export class AdminStudentProgressController {
     private readonly skillStateRead: StudentSkillStateReadService,
     private readonly weaknessRecordsRead: WeaknessRecordsReadService,
     private readonly recommendationRead: RecommendationReadService,
+    private readonly practiceReport: AdminStudentPracticeReportService,
   ) {}
 
   @Get(':id/profile')
@@ -56,6 +58,17 @@ export class AdminStudentProgressController {
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<AdminStudentProfile> {
     return this.studentProfile.getProfile(id);
+  }
+
+  @Get(':id/practice-report')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Practice report for a student: answers right/wrong overall, per session and per skill, skill mastery and the AIM focus directive (admin, read-only).' })
+  @ApiParam({ name: 'id', description: 'Internal AIM user UUID of the student.' })
+  @ApiOkResponse({ description: 'Backend-graded counts, AIM-persisted mastery and the directive text exactly as generated.' })
+  async getPracticeReport(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<AdminStudentPracticeReport> {
+    return this.practiceReport.getReport(id);
   }
 
   @Get(':id/progress')
@@ -82,9 +95,9 @@ export class AdminStudentProgressController {
       data: skillStates.map((s) => ({
         skillId: s.skillId,
         skillKey: s.skillId,
-        masteryLevel: Math.round(s.masteryScore),
+        masteryLevel: Math.round(s.masteryScore * 100),
         state:
-          s.masteryScore >= 85 ? 'mastered' : s.masteryScore >= 50 ? 'learning' : 'struggling',
+          s.masteryScore >= 0.85 ? 'mastered' : s.masteryScore >= 0.5 ? 'learning' : 'struggling',
         lastUpdatedAt: s.updatedAt,
       })),
     };

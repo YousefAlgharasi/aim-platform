@@ -44,6 +44,7 @@ class _SkillPracticePageState extends ConsumerState<SkillPracticePage> {
   int _index = 0;
   double? _before;
   double? _after;
+  PracticeSummary? _summary;
 
   String get _mode => _modes.contains(widget.mode) ? widget.mode : 'grammar';
 
@@ -131,6 +132,7 @@ class _SkillPracticePageState extends ConsumerState<SkillPracticePage> {
         _run = run;
         _index = 0;
         _after = null;
+        _summary = null;
       });
     } catch (e) {
       if (!mounted) return;
@@ -149,6 +151,10 @@ class _SkillPracticePageState extends ConsumerState<SkillPracticePage> {
     final done = _index + 1 >= run.questions.length;
     setState(() => _index++);
     if (done) {
+      // Right / wrong answers are graded by the backend; show them as soon as they are known.
+      ref.read(learnerToolsApiProvider).practiceSummary(run.sessionId).then((summary) {
+        if (mounted) setState(() => _summary = summary);
+      }).catchError((_) {});
       // The engine may need a moment after the last answer; read its updated mastery a few times.
       for (var i = 0; i < 3 && mounted; i++) {
         await Future<void>.delayed(Duration(milliseconds: i == 0 ? 800 : 2500));
@@ -216,12 +222,16 @@ class _SkillPracticePageState extends ConsumerState<SkillPracticePage> {
     final line = (from != null && to != null)
         ? fill(context.tr('Mastery {from}% → {to}%', 'الإتقان {from}% ← {to}%'), {'from': from, 'to': to})
         : context.tr('Your mastery is being updated.', 'جارٍ تحديث مستوى إتقانك.');
+    final summary = _summary;
+    final score = summary == null || summary.total == 0
+        ? ''
+        : '${fill(context.tr('{c} correct, {w} wrong', '{c} صحيحة، {w} خاطئة'), {'c': summary.correct, 'w': summary.wrong})}\n';
     final skill = _skills?.where((s) => s.skillKey == run.skillKey).firstOrNull;
     return AIMEmptyState(
       icon: const Icon(Icons.emoji_events_outlined),
       title: context.tr('Practice complete', 'اكتمل التدريب'),
       // The percentages keep their left-to-right order inside Arabic text.
-      subtitle: '${run.title}\n\u2066$line\u2069',
+      subtitle: '${run.title}\n$score\u2066$line\u2069',
       action: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

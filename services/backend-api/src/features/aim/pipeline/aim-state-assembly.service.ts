@@ -314,7 +314,11 @@ export class AimStateAssemblyService {
     for (const skillId of skillIds) {
       const skillState = skillStateBySkill.get(skillId);
       context[skillId] = {
-        previousMasteryScore: skillState?.masteryScore ?? null,
+        // student_skill_states stores 0.000-1.000; the engine's contract (and
+        // MasteryCalculator's caps of +12/-15 per session) are on a 0-100 scale.
+        // Passing 0.12 as-is made every gain/loss ~0.12 points, so mastery never moved.
+        previousMasteryScore:
+          skillState?.masteryScore != null ? Math.round(skillState.masteryScore * 10000) / 100 : null,
         recentAttempts: historyBySkill.get(skillId) ?? [],
         category: categoryBySkill.get(skillId) ?? null,
         lastEvaluatedAt: skillState?.lastEvaluatedAt ?? null,
