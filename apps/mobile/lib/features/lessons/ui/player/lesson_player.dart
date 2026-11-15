@@ -97,6 +97,7 @@ class _LessonPlayerState extends State<LessonPlayer> {
         completed: widget.completed,
         onBack: widget.onBack,
         onStartLive: widget.onStartLive,
+        onStartPractice: widget.onStartQuestionPractice,
         onRead: () => setState(() => _reading = true),
       );
     }
