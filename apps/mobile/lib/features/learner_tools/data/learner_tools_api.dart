@@ -322,6 +322,15 @@ class PracticeStart {
   final List<RecoveryQuestion> questions;
 }
 
+/// How a practice session went: counts come from the backend (`GET /sessions/:id/summary`).
+class PracticeSummary {
+  const PracticeSummary({required this.correct, required this.wrong});
+
+  final int correct;
+  final int wrong;
+  int get total => correct + wrong;
+}
+
 /// One line of a story: a friend speaking, or the narrator.
 class StoryLine {
   const StoryLine({required this.speaker, required this.text});
@@ -784,6 +793,22 @@ class LearnerToolsApi {
     );
     return r.data!;
   }
+  /// Correct / wrong counts for a finished practice session (null when they cannot be read).
+  Future<PracticeSummary?> practiceSummary(String sessionId) async {
+    final r = await _client.get<PracticeSummary?>(
+      '/sessions/${Uri.encodeComponent(sessionId)}/summary',
+      decodeData: (json) {
+        final m = json as Map<String, dynamic>? ?? const {};
+        if (m['totalAttempts'] == null) return null;
+        return PracticeSummary(
+          correct: (m['correctCount'] as num?)?.toInt() ?? 0,
+          wrong: (m['wrongCount'] as num?)?.toInt() ?? 0,
+        );
+      },
+    );
+    return r.data;
+  }
+
   /// Published stories with this student's progress and lock state.
   Future<List<StorySummary>> stories() async {
     final r = await _client.get<List<StorySummary>>(

@@ -193,7 +193,7 @@ describe('AimStateAssemblyService.assemble', () => {
           return { rows: [{ count: '1' }], rowCount: 1 };
         }
         if (sql.includes('SELECT skill_id, mastery_score')) {
-          return { rows: [{ skill_id: 'grammar.past_simple.forms', mastery_score: '55.5' }], rowCount: 1 };
+          return { rows: [{ skill_id: 'grammar.past_simple.forms', mastery_score: '0.555' }], rowCount: 1 };
         }
         if (sql.includes('skill_ids ?| $2::text[]')) {
           return { rows: priorAttempts, rowCount: priorAttempts.length };

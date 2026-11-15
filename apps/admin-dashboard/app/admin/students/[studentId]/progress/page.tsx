@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { getAdminToken } from '../../../../../core/api/admin-token';
 import { AdminApiClientError } from '../../../../../core/api';
 import { fetchAdminStudentProfile } from '../../../../../core/api/admin-student-profile-api';
-import { StudentProgressClient, studentDisplayName } from '../../../../../features/students';
+import { fetchAdminStudentPracticeReport } from '../../../../../core/api/admin-student-practice-report-api';
+import { StudentPracticeReportClient, StudentProgressClient, studentDisplayName } from '../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;
@@ -24,6 +25,9 @@ export default async function StudentProgressPage({ params }: Props) {
         : 'Failed to load student profile.';
   }
 
+  // The practice report is extra detail: if it fails, the rest of the profile still shows.
+  const report = await fetchAdminStudentPracticeReport(token, studentId).catch(() => null);
+
   const heading = profile ? studentDisplayName(profile) : 'Student Profile';
 
   return (
@@ -43,6 +47,12 @@ export default async function StudentProgressPage({ params }: Props) {
       )}
 
       {profile && <StudentProgressClient profile={profile} />}
+
+      {report && (
+        <div className="mt-6">
+          <StudentPracticeReportClient report={report} />
+        </div>
+      )}
     </section>
   );
 }
