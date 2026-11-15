@@ -6,8 +6,7 @@ describe('AchievementsService', () => {
     ({
       findActiveDefinitions: jest.fn().mockResolvedValue([]),
       findUnlockStateForStudent: jest.fn().mockResolvedValue([]),
-      countCompletedLessons: jest.fn().mockResolvedValue(0),
-      countPassedAssessments: jest.fn().mockResolvedValue(0),
+      getCounters: jest.fn().mockResolvedValue({ lessons_completed: 0, assessments_passed: 0, streak_days: 0 }),
       unlockAchievement: jest.fn(),
       ...overrides,
     }) as unknown as AchievementsRepository;
@@ -101,6 +100,26 @@ describe('AchievementsService', () => {
           unlockedAt: null,
         },
       ]);
+    });
+
+    it('unlocks an achievement whose rule counter reaches the threshold and persists it', async () => {
+      const unlockAchievement = jest.fn().mockResolvedValue(undefined);
+      const repository = makeRepository({
+        findActiveDefinitions: jest.fn().mockResolvedValue([
+          { id: 'def-1', key: 'ten_lessons', title: 'Ten', description: 'd', icon: 'i', category: 'lessons', rule_type: 'lessons_completed', rule_threshold: 10 },
+          { id: 'def-2', key: 'fifty', title: 'Fifty', description: 'd', icon: 'i', category: 'lessons', rule_type: 'lessons_completed', rule_threshold: 50 },
+          { id: 'def-3', key: 'manual', title: 'Manual', description: 'd', icon: 'i', category: 'milestone', rule_type: null, rule_threshold: null },
+        ]),
+        getCounters: jest.fn().mockResolvedValue({ lessons_completed: 12 }),
+        unlockAchievement,
+      });
+      const service = new AchievementsService(repository);
+
+      const result = await service.getAchievements('student-1');
+
+      expect(result.achievements.map((a) => [a.key, a.unlocked])).toEqual([['ten_lessons', true], ['fifty', false], ['manual', false]]);
+      expect(unlockAchievement).toHaveBeenCalledTimes(1);
+      expect(unlockAchievement).toHaveBeenCalledWith('student-1', 'def-1');
     });
   });
 });

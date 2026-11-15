@@ -16,6 +16,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
+import { resolveStudentIds } from './admin-student-ids';
 import { CertificateService } from '../../certificates/certificate.service';
 
 type Json = Record<string, unknown>;
@@ -98,13 +99,14 @@ export class AdminStudentCourseProgressService {
   ) {}
 
   async getCourseProgress(studentId: string): Promise<AdminStudentCourseProgress> {
+    const ids = await resolveStudentIds(this.db, studentId);
     const [enrollments, lessonRows, attemptRows, otherRows, certRows, practiceRows, mistakeRows, openSkillRows, achievementRows, levelRows] =
       await Promise.all([
         this.db.query<{ course_id: string; title: string; status: string; enrolled_at: string }>(
           `SELECT ce.course_id, co.title, ce.status, ce.enrolled_at
              FROM course_enrollments ce JOIN courses co ON co.id = ce.course_id
-            WHERE ce.student_id = $1 ORDER BY ce.enrolled_at DESC`,
-          [studentId],
+            WHERE ce.student_id = ANY($1::uuid[]) ORDER BY ce.enrolled_at DESC`,
+          [ids],
         ),
         this.db.query<{
           course_id: string; level_title: string; level_order: number; chapter_id: string; chapter_title: string; chapter_order: number;
@@ -118,11 +120,11 @@ export class AdminStudentCourseProgressService {
              FROM lessons l
              JOIN chapters c ON c.id = l.chapter_id
              JOIN levels lv ON lv.id = c.level_id
-             LEFT JOIN lesson_progress lp ON lp.lesson_id = l.id AND lp.student_id = $1
+             LEFT JOIN LATERAL (SELECT bool_or(completed) AS completed, max(percent) AS percent, min(started_at) AS started_at, max(completed_at) AS completed_at, max(last_active_at) AS last_active_at FROM lesson_progress WHERE lesson_id = l.id AND student_id = ANY($1::uuid[])) lp ON TRUE
             WHERE l.status = 'published' AND c.status = 'published' AND lv.status = 'published'
-              AND lv.course_id IN (SELECT course_id FROM course_enrollments WHERE student_id = $1)
+              AND lv.course_id IN (SELECT course_id FROM course_enrollments WHERE student_id = ANY($1::uuid[]))
             ORDER BY lv.sort_order, c.sort_order, l.sort_order`,
-          [studentId],
+          [ids],
         ),
         this.db.query<{ lesson_id: string; attempts: string; correct: string; last_at: string | null }>(
           `SELECT sq.lesson_id, count(*)::text AS attempts, count(*) FILTER (WHERE la.is_correct)::text AS correct,
@@ -130,48 +132,48 @@ export class AdminStudentCourseProgressService {
              FROM lesson_attempts la
              JOIN (SELECT DISTINCT session_id, question_id, lesson_id FROM session_questions) sq
                ON sq.session_id = la.learning_session_id AND sq.question_id = la.item_id
-            WHERE la.student_id = $1 AND sq.lesson_id IS NOT NULL
+            WHERE la.student_id = ANY($1::uuid[]) AND sq.lesson_id IS NOT NULL
             GROUP BY sq.lesson_id`,
-          [studentId],
+          [ids],
         ),
         this.db.query<{ attempts: string; correct: string }>(
           `SELECT count(*)::text AS attempts, count(*) FILTER (WHERE la.is_correct)::text AS correct
              FROM lesson_attempts la
-            WHERE la.student_id = $1
+            WHERE la.student_id = ANY($1::uuid[])
               AND NOT EXISTS (SELECT 1 FROM session_questions sq
                                WHERE sq.session_id = la.learning_session_id AND sq.question_id = la.item_id AND sq.lesson_id IS NOT NULL)`,
-          [studentId],
+          [ids],
         ),
         this.db.query<{ id: string; course_id: string; issued_at: string; score_snapshot: Json | null }>(
-          `SELECT id, course_id, issued_at, score_snapshot FROM certificates WHERE student_id = $1`,
-          [studentId],
+          `SELECT id, course_id, issued_at, score_snapshot FROM certificates WHERE student_id = ANY($1::uuid[])`,
+          [ids],
         ),
         this.db.query<{ id: string; kind: string; level_code: string | null; status: string; score: number | null; xp_awarded: number; created_at: string; completed_at: string | null }>(
           `SELECT pa.id, pa.kind, pt.level_code, pa.status, pa.score, pa.xp_awarded, pa.created_at, pa.completed_at
              FROM practice_attempts pa LEFT JOIN practice_topics pt ON pt.id = pa.topic_id
-            WHERE pa.student_id = $1 ORDER BY pa.created_at DESC LIMIT 50`,
-          [studentId],
+            WHERE pa.student_id = ANY($1::uuid[]) ORDER BY pa.created_at DESC LIMIT 50`,
+          [ids],
         ),
         this.db.query<{ resolved: boolean; n: string }>(
-          `SELECT is_resolved AS resolved, count(*)::text AS n FROM mistakes WHERE student_id = $1 GROUP BY is_resolved`,
-          [studentId],
+          `SELECT is_resolved AS resolved, count(*)::text AS n FROM mistakes WHERE student_id = ANY($1::uuid[]) GROUP BY is_resolved`,
+          [ids],
         ),
         this.db.query<{ skill_id: string; title: string | null; n: string }>(
           `SELECT m.skill_id, s.title, count(*)::text AS n
              FROM mistakes m LEFT JOIN skills s ON s.key = m.skill_id
-            WHERE m.student_id = $1 AND NOT m.is_resolved
+            WHERE m.student_id = ANY($1::uuid[]) AND NOT m.is_resolved
             GROUP BY m.skill_id, s.title ORDER BY count(*) DESC LIMIT 5`,
-          [studentId],
+          [ids],
         ),
         this.db.query<{ key: string; title: string; unlocked_at: string }>(
           `SELECT d.key, d.title, sa.unlocked_at
              FROM student_achievements sa JOIN achievement_definitions d ON d.id = sa.achievement_id
-            WHERE sa.student_id = $1 ORDER BY sa.unlocked_at DESC`,
-          [studentId],
+            WHERE sa.student_id = ANY($1::uuid[]) ORDER BY sa.unlocked_at DESC`,
+          [ids],
         ),
         this.db.query<{ track_slug: string; current_cefr_rank: number; max_unlocked_cefr_rank: number }>(
-          `SELECT track_slug, current_cefr_rank, max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1`,
-          [studentId],
+          `SELECT track_slug, current_cefr_rank, max_unlocked_cefr_rank FROM student_level_state WHERE student_id = ANY($1::uuid[])`,
+          [ids],
         ),
       ]);
 
@@ -179,7 +181,10 @@ export class AdminStudentCourseProgressService {
     const certByCourse = new Map(certRows.rows.map((r) => [r.course_id, r]));
 
     const courses: CourseProgressCourse[] = [];
+    const seen = new Set<string>();
     for (const e of enrollments.rows) {
+      if (seen.has(e.course_id)) continue;
+      seen.add(e.course_id);
       const rows = lessonRows.rows.filter((r) => r.course_id === e.course_id);
       const chapterMap = new Map<string, { title: string; levelTitle: string; lessons: CourseProgressLesson[] }>();
       let cAttempts = 0;

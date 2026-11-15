@@ -10,7 +10,10 @@ import { OperationsLoadingSpinner, OperationsErrorCard } from '../../../shared/c
 
 type Achievement = {
   id: string; key: string; title: string; description: string; icon: string; category: string; isActive: boolean;
+  ruleType: string | null; ruleThreshold: number | null; unlockedCount: number;
 };
+type RuleOption = { value: string; label: string };
+const CATEGORIES = ['lessons', 'streak', 'assessment', 'milestone'];
 type Challenge = {
   id: string; key: string; title: string; description: string; challengeType: 'lessons' | 'streak'; targetCount: number; isActive: boolean;
 };
@@ -36,16 +39,22 @@ export default function EngagementAdminPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, any>>({});
   const [creating, setCreating] = useState(false);
+  const [creatingAch, setCreatingAch] = useState(false);
+  const [ruleOptions, setRuleOptions] = useState<RuleOption[]>([]);
+  const [achForm, setAchForm] = useState({ key: '', title: '', description: '', icon: 'emoji_events', category: 'milestone', ruleType: 'lessons_completed', ruleThreshold: 1 });
+  const ruleLabel = (t: string | null) => ruleOptions.find((o) => o.value === t)?.label ?? t ?? 'No rule (never auto-unlocks)';
   const [form, setForm] = useState({ key: '', title: '', description: '', challengeType: 'lessons', targetCount: 1 });
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [a, c] = await Promise.all([
+      const [a, c, ro] = await Promise.all([
         send('/admin/achievements', 'GET'),
         send('/admin/daily-challenges', 'GET'),
+        send('/admin/achievements/rule-options', 'GET'),
       ]);
+      setRuleOptions(unwrap<RuleOption>(ro));
       setAchievements(unwrap<Achievement>(a));
       setChallenges(unwrap<Challenge>(c));
     } catch (e) {
@@ -78,10 +87,25 @@ export default function EngagementAdminPage() {
       {error && <div className="eng-error" role="alert">{error}</div>}
 
       <section aria-labelledby="ach-h">
-        <h2 id="ach-h" className="eng-h2">Achievements</h2>
-        <p className="eng-note">Unlock rules are built into the app by key, so new achievements can&apos;t be added here — edit wording and icon, or hide one.</p>
+        <div className="eng-row">
+          <h2 id="ach-h" className="eng-h2">Achievements ({achievements.length})</h2>
+          <button className="eng-btn primary" onClick={() => setCreatingAch(!creatingAch)}>{creatingAch ? 'Cancel' : '+ New achievement'}</button>
+        </div>
+        <p className="eng-note">Each achievement unlocks automatically when its rule is met (for example &quot;Lessons completed ≥ 10&quot;). Students see changes within a minute — no deploy needed.</p>
+        {creatingAch && (
+          <form className="eng-form" onSubmit={(e) => { e.preventDefault(); void run('new-ach', async () => { await send('/admin/achievements', 'POST', { ...achForm, ruleThreshold: Number(achForm.ruleThreshold) }); setCreatingAch(false); setAchForm({ key: '', title: '', description: '', icon: 'emoji_events', category: 'milestone', ruleType: 'lessons_completed', ruleThreshold: 1 }); }); }}>
+            <input className="eng-in" placeholder="key (e.g. twenty_lessons)" value={achForm.key} onChange={(e) => setAchForm({ ...achForm, key: e.target.value })} required pattern="[a-z0-9_]+" />
+            <input className="eng-in" placeholder="Title" value={achForm.title} onChange={(e) => setAchForm({ ...achForm, title: e.target.value })} required maxLength={80} />
+            <input className="eng-in" placeholder="Description" value={achForm.description} onChange={(e) => setAchForm({ ...achForm, description: e.target.value })} required maxLength={240} />
+            <input className="eng-in" placeholder="Icon (e.g. emoji_events)" value={achForm.icon} onChange={(e) => setAchForm({ ...achForm, icon: e.target.value })} required maxLength={60} />
+            <select className="eng-in" value={achForm.category} onChange={(e) => setAchForm({ ...achForm, category: e.target.value })}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select>
+            <select className="eng-in" value={achForm.ruleType} onChange={(e) => setAchForm({ ...achForm, ruleType: e.target.value })}>{ruleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+            <input className="eng-in" type="number" min={1} value={achForm.ruleThreshold} onChange={(e) => setAchForm({ ...achForm, ruleThreshold: Number(e.target.value) })} required aria-label="Threshold" />
+            <button className="eng-btn primary" type="submit" disabled={busy === 'new-ach'}>Create</button>
+          </form>
+        )}
         <div className="eng-wrap"><table className="eng-table">
-          <thead><tr><th>Key</th><th>Title</th><th>Description</th><th>Icon</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Key</th><th>Title</th><th>Description</th><th>Icon</th><th>Category</th><th>Unlock rule</th><th>Earned by</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {achievements.map((a) => {
               const isEd = editing === a.id;
@@ -91,13 +115,21 @@ export default function EngagementAdminPage() {
                   <td>{isEd ? <input className="eng-in" value={draft.title ?? ''} onChange={(e) => setDraft({ ...draft, title: e.target.value })} /> : a.title}</td>
                   <td>{isEd ? <input className="eng-in" value={draft.description ?? ''} onChange={(e) => setDraft({ ...draft, description: e.target.value })} /> : a.description}</td>
                   <td>{isEd ? <input className="eng-in" value={draft.icon ?? ''} onChange={(e) => setDraft({ ...draft, icon: e.target.value })} /> : <code>{a.icon}</code>}</td>
+                  <td>{isEd ? <select className="eng-in" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select> : a.category}</td>
+                  <td>{isEd ? (
+                    <span style={{ display: 'flex', gap: 6 }}>
+                      <select className="eng-in" value={draft.ruleType ?? ''} onChange={(e) => setDraft({ ...draft, ruleType: e.target.value })}>{ruleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+                      <input className="eng-in" style={{ minWidth: 70, width: 80 }} type="number" min={1} value={draft.ruleThreshold ?? 1} onChange={(e) => setDraft({ ...draft, ruleThreshold: Number(e.target.value) })} aria-label="Threshold" />
+                    </span>
+                  ) : a.ruleType ? `${ruleLabel(a.ruleType)} ≥ ${a.ruleThreshold}` : <em>{ruleLabel(null)}</em>}</td>
+                  <td>{a.unlockedCount} students</td>
                   <td><span className={`eng-badge ${a.isActive ? 'on' : 'off'}`}>{a.isActive ? 'Active' : 'Hidden'}</span></td>
                   <td className="eng-actions">
                     {isEd ? (<>
-                      <button className="eng-btn primary" disabled={busy === a.id} onClick={() => run(a.id, () => send(`/admin/achievements/${a.id}`, 'PATCH', { title: draft.title, description: draft.description, icon: draft.icon }))}>Save</button>
+                      <button className="eng-btn primary" disabled={busy === a.id} onClick={() => run(a.id, () => send(`/admin/achievements/${a.id}`, 'PATCH', { title: draft.title, description: draft.description, icon: draft.icon, category: draft.category, ruleType: draft.ruleType || undefined, ruleThreshold: draft.ruleType ? Number(draft.ruleThreshold) : undefined }))}>Save</button>
                       <button className="eng-btn" onClick={() => setEditing(null)}>Cancel</button>
                     </>) : (<>
-                      <button className="eng-btn" onClick={() => { setEditing(a.id); setDraft({ title: a.title, description: a.description, icon: a.icon }); }}>Edit</button>
+                      <button className="eng-btn" onClick={() => { setEditing(a.id); setDraft({ title: a.title, description: a.description, icon: a.icon, category: a.category, ruleType: a.ruleType ?? ruleOptions[0]?.value ?? 'lessons_completed', ruleThreshold: a.ruleThreshold ?? 1 }); }}>Edit</button>
                       <button className="eng-btn" disabled={busy === a.id} onClick={() => run(a.id, () => send(`/admin/achievements/${a.id}`, 'PATCH', { isActive: !a.isActive }))}>{a.isActive ? 'Hide' : 'Show'}</button>
                     </>)}
                   </td>
