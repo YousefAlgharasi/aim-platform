@@ -1,9 +1,10 @@
 // Data layer — concrete implementation of [LiveVoiceClient] on the `record` package (an infrastructure concern, so it
 // lives in data/; the interface stays in logic/ where notifiers and tests can use it without any plugin).
 //
-// Some phones hand back pure silence when the platform's echo cancelling / noise suppression / auto gain are switched
-// on, so the teacher could never hear the student. If the microphone has delivered nothing but silence for a few
-// seconds, it is reopened once with those effects off (and stays that way for the rest of the app session).
+// Some phones hand back silence (or a whisper) when the platform's echo cancelling / noise suppression / auto gain are
+// switched on, so the teacher could never hear the student. If the microphone has not delivered a single clearly
+// audible sound for a few seconds (not even the teacher's own voice from the speaker), it is reopened once with those
+// effects off, and stays that way for the rest of the app session.
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -16,8 +17,8 @@ class RealLiveVoiceClient implements LiveVoiceClient {
   /// Once a phone needed the plain microphone, every later lesson opens it that way straight away.
   static bool _plainMicrophone = false;
 
-  /// How long the microphone may deliver only silence before it is reopened without the audio effects.
-  static const Duration _silenceLimit = Duration(milliseconds: 3500);
+  /// How long the microphone may deliver nothing audible before it is reopened without the audio effects.
+  static const Duration _silenceLimit = Duration(seconds: 5);
 
   AudioRecorder? _recorder;
   AudioRecorder get _instance => _recorder ??= AudioRecorder();
@@ -89,13 +90,13 @@ class RealLiveVoiceClient implements LiveVoiceClient {
     }
   }
 
-  /// True when the frame holds anything but digital silence (16-bit little-endian samples).
+  /// True when the frame holds a clearly audible sound (a sample above ~2% of full scale; 16-bit little-endian).
   static bool _hasSound(Uint8List frame) {
     final view = ByteData.sublistView(frame);
     final samples = frame.lengthInBytes ~/ 2;
     for (var i = 0; i < samples; i++) {
       final v = view.getInt16(i * 2, Endian.little);
-      if (v > 8 || v < -8) return true;
+      if (v > 650 || v < -650) return true;
     }
     return false;
   }

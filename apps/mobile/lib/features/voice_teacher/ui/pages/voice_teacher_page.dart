@@ -99,6 +99,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
   bool _stoppingTurn = false;
   bool _greetingHandled = false;
+  String? _sessionId;
 
   // Live-lesson controls: the teacher's voice can be muted (replies stay on screen), and the student can type instead
   // of talking. Typed and spoken turns share one conversation.
@@ -136,9 +137,9 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   }
 
   bool _aiIsSpeaking() {
-    final playback = ref.read(voicePlaybackProvider);
-    return playback.state == PlaybackState.playing ||
-        playback.state == PlaybackState.loading;
+    // Only audio that is actually coming out of the speaker counts. A reply that is still downloading (or whose
+    // download never ends) must not make the student's voice need to be much louder than normal.
+    return ref.read(voicePlaybackProvider).state == PlaybackState.playing;
   }
 
   /// The student started talking over the teacher: stop the teacher's audio right away.
@@ -177,6 +178,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final state = ref.read(voiceTeacherSessionProvider);
     if (state is AppAsyncSuccess<VoiceTeacherSessionState>) {
       final sessionId = state.data.sessionId;
+      _sessionId = sessionId;
       if (sessionId != null) {
         await notifier.loadHistory(bearerToken: token, sessionId: sessionId);
       }
@@ -228,12 +230,12 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
 
     final token = _token;
     final sessionState = ref.read(voiceTeacherSessionProvider);
-    if (token == null ||
-        token.isEmpty ||
-        sessionState is! AppAsyncSuccess<VoiceTeacherSessionState>) {
-      return;
-    }
-    final sessionId = sessionState.data.sessionId;
+    if (token == null || token.isEmpty) return;
+    // Use the session id remembered when the lesson started, so a refresh of the history can never make the page
+    // silently ignore what the student says.
+    final sessionId = sessionState is AppAsyncSuccess<VoiceTeacherSessionState>
+        ? (sessionState.data.sessionId ?? _sessionId)
+        : _sessionId;
     if (sessionId == null) return;
     _stoppingTurn = true;
 
@@ -469,6 +471,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
                 onToggleTranscript: _toggleTranscript,
                 liveStatus: _live.status,
                 liveMuted: _live.muted,
+                micLevel: _live.level,
                 onToggleMic: _toggleMic,
                 onPlayReply: _onPlayReply,
                 onFeedback: _onFeedback,
@@ -578,6 +581,7 @@ class _VoiceTutorContent extends StatelessWidget {
     required this.onToggleTranscript,
     required this.liveStatus,
     required this.liveMuted,
+    required this.micLevel,
     required this.onToggleMic,
     required this.onPlayReply,
     required this.onFeedback,
@@ -607,6 +611,7 @@ class _VoiceTutorContent extends StatelessWidget {
   /// The live microphone: its status, whether it is muted, and the toggle (turn on / mute / unmute).
   final LiveStatus liveStatus;
   final bool liveMuted;
+  final double micLevel;
   final VoidCallback onToggleMic;
   final Future<void> Function(String audioRef, {VoidCallback? onFinished}) onPlayReply;
   final void Function(String messageId, String rating, String? comment)
@@ -742,6 +747,7 @@ class _VoiceTutorContent extends StatelessWidget {
               muted: muted,
               busy: processing || isRecording,
               micMode: micMode,
+              micLevel: micLevel,
               mood: robotMood,
               thoughtId: latestTeacher?.id,
               thoughtText: latestTeacher?.text,

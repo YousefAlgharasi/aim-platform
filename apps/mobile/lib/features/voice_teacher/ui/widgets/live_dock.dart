@@ -26,6 +26,7 @@ class LiveDock extends StatelessWidget {
     required this.muted,
     required this.busy,
     required this.micMode,
+    this.micLevel = 0,
     required this.mood,
     required this.thoughtId,
     required this.thoughtText,
@@ -49,6 +50,10 @@ class LiveDock extends StatelessWidget {
   final bool muted;
   final bool busy;
   final MicMode micMode;
+
+  /// How loud the student is right now (0..1): the mic button's ring grows with it, so the student can see the
+  /// phone is hearing them.
+  final double micLevel;
   final RobotMood mood;
 
   /// What the robot says (the teacher's latest message).
@@ -117,6 +122,7 @@ class LiveDock extends StatelessWidget {
                   muted: muted,
                   busy: busy,
                   micMode: micMode,
+                  micLevel: micLevel,
                   onToggleMute: onToggleMute,
                   onToggleMic: onToggleMic,
                   onSend: onSend,
@@ -142,6 +148,7 @@ class _ComposerBox extends StatelessWidget {
     required this.muted,
     required this.busy,
     required this.micMode,
+    this.micLevel = 0,
     required this.onToggleMute,
     required this.onToggleMic,
     required this.onSend,
@@ -151,6 +158,7 @@ class _ComposerBox extends StatelessWidget {
   final bool muted;
   final bool busy;
   final MicMode micMode;
+  final double micLevel;
   final VoidCallback onToggleMute;
   final VoidCallback onToggleMic;
   final Future<void> Function(String message) onSend;
@@ -177,6 +185,7 @@ class _ComposerBox extends StatelessWidget {
                 tooltip: l10n.voiceLiveMicMute,
                 style: _ButtonStyle.filled,
                 ring: micMode == MicMode.hearing,
+                level: micLevel,
                 onTap: onToggleMic,
               ),
             MicMode.muted => _SquareButton(
@@ -251,6 +260,7 @@ class _SquareButton extends StatelessWidget {
     required this.style,
     required this.onTap,
     this.ring = false,
+    this.level = 0,
   });
 
   final IconData icon;
@@ -258,6 +268,9 @@ class _SquareButton extends StatelessWidget {
   final _ButtonStyle style;
   final VoidCallback? onTap;
   final bool ring;
+
+  /// 0..1: a soft ring that grows with the sound the microphone picks up.
+  final double level;
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +294,11 @@ class _SquareButton extends StatelessWidget {
               color: background,
               borderRadius: BorderRadius.circular(12),
               border: style == _ButtonStyle.outlined ? Border.all(color: surfaces.borderStrong) : null,
-              boxShadow: ring ? [BoxShadow(color: AimColors.primary600.withValues(alpha: 0.3), spreadRadius: 4)] : null,
+              boxShadow: ring
+                  ? [BoxShadow(color: AimColors.primary600.withValues(alpha: 0.3), spreadRadius: 4)]
+                  : level > 0.05
+                      ? [BoxShadow(color: AimColors.primary600.withValues(alpha: 0.25), spreadRadius: 1 + level * 6)]
+                      : null,
             ),
             child: Icon(icon, size: 21, color: onTap == null && !filled ? surfaces.disabledFg : foreground),
           ),
