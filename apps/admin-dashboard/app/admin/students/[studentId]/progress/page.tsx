@@ -3,7 +3,8 @@ import { getAdminToken } from '../../../../../core/api/admin-token';
 import { AdminApiClientError } from '../../../../../core/api';
 import { fetchAdminStudentProfile } from '../../../../../core/api/admin-student-profile-api';
 import { fetchAdminStudentPracticeReport } from '../../../../../core/api/admin-student-practice-report-api';
-import { StudentPracticeReportClient, StudentProgressClient, studentDisplayName } from '../../../../../features/students';
+import { fetchAdminStudentCourseProgress } from '../../../../../core/api/admin-student-course-progress-api';
+import { StudentCourseProgressClient, StudentPracticeReportClient, StudentProgressClient, studentDisplayName } from '../../../../../features/students';
 
 type Props = {
   params: Promise<{ studentId: string }>;
@@ -28,6 +29,8 @@ export default async function StudentProgressPage({ params }: Props) {
   // The practice report is extra detail: if it fails, the rest of the profile still shows.
   const report = await fetchAdminStudentPracticeReport(token, studentId).catch(() => null);
 
+  const courseProgress = await fetchAdminStudentCourseProgress(token, studentId).catch(() => null);
+
   const heading = profile ? studentDisplayName(profile) : 'Student Profile';
 
   return (
@@ -46,7 +49,13 @@ export default async function StudentProgressPage({ params }: Props) {
         <p className="admin-error-banner" role="alert">{fetchError}</p>
       )}
 
-      {profile && <StudentProgressClient profile={profile} />}
+      {courseProgress && (
+        <div className="mb-6">
+          <StudentCourseProgressClient data={courseProgress} />
+        </div>
+      )}
+
+      {profile && <StudentProgressClient profile={profile} hideCourses={courseProgress !== null} />}
 
       {report && (
         <div className="mt-6">

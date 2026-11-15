@@ -17,6 +17,8 @@ import { studentDisplayName } from '../student-display-name';
 
 type Props = {
   readonly profile: AdminStudentProfile;
+  /** Hide the course list/overall progress when the per-course progress view is shown instead. */
+  readonly hideCourses?: boolean;
 };
 
 const SIGNAL_VARIANT: Record<AdminStudentProfileSkillSignal, 'success' | 'primary' | 'warning'> = {
@@ -130,7 +132,7 @@ function CourseRow({ course }: { readonly course: AdminStudentProfileCourse }) {
   );
 }
 
-export function StudentProgressClient({ profile }: Props) {
+export function StudentProgressClient({ profile, hideCourses = false }: Props) {
   const { student, placement, subscription, courses, weaknesses, aiTeacherSessions, assessmentResults } = profile;
   const displayName = studentDisplayName(profile);
 
@@ -211,6 +213,8 @@ export function StudentProgressClient({ profile }: Props) {
         )}
       </AdminCard>
 
+      {!hideCourses && (
+        <>
       {/* Course progress summary — moved here from the list table to keep it detailed. */}
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         <AdminCard title="Overall Progress">
@@ -245,6 +249,9 @@ export function StudentProgressClient({ profile }: Props) {
           </div>
         )}
       </div>
+
+        </>
+      )}
 
       {/* Assessment Results */}
       <AdminAccordion
