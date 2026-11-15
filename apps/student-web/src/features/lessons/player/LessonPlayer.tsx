@@ -94,19 +94,19 @@ export function LessonPlayer({ lesson, assets, position, completed, courseId, pr
   let body: ReactNode;
   switch (slide.kind) {
     case 'intro':
-      body = <IntroSlide guide={guide} title={lesson.title} completed={completed} locked={position.locked} stepCount={assets.length} minutes={minutes} xp={lesson.xpValue} />;
+      body = <IntroSlide guide={guide} title={lesson.title} arTitle={slide.arTitle} completed={completed} locked={position.locked} stepCount={assets.length} minutes={minutes} xp={lesson.xpValue} />;
       break;
     case 'say':
-      body = <SaySlide guide={guide} title={slide.title} body={slide.body} examples={slide.examples} />;
+      body = <SaySlide guide={guide} title={slide.title} body={slide.body} examples={slide.examples} ar={slide.ar} />;
       break;
     case 'points':
-      body = <PointsSlide guide={guide} title={slide.title} points={slide.points} />;
+      body = <PointsSlide guide={guide} title={slide.title} points={slide.points} arPoints={slide.arPoints} />;
       break;
     case 'mistakes':
       body = <MistakesSlide guide={guide} title={slide.title} items={slide.items} />;
       break;
     case 'asset':
-      body = <ContentBlockRenderer asset={slide.asset} stepNumber={assets.indexOf(slide.asset) + 1} />;
+      body = <ContentBlockRenderer asset={slide.asset} stepNumber={assets.indexOf(slide.asset) + 1} ar={slide.ar} />;
       break;
     default:
       body = (

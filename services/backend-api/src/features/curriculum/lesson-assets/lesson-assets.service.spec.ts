@@ -195,3 +195,22 @@ describe('LessonAssetsService.archiveAsset', () => {
     expect(result.status).toBe('archived');
   });
 });
+
+describe('LessonAssetsService.listAssets translations', () => {
+  it('adds sanitised translations and leaves every existing field untouched', async () => {
+    (mockDb.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ total: '2' }] })
+      .mockResolvedValueOnce({
+        rows: [
+          { ...baseRow, translations: { ar: { title: 'عنوان', description: 'وصف', junk: 1 } } },
+          { ...baseRow, id: 'b', order: 2, translations: null },
+        ],
+      });
+    const result = await service.listAssets(1, 20, 'lesson-uuid');
+    expect(result.assets[0]).toMatchObject({ id: 'asset-uuid', title: 'Hero Image', url: baseRow.url, sizeBytes: 204800 });
+    expect(result.assets[0].translations).toEqual({ ar: { title: 'عنوان', description: 'وصف' } });
+    expect('translations' in result.assets[1]).toBe(false);
+    const sql = (mockDb.query as jest.Mock).mock.calls[1][0] as string;
+    expect(sql).toContain("lt.locale <> 'en'");
+  });
+});

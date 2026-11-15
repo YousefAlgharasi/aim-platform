@@ -44,6 +44,8 @@ export interface LessonAssetRow {
   metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  /** Per-locale translated asset text from lesson_translations.content.assets, when any. */
+  translations?: Record<string, unknown> | null;
 }
 
 export interface LessonAssetSummary {
@@ -63,6 +65,14 @@ export interface LessonAssetSummary {
   metadata: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
+  /** Additive: { ar?: { title?, description?, metadata? } }. Omitted when the asset has no translation. */
+  translations?: Record<string, LessonAssetTranslation>;
+}
+
+export interface LessonAssetTranslation {
+  title?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface LessonAssetListResponse {

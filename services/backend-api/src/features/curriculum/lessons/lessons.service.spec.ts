@@ -334,3 +334,37 @@ describe('LessonsService locale-aware reads', () => {
     expect((mockDb.query as jest.Mock).mock.calls[1][1]).toEqual(['en', 20, 0]);
   });
 });
+
+describe('LessonsService.getLesson translations', () => {
+  const base = { ...lessonRow, system_prompt: null, teaching_outline: null };
+
+  it('adds non-English translations with content, keeping every existing field', async () => {
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({
+      rows: [
+        {
+          ...base,
+          other_translations: [
+            { locale: 'ar', title: 'ع', description: 'و', content: { explanation: { overview: 'o', sections: [], keyPoints: [] }, teachingOutline: ['a', 2], assets: { x: { title: 't' } } } },
+          ],
+        },
+      ],
+    });
+    const lesson = await service.getLesson('new-uuid');
+    expect(lesson.title).toBe('Lesson B');
+    expect(lesson.explanation).toBeNull();
+    expect(lesson.translations).toEqual({
+      ar: { title: 'ع', description: 'و', explanation: { overview: 'o', sections: [], keyPoints: [] }, teachingOutline: ['a'], assets: { x: { title: 't' } } },
+    });
+  });
+
+  it('omits translations when there are none or content is malformed', async () => {
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({ rows: [{ ...base, other_translations: [] }] });
+    expect((await service.getLesson('new-uuid')).translations).toBeUndefined();
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({
+      rows: [{ ...base, other_translations: [{ locale: 'ar', title: 'ع', description: null, content: 'garbage' }] }],
+    });
+    expect((await service.getLesson('new-uuid')).translations).toEqual({ ar: { title: 'ع', description: null } });
+    (mockDb.query as jest.Mock).mockResolvedValueOnce({ rows: [base] });
+    expect('translations' in (await service.getLesson('new-uuid'))).toBe(false);
+  });
+});

@@ -21,6 +21,13 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { resolveMaxAttempts } from './assessment-policy';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 
 // ---------------------------------------------------------------------------
 // Public types (returned to API layer, never directly to Flutter raw)
@@ -43,12 +50,15 @@ export interface ReviewOption {
   readonly id: string;
   readonly label: string;
   readonly text: string;
+  /** Additive supporting-language text; omitted when absent (and always for true/false). */
+  readonly translations?: Record<string, ChoiceTextTranslation>;
 }
 
 export interface ReviewItem {
   readonly assessmentQuestionLinkId: string;
   readonly number: number;
   readonly prompt: string;
+  readonly translations?: Record<string, QuestionTextTranslation>;
   readonly options: ReviewOption[];
   /** The option the student chose, or null when skipped. */
   readonly selectedOptionId: string | null;
@@ -124,6 +134,8 @@ interface ReviewQuestionRow {
   readonly link_id: string;
   readonly question_id: string;
   readonly prompt: string;
+  readonly q_type?: string;
+  readonly q_translations?: unknown;
   readonly points: string;
   readonly response_value: string | null;
 }
@@ -132,6 +144,7 @@ interface ReviewChoiceRow {
   readonly id: string;
   readonly question_id: string;
   readonly text: string;
+  readonly translations?: unknown;
   readonly is_correct: boolean;
 }
 
@@ -243,7 +256,7 @@ export class AssessmentFeedbackService {
 
     const questionsRes = attempt
       ? await this.db.query<ReviewQuestionRow>(
-          `SELECT aq.id AS link_id, aq.question_id, q.stem AS prompt, aq.points,
+          `SELECT aq.id AS link_id, aq.question_id, q.stem AS prompt, q.type AS q_type, q.translations AS q_translations, aq.points,
                   aaa.response_value
            FROM assessment_questions aq
            JOIN question_bank q ON q.id = aq.question_id
@@ -264,7 +277,7 @@ export class AssessmentFeedbackService {
 
     const choicesRes = questions.length
       ? await this.db.query<ReviewChoiceRow>(
-          `SELECT id, question_id, text, is_correct
+          `SELECT id, question_id, text, translations, is_correct
            FROM question_choices
            WHERE question_id = ANY($1)
            ORDER BY sort_order ASC`,
@@ -305,10 +318,12 @@ export class AssessmentFeedbackService {
         assessmentQuestionLinkId: q.link_id,
         number: i + 1,
         prompt: q.prompt,
+        ...withTranslations(questionTranslations(q.q_translations)),
         options: choices.map((c, idx) => ({
           id: c.id,
           label: OPTION_LABELS[idx] ?? String(idx + 1),
           text: c.text,
+          ...withTranslations(choiceTranslations(c.translations, q.q_type)),
         })),
         selectedOptionId: answered ? q.response_value : null,
         correctOptionIds: answersRevealed

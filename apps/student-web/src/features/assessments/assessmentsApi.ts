@@ -99,7 +99,8 @@ export interface AttemptQuestion {
   order: number;
   type: string;
   prompt: string;
-  options: Array<{ id: string; label: string; text: string }>;
+  options: Array<{ id: string; label: string; text: string; translations?: { ar?: { text?: string } } | null }>;
+  translations?: { ar?: { stem?: string; explanation?: string; hint?: string } } | null;
 }
 
 /** POST /student/assessments/attempts/:attemptId/answers */

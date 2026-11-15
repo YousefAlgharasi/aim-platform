@@ -3,6 +3,8 @@ import { CheckIcon } from '../../components/common/Icons';
 import { fetchQuestionAudio, type SessionQuestion } from './practiceApi';
 import { useI18n } from '../../i18n/I18nContext';
 import { questionCard } from './practiceStyles';
+import { ArText } from '../lessons/Bilingual';
+import '../lessons/player/player.css';
 
 interface QuestionRendererProps {
   question: SessionQuestion;
@@ -50,6 +52,7 @@ export function QuestionRenderer({
             </span>
           )}
           <p className="m-0 text-2xl font-semibold leading-snug text-ink [unicode-bidi:plaintext]">{question.stem}</p>
+          <ArText text={question.translations?.ar?.stem} className="mt-2 text-lg" />
         </div>
         {isListening && (
           <AuthAudioPlayer load={() => fetchQuestionAudio(question.id)} label={t('Play recording')} />
@@ -90,7 +93,10 @@ export function QuestionRenderer({
                   <span aria-hidden="true" className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${isSelected ? (disabled ? 'bg-white/70 text-current dark:bg-black/30' : 'bg-brand text-white') : 'bg-surface-strong text-ink-soft'}`}>
                     {String.fromCharCode(65 + optIndex)}
                   </span>
-                  <span className="min-w-0 [unicode-bidi:plaintext]">{option.text}</span>
+                  <span className="min-w-0">
+                    <span className="block [unicode-bidi:plaintext]">{option.text}</span>
+                    <ArText text={option.translations?.ar?.text} as="span" className="mt-1 block text-sm font-normal" />
+                  </span>
                 </span>
                 {isSelected && disabled && result === true && (
                   <CheckIcon className="ix-pop size-5 text-success-ink shrink-0" />

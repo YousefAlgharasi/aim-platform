@@ -1,4 +1,5 @@
 import { apiClient } from '../../api/client';
+import type { OptionTranslations, QuestionTranslations } from './practiceApi';
 
 // Backend: services/backend-api/src/features/learner-tools (GET /student/practice/skills, POST /student/practice/start).
 // Practice answers are sent through POST /sessions/:id/attempt, so the AIM engine updates mastery.
@@ -8,7 +9,7 @@ export const PRACTICE_MODES: PracticeMode[] = ['grammar', 'listening', 'reading'
 
 export interface PracticeSkill { skillKey: string; title: string; masteryScore: number | null; questionCount: number; recommended: boolean }
 export interface PracticeQuestion {
-  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string }>; source: 'bank' | 'ai';
+  itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string; translations?: OptionTranslations | null }>; translations?: QuestionTranslations | null; source: 'bank' | 'ai';
 }
 export interface PracticeStart {
   sessionId: string; mode: PracticeMode; skillKey: string; title: string; level: string;

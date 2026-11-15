@@ -1,0 +1,178 @@
+{
+  "lessonId": "22401737-36b8-445e-a899-98a446d735c1",
+  "title": "التعرّف على شخص جديد",
+  "description": "استمع إلى حوار قصير بين شخصين يلتقيان للمرة الأولى.",
+  "explanation": {
+    "overview": "في هذا الدرس ستسمع محادثة قصيرة بين شخصين يلتقيان للمرة الأولى. ستتعلّم أشهر عبارات التحية، وكيف تسأل عن الاسم وتذكر اسمك، وكيف تودّع. بعد الاستماع ستتمكّن من متابعة حوار تعارف بسيط.",
+    "sections": [
+      {
+        "heading": "التحيات",
+        "body": "- Hello\n- Hi\n- Good morning\n- Good afternoon",
+        "examples": [
+          {
+            "text": "Hello, my name is Anna.",
+            "note": "تحية شائعة يتبعها اسم"
+          },
+          {
+            "text": "Hi, I am Ahmed.",
+            "note": "تحية بسيطة أخرى مع اسم"
+          }
+        ]
+      },
+      {
+        "heading": "السؤال عن الاسم وذكره",
+        "body": "- What is your name?\n- My name is ...\n- I am ...",
+        "examples": [
+          {
+            "text": "What is your name?",
+            "note": "سؤال لمعرفة اسم شخص"
+          },
+          {
+            "text": "My name is Sam.",
+            "note": "جواب يذكر اسمك"
+          },
+          {
+            "text": "I am Fatima.",
+            "note": "طريقة أخرى لذكر اسمك"
+          }
+        ]
+      },
+      {
+        "heading": "عبارات الوداع",
+        "body": "- Nice to meet you\n- Goodbye\n- See you later",
+        "examples": [
+          {
+            "text": "Nice to meet you.",
+            "note": "عبارة مهذّبة بعد التعارف"
+          },
+          {
+            "text": "Goodbye!",
+            "note": "طريقة بسيطة لإنهاء المحادثة"
+          },
+          {
+            "text": "See you later.",
+            "note": "وداع غير رسمي"
+          }
+        ]
+      },
+      {
+        "heading": "نصائح للاستماع",
+        "body": "- انتبه للكلمات: Hello, Hi, What is your name?, My name is, Goodbye.\n- انتبه لنبرة المتحدث؛ النبرة الودّية تدل على التحية.\n- عُدّ الجمل القصيرة؛ معظم حوارات التعارف لها ثلاثة أجزاء: التحية، وتبادل الأسماء، والوداع.",
+        "examples": [
+          {
+            "text": "Hello, my name is Anna. What is your name? My name is Ahmed. Nice to meet you. Goodbye!",
+            "note": "البنية المعتادة لحوار تعارف قصير"
+          }
+        ]
+      }
+    ],
+    "keyPoints": [
+      "استخدم Hello أو Hi لبدء المحادثة",
+      "اسأل What is your name? لتعرف اسم الشخص الآخر",
+      "أجب بـ My name is … أو I am …",
+      "اختم بـ Nice to meet you أو Goodbye",
+      "انتبه للأجزاء الثلاثة: التحية، وتبادل الأسماء، والوداع"
+    ],
+    "commonMistakes": [
+      {
+        "wrong": "Your name?",
+        "right": "What is your name?",
+        "why": "في العربية قد نحذف أداة الاستفهام، أما الإنجليزية فتحتاج إلى السؤال كاملًا"
+      },
+      {
+        "wrong": "Name is Ahmed",
+        "right": "My name is Ahmed",
+        "why": "الضمير My ضروري لتبدو الجملة طبيعية"
+      },
+      {
+        "wrong": "Bye bye",
+        "right": "Goodbye",
+        "why": "Bye bye غير رسمية وقد تبدو طفولية في أول لقاء"
+      },
+      {
+        "wrong": "Hello good morning",
+        "right": "Good morning",
+        "why": "استخدم تحية واحدة فقط في كل مرة"
+      }
+    ],
+    "recap": "استمع إلى الحوار مرة أخرى، وكرّر كل جملة، وحاول أن تقول بنفسك التحيات وأسئلة الاسم وعبارات الوداع."
+  },
+  "assets": {
+    "854d955e-b3b1-4b19-a75b-0497c67eca36": {
+      "title": "استمع: شخصان يلتقيان",
+      "description": "محادثة قصيرة بين صديقين جديدين."
+    }
+  },
+  "questions": {
+    "0a28b676-1dbe-5e96-8686-14f18381457a": {
+      "stem": "A: \"Hello! My name is Sam.\" B: \"Hi, Sam. I am Lina. Nice to meet you.\" ما اسم B؟",
+      "explanation": "يقول B: \"I am Lina\".",
+      "choices": {
+        "25bf1752-c309-56aa-8118-a61d5664fdfb": "Lina",
+        "fe2cb705-7bff-5782-996f-69b9be5a1e57": "Sam",
+        "a8115e71-6c28-5415-adee-b3d5d01988d4": "Ali",
+        "9f982a41-932a-55a1-84b5-edf5421cec8f": "Anna"
+      }
+    },
+    "610c0cdc-c7f3-51cd-a923-4fdc418d64ae": {
+      "stem": "A: \"Hello! My name is Sam.\" B: \"Hi, Sam. I am Lina. Nice to meet you.\" ما اسم A؟",
+      "explanation": "يقول A: \"My name is Sam\".",
+      "choices": {
+        "1327951b-d752-5003-b26c-a6acadf2394f": "Sam",
+        "35029c81-4adb-531b-9b8b-89e271f27345": "Lina",
+        "04721dc2-4267-5e72-9fce-60199b0b14ef": "Tom",
+        "1ac1b3af-cb9e-5328-8f89-0949217fa56e": "Ben"
+      }
+    },
+    "71be7181-6fde-5d4e-a286-d74b1afce6f1": {
+      "stem": "A: \"Nice to meet you.\" ماذا يرد B؟",
+      "explanation": "الرد المهذّب هو \"Nice to meet you too\".",
+      "choices": {
+        "3b494d03-c5c4-5c6f-b4a1-4f8f8662cf09": "Nice to meet you too.",
+        "6f3cda1e-abe1-599a-9de3-fa8d2e56ee8a": "Goodbye.",
+        "5b94b5ac-5028-5e7f-aae1-5ab49c568a86": "Thank you.",
+        "f0daa15b-5219-592a-8320-af0e036415be": "I am fine."
+      }
+    },
+    "01e3ce1a-90be-596c-b156-8815f9bcdca1": {
+      "stem": "A: \"How are you?\" B: \"I am fine, thank you.\" كيف حال B؟",
+      "explanation": "يقول B: \"fine\".",
+      "choices": {
+        "c8ab97e3-aaaa-55f0-85e4-5dac75ea2af1": "Fine",
+        "41d261b4-405e-5bfb-b594-3463b66af98d": "Sad",
+        "5865a4a7-063d-53ad-a7a5-729640a1c670": "Tired",
+        "79289e71-44e6-5b52-b170-db4365464142": "Hungry"
+      }
+    },
+    "722cdf1c-4a99-53a0-a505-271f58a2b66d": {
+      "stem": "A: \"Goodbye!\" ماذا يرد B؟",
+      "explanation": "\"Bye\" ردّ على \"Goodbye\".",
+      "choices": {
+        "1954d53a-cdbb-540a-bd79-acfb16230fd1": "Bye!",
+        "f68e9279-2b88-5a64-a4d3-3567f29e165c": "Hello!",
+        "55557c2c-54c3-5c68-93c2-d3e0adae5696": "Good morning!",
+        "4f6c6e8d-a6c9-501a-8cb1-18548cb0d2db": "Please!"
+      }
+    },
+    "b2b594b0-ab09-5f86-86d4-7c38de77d436": {
+      "stem": "في الحوار، الشخصان يلتقيان للمرة الأولى.",
+      "explanation": "يقولان \"Nice to meet you\"."
+    },
+    "6f1ad987-0c25-5558-a200-50093d69795b": {
+      "stem": "في الحوار، لدى A وB الاسم نفسه.",
+      "explanation": "A هو Sam وB هو Lina."
+    },
+    "c350f4fe-26df-5d2e-884a-f1f042bd08d4": {
+      "stem": "A: How _____ you?",
+      "explanation": "\"How are you?\""
+    },
+    "e6ec7f8f-b6db-5eb5-bdc5-901e4466d437": {
+      "stem": "B: I am fine, thank _____ .",
+      "explanation": "\"Thank you\"."
+    },
+    "97fa091b-992f-5187-adf1-8b455e87d972": {
+      "stem": "A: Nice to _____ you.",
+      "explanation": "\"Nice to meet you\"."
+    }
+  }
+}

@@ -7,11 +7,15 @@ import { DialogueScene } from './dialogue/DialogueScene';
 import { parseDialogue } from './dialogue/dialogue';
 import { AuthAudioPlayer } from './AuthAudioPlayer';
 import { AudioPlayer } from '../../components/common/AudioPlayer';
-import { fetchLessonAssetAudio, type LessonAsset } from './lessonsApi';
+import { fetchLessonAssetAudio, type AssetTranslation, type LessonAsset } from './lessonsApi';
+import { ArMarkdown, ArText, En } from './Bilingual';
+import './player/player.css';
 
 interface ContentBlockRendererProps {
   asset: LessonAsset;
   stepNumber: number;
+  /** Arabic supporting text (lesson-level or per-asset); optional. */
+  ar?: AssetTranslation;
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -46,7 +50,8 @@ function metaNumber(asset: LessonAsset, key: string): number | null {
  * Renders one published lesson asset (GET /curriculum/lesson-assets), mirroring
  * Flutter's LessonContentRenderer: every value is backend-supplied verbatim.
  */
-export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRendererProps) {
+export function ContentBlockRenderer({ asset, stepNumber, ar: arProp }: ContentBlockRendererProps) {
+  const ar = arProp ?? asset.translations?.ar ?? undefined;
   const { t } = useI18n();
   const meta: string[] = [typeLabel(asset.type)];
   if (asset.durationSeconds != null) meta.push(formatDuration(asset.durationSeconds));
@@ -65,11 +70,13 @@ export function ContentBlockRenderer({ asset, stepNumber }: ContentBlockRenderer
       <div className="flex items-center gap-3">
         <div className="min-w-0">
           <span className="block text-sm text-ink-muted">{t('Step {n} · {meta}', { n: stepNumber, meta: meta.join(' · ') })}</span>
-          <h3 className="m-0 text-lg font-semibold leading-snug text-ink">{asset.title}</h3>
+          <En as="h3" className="m-0 text-lg font-semibold leading-snug text-ink">{asset.title}</En>
+          <ArText text={ar?.title} className="mt-0.5 text-base" />
         </div>
       </div>
 
-      {asset.description && <SelectToSave source="lesson"><Markdown text={asset.description} className="text-sm leading-relaxed text-ink-soft" /></SelectToSave>}
+      {asset.description && <SelectToSave source="lesson"><div lang="en" dir="ltr"><Markdown text={asset.description} className="text-sm leading-relaxed text-ink-soft" /></div></SelectToSave>}
+      <ArMarkdown text={ar?.description} className="text-sm leading-relaxed" />
 
       {asset.type === 'image' && (
         asset.url ? (

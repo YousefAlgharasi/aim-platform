@@ -9,6 +9,7 @@ export const LESSON_TRANSLATIONS_CONFIG = {
   foreignKey: 'lesson_id',
   idKey: 'lessonId',
   requireEnglishDescription: true,
+  supportsContent: true,
 } as const;
 
 @Injectable()

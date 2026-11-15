@@ -158,7 +158,8 @@ function SkillPractice({ mode }: { mode: PracticeMode }) {
   const item = run.questions[index];
   const question: SessionQuestion = {
     id: item.itemId, type: item.type, stem: item.prompt, difficulty: '', tags: [],
-    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i })),
+    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i, translations: o.translations })),
+    translations: item.translations,
   };
   async function check() {
     if (!picked.trim() || verdict !== null || busy) return;

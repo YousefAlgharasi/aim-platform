@@ -116,7 +116,8 @@ export function RecoveryRetryPage() {
 
   const question = {
     id: item.itemId, type: item.type, stem: item.prompt, difficulty: '', tags: [],
-    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i })),
+    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i, translations: o.translations })),
+    translations: item.translations,
   };
   return (
     <div className="flex w-full flex-col gap-6">

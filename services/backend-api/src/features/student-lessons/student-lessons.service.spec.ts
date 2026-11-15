@@ -213,4 +213,21 @@ describe('StudentLessonsService', () => {
       scorePercent: 82,
     });
   });
+
+  describe('translations', () => {
+    const base = { lesson_id: 'l1', title: 'Hello', description: 'd', locale: 'en', xp_value: 5, sort_order: 1, completed: false };
+    it('adds ar title/description and keeps existing fields', async () => {
+      const out = await new StudentLessonsService(
+        makeRepository([{ ...base, other_translations: [{ locale: 'ar', title: 'مرحبا', description: 'وصف' }, { locale: 'fr', title: 'x' }] }]),
+      ).getLessons('s', 'c');
+      expect(out.lessons[0]).toMatchObject({ id: 'l1', title: 'Hello', description: 'd', xpValue: 5 });
+      expect(out.lessons[0].translations).toEqual({ ar: { title: 'مرحبا', description: 'وصف' } });
+    });
+    it('omits translations when absent or malformed', async () => {
+      const out = await new StudentLessonsService(
+        makeRepository([{ ...base }, { ...base, lesson_id: 'l2', other_translations: 'junk' }, { ...base, lesson_id: 'l3', other_translations: [{ locale: 'ar', title: '' }, null] }]),
+      ).getLessons('s', 'c');
+      for (const l of out.lessons) expect(l).not.toHaveProperty('translations');
+    });
+  });
 });

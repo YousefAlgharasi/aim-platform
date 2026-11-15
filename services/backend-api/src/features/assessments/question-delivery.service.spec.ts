@@ -45,6 +45,26 @@ describe('QuestionDeliveryService', () => {
     expect(result[1].options).toHaveLength(2);
   });
 
+  it('adds translations to prompts and options when present and omits them otherwise', async () => {
+    mockDb.query = jest.fn()
+      .mockResolvedValueOnce({ rows: [
+        { ...questionRows[0], q_translations: { ar: { stem: 'كم 2+2؟', explanation: 'x' } } },
+        { ...questionRows[1], question_type: 'true_false' },
+      ] })
+      .mockResolvedValueOnce({ rows: [
+        { ...optionRows[0], translations: { ar: { text: 'ثلاثة' } } },
+        optionRows[1],
+        { ...optionRows[2], translations: { ar: { text: 'لندن' } } },
+      ] });
+    service = new QuestionDeliveryService(mockDb as any, {} as any);
+    const result = await service.getQuestionsForAssessment(ASSESSMENT_ID);
+    expect(result[0].translations).toEqual({ ar: { stem: 'كم 2+2؟' } });
+    expect(result[0].options[0]).toMatchObject({ text: '3', translations: { ar: { text: 'ثلاثة' } } });
+    expect('translations' in result[0].options[1]).toBe(false);
+    expect('translations' in result[1]).toBe(false);
+    expect('translations' in result[1].options[0]).toBe(false);
+  });
+
   it('throws NotFoundException when no questions found', async () => {
     mockDb.query = jest.fn().mockResolvedValueOnce({ rows: [] });
     await expect(service.getQuestionsForAssessment(ASSESSMENT_ID))

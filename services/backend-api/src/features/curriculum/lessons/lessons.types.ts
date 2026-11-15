@@ -49,6 +49,15 @@ export interface LessonRow {
   updated_at: string;
   locale: string;
   available_locales: string[];
+  /** Non-English rows aggregated by getLesson only. */
+  other_translations?: LessonTranslationRow[] | null;
+}
+
+export interface LessonTranslationRow {
+  locale: string;
+  title: string;
+  description: string | null;
+  content: Record<string, unknown> | null;
 }
 
 export interface LessonSummary {
@@ -70,6 +79,20 @@ export interface LessonSummary {
   updatedAt: string;
   locale: string;
   availableLocales: string[];
+  /**
+   * Additive (lesson detail only): every non-English translation row, regardless of the requested locale,
+   * so a client can show the English source with the translation underneath. Omitted when there are none.
+   * `teachingOutline` here is the translated outline and is exposed exactly where the English one already is.
+   */
+  translations?: Record<string, LessonTranslationView>;
+}
+
+export interface LessonTranslationView {
+  title: string;
+  description: string | null;
+  explanation?: LessonExplanation;
+  teachingOutline?: string[];
+  assets?: Record<string, { title?: string; description?: string; metadata?: Record<string, unknown> }>;
 }
 
 export interface LessonListResponse {

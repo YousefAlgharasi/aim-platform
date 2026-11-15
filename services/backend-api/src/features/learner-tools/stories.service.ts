@@ -1,5 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import {
+  ChoiceTextTranslation,
+  QuestionTextTranslation,
+  choiceTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 import { LessonProgressService } from '../lessons/lesson-progress.service';
 import { SessionsService } from '../sessions/sessions.service';
 
@@ -19,7 +26,7 @@ export const STORY_SPEAKERS = ['narrator', 'sarah', 'adam', 'yasmin', 'tariq'] a
 export type StorySpeaker = (typeof STORY_SPEAKERS)[number];
 
 export interface StoryLine { speaker: StorySpeaker; text: string }
-export interface StoryQuestion { itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string }> }
+export interface StoryQuestion { itemId: string; type: string; prompt: string; options: Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>; translations?: Record<string, QuestionTextTranslation> }
 export interface StoryScene { position: number; setting: string; settingAr: string | null; lines: StoryLine[]; questions: StoryQuestion[]; done: boolean }
 
 export interface StorySummary {
@@ -152,16 +159,19 @@ export class StoriesService {
     const scenes = await this.db.query<any>(
       `SELECT sc.id, sc.position, sc.setting, sc.setting_ar, sc.lines FROM story_scenes sc WHERE sc.story_id = $1 ORDER BY sc.position`, [storyId]);
     const qrows = await this.db.query<any>(
-      `SELECT sq.scene_id, sq.position, qb.id, qb.type, qb.stem,
+      `SELECT sq.scene_id, sq.position, qb.id, qb.type, qb.stem, qb.translations,
               EXISTS (SELECT 1 FROM lesson_attempts la WHERE la.item_id = qb.id AND la.student_id = ANY($2::uuid[])) AS answered
          FROM story_scene_questions sq JOIN story_scenes sc ON sc.id = sq.scene_id JOIN question_bank qb ON qb.id = sq.question_id
         WHERE sc.story_id = $1 ORDER BY sq.position`,
       [storyId, ids]);
-    const choices = await this.db.query<{ question_id: string; id: string; text: string }>(
-      `SELECT c.question_id, c.id, c.text FROM question_choices c WHERE c.question_id = ANY($1::uuid[]) ORDER BY c.sort_order, c.created_at`,
+    const choices = await this.db.query<{ question_id: string; id: string; text: string; translations?: unknown }>(
+      `SELECT c.question_id, c.id, c.text, c.translations FROM question_choices c WHERE c.question_id = ANY($1::uuid[]) ORDER BY c.sort_order, c.created_at`,
       [qrows.rows.map((q) => q.id)]);
-    const opts = new Map<string, Array<{ id: string; text: string }>>();
-    for (const c of choices.rows) opts.set(c.question_id, [...(opts.get(c.question_id) ?? []), { id: c.id, text: c.text }]);
+    const typeById = new Map<string, string>(qrows.rows.map((q) => [q.id, q.type]));
+    const opts = new Map<string, StoryQuestion['options']>();
+    for (const c of choices.rows) {
+      opts.set(c.question_id, [...(opts.get(c.question_id) ?? []), { id: c.id, text: c.text, ...withTranslations(choiceTranslations(c.translations, typeById.get(c.question_id))) }]);
+    }
 
     const all: StoryScene[] = scenes.rows.map((sc) => {
       const qs = qrows.rows.filter((q) => q.scene_id === sc.id);
@@ -169,7 +179,7 @@ export class StoriesService {
         position: sc.position, setting: sc.setting, settingAr: sc.setting_ar, lines: cleanLines(sc.lines),
         questions: qs
           .filter((q) => (opts.get(q.id)?.length ?? 0) >= 2)
-          .map((q): StoryQuestion => ({ itemId: q.id, type: q.type, prompt: q.stem, options: q.type === 'true_false' ? opts.get(q.id)! : shuffle(opts.get(q.id)!) })),
+          .map((q): StoryQuestion => ({ itemId: q.id, type: q.type, prompt: q.stem, options: q.type === 'true_false' ? opts.get(q.id)! : shuffle(opts.get(q.id)!), ...withTranslations(questionTranslations(q.translations)) })),
         done: qs.length > 0 && qs.every((q) => q.answered),
       };
     });

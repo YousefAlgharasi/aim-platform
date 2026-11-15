@@ -1,5 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import {
+  ChoiceTextTranslation,
+  ExplanationTranslation,
+  QuestionTextTranslation,
+  explanationTranslations,
+  optionsWithTranslations,
+  questionTranslations,
+  withTranslations,
+} from '../../common/locale/content-translations';
 
 const CHOICE_TYPES = ['multiple_choice', 'true_false', 'listening_choice'];
 
@@ -7,9 +16,12 @@ export interface MistakeItem {
   itemId: string; type: string; prompt: string; listeningScript: string | null;
   /** Skills the question trains (skill keys), so a weak spot can show its own mistakes. */
   skillIds: string[];
-  options: Array<{ id: string; text: string }>; yourAnswer: string | null; answeredAt: string;
+  options: Array<{ id: string; text: string; translations?: Record<string, ChoiceTextTranslation> }>;
+  translations?: Record<string, QuestionTextTranslation>; yourAnswer: string | null; answeredAt: string;
 }
-export interface MistakeCheck { correct: boolean; correctChoiceId: string | null; correctText: string | null; explanation: string | null }
+export interface MistakeCheck { correct: boolean; correctChoiceId: string | null; correctText: string | null; explanation: string | null;
+  /** Arabic explanation, delivered only here (after the answer is checked), never in the list. */
+  translations?: Record<string, ExplanationTranslation> }
 
 /**
  * "My mistakes": questions whose most recent attempt was wrong. Retrying here is a drill only —
@@ -45,8 +57,8 @@ export class MistakesService {
     const [rows, total] = await Promise.all([
       this.db.query<any>(
         `${base}
-         SELECT qb.id, qb.type, qb.stem, qb.listening_script, o.answer_value, o.submitted_at, o.skill_ids,
-                COALESCE((SELECT json_agg(json_build_object('id', c.id, 'text', c.text) ORDER BY c.sort_order, c.created_at)
+         SELECT qb.id, qb.type, qb.stem, qb.translations AS q_translations, qb.listening_script, o.answer_value, o.submitted_at, o.skill_ids,
+                COALESCE((SELECT json_agg(json_build_object('id', c.id, 'text', c.text, 'translations', c.translations) ORDER BY c.sort_order, c.created_at)
                           FROM question_choices c WHERE c.question_id = qb.id), '[]'::json) AS options
          FROM open o JOIN question_bank qb ON qb.id = o.item_id
          ORDER BY o.submitted_at DESC LIMIT $4`, [ids, CHOICE_TYPES, skill ?? null, limit]),
@@ -55,11 +67,11 @@ export class MistakesService {
     return {
       total: parseInt(total.rows[0]?.n ?? '0', 10),
       items: rows.rows.map((r) => {
-        const options = r.options as Array<{ id: string; text: string }>;
+        const options = optionsWithTranslations(r.options as Array<{ id: string; text: string; translations?: unknown }>, r.type);
         return {
           itemId: r.id, type: r.type, prompt: r.stem, listeningScript: r.listening_script,
           skillIds: Array.isArray(r.skill_ids) ? (r.skill_ids as unknown[]).filter((x): x is string => typeof x === 'string') : [],
-          options, yourAnswer: options.find((o) => o.id === r.answer_value)?.text ?? null,
+          options, ...withTranslations(questionTranslations(r.q_translations)), yourAnswer: options.find((o) => o.id === r.answer_value)?.text ?? null,
           answeredAt: new Date(r.submitted_at).toISOString(),
         };
       }),
@@ -73,7 +85,7 @@ export class MistakesService {
     const attempted = await this.db.query(`SELECT 1 FROM lesson_attempts WHERE student_id = ANY($1::uuid[]) AND item_id = $2 LIMIT 1`, [ids, itemId]);
     if (!attempted.rowCount) throw new NotFoundException('Question not found');
     const q = await this.db.query<any>(
-      `SELECT qb.explanation, c.id, c.text, c.is_correct
+      `SELECT qb.explanation, qb.translations AS q_translations, c.id, c.text, c.is_correct
        FROM question_bank qb JOIN question_choices c ON c.question_id = qb.id
        WHERE qb.id = $1 AND qb.status = 'published'`, [itemId]);
     if (!q.rows.length) throw new NotFoundException('Question not found');
@@ -84,6 +96,7 @@ export class MistakesService {
         `INSERT INTO mistake_resolutions (student_id, item_id) VALUES ($1, $2)
          ON CONFLICT (student_id, item_id) DO UPDATE SET resolved_at = now()`, [ids[0], itemId]);
     }
-    return { correct, correctChoiceId: correctRow?.id ?? null, correctText: correctRow?.text ?? null, explanation: q.rows[0].explanation ?? null };
+    return { correct, correctChoiceId: correctRow?.id ?? null, correctText: correctRow?.text ?? null, explanation: q.rows[0].explanation ?? null,
+      ...withTranslations(explanationTranslations(q.rows[0].q_translations)) };
   }
 }

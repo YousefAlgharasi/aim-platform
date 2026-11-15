@@ -6,6 +6,9 @@ export interface StudentLessonSummary {
   /** Language of title/description actually served (requested locale if a translation exists, else 'en'). */
   readonly locale: string;
 
+  /** Additive supporting-language text, e.g. { ar: { title, description? } }. Omitted when none exists. */
+  readonly translations?: Record<string, { title: string; description?: string }>;
+
   /** Gamification points awarded on completion. Display-only — never read by the AIM Engine. */
   readonly xpValue: number;
 

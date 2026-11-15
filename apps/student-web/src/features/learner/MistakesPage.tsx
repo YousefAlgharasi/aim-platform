@@ -1,3 +1,4 @@
+import { ArText } from '../lessons/Bilingual';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../../i18n/I18nContext';
@@ -93,7 +94,8 @@ export function MistakesPage() {
     stem: item.prompt,
     difficulty: '',
     tags: [],
-    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i })),
+    options: item.options.map((o, i) => ({ id: o.id, text: o.text, order: i, translations: o.translations })),
+    translations: item.translations,
   };
   const progressPct = Math.round(((index + (result ? 1 : 0)) / items.length) * 100);
   const heading = skill ? t('{skill}: {n} to fix', { skill: prettifySkillId(skill), n: total }) : t('{n} to fix', { n: total });
@@ -161,6 +163,7 @@ export function MistakesPage() {
               <p className="m-0 text-lg font-semibold">{result.correct ? t('Right') : t('Wrong')}</p>
               {!result.correct && result.correctText && <p className="m-0 mt-1 text-base">{t('Correct answer: {answer}', { answer: `⁨${result.correctText}⁩` })}</p>}
               {result.explanation && <p className="m-0 mt-1 text-base opacity-90 [unicode-bidi:plaintext]">{result.explanation}</p>}
+              <ArText text={result.translations?.ar?.explanation} className="mt-1.5 text-base" />
             </div>
           </div>
         )}

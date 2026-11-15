@@ -8,6 +8,7 @@
 import { Injectable } from '@nestjs/common';
 import { StudentLessonsRepository } from './student-lessons.repository';
 import { StudentLessonSummary, StudentLessonsResponse } from './student-lessons.types';
+import { titleTranslations, withTranslations } from '../../common/locale/content-translations';
 import { DEFAULT_LOCALE, SupportedLocale } from '../../common/locale/locale.constants';
 
 @Injectable()
@@ -28,6 +29,7 @@ export class StudentLessonsService {
       title: row.title,
       description: row.description,
       locale: row.locale,
+      ...withTranslations(titleTranslations(row.other_translations)),
       xpValue: row.xp_value,
       completed: row.completed,
       current: index === firstIncompleteIndex,
