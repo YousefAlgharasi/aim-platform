@@ -48,6 +48,7 @@ import 'package:aim_mobile/features/aim_results/logic/provider/aim_results_provi
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_engagement.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_target.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
 import 'package:aim_mobile/features/reviews/ui/due_review_actions.dart';
@@ -284,11 +285,14 @@ class _ProgressContentState extends ConsumerState<_ProgressContent> {
         ],
       ),
       const SizedBox(height: AimSpacing.sectionGap),
-      _NavRow(
-        icon: Icons.auto_stories_outlined,
-        title: l10n.progressSkillStates,
-        subtitle: '${widget.data.skillStates.length} skills tracked',
-        onTap: () => context.push(AppRoutePaths.skillState),
+      TourTarget(
+        id: 'progress-skills',
+        child: _NavRow(
+          icon: Icons.auto_stories_outlined,
+          title: l10n.progressSkillStates,
+          subtitle: '${widget.data.skillStates.length} skills tracked',
+          onTap: () => context.push(AppRoutePaths.skillState),
+        ),
       ),
       const SizedBox(height: AimSpacing.componentGap),
       _NavRow(
@@ -298,11 +302,14 @@ class _ProgressContentState extends ConsumerState<_ProgressContent> {
         onTap: () => context.push(AppRoutePaths.weaknessSummary),
       ),
       const SizedBox(height: AimSpacing.componentGap),
-      _NavRow(
-        icon: Icons.lightbulb_outline,
-        title: l10n.progressRecommendations,
-        subtitle: '${widget.data.recommendations.length} from AIM',
-        onTap: () => context.push(AppRoutePaths.recommendations),
+      TourTarget(
+        id: 'progress-next',
+        child: _NavRow(
+          icon: Icons.lightbulb_outline,
+          title: l10n.progressRecommendations,
+          subtitle: '${widget.data.recommendations.length} from AIM',
+          onTap: () => context.push(AppRoutePaths.recommendations),
+        ),
       ),
       const SizedBox(height: AimSpacing.componentGap),
       _NavRow(

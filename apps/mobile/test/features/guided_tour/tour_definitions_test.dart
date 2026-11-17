@@ -56,6 +56,8 @@ void main() {
       expect(tourIdForScreen(location: '/main', mainTab: 0), 'dashboard');
       expect(tourIdForScreen(location: '/main', mainTab: 1), 'courses');
       expect(tourIdForScreen(location: '/main', mainTab: 2), isNull);
+      expect(tourIdForScreen(location: '/main', mainTab: 3), 'progress');
+      expect(tourIdForScreen(location: '/main', mainTab: 4), isNull);
     });
 
     test('menu pages', () {

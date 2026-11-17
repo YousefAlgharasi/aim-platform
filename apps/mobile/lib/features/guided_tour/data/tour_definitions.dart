@@ -8,9 +8,9 @@
 // `TourTarget` widget on that screen. A step whose element is not on screen
 // is skipped, exactly like the web tour.
 //
-// The tours the web has but this app does not (course detail, AI Teacher,
-// Progress, and the web "Remember and fix" step) are left out on purpose:
-// the mobile screens have no matching element to point at.
+// The tours the web has but this app does not (course detail, AI Teacher, and
+// the web "Remember and fix" step) are left out on purpose: the mobile screens
+// have no matching element to point at.
 
 import '../../../core/routing/app_route_paths.dart';
 
@@ -183,6 +183,27 @@ const List<TourDefinition> tourDefinitions = [
     ],
   ),
   TourDefinition(
+    id: 'progress',
+    steps: [
+      TourStep(
+        target: 'progress-next',
+        title: TourText('Your next step', 'خطوتك التالية'),
+        body: TourText(
+          'This is the best thing to do next, based on your results.',
+          'هذا أفضل ما يمكنك فعله الآن بحسب نتائجك.',
+        ),
+      ),
+      TourStep(
+        target: 'progress-skills',
+        title: TourText('Your skills', 'مهاراتك'),
+        body: TourText(
+          'See which skills are strong and which need more practice.',
+          'اطّلع على المهارات القوية وتلك التي تحتاج إلى مزيد من التدريب.',
+        ),
+      ),
+    ],
+  ),
+  TourDefinition(
     id: 'vocabulary-library',
     steps: [
       TourStep(
@@ -253,6 +274,7 @@ String? tourIdForScreen({required String location, required int mainTab}) {
     return switch (mainTab) {
       0 => dashboardTourId,
       1 => 'courses',
+      3 => 'progress',
       _ => null,
     };
   }
