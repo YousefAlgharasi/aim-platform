@@ -1,7 +1,6 @@
 // LiveDock — the student's side of the live lesson, at the bottom of the screen: the AIM robot sits on the top-left
 // corner of the text box and what it is saying rises from its head as a thought bubble. Inside the box: the teacher's
-// voice (mute), the text, and one button that is the live microphone while the box is empty (tap to mute / unmute; the
-// conversation itself is hands-free) and "send" once something is typed. Under the box: a button that opens the
+// voice (mute), the text, the microphone (tap to talk, tap again to stop and send) and "send" once something is typed. Under the box: a button that opens the
 // conversation sheet.
 
 import 'dart:math' as math;
@@ -9,6 +8,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'aim_robot.dart';
@@ -182,7 +182,7 @@ class _ComposerBox extends StatelessWidget {
           switch (micMode) {
             MicMode.live || MicMode.hearing => _SquareButton(
                 icon: Icons.mic_rounded,
-                tooltip: l10n.voiceLiveMicMute,
+                tooltip: context.tr('Tap to stop and send', 'اضغط للإيقاف والإرسال'),
                 style: _ButtonStyle.filled,
                 ring: micMode == MicMode.hearing,
                 level: micLevel,
@@ -196,7 +196,7 @@ class _ComposerBox extends StatelessWidget {
               ),
             MicMode.off => _SquareButton(
                 icon: Icons.mic_none_rounded,
-                tooltip: l10n.voiceLiveMicStart,
+                tooltip: context.tr('Tap to talk', 'اضغط لتتحدث'),
                 style: _ButtonStyle.filled,
                 onTap: onToggleMic,
               ),
