@@ -6,6 +6,7 @@ import '../../../core/localization/inline_tr.dart';
 import '../../../core/routing/app_route_paths.dart';
 import '../../../core/state/app_async_state.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../aim_results/data/models/aim_weakness_record_model.dart';
 import '../../aim_results/logic/entity/aim_results_data.dart';
 import '../../aim_results/logic/provider/aim_results_provider.dart';
 import '../../auth/logic/provider/auth_context_provider.dart';
@@ -383,17 +384,7 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
             ),
             const SizedBox(height: AimSpacing.componentGap),
-            Wrap(
-              spacing: AimSpacing.space8,
-              runSpacing: AimSpacing.space8,
-              children: [
-                for (final w in fixed.take(12))
-                  Chip(
-                    avatar: const Icon(Icons.check_rounded, size: 16, color: AimColors.success500),
-                    label: Text(skillName(titles, w.skillId)),
-                  ),
-              ],
-            ),
+            FixedSkillsList(items: collapseFixedSkills(fixed, titles)),
           ],
           const SizedBox(height: 72),
         ],
@@ -415,6 +406,146 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
   void _findLesson() {
     ref.read(mainShellTabIndexProvider.notifier).state = 1;
     context.go(AppRoutePaths.mainShell);
+  }
+}
+
+/// One line of "Already fixed": a skill (by its name) and how many times it
+/// was fixed. Several records for the same skill collapse into one line.
+class FixedSkillItem {
+  const FixedSkillItem({required this.name, required this.count});
+
+  final String name;
+  final int count;
+}
+
+/// Groups the resolved records by skill name and puts the most recently
+/// fixed first. Display only; the records come from the server.
+List<FixedSkillItem> collapseFixedSkills(
+  List<AimWeaknessRecordModel> records,
+  Map<String, String> titles,
+) {
+  DateTime when(AimWeaknessRecordModel w) =>
+      DateTime.tryParse(w.resolvedAt ?? w.updatedAt) ??
+      DateTime.fromMillisecondsSinceEpoch(0);
+
+  final byName = <String, ({int count, DateTime latest})>{};
+  for (final w in records) {
+    final name = skillName(titles, w.skillId).trim();
+    final at = when(w);
+    final prev = byName[name];
+    byName[name] = prev == null
+        ? (count: 1, latest: at)
+        : (count: prev.count + 1, latest: at.isAfter(prev.latest) ? at : prev.latest);
+  }
+  final names = byName.keys.toList()
+    ..sort((a, b) {
+      final byDate = byName[b]!.latest.compareTo(byName[a]!.latest);
+      return byDate != 0 ? byDate : a.compareTo(b);
+    });
+  return [for (final n in names) FixedSkillItem(name: n, count: byName[n]!.count)];
+}
+
+/// The "Already fixed" list: one tidy card, one skill per row, newest first,
+/// with a "Show all" toggle when there are many.
+class FixedSkillsList extends StatefulWidget {
+  const FixedSkillsList({super.key, required this.items});
+
+  final List<FixedSkillItem> items;
+
+  @override
+  State<FixedSkillsList> createState() => _FixedSkillsListState();
+}
+
+class _FixedSkillsListState extends State<FixedSkillsList> {
+  static const _collapsedCount = 5;
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final items = widget.items;
+    final canToggle = items.length > _collapsedCount;
+    final shown = _expanded || !canToggle ? items : items.take(_collapsedCount).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: AimRadius.borderLg,
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < shown.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: surfaces.divider),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.space16,
+                vertical: AimSpacing.space12,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AimColors.success500.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_rounded, size: 16, color: AimColors.success500),
+                  ),
+                  const SizedBox(width: AimSpacing.componentGap),
+                  Expanded(
+                    child: Text(
+                      shown[i].name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.start,
+                      style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+                    ),
+                  ),
+                  if (shown[i].count > 1) ...[
+                    const SizedBox(width: AimSpacing.space8),
+                    Container(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: AimSpacing.space8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: surfaces.surfaceSunken,
+                        borderRadius: AimRadius.borderPill,
+                      ),
+                      child: Text(
+                        '\u00d7${shown[i].count}',
+                        textDirection: TextDirection.ltr,
+                        style: AimTextStyles.caption.copyWith(
+                          color: surfaces.textMuted,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          if (canToggle) ...[
+            Divider(height: 1, color: surfaces.divider),
+            TextButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(
+                _expanded
+                    ? context.tr('Show less', 'عرض أقل')
+                    : fill(
+                        context.tr('Show all ({n})', 'عرض الكل ({n})'),
+                        {'n': items.length},
+                      ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
