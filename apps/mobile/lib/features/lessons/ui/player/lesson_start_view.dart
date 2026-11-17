@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/voice_teacher/ui/widgets/aim_robot.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
@@ -19,6 +20,7 @@ class LessonStartView extends StatelessWidget {
     required this.onBack,
     required this.onStartLive,
     required this.onRead,
+    required this.onStartPractice,
     super.key,
   });
 
@@ -30,6 +32,55 @@ class LessonStartView extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onStartLive;
   final VoidCallback onRead;
+
+  /// Starts the question practice that finishes the lesson.
+  final VoidCallback onStartPractice;
+
+  /// "Study with the AI first" pop-up: the student picks the live lesson or goes straight to the practice.
+  Future<void> _askBeforePractice(BuildContext context) async {
+    final startLesson = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.school_rounded, color: AimColors.primary600, size: 32),
+        title: Text(
+          context.tr('Study with the AI first', 'ذاكر مع المعلم الذكي أولًا'),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          context.tr(
+            'Make sure you study this lesson with your AI teacher before you start the practice. It helps you answer more questions correctly.',
+            'تأكد من أنك تذاكر هذا الدرس مع المعلم الذكي قبل أن تبدأ التدريب. فهذا يساعدك على الإجابة عن أسئلة أكثر بشكل صحيح.',
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actionsOverflowAlignment: OverflowBarAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(context.tr('Start the lesson with AI', 'ابدأ الدرس مع المعلم الذكي')),
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(context.tr('Start the practice to finish the lesson', 'ابدأ التدريب لإنهاء الدرس')),
+            ),
+          ),
+        ],
+      ),
+    );
+    // Tapping outside the pop-up (null) just closes it.
+    if (startLesson == true) {
+      onStartLive();
+    } else if (startLesson == false) {
+      onStartPractice();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +219,14 @@ class LessonStartView extends StatelessWidget {
                   title: l10n.lessonPlayerReadWith(guide.name),
                   hint: l10n.lessonPlayerReadHint,
                   onTap: onRead,
+                ),
+                const SizedBox(height: 12),
+                // Finish the lesson with questions; a pop-up first suggests studying with the AI teacher.
+                LessonActionTile(
+                  icon: Icons.fact_check_rounded,
+                  title: context.tr('Start practice', 'ابدأ التدريب'),
+                  hint: context.tr('Answer questions to finish the lesson.', 'أجب عن الأسئلة لإنهاء الدرس.'),
+                  onTap: () => _askBeforePractice(context),
                 ),
               ],
             ),

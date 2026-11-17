@@ -37,6 +37,8 @@ import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/learner_tools/data/learner_tools_api.dart';
+import 'package:aim_mobile/features/stories/ui/widgets/story_widgets.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/course_path_loader_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
@@ -44,7 +46,7 @@ import 'package:aim_mobile/features/student_courses/data/models/student_course_m
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
-enum CoursePathNodeKind { lesson, quiz, finalExam }
+enum CoursePathNodeKind { lesson, story, quiz, finalExam }
 
 /// One stop on the roadmap (public so the trail can be tested on its own).
 class CoursePathNode {
@@ -55,9 +57,13 @@ class CoursePathNode {
     required this.completed,
     required this.unlocked,
     required this.current,
+    this.storyPart,
   });
 
   final CoursePathNodeKind kind;
+
+  /// Story nodes only: which part of the story [id] this chapter reads.
+  final int? storyPart;
   final String id;
   final String title;
   final bool completed;
@@ -189,6 +195,15 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
       final lessons = data.lessons;
       final quiz = data.quiz;
 
+      // This chapter's part of the course story: a stop after the lessons, before the quiz.
+      ChapterStory? story;
+      try {
+        story = await ref.read(learnerToolsApiProvider).chapterStory(activeChapterId);
+      } catch (_) {
+        story = null; // The roadmap still works without the story.
+      }
+      final storyNext = story != null && story.part.unlocked && !story.part.done;
+
       final nodes = <CoursePathNode>[
         for (final lesson in lessons)
           CoursePathNode(
@@ -199,6 +214,16 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             unlocked: lesson.completed || lesson.current,
             current: lesson.current,
           ),
+        if (story != null)
+          CoursePathNode(
+            kind: CoursePathNodeKind.story,
+            id: story.storyId,
+            storyPart: story.part.index,
+            title: story.title,
+            completed: story.part.done,
+            unlocked: story.part.unlocked,
+            current: storyNext,
+          ),
         if (quiz != null)
           CoursePathNode(
             kind: CoursePathNodeKind.quiz,
@@ -206,7 +231,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
             title: quiz.title,
             completed: quiz.completed,
             unlocked: !quiz.locked,
-            current: !quiz.locked && !quiz.completed,
+            current: !quiz.locked && !quiz.completed && !storyNext,
           ),
       ];
 
@@ -302,6 +327,8 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
     switch (node.kind) {
       case CoursePathNodeKind.lesson:
         _openLesson(node);
+      case CoursePathNodeKind.story:
+        context.push(storyPartRoute(node.id, node.storyPart ?? 0));
       case CoursePathNodeKind.quiz:
       case CoursePathNodeKind.finalExam:
         _openAssessment(node);
@@ -462,6 +489,7 @@ class CoursePathTrail extends StatelessWidget {
           lessonNumber: node.kind == CoursePathNodeKind.lesson ? lessonNumber : null,
           label: switch (node.kind) {
             CoursePathNodeKind.lesson => node.title,
+            CoursePathNodeKind.story => node.title.isNotEmpty ? node.title : context.tr('Story', 'القصة'),
             CoursePathNodeKind.quiz => quizLabel,
             CoursePathNodeKind.finalExam => finalExamLabel,
           },
@@ -569,7 +597,11 @@ class _ZigStop extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(Icons.play_arrow_rounded, color: AimColors.neutral0, size: 28),
+        child: Icon(
+          node.kind == CoursePathNodeKind.story ? Icons.auto_stories_rounded : Icons.play_arrow_rounded,
+          color: AimColors.neutral0,
+          size: 28,
+        ),
       );
     } else {
       dot = Container(
@@ -585,10 +617,11 @@ class _ZigStop extends StatelessWidget {
       );
     }
 
+    final isStory = node.kind == CoursePathNodeKind.story;
     final status = isDone
-        ? l10n.homeNodeMastered
+        ? (isStory ? context.tr('Read', 'تمت القراءة') : l10n.homeNodeMastered)
         : isCurrent
-            ? l10n.homeNodeCurrentLesson
+            ? (isStory ? context.tr('Story part', 'جزء القصة') : l10n.homeNodeCurrentLesson)
             : l10n.homeNodeLocked;
 
     final nodeColumn = SizedBox(

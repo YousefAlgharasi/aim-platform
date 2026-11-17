@@ -11,9 +11,9 @@ class VadOptions {
     this.endSilenceMs = 1100,
     this.minSpeechMs = 350,
     this.maxUtteranceMs = 60000,
-    this.minLevel = 0.012,
-    this.noiseFactor = 2.8,
-    this.bargeInFactor = 2.2,
+    this.minLevel = 0.008,
+    this.noiseFactor = 2.2,
+    this.bargeInFactor = 1.8,
     this.calibrationMs = 600,
   });
 
@@ -79,6 +79,9 @@ class Vad {
   double _calibratedMs = 0;
   double noiseFloor = 0.004;
 
+  /// The room's noise level is never assumed louder than this, so normal speech always clears the bar.
+  static const double maxNoiseFloor = 0.03;
+
   bool get talking => _inSpeech;
 
   /// The loudness a frame must exceed to count as speech right now.
@@ -92,8 +95,11 @@ class Vad {
 
   VadEvent? process(double rms, double frameMs, bool aiSpeaking) {
     if (_calibratedMs < options.calibrationMs) {
+      // The teacher's own voice coming out of the speaker is not the room's noise: learning it would set the bar so
+      // high that the student's voice never counts. Wait for a quiet moment instead.
+      if (aiSpeaking) return null;
       _calibratedMs += frameMs;
-      noiseFloor = _clamp(noiseFloor * 0.7 + rms * 0.3, 0.002, 0.05);
+      noiseFloor = _clamp(noiseFloor * 0.7 + rms * 0.3, 0.002, maxNoiseFloor);
       return null;
     }
     final threshold = this.threshold(aiSpeaking);
@@ -113,7 +119,7 @@ class Vad {
       } else {
         _candidateMs = _max(0, _candidateMs - frameMs * 2);
         // Learn the room's background level only while it is quiet and the teacher is not talking.
-        if (!aiSpeaking) noiseFloor = _clamp(noiseFloor * 0.95 + rms * 0.05, 0.002, 0.05);
+        if (!aiSpeaking) noiseFloor = _clamp(noiseFloor * 0.95 + rms * 0.05, 0.002, maxNoiseFloor);
       }
       return null;
     }
