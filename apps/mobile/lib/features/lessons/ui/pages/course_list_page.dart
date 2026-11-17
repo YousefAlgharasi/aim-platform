@@ -10,6 +10,7 @@ import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_target.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
 import 'package:aim_mobile/features/student_courses/logic/entity/student_course.dart';
 import 'package:aim_mobile/features/student_courses/logic/provider/student_courses_provider.dart';
@@ -195,6 +196,10 @@ class _CourseListContentState extends State<_CourseListContent> {
     };
   }
 
+  /// The first course is what the guided tour points at.
+  Widget _tourFirst(int index, Widget tile) =>
+      index == 0 ? TourTarget(id: 'courses-list', child: tile) : tile;
+
   String? _headerLevel(List<StudentCourseModel> courses) {
     for (final course in courses.reversed) {
       if (course.status != StudentCourseStatus.notStarted && course.levelCode != null) {
@@ -232,7 +237,9 @@ class _CourseListContentState extends State<_CourseListContent> {
             title: l10n.lessonsCoursesPageTitle,
             action: headerLevel.isEmpty
                 ? null
-                : Container(
+                : TourTarget(
+                    id: 'level-badge',
+                    child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: colorScheme.primary.withValues(alpha: 0.15),
@@ -254,6 +261,7 @@ class _CourseListContentState extends State<_CourseListContent> {
                         ),
                       ],
                     ),
+                  ),
                   ),
           ),
 
@@ -294,11 +302,14 @@ class _CourseListContentState extends State<_CourseListContent> {
             )
           else ...[
             for (var i = 0; i < visibleCourses.length; i++)
-              CourseListTile(
-                model: visibleCourses[i],
-                index: i,
-                isCurrentEnrollment: widget.currentCourseId == visibleCourses[i].courseId,
-                onTap: () => widget.onTap(visibleCourses[i]),
+              _tourFirst(
+                i,
+                CourseListTile(
+                  model: visibleCourses[i],
+                  index: i,
+                  isCurrentEnrollment: widget.currentCourseId == visibleCourses[i].courseId,
+                  onTap: () => widget.onTap(visibleCourses[i]),
+                ),
               ),
 
             // Prototype "NEXT UP · LOCKED COURSE" Card

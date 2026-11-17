@@ -4,6 +4,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 
 import '../../../core/localization/inline_tr.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../guided_tour/ui/tour_target.dart';
 import '../data/learner_tools_api.dart';
 import 'flashcard_review.dart';
 
@@ -59,10 +60,13 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
       appBar: AIMTopAppBar(
         title: context.tr('My words', 'كلماتي'),
         actions: [
-          IconButton(
-            tooltip: context.tr('Add a word', 'أضف كلمة'),
-            icon: const Icon(Icons.add_rounded),
-            onPressed: _addWord,
+          TourTarget(
+            id: 'words-add',
+            child: IconButton(
+              tooltip: context.tr('Add a word', 'أضف كلمة'),
+              icon: const Icon(Icons.add_rounded),
+              onPressed: _addWord,
+            ),
           ),
         ],
       ),
@@ -100,11 +104,14 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
       child: ListView(
         padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
         children: [
-          _ReviewHero(
-            dueCount: data.dueCount,
-            saved: words.length,
-            mastered: mastered,
-            onStart: data.dueCount == 0 ? null : _startReview,
+          TourTarget(
+            id: 'words-review',
+            child: _ReviewHero(
+              dueCount: data.dueCount,
+              saved: words.length,
+              mastered: mastered,
+              onStart: data.dueCount == 0 ? null : _startReview,
+            ),
           ),
           const SizedBox(height: AimSpacing.sectionGap),
           if (words.isEmpty)
@@ -142,7 +149,12 @@ class _VocabularyPageState extends ConsumerState<VocabularyPage> {
               )
             else
               for (final w in shown) ...[
-                _WordCard(word: w, onDelete: () => _remove(w)),
+                w == shown.first
+                    ? TourTarget(
+                        id: 'words-list',
+                        child: _WordCard(word: w, onDelete: () => _remove(w)),
+                      )
+                    : _WordCard(word: w, onDelete: () => _remove(w)),
                 const SizedBox(height: AimSpacing.componentGap),
               ],
           ],
