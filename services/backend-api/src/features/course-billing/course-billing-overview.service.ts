@@ -79,6 +79,15 @@ export interface CourseBillingOverview {
 
 const num = (v: string | number | null | undefined): number => Number(v ?? 0);
 
+/** Every approved/pending payment: students paying in-app and visitors buying coupons on the landing page. */
+const ALL_PAYMENTS = `(
+  SELECT id, student_id, course_id, wallet_id, amount, discount_amount, currency, status, created_at, reviewed_at, NULL::text AS buyer_name
+    FROM course_payment_requests
+  UNION ALL
+  SELECT id, buyer_user_id, course_id, wallet_id, amount, discount_amount, currency, status, created_at, reviewed_at, buyer_name
+    FROM coupon_purchases
+)`;
+
 @Injectable()
 export class CourseBillingOverviewService {
   constructor(private readonly db: DatabaseService) {}
@@ -112,7 +121,7 @@ export class CourseBillingOverviewService {
          COUNT(*) FILTER (WHERE status = 'pending')::text AS pending_count,
          COALESCE(SUM(amount) FILTER (WHERE status = 'pending'), 0)::text AS pending_amount,
          COUNT(*) FILTER (WHERE status = 'rejected')::text AS rejected_count
-       FROM course_payment_requests
+       FROM ${ALL_PAYMENTS} pay
        GROUP BY currency
        ORDER BY currency`,
     );
@@ -135,7 +144,7 @@ export class CourseBillingOverviewService {
   private async revenueByCourse(): Promise<CourseRevenue[]> {
     const r = await this.db.query<Record<string, string>>(
       `SELECT co.id AS course_id, co.title, p.currency, COUNT(*)::text AS payments, SUM(p.amount)::text AS revenue
-       FROM course_payment_requests p JOIN courses co ON co.id = p.course_id
+       FROM ${ALL_PAYMENTS} p JOIN courses co ON co.id = p.course_id
        WHERE p.status = 'approved'
        GROUP BY co.id, co.title, p.currency
        ORDER BY SUM(p.amount) DESC
@@ -149,7 +158,7 @@ export class CourseBillingOverviewService {
   private async revenueByWallet(): Promise<WalletRevenue[]> {
     const r = await this.db.query<Record<string, string>>(
       `SELECT w.id AS wallet_id, w.name, p.currency, COUNT(*)::text AS payments, SUM(p.amount)::text AS revenue
-       FROM course_payment_requests p JOIN payment_wallets w ON w.id = p.wallet_id
+       FROM ${ALL_PAYMENTS} p JOIN payment_wallets w ON w.id = p.wallet_id
        WHERE p.status = 'approved'
        GROUP BY w.id, w.name, p.currency
        ORDER BY SUM(p.amount) DESC`,
@@ -164,7 +173,7 @@ export class CourseBillingOverviewService {
     const r = await this.db.query<Record<string, string>>(
       `SELECT to_char(date_trunc('month', reviewed_at), 'YYYY-MM') AS month, currency,
               COUNT(*)::text AS payments, SUM(amount)::text AS revenue
-       FROM course_payment_requests
+       FROM ${ALL_PAYMENTS} pay
        WHERE status = 'approved' AND reviewed_at >= date_trunc('month', now()) - interval '5 months'
        GROUP BY 1, currency
        ORDER BY 1, currency`,
@@ -187,17 +196,17 @@ export class CourseBillingOverviewService {
 
   private async payingStudents(): Promise<number> {
     const r = await this.db.query<{ count: string }>(
-      `SELECT COUNT(DISTINCT student_id)::text AS count FROM course_payment_requests WHERE status = 'approved'`,
+      `SELECT COUNT(DISTINCT COALESCE(student_id::text, buyer_name))::text AS count FROM ${ALL_PAYMENTS} pay WHERE status = 'approved'`,
     );
     return num(r.rows[0]?.count);
   }
 
   private async recentPayments(): Promise<RecentPayment[]> {
     const r = await this.db.query<Record<string, string | Date | null>>(
-      `SELECT p.id, u.email AS student_email, co.title AS course_title, w.name AS wallet_name,
+      `SELECT p.id, COALESCE(u.email, p.buyer_name) AS student_email, co.title AS course_title, w.name AS wallet_name,
               p.amount, p.currency, p.status, p.created_at, p.reviewed_at
-       FROM course_payment_requests p
-       JOIN users u ON u.id = p.student_id
+       FROM ${ALL_PAYMENTS} p
+       LEFT JOIN users u ON u.id = p.student_id
        JOIN courses co ON co.id = p.course_id
        JOIN payment_wallets w ON w.id = p.wallet_id
        ORDER BY p.created_at DESC

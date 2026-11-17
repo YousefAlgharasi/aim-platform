@@ -10,6 +10,8 @@
 export interface SttProviderRequest {
   readonly audio: Buffer;
   readonly contentType: string;
+  /** Optional BCP-47 hint; honoured only if the language is enabled under Voice languages. */
+  readonly languageCode?: string;
 }
 
 export type SttProviderResponseStatus = 'success' | 'error' | 'timeout';

@@ -27,7 +27,7 @@ const SEVERITY_VARIANT: Record<string, 'error' | 'warning' | 'info' | 'neutral'>
 const weaknessColumns: AdminTableColumn<AdminWeaknessItem>[] = [
   {
     key: 'skillId',
-    header: 'Skill ID',
+    header: 'Skill',
     render: (row) => <AdminIdCell id={row.skillId} />,
   },
   {
@@ -61,7 +61,7 @@ const recommendationColumns: AdminTableColumn<AdminRecommendationItem>[] = [
   },
   {
     key: 'entityId',
-    header: 'Entity ID',
+    header: 'Entity',
     render: (row) => <AdminIdCell id={row.entityId} />,
   },
   {

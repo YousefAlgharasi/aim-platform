@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useI18n } from '../../i18n/I18nContext';
 import { ThemeToggleButton } from '../../components/common/ThemeToggleButton';
@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
 import { SparkleIcon, MicIcon, PencilIcon, FlameIcon, TrophyIcon } from '../../components/common/Icons';
 import { Skeleton } from '../../components/common/Skeleton';
 import { publicApi, type PublicCourse } from '../learner/learnerApi';
+import { couponApi, formatPrice, type PriceCourse } from '../coupons/couponApi';
 import './landing.css';
 
 const STEPS = [
@@ -39,7 +40,7 @@ const EXAMPLES: Array<{ wrong: Tok[]; right: Tok[]; note: string }> = [
   { wrong: [['I'], ['am', true], ['agree'], ['with you']], right: [['I'], ['agree'], ['with you']], note: 'Agree is already a verb, so drop “am”.' },
 ];
 
-const NAV: Array<[id: string, label: string]> = [['how', 'How it works'], ['levels', 'Levels'], ['features', 'Features']];
+const NAV: Array<[id: string, label: string]> = [['how', 'How it works'], ['levels', 'Levels'], ['courses', 'Courses & prices'], ['features', 'Features']];
 
 const wrap = 'mx-auto w-full max-w-7xl px-5 sm:px-8';
 const rule = 'border-t border-line';
@@ -58,6 +59,7 @@ export function LandingPage() {
   const { user, loading } = useAuth();
   const [courses, setCourses] = useState<PublicCourse[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [priced, setPriced] = useState<PriceCourse[] | null>(null);
   const [band, setBand] = useState('A1');
   const [ex, setEx] = useState(0);
   const [section, setSection] = useState('');
@@ -94,6 +96,18 @@ export function LandingPage() {
     return () => { alive = false; };
   }, [locale]);
 
+  useEffect(() => {
+    let alive = true;
+    couponApi.courses().then((c) => alive && setPriced(c)).catch(() => alive && setPriced([]));
+    return () => { alive = false; };
+  }, []);
+
+  // Arriving from the app (/welcome#courses): jump to that section once the page has its content.
+  useEffect(() => {
+    const id = window.location.hash.replace('#', '');
+    if (id && priced !== null) document.getElementById(id)?.scrollIntoView();
+  }, [priced]);
+
   const perBand = useMemo(() => BANDS.map((b) => {
     const list = (courses ?? []).filter((c) => c.cefrCode?.toUpperCase().startsWith(b.code));
     return { ...b, list, lessons: list.reduce((n, c) => n + c.lessonCount, 0) };
@@ -107,7 +121,8 @@ export function LandingPage() {
 
   const totalLessons = (courses ?? []).reduce((n, c) => n + c.lessonCount, 0);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  // Open to everyone: signed-in students see a shortcut to their dashboard instead of the sign-up buttons.
+  const signedIn = !loading && !!user;
 
   const example = EXAMPLES[ex];
   const renderTokens = (toks: Tok[], kind: 'wrong' | 'right') => {
@@ -147,8 +162,14 @@ export function LandingPage() {
           </nav>
           <div className="flex items-center justify-end gap-1.5">
             <span className="hidden items-center gap-1.5 lg:flex"><ThemeToggleButton /><LanguageSwitcher /></span>
-            <Link to="/login" className="hidden h-10 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold text-ink no-underline hover:bg-surface-strong lg:inline-flex">{t('Log in')}</Link>
-            <Link to="/register" className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-ink px-5 text-sm font-semibold text-ink-inverse no-underline transition hover:opacity-90">{t('Sign up')}</Link>
+            {signedIn ? (
+              <Link to="/" className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-ink px-5 text-sm font-semibold text-ink-inverse no-underline transition hover:opacity-90">{t('My dashboard')}</Link>
+            ) : (
+              <>
+                <Link to="/login" className="hidden h-10 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold text-ink no-underline hover:bg-surface-strong lg:inline-flex">{t('Log in')}</Link>
+                <Link to="/register" className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-ink px-5 text-sm font-semibold text-ink-inverse no-underline transition hover:opacity-90">{t('Sign up')}</Link>
+              </>
+            )}
             <button ref={menuBtn} type="button" onClick={() => setMenuOpen((v) => !v)} aria-expanded={menuOpen} aria-controls="lp-menu"
               aria-label={menuOpen ? t('Close menu') : t('Menu')}
               className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-ink hover:bg-surface-strong lg:hidden">
@@ -171,7 +192,9 @@ export function LandingPage() {
                     {section === id && <span aria-hidden className="size-2 rounded-full bg-brand" />}
                   </a>
                 ))}
-                <Link to="/login" className="flex items-center border-b border-line py-4 text-2xl font-semibold text-ink-soft no-underline">{t('Log in')}</Link>
+                {signedIn
+                  ? <Link to="/" className="flex items-center border-b border-line py-4 text-2xl font-semibold text-ink-soft no-underline">{t('My dashboard')}</Link>
+                  : <Link to="/login" className="flex items-center border-b border-line py-4 text-2xl font-semibold text-ink-soft no-underline">{t('Log in')}</Link>}
               </nav>
               <div className={`${wrap} flex items-center justify-between gap-3 py-4`}>
                 <span className="text-sm text-ink-muted">{t('Theme and language')}</span>
@@ -196,10 +219,12 @@ export function LandingPage() {
                 {t('Lessons for every level from beginner to advanced, an AI teacher you can talk to any time, and practice that fits into your day.')}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-4 sm:justify-start lg:flex-nowrap">
-                <Link to="/register" className="inline-flex h-14 w-full justify-center sm:w-auto shrink-0 items-center gap-2 rounded-full bg-brand px-7 text-base font-semibold text-white no-underline transition hover:bg-brand-hover active:scale-[0.98]">
-                  {t('Start learning free')}<Arrow />
+                <Link to={signedIn ? '/' : '/register'} className="inline-flex h-14 w-full justify-center sm:w-auto shrink-0 items-center gap-2 rounded-full bg-brand px-7 text-base font-semibold text-white no-underline transition hover:bg-brand-hover active:scale-[0.98]">
+                  {signedIn ? t('Continue learning') : t('Start learning free')}<Arrow />
                 </Link>
-                <Link to="/login" className="text-[15px] font-semibold text-ink underline decoration-line-strong decoration-2 underline-offset-[6px] hover:decoration-ink">{t('I already have an account')}</Link>
+                {signedIn
+                  ? <a href="#courses" className="text-[15px] font-semibold text-ink underline decoration-line-strong decoration-2 underline-offset-[6px] hover:decoration-ink">{t('Courses & prices')}</a>
+                  : <Link to="/login" className="text-[15px] font-semibold text-ink underline decoration-line-strong decoration-2 underline-offset-[6px] hover:decoration-ink">{t('I already have an account')}</Link>}
               </div>
             </div>
           </div>
@@ -312,6 +337,43 @@ export function LandingPage() {
                 );
               })}
               <div className={rule} />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Courses & prices: buy a coupon for a course, with or without an account ─── */}
+        <section id="courses" className={`${rule} scroll-mt-20 lg:scroll-mt-16`} aria-labelledby="courses-h">
+          <div className={`${wrap} grid gap-10 py-20 grid-cols-1 lg:grid-cols-12 lg:gap-x-10 lg:py-28`}>
+            {sectionHead('courses-h', t('Courses & prices'), t('Buy a coupon for a course. Use it when you start and the course is yours for good — no deadline. Free courses need no coupon.'))}
+            <div className="lg:col-span-8">
+              {priced === null && <div className="flex flex-col gap-3"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></div>}
+              {priced !== null && priced.length === 0 && <p className="m-0 text-base text-ink-muted">{t('Courses will appear here soon.')}</p>}
+              <ul className="m-0 list-none p-0">
+                {(priced ?? []).map((c, k) => (
+                  <li key={c.id} className={`flex flex-wrap items-center gap-x-4 gap-y-2 py-4 ${k === 0 ? '' : rule}`}>
+                    <span className="min-w-0 flex-1">
+                      <span dir="auto" className="block truncate text-base font-semibold">{c.title}</span>
+                      <span className="lp-num block text-sm text-ink-muted">{[c.cefrCode, c.lessonCount > 0 ? t('{n} lessons', { n: c.lessonCount }) : ''].filter(Boolean).join(' · ')}</span>
+                    </span>
+                    <span className="shrink-0 text-end">
+                      {c.price.isFree ? (
+                        <span className="rounded-full bg-success-soft px-3 py-1 text-sm font-semibold text-success-ink">{t('Free')}</span>
+                      ) : (
+                        <span className="block text-base font-semibold">
+                          {formatPrice(c.price.amount, c.price.currency)}
+                          {c.price.discountActive && <span className="ms-2 text-sm font-normal text-ink-muted line-through">{formatPrice(c.price.originalAmount, c.price.currency)}</span>}
+                        </span>
+                      )}
+                    </span>
+                    {c.price.isFree ? (
+                      <Link to={signedIn ? `/curriculum/${c.id}` : '/register'} className="inline-flex h-10 shrink-0 items-center rounded-full px-5 text-sm font-semibold text-ink no-underline ring-1 ring-line-strong hover:bg-surface-strong">{signedIn ? t('Open') : t('Start free')}</Link>
+                    ) : (
+                      <Link to={`/buy/${c.id}`} className="inline-flex h-10 shrink-0 items-center rounded-full bg-ink px-5 text-sm font-semibold text-ink-inverse no-underline hover:opacity-90">{t('Buy coupon')}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="m-0 mt-6 text-sm text-ink-muted">{t('Already have a coupon? Log in, open the course and press “Start course”.')}</p>
             </div>
           </div>
         </section>

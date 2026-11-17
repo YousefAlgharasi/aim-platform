@@ -85,11 +85,6 @@ export function AdminPlacementTestsList({
       render: (row) => <AdminDateCell date={row.createdAt} />,
     },
     {
-      key: 'id',
-      header: 'ID',
-      render: (row) => <AdminIdCell id={row.id} />,
-    },
-    {
       key: 'actions',
       header: 'Actions',
       render: (row) =>

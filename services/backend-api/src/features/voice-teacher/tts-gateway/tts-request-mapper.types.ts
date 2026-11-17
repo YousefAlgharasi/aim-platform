@@ -16,4 +16,7 @@ export interface TtsCompletionRequest {
   readonly studentId: string;
   /** tts.ai requires a voice id on every /v1/tts/ request. */
   readonly voice: string;
+  /** Arabic-capable model/voice used for chunks that contain Arabic letters (Admin > Voice Languages). */
+  readonly arModel?: string | null;
+  readonly arVoice?: string | null;
 }

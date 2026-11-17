@@ -213,3 +213,77 @@ export async function fetchAdminAiAuditLogs(token: string, limit = 100): Promise
   );
   return envelope.data;
 }
+
+export type AdminAiPromptPart = {
+  readonly key: 'identity' | 'greeting' | 'teaching' | 'complete' | 'practice';
+  readonly default: string;
+  readonly override: string | null;
+  readonly effective: string;
+};
+export type AdminAiCustomRule = {
+  readonly id: string;
+  readonly title: string;
+  readonly body: string;
+  readonly enabled: boolean;
+  readonly sortOrder: number;
+  readonly courseTitles: string[] | null;
+  readonly updatedAt: string;
+};
+export type AdminAiSystemPrompt = {
+  readonly parts: readonly AdminAiPromptPart[];
+  readonly rules: readonly AdminAiCustomRule[];
+  readonly practiceGreeting: string;
+  readonly greetingInstruction: string;
+  readonly lessonCompleteMarker: string;
+  readonly contextSections: readonly string[];
+  readonly safetyRules: readonly string[];
+};
+
+function decodeSystemPrompt(v: unknown): AdminAiSystemPrompt {
+  const o = (v ?? {}) as Record<string, any>;
+  const s = (x: unknown) => (typeof x === 'string' ? x : '');
+  const list = (x: unknown) => (Array.isArray(x) ? x.map(String) : []);
+  return {
+    parts: (Array.isArray(o.parts) ? o.parts : []).map((p: any) => ({
+      key: p.key,
+      default: s(p.default),
+      override: typeof p.override === 'string' ? p.override : null,
+      effective: s(p.effective),
+    })),
+    rules: (Array.isArray(o.rules) ? o.rules : []).map((r: any) => ({
+      id: s(r.id), title: s(r.title), body: s(r.body), enabled: r.enabled !== false,
+      sortOrder: typeof r.sortOrder === 'number' ? r.sortOrder : 0,
+      courseTitles: Array.isArray(r.courseTitles) ? r.courseTitles.map(String) : null, updatedAt: s(r.updatedAt),
+    })),
+    practiceGreeting: s(o.practiceGreeting),
+    greetingInstruction: s(o.greetingInstruction),
+    lessonCompleteMarker: s(o.lessonCompleteMarker),
+    contextSections: list(o.contextSections),
+    safetyRules: list(o.safetyRules),
+  };
+}
+
+export async function fetchAdminAiSystemPrompt(token: string): Promise<AdminAiSystemPrompt> {
+  const envelope = await adminApiClient.get('/admin/ai/system-prompt', decodeSystemPrompt, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  return envelope.data;
+}
+
+const auth = (token: string) => ({ authorization: `Bearer ${token}` });
+
+export async function saveAdminAiPromptPart(token: string, key: string, body: string): Promise<void> {
+  await adminApiClient.put(`/admin/ai/system-prompt/parts/${encodeURIComponent(key)}`, decodeSystemPrompt, { headers: auth(token), body: { body } });
+}
+export async function resetAdminAiPromptPart(token: string, key: string): Promise<void> {
+  await adminApiClient.delete(`/admin/ai/system-prompt/parts/${encodeURIComponent(key)}`, decodeSystemPrompt, { headers: auth(token) });
+}
+export async function addAdminAiRule(token: string, rule: { title: string; body: string; courseTitles?: string[] | null }): Promise<void> {
+  await adminApiClient.post('/admin/ai/system-prompt/rules', decodeSystemPrompt, { headers: auth(token), body: rule });
+}
+export async function updateAdminAiRule(token: string, id: string, patch: { title?: string; body?: string; enabled?: boolean; courseTitles?: string[] | null }): Promise<void> {
+  await adminApiClient.patch(`/admin/ai/system-prompt/rules/${encodeURIComponent(id)}`, decodeSystemPrompt, { headers: auth(token), body: patch });
+}
+export async function deleteAdminAiRule(token: string, id: string): Promise<void> {
+  await adminApiClient.delete(`/admin/ai/system-prompt/rules/${encodeURIComponent(id)}`, decodeSystemPrompt, { headers: auth(token) });
+}

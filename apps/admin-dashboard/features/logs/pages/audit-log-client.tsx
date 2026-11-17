@@ -45,11 +45,6 @@ type Props = {
 
 const columns: AdminTableColumn<AuditLogRow>[] = [
   {
-    key: 'id',
-    header: 'Log ID',
-    render: (row) => <AdminIdCell id={row.id} />,
-  },
-  {
     key: 'userId',
     header: 'User',
     render: (row) => (row.userName ? <span>{row.userName}</span> : <AdminIdCell id={row.userId} />),
@@ -75,7 +70,7 @@ const columns: AdminTableColumn<AuditLogRow>[] = [
   },
   {
     key: 'entityId',
-    header: 'Entity ID',
+    header: 'Entity',
     render: (row) => row.entityId ? <AdminIdCell id={row.entityId} /> : <span>—</span>,
   },
   {

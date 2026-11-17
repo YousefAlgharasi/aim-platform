@@ -110,9 +110,9 @@ export function UsersPageClient({
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-sm text-[var(--text-primary)] truncate">
-              {user.email ?? 'No email'}
+              <AdminIdCell id={user.id} fallbackLabel={user.email ?? 'No email'} />
             </span>
-            <AdminIdCell id={user.id} />
+            {user.email && <span className="text-xs text-[var(--text-muted)] truncate">{user.email}</span>}
           </div>
         </div>
       ),

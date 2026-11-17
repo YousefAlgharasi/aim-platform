@@ -8,6 +8,7 @@ import { TtsResponseMapperService } from './tts-response.mapper';
 import { TtsSafeFailureService } from './tts-safe-failure.service';
 import { TtsAudioStorageService } from './tts-audio-storage.service';
 import { TtsAudioGenerationService } from './tts-audio-generation.service';
+import { VoiceLanguageSettingsModule } from '../language-settings/voice-language-settings.module';
 import { DatabaseModule } from '../../../database/database.module';
 import { TtsAudioAssetRepository } from './persistent/tts-audio-asset.repository';
 import { SupabaseAudioObjectStore } from './persistent/supabase-audio-object-store.service';
@@ -16,7 +17,7 @@ import { AudioTranscoderService } from './persistent/audio-transcoder.service';
 import { TtsAudioDeliveryService } from './persistent/tts-audio-delivery.service';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule],
+  imports: [ConfigModule, DatabaseModule, VoiceLanguageSettingsModule],
   providers: [
     TtsGatewayConfigService,
     TtsRequestMapperService,

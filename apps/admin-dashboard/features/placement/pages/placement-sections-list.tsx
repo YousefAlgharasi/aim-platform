@@ -60,7 +60,6 @@ export function AdminPlacementSectionsList({ sections }: AdminPlacementSectionsL
           <th scope="col">Skill Area</th>
           <th scope="col">Questions</th>
           <th scope="col">Created</th>
-          <th scope="col">ID</th>
         </tr>
       </thead>
       <tbody>
@@ -75,7 +74,6 @@ export function AdminPlacementSectionsList({ sections }: AdminPlacementSectionsL
             </td>
             <td>{section.questionCount}</td>
             <td>{formatDate(section.createdAt)}</td>
-            <td className="admin-table-mono">{truncateId(section.id)}</td>
           </tr>
         ))}
       </tbody>

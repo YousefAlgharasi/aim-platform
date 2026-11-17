@@ -15,6 +15,7 @@ import { AiTeacherSafetyStatusModule } from './safety-status/ai-teacher-safety-s
 import { AdminPromptModule } from './admin-prompts/admin-prompt.module';
 import { AdminModelConfigModule } from './admin-model-configs/admin-model-config.module';
 import { AdminUsageCostModule } from './admin-usage-cost/admin-usage-cost.module';
+import { AdminSystemPromptModule } from './admin-system-prompt/admin-system-prompt.module';
 import { AdminSafetyReviewModule } from './admin-safety-review/admin-safety-review.module';
 import { AdminAuditModule } from './admin-audit/admin-audit.module';
 
@@ -34,6 +35,7 @@ import { AdminAuditModule } from './admin-audit/admin-audit.module';
     AdminPromptModule,
     AdminModelConfigModule,
     AdminUsageCostModule,
+    AdminSystemPromptModule,
     AdminSafetyReviewModule,
     AdminAuditModule,
   ],

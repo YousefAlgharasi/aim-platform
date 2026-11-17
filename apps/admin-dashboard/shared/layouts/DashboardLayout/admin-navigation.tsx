@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -54,6 +54,7 @@ const ALL_NAV_GROUPS: NavGroup[] = [
       { label: 'Students', href: '/admin/students', icon: 'progress' },
       { label: 'Reviews', href: '/admin/reviews', icon: 'clipboard' },
       { label: 'AI Teacher', href: '/admin/ai-teacher', icon: 'spark' },
+      { label: 'Voice Languages', href: '/admin/voice-languages', icon: 'spark' },
       { label: 'Practice Topics', href: '/admin/practice', icon: 'academic' },
       { label: 'Stories', href: '/admin/stories', icon: 'academic' },
       { label: 'Vocabulary', href: '/admin/vocabulary', icon: 'clipboard' },
@@ -63,11 +64,7 @@ const ALL_NAV_GROUPS: NavGroup[] = [
   {
     label: 'Finance',
     items: [
-      { label: 'Course Payments', href: '/admin/course-payments', icon: 'banknotes' },
-      { label: 'Payment Requests', href: '/admin/course-payments/requests', icon: 'creditcard' },
-      { label: 'Course Prices', href: '/admin/course-payments/prices', icon: 'tag' },
-      { label: 'Payment Wallets', href: '/admin/course-payments/wallets', icon: 'wallet' },
-      { label: 'Course Access', href: '/admin/course-payments/access', icon: 'clock' },
+      { label: 'Billing & Subscriptions', href: '/admin/course-payments', icon: 'banknotes' },
       { label: 'Analytics', href: '/admin/analytics', icon: 'chart' },
       { label: 'Reports', href: '/admin/reports', icon: 'report' },
     ],
@@ -134,6 +131,76 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 const STORAGE_KEY = 'aim-nav-collapsed';
+const BILLING_HREF = '/admin/course-payments';
+
+type Pending = { coupons: number; payments: number; total: number };
+
+/** How many coupon purchases / payments wait for review. Polled; a rise raises an alert. */
+function usePendingBilling(enabled: boolean): { pending: Pending | null; alert: string | null; dismiss: () => void } {
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [alert, setAlert] = useState<string | null>(null);
+  const last = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let alive = true;
+    async function poll() {
+      try {
+        const res = await fetch('/api/admin/proxy/course-billing/pending-total', { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = (await res.json()) as { data?: Pending };
+        const d = json.data;
+        if (!alive || !d) return;
+        if (last.current !== null && d.total > last.current) {
+          const added = d.total - last.current;
+          setAlert(added === 1 ? 'New coupon request — a student is waiting for your approval.' : `${added} new coupon requests are waiting for your approval.`);
+          beep();
+        }
+        last.current = d.total;
+        setPending(d);
+      } catch {
+        /* keep the last number */
+      }
+    }
+    poll();
+    const id = window.setInterval(poll, 20_000);
+    const onVisible = () => { if (document.visibilityState === 'visible') poll(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { alive = false; window.clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
+  }, [enabled]);
+
+  // The browser tab shows the number too, so it is visible when the dashboard is in the background.
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\)\s*/, '');
+    document.title = pending && pending.total > 0 ? `(${pending.total}) ${base}` : base;
+  }, [pending]);
+
+  return { pending, alert, dismiss: () => setAlert(null) };
+}
+
+/** A short two-tone chime; silently skipped if the browser has not allowed audio yet. */
+function beep() {
+  try {
+    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    const tone = (freq: number, at: number) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + at);
+      g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + at + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + at + 0.35);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + at);
+      o.stop(ctx.currentTime + at + 0.4);
+    };
+    tone(880, 0);
+    tone(1175, 0.18);
+    window.setTimeout(() => void ctx.close(), 900);
+  } catch {
+    /* audio not available */
+  }
+}
 
 export function AdminNavigation({
   authContext,
@@ -146,6 +213,8 @@ export function AdminNavigation({
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const showsBilling = groups.some((g) => g.items.some((i) => i.href === BILLING_HREF));
+  const { pending, alert, dismiss } = usePendingBilling(showsBilling);
 
   useEffect(() => {
     try {
@@ -252,8 +321,12 @@ export function AdminNavigation({
                     >
                       <span className="sn-link-icon-wrap">
                         <NavIcon name={item.icon} />
+                        {collapsed && item.href === BILLING_HREF && !!pending?.total && <span className="sn-count-dot" aria-hidden="true" />}
                       </span>
                       {!collapsed && <span className="sn-link-text">{item.label}</span>}
+                      {!collapsed && item.href === BILLING_HREF && !!pending?.total && (
+                        <span className="sn-count" aria-label={`${pending.total} waiting for review`}>{pending.total > 99 ? '99+' : pending.total}</span>
+                      )}
                       {active && !collapsed && <span className="sn-link-active-indicator" aria-hidden="true" />}
                     </Link>
                   </li>
@@ -310,6 +383,15 @@ export function AdminNavigation({
       >
         {navContent}
       </nav>
+
+      {/* A student just asked for a coupon: visible on every admin page until it is dismissed. */}
+      {alert && (
+        <div className="sn-toast" role="alert">
+          <span className="sn-toast-text">{alert}</span>
+          <Link className="sn-toast-action" href="/admin/course-payments/purchases" onClick={dismiss}>Review now</Link>
+          <button type="button" className="sn-toast-close" onClick={dismiss} aria-label="Dismiss">×</button>
+        </div>
+      )}
     </>
   );
 }

@@ -1,6 +1,12 @@
 import { getAdminToken } from '../../../core/api/admin-token';
 import { AdminApiClientError } from '../../../core/api';
 import {
+  fetchAdminAiSystemPrompt,
+  saveAdminAiPromptPart,
+  resetAdminAiPromptPart,
+  addAdminAiRule,
+  updateAdminAiRule,
+  deleteAdminAiRule,
   fetchAdminAiPromptTemplates,
   fetchAdminAiModelConfigs,
   fetchAdminAiSafetyEvents,
@@ -13,7 +19,7 @@ import {
 } from '../../../core/api/admin-ai-teacher-api';
 import { AiTeacherClient, type AiTeacherSection } from '../../../features/ai-teacher';
 
-const SECTIONS: AiTeacherSection[] = ['prompts', 'model-configs', 'safety', 'usage', 'audit-logs'];
+const SECTIONS: AiTeacherSection[] = ['system-prompt', 'safety', 'usage'];
 
 type Props = {
   searchParams: Promise<{ section?: string }>;
@@ -23,7 +29,7 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
   const { section: sectionParam } = await searchParams;
   const section: AiTeacherSection = SECTIONS.includes(sectionParam as AiTeacherSection)
     ? (sectionParam as AiTeacherSection)
-    : 'prompts';
+    : 'system-prompt';
   const token = await getAdminToken();
 
   let fetchError: string | null = null;
@@ -31,6 +37,9 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
 
   try {
     switch (section) {
+      case 'system-prompt':
+        rows = [await fetchAdminAiSystemPrompt(token)];
+        break;
       case 'prompts':
         rows = await fetchAdminAiPromptTemplates(token);
         break;
@@ -99,6 +108,36 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
     }
   }
 
+  async function run(fn: (t: string) => Promise<void>, fallback: string): Promise<{ error?: string }> {
+    const t = await getAdminToken();
+    try {
+      await fn(t);
+      return {};
+    } catch (error) {
+      return { error: error instanceof AdminApiClientError ? error.message : fallback };
+    }
+  }
+  async function savePart(key: string, body: string) {
+    'use server';
+    return run((t) => saveAdminAiPromptPart(t, key, body), 'Failed to save the prompt.');
+  }
+  async function resetPart(key: string) {
+    'use server';
+    return run((t) => resetAdminAiPromptPart(t, key), 'Failed to reset the prompt.');
+  }
+  async function addRule(rule: { title: string; body: string; courseTitles?: string[] | null }) {
+    'use server';
+    return run((t) => addAdminAiRule(t, rule), 'Failed to add the rule.');
+  }
+  async function updateRule(id: string, patch: { title?: string; body?: string; enabled?: boolean; courseTitles?: string[] | null }) {
+    'use server';
+    return run((t) => updateAdminAiRule(t, id, patch), 'Failed to update the rule.');
+  }
+  async function deleteRule(id: string) {
+    'use server';
+    return run((t) => deleteAdminAiRule(t, id), 'Failed to delete the rule.');
+  }
+
   return (
     <section className="admin-curriculum-page">
       {fetchError && (
@@ -111,6 +150,7 @@ export default async function AdminAITeacherPage({ searchParams }: Props) {
         onCreateDraft={handleCreateDraft}
         onPublish={handlePublish}
         onRetire={handleRetire}
+        systemPromptActions={{ savePart, resetPart, addRule, updateRule, deleteRule }}
       />
     </section>
   );

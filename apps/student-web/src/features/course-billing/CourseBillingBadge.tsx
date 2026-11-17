@@ -24,6 +24,7 @@ export function CourseBillingBadge({ price, access }: { price?: CoursePriceQuote
       break;
     case 'active': {
       const n = access.daysLeft ?? 0;
+      if (n > 36500) return null; // bought with a coupon: no deadline
       label = n <= 0
         ? t('Less than a day left')
         : plural(n, { one: t('1 day left'), two: t('2 days left'), few: t('{n} days left [few]', { n }), other: t('{n} days left', { n }) });

@@ -47,6 +47,7 @@ import { CourseBillingOverview, CourseBillingOverviewService } from './course-bi
 import { ReviewPaymentDto, UpsertCoursePriceDto, WalletDto } from './course-billing.dtos';
 import { AdminCoursePriceView, AdminPaymentRequestView, WalletView } from './course-billing.types';
 import { CoursePaymentService } from './course-payment.service';
+import { CourseCouponService } from './course-coupon.service';
 import { CoursePriceService } from './course-price.service';
 import { MAX_PAYMENT_IMAGE_BYTES } from './payment-image.service';
 import { PaymentWalletService, WalletImageKind } from './payment-wallet.service';
@@ -67,6 +68,7 @@ export class AdminCourseBillingController {
     private readonly payments: CoursePaymentService,
     private readonly access: CourseAccessService,
     private readonly overview: CourseBillingOverviewService,
+    private readonly coupons: CourseCouponService,
   ) {}
 
   // ── Overview ──
@@ -207,6 +209,85 @@ export class AdminCourseBillingController {
     @Body() dto: ReviewPaymentDto,
   ): Promise<AdminPaymentRequestView> {
     return this.payments.reject(id, req.internalUserId!, dto.note);
+  }
+
+  // ── Coupon purchases (paid from the landing page) ──
+
+  @Get('pending-total')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Everything waiting for the admin: coupon purchases and in-app payments (menu badge).' })
+  async pendingTotal(): Promise<{ coupons: number; payments: number; total: number }> {
+    const [coupons, payments] = await Promise.all([this.coupons.pendingPurchaseCount(), this.payments.pendingCount()]);
+    return { coupons, payments, total: coupons + payments };
+  }
+
+  @Get('coupon-purchases')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Coupon purchases, optionally filtered by status (admin).' })
+  async listPurchases(@Query('status') status?: string) {
+    return this.coupons.listPurchases(status || undefined);
+  }
+
+  @Get('coupon-purchases/pending-count')
+  @OperationsAdminOnly()
+  async pendingPurchases(): Promise<{ count: number }> {
+    return { count: await this.coupons.pendingPurchaseCount() };
+  }
+
+  @Get('coupon-purchases/:id/receipt')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Receipt image of a coupon purchase (admin).' })
+  async purchaseReceipt(@Param('id') id: string, @Res() res: Response): Promise<void> {
+    const image = await this.coupons.purchaseReceipt(id);
+    res.setHeader('Content-Type', image.contentType);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.send(image.data);
+  }
+
+  @Post('coupon-purchases/:id/approve')
+  @OperationsAdminOnly()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Approve a coupon purchase and issue the buyer a coupon code (admin).' })
+  async approvePurchase(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: ReviewPaymentDto) {
+    return this.coupons.approvePurchase(id, req.internalUserId!, dto.note);
+  }
+
+  @Post('coupon-purchases/:id/reject')
+  @OperationsAdminOnly()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reject a coupon purchase with a note for the buyer (admin).' })
+  async rejectPurchase(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: ReviewPaymentDto) {
+    return this.coupons.rejectPurchase(id, req.internalUserId!, dto.note);
+  }
+
+  // ── Coupons ──
+
+  @Get('coupons')
+  @OperationsAdminOnly()
+  @ApiOperation({ summary: 'Coupon codes, optionally by status/course (admin).' })
+  async listCoupons(@Query('status') status?: string, @Query('courseId') courseId?: string) {
+    return this.coupons.listCoupons(status || undefined, courseId || undefined);
+  }
+
+  @Post('coupons')
+  @OperationsAdminOnly()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Generate coupon codes for a course, e.g. to sell or give away yourself (admin).' })
+  async generateCoupons(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { courseId?: string; count?: number; note?: string },
+  ) {
+    if (!body?.courseId) throw new BadRequestException('courseId is required');
+    return this.coupons.generateCoupons(body.courseId, body.count ?? 1, body.note, req.internalUserId!);
+  }
+
+  @Post('coupons/:id/void')
+  @OperationsAdminOnly()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cancel an unused coupon (admin).' })
+  async voidCoupon(@Param('id') id: string): Promise<{ ok: true }> {
+    await this.coupons.voidCoupon(id);
+    return { ok: true };
   }
 
   // ── Access ──

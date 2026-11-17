@@ -18,8 +18,11 @@ import {
   type CurrentEnrollment,
   type FinalExamSummary,
   type LevelWithChapters,
+  needsPayment,
   type StudentCourse,
 } from './curriculumApi';
+import { couponApi, formatPrice } from '../coupons/couponApi';
+import { Input } from '../../components/common/Input';
 import { useI18n } from '../../i18n/I18nContext';
 import { formatDate } from '../../i18n';
 import { useLearnerLevel } from '../level/LevelContext';
@@ -46,6 +49,9 @@ export function CourseDetailPage() {
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
   const [enrollError, setEnrollError] = useState('');
+  const [code, setCode] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemError, setRedeemError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -82,12 +88,24 @@ export function CourseDetailPage() {
   function handleEnroll() {
     setEnrolling(true);
     setEnrollError('');
-    enrollInCourse(courseId)
+    // A free course becomes "enrolled" (shown in My courses) the moment it is started.
+    (course?.price?.isFree ? couponApi.enrollFree(courseId).catch(() => undefined) : Promise.resolve())
+      .then(() => enrollInCourse(courseId))
       .then(() => load())
       .catch((err) =>
         setEnrollError(getErrorMessage(err, t("Couldn't start this course. Please check your connection and try again."))),
       )
       .finally(() => setEnrolling(false));
+  }
+
+  function handleRedeem() {
+    if (redeeming || !code.trim()) return;
+    setRedeeming(true);
+    setRedeemError('');
+    couponApi.redeem(code.trim(), courseId)
+      .then(() => { setCode(''); load(); })
+      .catch((err) => setRedeemError(getErrorMessage(err, t("That code didn't work. Check it and try again."))))
+      .finally(() => setRedeeming(false));
   }
 
   if (loading) return <DetailSkeleton />;
@@ -149,7 +167,19 @@ export function CourseDetailPage() {
             ].filter(Boolean).join(', ')}
           </p>
           {course.description && <p dir="auto" className="m-0 hidden max-w-2xl text-base leading-relaxed text-ink-muted lg:line-clamp-3">{course.description}</p>}
-          {!course.locked && !isCurrent && (
+          {!course.locked && needsPayment(course) && (
+            <div className="flex max-w-md flex-col gap-3 rounded-2xl bg-surface p-5 ring-1 ring-line">
+              <p className="m-0 text-base font-semibold">{t('Unlock this course with a coupon')}</p>
+              {course.price && !course.price.isFree && <p className="m-0 text-sm text-ink-muted">{formatPrice(course.price.amount, course.price.currency)} · {t('yours for good, no deadline')}</p>}
+              <Input label={t('Coupon code')} value={code} onChange={(e) => setCode(e.target.value)} placeholder="AIM-XXXX-XXXX-XXXX" dir="ltr" autoCapitalize="characters" autoComplete="off" />
+              {redeemError && <Banner variant="error">{redeemError}</Banner>}
+              <div className="flex flex-wrap items-center gap-4">
+                <Button onClick={handleRedeem} disabled={redeeming || !code.trim()} size="lg">{redeeming ? t('Checking…') : t('Use coupon & start')}</Button>
+                <Link to={`/buy/${course.courseId}`} className="text-sm font-semibold text-ink underline">{t('Buy a coupon')}</Link>
+              </div>
+            </div>
+          )}
+          {!course.locked && !needsPayment(course) && !isCurrent && (
             <div className="flex flex-col gap-3">
               {enrollment?.found && enrollment.courseTitle && (
                 <p className="m-0 text-sm text-ink-muted">{t("You're currently in {current}. Start this course to make it your active course.", { current: enrollment.courseTitle })}</p>
@@ -176,7 +206,7 @@ export function CourseDetailPage() {
         <EmptyState title={t('Course locked')} message={lockedReason(course, allCourses, t)} />
       ) : (
         <>
-          {course.access?.status === 'active' && (
+          {course.access?.status === 'active' && (course.access.daysLeft ?? 0) <= 36500 && (
             <Banner variant={(course.access.daysLeft ?? 0) <= 5 ? 'warning' : 'info'}>
               {[
                 (course.access.daysLeft ?? 0) <= 0
