@@ -1,8 +1,12 @@
-// LiveVoiceController — a live, hands-free microphone for the voice lesson.
+// LiveVoiceController — the microphone of the voice lesson.
 //
-// While it is on, it hears when the student starts and stops talking, hands over each finished sentence as a WAV
-// file, and reports when the student talks over the teacher. Muting only ignores the mic (the stream stays open), so
-// turning it back on is instant. Same behaviour as the student web app's useLiveVoice.
+// Two ways to use it:
+//  - Tap to talk (what the lesson screen uses): startRecording() opens the mic and keeps everything it hears;
+//    finishRecording() closes the mic and hands over the whole recording as one WAV file. No speech detection is
+//    involved, so it works whatever the phone's microphone level is.
+//  - Hands-free (start()): it hears when the student starts and stops talking, hands over each finished sentence, and
+//    reports when the student talks over the teacher. Muting only ignores the mic (the stream stays open). Same
+//    behaviour as the student web app's useLiveVoice.
 
 import 'dart:async';
 
@@ -37,6 +41,12 @@ class LiveVoiceController extends ChangeNotifier {
 
   static const int _prerollMs = 450;
 
+  /// A tap-to-talk recording shorter than this (ms) is an accidental tap: it is dropped, not sent.
+  static const int minRecordingMs = 400;
+
+  /// A tap-to-talk recording is sent by itself once it reaches this length (ms).
+  static const int maxRecordingMs = 60000;
+
   LiveStatus _status = LiveStatus.off;
   double _level = 0;
   bool _muted = false;
@@ -47,6 +57,11 @@ class LiveVoiceController extends ChangeNotifier {
   DateTime _lastLevelAt = DateTime.fromMillisecondsSinceEpoch(0);
   bool _disposed = false;
 
+  // Tap to talk: everything heard since startRecording().
+  bool _recording = false;
+  final List<Uint8List> _recorded = [];
+  double _recordedMs = 0;
+
   /// Bumped by every stop/dispose. A start() still waiting for the permission or the microphone checks it afterwards,
   /// so a mic that was switched off (or a screen that was closed) meanwhile is released instead of left open.
   int _startToken = 0;
@@ -56,6 +71,9 @@ class LiveVoiceController extends ChangeNotifier {
   /// How loud the student is right now (0..1), for a gentle visual cue.
   double get level => _level;
   bool get muted => _muted;
+
+  /// True while a tap-to-talk recording is in progress.
+  bool get isRecording => _recording;
 
   /// True while the microphone is open and not muted.
   bool get isLive => (_status == LiveStatus.listening || _status == LiveStatus.hearing) && !_muted;
@@ -98,6 +116,60 @@ class LiveVoiceController extends ChangeNotifier {
     }
   }
 
+  /// Tap to talk: opens the microphone and keeps everything it hears until [finishRecording].
+  Future<void> startRecording() async {
+    if (_sub != null || _status == LiveStatus.starting) return;
+    _set(LiveStatus.starting);
+    final token = ++_startToken;
+    try {
+      if (!await _client.hasPermission()) {
+        if (token == _startToken) _set(LiveStatus.denied);
+        return;
+      }
+      final stream = await _client.start();
+      if (token != _startToken) {
+        try {
+          await _client.stop();
+        } catch (_) {
+          // Already stopped.
+        }
+        return;
+      }
+      _recording = true;
+      _recorded.clear();
+      _recordedMs = 0;
+      _sub = stream.listen(_handleRecordingFrame, onError: (_) => _fail(), onDone: () {
+        _sub = null;
+        if (_recording) unawaited(finishRecording());
+      });
+      _set(LiveStatus.hearing);
+    } catch (_) {
+      if (token == _startToken) _fail();
+    }
+  }
+
+  void _handleRecordingFrame(Uint8List frame) {
+    if (!_recording) return;
+    _recorded.add(frame);
+    _recordedMs += frame.lengthInBytes / 2 / liveSampleRate * 1000;
+    final now = DateTime.now();
+    if (now.difference(_lastLevelAt).inMilliseconds > 90) {
+      _lastLevelAt = now;
+      _level = (pcm16Rms(frame) * 8).clamp(0.0, 1.0);
+      if (!_disposed) notifyListeners();
+    }
+    if (_recordedMs >= maxRecordingMs) unawaited(finishRecording());
+  }
+
+  /// Tap to talk: closes the microphone and hands over the whole recording (unless it was just an accidental tap).
+  Future<void> finishRecording() async {
+    if (!_recording) return;
+    final pcm = concatPcm(_recorded);
+    final ms = (pcm.lengthInBytes / 2 / liveSampleRate * 1000).round();
+    await stop();
+    if (ms >= minRecordingMs && !_disposed) onUtterance(wrapPcm16AsWav(pcm), ms);
+  }
+
   void _fail() {
     unawaited(_close());
     _set(LiveStatus.error);
@@ -120,6 +192,9 @@ class LiveVoiceController extends ChangeNotifier {
     _preroll.clear();
     _prerollMsTotal = 0;
     _sentence.clear();
+    _recording = false;
+    _recorded.clear();
+    _recordedMs = 0;
     _vad.reset();
     _level = 0;
   }

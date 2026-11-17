@@ -38,11 +38,12 @@
 // recorder's own hasPermission(); denial drives the existing microphone
 // error state (VoiceErrorState) rather than failing silently.
 //
-// Live conversation flow: the microphone stays open (LiveVoiceController). It hears when the student starts and stops
-// talking, sends each finished sentence on its own, and the AI's reply plays the instant it is ready. The student can
-// talk over the teacher to interrupt, mute the mic with one tap, or type instead — typed and spoken turns share one
-// conversation. Audio is captured as 16 kHz PCM and sent as WAV (audio/wav is in the backend's ALLOWED_AUDIO_TYPES
-// allow-list, voice-audio-submit.controller.ts); nothing is written to disk.
+// Tap-to-talk flow: tap the mic to start recording (the teacher stops talking), tap it again to stop and send what was
+// said (LiveVoiceController.startRecording / finishRecording); the AI's reply plays the instant it is ready. The student
+// can also type instead — typed and spoken turns share one conversation. Audio is captured as 16 kHz PCM and sent as WAV
+// (audio/wav is in the backend's ALLOWED_AUDIO_TYPES allow-list, voice-audio-submit.controller.ts); nothing is written to
+// disk. The controller's hands-free speech detection is not used here: it depended on the phone's microphone level and
+// did not hear some students.
 import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -148,21 +149,23 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   /// Retry after a microphone problem (or a failed spoken turn).
   Future<void> _retryMic() async {
     ref.read(voiceRecordSubmitProvider).reset();
-    _live.setMuted(false);
-    await _live.start();
+    await _live.startRecording();
   }
 
-  /// Turns the live mic on, or mutes / unmutes it (the conversation itself is hands-free).
+  /// Tap to talk: the first tap starts recording (the teacher stops talking), the next tap stops and sends it.
   void _toggleMic() {
     final status = _live.status;
     if (status == LiveStatus.starting) return; // the microphone is still opening
-    if (status == LiveStatus.off || status == LiveStatus.denied || status == LiveStatus.error) {
-      ref.read(voiceRecordSubmitProvider).reset();
-      _live.setMuted(false);
-      unawaited(_live.start());
+    if (_live.isRecording) {
+      unawaited(_live.finishRecording());
       return;
     }
-    _live.setMuted(!_live.muted);
+    // One turn at a time: wait while the previous answer is still on its way.
+    if (_stoppingTurn || _sendingText) return;
+    if (ref.read(voiceRecordSubmitProvider).state == RecordSubmitState.submitting) return;
+    ref.read(voicePlaybackProvider).stop();
+    ref.read(voiceRecordSubmitProvider).reset();
+    unawaited(_live.startRecording());
   }
 
   Future<void> _start() async {
@@ -185,14 +188,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
 
     _handleInitialGreeting();
-    // The student chose to start the live lesson, so the microphone opens now (the teacher can be interrupted).
-    unawaited(_live.start());
   }
 
   /// The session starts with exactly one message — the auto-generated
   /// greeting — before the student has said anything. Play it
-  /// automatically (no tap). The live mic is already listening, so the student
-  /// can answer by simply talking (or interrupt the greeting by talking over it).
+  /// automatically (no tap). The student answers by tapping the mic (which also stops the greeting) or by typing.
   void _handleInitialGreeting() {
     if (!mounted) return;
     final state = ref.read(voiceTeacherSessionProvider);
