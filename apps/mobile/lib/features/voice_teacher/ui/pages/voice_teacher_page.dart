@@ -45,6 +45,8 @@
 // disk. The controller's hands-free speech detection is not used here: it depended on the phone's microphone level and
 // did not hear some students.
 import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
+import 'package:aim_mobile/features/guided_tour/ui/guided_tour_overlay.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_help_button.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -430,7 +432,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final recordState = ref.watch(voiceRecordSubmitProvider);
     final playbackState = ref.watch(voicePlaybackProvider);
 
-    return Scaffold(
+    final screen = Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const _VoiceTeacherHeader(),
       bottomNavigationBar:
@@ -480,6 +482,15 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
           },
         ),
       ),
+    );
+
+    // The first-visit tips and the "?" replay (a full-screen page, so it hosts its own tour overlay).
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        screen,
+        const GuidedTourOverlay(location: AppRoutePaths.voiceTeacher),
+      ],
     );
   }
 }
@@ -558,6 +569,7 @@ class _VoiceTeacherHeader extends StatelessWidget
                   style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 ),
               ),
+              const TourHelpButton(location: AppRoutePaths.voiceTeacher),
             ],
           ),
         ),

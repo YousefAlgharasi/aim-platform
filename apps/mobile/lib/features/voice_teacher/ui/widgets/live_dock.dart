@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:aim_mobile/core/design_tokens/design_tokens.dart';
 import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/theme/aim_theme_extensions.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_target.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 import 'aim_robot.dart';
 import 'robot_thought.dart';
@@ -71,13 +72,21 @@ class LiveDock extends StatelessWidget {
   final VoidCallback onToggleMic;
   final Future<void> Function(String message) onSend;
 
+  bool _showMicHint(BuildContext context) {
+    if (MediaQuery.viewInsetsOf(context).bottom > 0) return false; // the keyboard is open
+    if (micMode == MicMode.hearing || micMode == MicMode.live) return true; // "tap again to send"
+    return micMode == MicMode.off && !busy; // "tap here to talk"
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final screen = MediaQuery.sizeOf(context);
     final available = availableHeight;
+    // The hint under the mic ("Tap here to talk") is hidden while the keyboard is open or an answer is on its way.
+    final showHint = _showMicHint(context);
     // Text box + the messages button + the gap between them (the robot and the bubble get what is left).
-    const chrome = 112.0;
+    final chrome = 112.0 + (showHint ? _MicHint.height : 0);
     var robotH = robotHeightFor(screen);
     if (available != null) robotH = math.min(robotH, math.max(72.0, (available - chrome) * 0.42));
     final defaultBubbleMax = screen.height * 0.3;
@@ -127,11 +136,15 @@ class LiveDock extends StatelessWidget {
                   onToggleMic: onToggleMic,
                   onSend: onSend,
                 ),
+                if (showHint) _MicHint(recording: micMode == MicMode.hearing || micMode == MicMode.live),
                 const SizedBox(height: AimSpacing.space8),
-                _MessagesButton(
-                  label: messagesOpen ? l10n.voiceLiveHideMessages : l10n.voiceLiveMessagesCount(messageCount),
-                  open: messagesOpen,
-                  onTap: onToggleMessages,
+                TourTarget(
+                  id: 'voice-messages',
+                  child: _MessagesButton(
+                    label: messagesOpen ? l10n.voiceLiveHideMessages : l10n.voiceLiveMessagesCount(messageCount),
+                    open: messagesOpen,
+                    onTap: onToggleMessages,
+                  ),
                 ),
               ],
             ),
@@ -179,7 +192,7 @@ class _ComposerBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Your microphone.
-          switch (micMode) {
+          TourTarget(id: 'voice-mic', child: switch (micMode) {
             MicMode.live || MicMode.hearing => _SquareButton(
                 icon: Icons.mic_rounded,
                 tooltip: context.tr('Tap to stop and send', 'اضغط للإيقاف والإرسال'),
@@ -200,18 +213,23 @@ class _ComposerBox extends StatelessWidget {
                 style: _ButtonStyle.filled,
                 onTap: onToggleMic,
               ),
-          },
+          }),
           const SizedBox(width: 6),
           // The teacher's voice.
-          _SquareButton(
-            icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-            tooltip: muted ? l10n.voiceLiveUnmute : l10n.voiceLiveMute,
-            style: muted ? _ButtonStyle.soft : _ButtonStyle.outlined,
-            onTap: onToggleMute,
+          TourTarget(
+            id: 'voice-speaker',
+            child: _SquareButton(
+              icon: muted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+              tooltip: muted ? l10n.voiceLiveUnmute : l10n.voiceLiveMute,
+              style: muted ? _ButtonStyle.soft : _ButtonStyle.outlined,
+              onTap: onToggleMute,
+            ),
           ),
           const SizedBox(width: 4),
           Expanded(
-            child: TextField(
+            child: TourTarget(
+              id: 'voice-text',
+              child: TextField(
               controller: controller,
               enabled: !busy,
               minLines: 1,
@@ -232,6 +250,7 @@ class _ComposerBox extends StatelessWidget {
                 disabledBorder: InputBorder.none,
               ),
             ),
+            ),
           ),
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: controller,
@@ -246,6 +265,55 @@ class _ComposerBox extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small line under the box, right below the microphone: "Tap here to talk", or, while recording, what the next tap does.
+class _MicHint extends StatelessWidget {
+  const _MicHint({required this.recording});
+
+  final bool recording;
+
+  /// The height it takes (used to size the robot).
+  static const double height = 24;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = recording
+        ? context.tr('Recording… tap again to stop and send', 'جارٍ التسجيل… اضغط مرة أخرى للإيقاف والإرسال')
+        : context.tr('Tap here to talk', 'اضغط هنا للتحدث');
+    return SizedBox(
+      height: height,
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Padding(
+          // The arrow sits under the middle of the mic button (6 px box padding + half of its 40 px).
+          padding: const EdgeInsetsDirectional.only(start: 16),
+          child: ExcludeSemantics(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.north_rounded, size: 16, color: AimColors.primary600),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.start,
+                    style: AimTextStyles.caption.copyWith(
+                      color: AimColors.primary600,
+                      fontWeight: AimFontWeights.semibold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
