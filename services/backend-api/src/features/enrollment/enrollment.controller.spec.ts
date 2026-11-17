@@ -11,10 +11,13 @@ describe('EnrollmentController', () => {
       enroll: jest.fn().mockResolvedValue({}),
       getCurrentEnrollment: jest.fn().mockResolvedValue({}),
     };
-    const courseAccess = { assertAccess: jest.fn().mockResolvedValue(undefined) };
+    const courseAccess = {
+      assertCourseUnlocked: jest.fn().mockResolvedValue(undefined),
+      assertEnrolled: jest.fn().mockResolvedValue(undefined),
+    };
     const resolve = jest.fn().mockResolvedValue('ar');
     const controller = new EnrollmentController(enrollmentService as never, courseAccess as never, { resolve } as never);
-    return { controller, enrollmentService, resolve };
+    return { controller, enrollmentService, resolve, courseAccess };
   }
 
   it('passes the resolved locale to getCurrentEnrollment', async () => {
@@ -32,6 +35,14 @@ describe('EnrollmentController', () => {
     await controller.enroll('course-1', user, ctx);
 
     expect(enrollmentService.enroll).toHaveBeenCalledWith('user-1', 'course-1', 'ar');
+  });
+
+  it('refuses to make a course active before the student enrolled in it', async () => {
+    const { controller, enrollmentService, courseAccess } = build();
+    courseAccess.assertEnrolled.mockRejectedValueOnce(new Error('COURSE_NOT_ENROLLED'));
+
+    await expect(controller.enroll('course-1', user, ctx)).rejects.toThrow('COURSE_NOT_ENROLLED');
+    expect(enrollmentService.enroll).not.toHaveBeenCalled();
   });
 
   it('applies the locale headers interceptor', () => {

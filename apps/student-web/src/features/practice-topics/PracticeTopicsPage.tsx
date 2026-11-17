@@ -96,7 +96,7 @@ export function PracticeTopicsPage({ kind }: { kind: PracticeKind }) {
       {startError && <Banner variant="error">{startError}</Banner>}
 
       {!loading && !error && !locked && topics.length > 0 && (
-        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+        <ul data-tour="topics-list" className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
           {ordered.map((topic) => {
             const rel = relationTo(bandOf(topic.levelCode), band);
             return (

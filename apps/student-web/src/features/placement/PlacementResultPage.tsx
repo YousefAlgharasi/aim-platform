@@ -16,7 +16,6 @@ import {
 import { useI18n } from '../../i18n/I18nContext';
 import { useAuth } from '../../hooks/useAuth';
 import { cacheSetupDone } from '../start/setupStatus';
-import { ensureStartingCourse } from '../start/enrollStart';
 import { ED_BODY, ED_BTN, ED_H2, ED_SHELL, EdHeader, edRow } from './ed';
 
 const SIGNAL_DOT: Record<string, string> = { strong: 'bg-success', developing: 'bg-warning', emerging: 'bg-danger' };
@@ -45,8 +44,7 @@ export function PlacementResultPage() {
   // The page then stays until the student chooses where to go.
   useEffect(() => {
     if (result && user) cacheSetupDone(user.id);
-    // Start the recommended course (if they have none yet) so the dashboard roadmap has lessons to show.
-    if (result) void ensureStartingCourse(result.recommended_course_id);
+    // The placement test never opens or enrolls a course by itself: the student enrolls from the Courses page.
   }, [result, user]);
 
   const fetchResult = useCallback((attempt = 1) => {
@@ -129,6 +127,7 @@ export function PlacementResultPage() {
             })}
           </p>
         )}
+        <p className={`${ED_BODY} mt-2 max-w-md`}>{t('Open Courses and enroll in a course to start learning. Courses open in order, one after the other.')}</p>
       </section>
 
       {skills.length > 0 && (

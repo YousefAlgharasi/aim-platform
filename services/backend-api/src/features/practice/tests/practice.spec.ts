@@ -48,7 +48,7 @@ describe('PracticeAccessService', () => {
     const db = { query: jest.fn().mockResolvedValue({ rows: enrollment }) };
     const courseAccess = {
       resolveStudent: jest.fn().mockResolvedValue({ userId: 'u1', forms: ['u1'] }),
-      getBilling: jest.fn().mockResolvedValue({ access: { hasAccess } }),
+      getBilling: jest.fn().mockResolvedValue({ access: { hasAccess, enrolled: hasAccess } }),
     };
     return { service: new PracticeAccessService(db as never, courseAccess as never), courseAccess };
   };

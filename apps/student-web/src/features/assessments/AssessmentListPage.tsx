@@ -46,7 +46,7 @@ function Section({ title, items }: { title: string; items: AssessmentListItem[] 
   const { t } = useI18n();
   if (items.length === 0) return null;
   return (
-    <section className="flex flex-col gap-3" aria-label={t(title)}>
+    <section data-tour="assess-list" className="flex flex-col gap-3" aria-label={t(title)}>
       <h2 className="m-0 px-1 text-xl font-semibold tracking-tight text-ink">{t(title)} <span className="text-sm font-bold text-ink-muted">({items.length})</span></h2>
       <div className="flex flex-col gap-3">{items.map((a) => <Row key={a.id} a={a} />)}</div>
     </section>
@@ -91,7 +91,7 @@ export function AssessmentListPage() {
         <EmptyState title={t('No assessments')} message={t('Assessments will appear here when available.')} />
       ) : (
         <>
-          <div className="hero-panel">
+          <div data-tour="assess-next" className="hero-panel">
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="m-0 text-xs font-bold text-on-brand">{next ? t('Up next') : t('Nothing due')}</p>

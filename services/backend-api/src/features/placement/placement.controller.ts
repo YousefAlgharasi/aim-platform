@@ -233,7 +233,7 @@ export class PlacementController {
    * P4-006 endpoint #3. Response: P4-011 §4.
    */
   @Get('questions')
-  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard)
+  @UseGuards(SupabaseJwtAuthGuard, PlacementPermissionGuard, ResolveInternalUserIdGuard)
   @RequireRoles(AuthorizedRole.STUDENT)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -242,8 +242,9 @@ export class PlacementController {
   @ApiOkResponse({ description: 'Ordered student-safe questions. correct_answer never included.' })
   async getQuestions(
     @Query('sectionId') sectionId: string,
+    @ResolvedInternalUserId() studentId?: string,
   ): Promise<PlacementQuestionDeliveryResponse> {
-    return this.questionDelivery.getQuestionsForSection(sectionId);
+    return this.questionDelivery.getQuestionsForSection(sectionId, studentId);
   }
 
   /**

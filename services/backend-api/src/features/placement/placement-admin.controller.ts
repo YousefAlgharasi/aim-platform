@@ -119,6 +119,24 @@ export class PlacementAdminController {
     );
   }
 
+  /** GET /admin/placement/sections?testId= — sections with bank size and per-student draw count. */
+  @Get('sections')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List the sections of a placement test with bank size (admin).' })
+  @ApiQuery({ name: 'testId', required: true })
+  async listSections(@Query('testId') testId: string) {
+    return this.testRead.listSections(testId);
+  }
+
+  /** GET /admin/placement/questions?sectionId= — the whole question bank of a section (no answer keys). */
+  @Get('questions')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'List the question bank of a placement section (admin, no answer keys).' })
+  @ApiQuery({ name: 'sectionId', required: true })
+  async listQuestions(@Query('sectionId') sectionId: string) {
+    return this.testRead.listQuestions(sectionId);
+  }
+
   // ---------------------------------------------------------------------
   // Tests
   // ---------------------------------------------------------------------

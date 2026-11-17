@@ -89,7 +89,8 @@ export class PlacementSectionsService {
     const testId = testResult.rows[0].id;
 
     const sectionResult = await this.db.query<PlacementSectionRow>(
-      `SELECT id, title, skill_code, order_index, total_questions
+      `SELECT id, title, skill_code, order_index,
+              LEAST(total_questions, COALESCE(draw_count, total_questions)) AS total_questions
          FROM placement_sections
         WHERE placement_test_id = $1
         ORDER BY order_index ASC`,

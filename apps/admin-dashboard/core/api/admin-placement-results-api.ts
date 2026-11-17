@@ -49,6 +49,15 @@ export type AdminPlacementResultSummary = {
   readonly initialPathReady: boolean;
   /** Per-skill mastery signal (strong/developing/emerging). Never a raw score. */
   readonly skillSummary: AdminSkillSummaryEntry[];
+  /** The six placement skills as percentages (null = not taken), equal weight each. */
+  readonly skillScores: AdminSkillScore[];
+  /** Equal-weight overall placement score, 0-100. */
+  readonly overallPercent: number | null;
+};
+
+export type AdminSkillScore = {
+  readonly skillCode: string;
+  readonly percent: number | null;
 };
 
 export type AdminPlacementResultDetail = AdminPlacementResultSummary & {
@@ -80,9 +89,18 @@ function decodeSkillSummaryEntry(raw: unknown): AdminSkillSummaryEntry {
   };
 }
 
+function decodeSkillScore(raw: unknown): AdminSkillScore {
+  const r = raw as Record<string, unknown>;
+  return {
+    skillCode: typeof r['skillCode'] === 'string' ? r['skillCode'] : '',
+    percent: typeof r['percent'] === 'number' ? r['percent'] : null,
+  };
+}
+
 function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
   const r = raw as Record<string, unknown>;
   const rawSkills = Array.isArray(r['skillSummary']) ? r['skillSummary'] : [];
+  const rawScores = Array.isArray(r['skillScores']) ? r['skillScores'] : [];
   return {
     resultId: typeof r['id'] === 'string' ? r['id'] : '',
     studentId: typeof r['studentId'] === 'string' ? r['studentId'] : '',
@@ -91,6 +109,8 @@ function decodeResultSummary(raw: unknown): AdminPlacementResultSummary {
     completedAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
     initialPathReady: typeof r['initialPathId'] === 'string' && r['initialPathId'].length > 0,
     skillSummary: rawSkills.map(decodeSkillSummaryEntry),
+    skillScores: rawScores.map(decodeSkillScore),
+    overallPercent: typeof r['overallPercent'] === 'number' ? r['overallPercent'] : null,
   };
 }
 

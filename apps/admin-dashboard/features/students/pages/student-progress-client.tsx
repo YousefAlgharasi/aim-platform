@@ -189,14 +189,24 @@ export function StudentProgressClient({ profile, hideCourses = false }: Props) {
                   Recommended course: <span className="font-medium text-[var(--text-primary)]">{placement.recommendedCourseTitle}</span>
                 </p>
               )}
-              {placement.skillSummary.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {placement.skillSummary.map((skill) => (
-                    <AdminBadge key={skill.skillCode} variant={SIGNAL_VARIANT[skill.signal]}>
-                      {skill.skillCode}
+              {placement.skillScores.some((s) => s.percent !== null) ? (
+                <div className="flex flex-wrap gap-1.5" aria-label="Placement score per skill">
+                  {placement.skillScores.map((skill) => (
+                    <AdminBadge key={skill.skillCode} variant="primary">
+                      {skill.skillCode}: {skill.percent === null ? '—' : `${skill.percent}%`}
                     </AdminBadge>
                   ))}
                 </div>
+              ) : (
+                placement.skillSummary.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {placement.skillSummary.map((skill) => (
+                      <AdminBadge key={skill.skillCode} variant={SIGNAL_VARIANT[skill.signal]}>
+                        {skill.skillCode}
+                      </AdminBadge>
+                    ))}
+                  </div>
+                )
               )}
             </div>
             {placement.scorePercent !== null && (

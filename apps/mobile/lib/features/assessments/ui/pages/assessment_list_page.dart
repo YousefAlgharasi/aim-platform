@@ -4,6 +4,7 @@
 // TASK-21: restyled to match design screen 24 — gradient header (back +
 // "Assessments" + a "Deadlines" link to the existing deadlines route).
 
+import 'package:aim_mobile/core/widgets/guide/page_guide.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -67,6 +68,11 @@ class _AssessmentListPageState extends ConsumerState<AssessmentListPage> {
           }
         },
         actions: [
+          const PageGuideButton(
+            titleEn: 'Assessments',
+            titleAr: 'التقييمات',
+            steps: assessmentsGuideSteps,
+          ),
           Padding(
             padding: const EdgeInsetsDirectional.only(end: AimSpacing.space8),
             child: Semantics(

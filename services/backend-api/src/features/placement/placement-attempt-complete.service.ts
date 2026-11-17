@@ -128,11 +128,13 @@ export class PlacementAttemptCompleteService {
       total_answered: string;
     }>(
       `SELECT
-         (SELECT COUNT(*)
-          FROM placement_questions pq
-          JOIN placement_sections ps ON ps.id = pq.placement_section_id
-          WHERE ps.placement_test_id = $1
-         ) AS total_questions,
+         (SELECT CASE WHEN EXISTS (SELECT 1 FROM placement_attempt_questions WHERE placement_attempt_id = $2)
+                      THEN (SELECT COUNT(*) FROM placement_attempt_questions WHERE placement_attempt_id = $2)
+                      ELSE (SELECT COUNT(*)
+                              FROM placement_questions pq
+                              JOIN placement_sections ps ON ps.id = pq.placement_section_id
+                             WHERE ps.placement_test_id = $1)
+                 END) AS total_questions,
          (SELECT COUNT(*)
           FROM placement_answers pa
           WHERE pa.placement_attempt_id = $2

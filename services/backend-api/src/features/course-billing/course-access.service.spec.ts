@@ -1,4 +1,4 @@
-import { CourseAccessService, COURSE_PAYMENT_REQUIRED } from './course-access.service';
+import { CourseAccessService, COURSE_NOT_ENROLLED, COURSE_PAYMENT_REQUIRED } from './course-access.service';
 
 type Row = Record<string, unknown>;
 
@@ -109,9 +109,29 @@ describe('CourseAccessService', () => {
     expect(db.calls.some((c) => c.sql.includes("SET status = 'failed'"))).toBe(true);
   });
 
-  it('assertAccess throws COURSE_PAYMENT_REQUIRED (402) without access', async () => {
+  it('assertAccess throws COURSE_NOT_ENROLLED (403) for a paid course the student has not enrolled in', async () => {
     const svc = new CourseAccessService(makeDb({ prices: [PAID] }) as any);
+    await expect(svc.assertAccess('u1', 'c1')).rejects.toMatchObject({ code: COURSE_NOT_ENROLLED, statusCode: 403, details: { isFree: false } });
+  });
+
+  it('assertAccess throws COURSE_PAYMENT_REQUIRED (402) while a payment is pending', async () => {
+    const svc = new CourseAccessService(
+      makeDb({ prices: [PAID], requestsLatest: [{ id: 'r1', course_id: 'c1', status: 'pending', admin_note: null, created_at: NOW }] }) as any,
+    );
     await expect(svc.assertAccess('u1', 'c1')).rejects.toMatchObject({ code: COURSE_PAYMENT_REQUIRED, statusCode: 402 });
+  });
+
+  it('a FREE course is still hidden until the student enrolls (403, isFree)', async () => {
+    const svc = new CourseAccessService(makeDb({}) as any);
+    await expect(svc.assertCanView('u1', 'c1')).rejects.toMatchObject({ code: COURSE_NOT_ENROLLED, details: { isFree: true } });
+    await expect(svc.assertAccess('u1', 'c1')).rejects.toMatchObject({ code: COURSE_NOT_ENROLLED });
+  });
+
+  it('an enrolled student (active access row) can view and open the course', async () => {
+    const row = { id: 'a1', course_id: 'c1', status: 'active', starts_at: new Date('2026-11-01'), expires_at: new Date('2036-11-01'), created_at: new Date('2026-11-01') };
+    const svc = new CourseAccessService(makeDb({ accessLatest: [row] }) as any);
+    await expect(svc.assertCanView('u1', 'c1')).resolves.toBeUndefined();
+    await expect(svc.assertAccess('u1', 'c1')).resolves.toBeUndefined();
   });
 
   it('assertAccess allows content that is not part of a course', async () => {

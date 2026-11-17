@@ -9,6 +9,7 @@ import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
+import 'package:aim_mobile/features/course_billing/ui/widgets/enroll_flow.dart';
 import 'package:aim_mobile/features/enrollment/logic/provider/enrollment_provider.dart';
 import 'package:aim_mobile/features/guided_tour/ui/tour_target.dart';
 import 'package:aim_mobile/features/student_courses/data/models/student_course_model.dart';
@@ -66,6 +67,21 @@ class _CourseListPageState extends ConsumerState<CourseListPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.lessonsCourseLockedMessage)),
       );
+      return;
+    }
+
+    // The lessons stay hidden until the student enrolls: ask "Do you want to enroll?" (coupon if paid).
+    if (course.needsEnroll) {
+      final enrolled = await showEnrollFlow(context, ref, course);
+      if (!mounted) return;
+      if (enrolled) {
+        await _refresh();
+        if (!mounted) return;
+        context.push(
+          AppRoutePaths.courseChapters,
+          extra: {'courseId': course.courseId, 'courseTitle': course.title},
+        );
+      }
       return;
     }
 

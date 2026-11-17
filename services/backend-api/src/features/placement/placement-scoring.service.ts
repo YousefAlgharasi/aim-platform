@@ -64,7 +64,13 @@ const LEVEL_THRESHOLDS: Array<{ min: number; level: PlacementScoringResult['esti
 interface AnswerRow {
   readonly skill_code: string;
   readonly is_correct: boolean | null;
+  /** AI score 0-10 for writing/speaking answers; null for objectively-scored questions. */
+  readonly ai_score: string | null;
+  readonly question_type: string;
 }
+
+/** Questions drawn for the attempt, per skill (denominator for the section score). */
+type DrawnCounts = Record<string, number>;
 
 interface SkillAnswerRow {
   readonly skill_id: string;
@@ -94,18 +100,32 @@ export class PlacementScoringService {
     //    is_correct was set by P4-044. NULL answers (unanswered) treated as false.
     // -----------------------------------------------------------------------
     const answersResult = await this.db.query<AnswerRow>(
-      `SELECT pa.skill_code, pa.is_correct
+      `SELECT pa.skill_code, pa.is_correct, pa.ai_score, pq.question_type
        FROM placement_answers pa
+       JOIN placement_questions pq ON pq.id = pa.placement_question_id
        WHERE pa.placement_attempt_id = $1`,
       [attemptId],
     );
 
     const answers = answersResult.rows;
 
+    // Skipped questions must count as wrong, so each skill is scored out of the number of
+    // questions drawn for this attempt (not just the ones that were answered).
+    const drawnResult = await this.db.query<{ skill_code: string; n: string }>(
+      `SELECT ps.skill_code, COUNT(*)::text AS n
+         FROM placement_attempt_questions paq
+         JOIN placement_sections ps ON ps.id = paq.placement_section_id
+        WHERE paq.placement_attempt_id = $1
+        GROUP BY ps.skill_code`,
+      [attemptId],
+    );
+    const drawn: DrawnCounts = {};
+    for (const r of drawnResult.rows) drawn[r.skill_code] = parseInt(r.n, 10);
+
     // -----------------------------------------------------------------------
     // 2. Compute per-section mastery scores (P4-031 §3).
     // -----------------------------------------------------------------------
-    const sectionScores = this.computeSectionScores(answers);
+    const sectionScores = this.computeSectionScores(answers, drawn);
 
     // -----------------------------------------------------------------------
     // 3. Compute overall weighted placement score (P4-031 §4).
@@ -224,8 +244,9 @@ export class PlacementScoringService {
   // Step 2: Section mastery scores (P4-031 §3)
   // -------------------------------------------------------------------------
 
-  private computeSectionScores(answers: AnswerRow[]): SectionScore[] {
-    // Group answers by skill_code (section)
+  private computeSectionScores(answers: AnswerRow[], drawn: DrawnCounts = {}): SectionScore[] {
+    // Group answers by skill_code (section). `correct` is fractional for the AI-graded
+    // writing/speaking questions (score 0-10 → 0-1), whole numbers for the others.
     const bySection: Record<string, { correct: number; total: number }> = {};
 
     for (const answer of answers) {
@@ -234,9 +255,16 @@ export class PlacementScoringService {
         bySection[code] = { correct: 0, total: 0 };
       }
       bySection[code].total += 1;
-      if (answer.is_correct === true) {
+      if (answer.question_type === 'writing' || answer.question_type === 'speaking') {
+        const raw = answer.ai_score !== null ? parseFloat(answer.ai_score) : 0;
+        bySection[code].correct += Number.isFinite(raw) ? Math.min(1, Math.max(0, raw / 10)) : 0;
+      } else if (answer.is_correct === true) {
         bySection[code].correct += 1;
       }
+    }
+    for (const [code, n] of Object.entries(drawn)) {
+      if (!bySection[code]) bySection[code] = { correct: 0, total: 0 };
+      bySection[code].total = Math.max(bySection[code].total, n);
     }
 
     const scores: SectionScore[] = [];
@@ -250,7 +278,7 @@ export class PlacementScoringService {
 
       scores.push({
         skillCode,
-        correctAnswers: data.correct,
+        correctAnswers: Math.round(data.correct * 100) / 100,
         totalQuestions: data.total,
         masteryScore,
         isWeakness,

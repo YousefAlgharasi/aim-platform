@@ -144,7 +144,7 @@ export function NotificationCenterPage() {
         action={<Link to="/notifications/preferences" className={textLinkCls}>{t('Preferences')}</Link>}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div data-tour="notif-filter" className="flex flex-wrap items-center justify-between gap-3">
         <FilterPills label={t('Filter notifications')} value={filter} onChange={setFilter}
           options={[{ key: 'all', label: t('All') }, { key: 'unread', label: t('Unread ({n})', { n: unreadCount }) }] as const} />
         {unreadCount > 0 && (

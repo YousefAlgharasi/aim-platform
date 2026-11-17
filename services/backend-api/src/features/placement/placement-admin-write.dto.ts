@@ -17,6 +17,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
 } from 'class-validator';
 
@@ -51,7 +52,7 @@ export class UpdatePlacementTestDto {
   readonly estimated_minutes?: number;
 }
 
-const SKILL_CODES = ['grammar', 'vocabulary', 'reading', 'listening'] as const;
+const SKILL_CODES = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'] as const;
 
 export class CreatePlacementSectionDto {
   @IsString()
@@ -80,6 +81,12 @@ export class UpdatePlacementSectionDto {
   @Min(1)
   @IsOptional()
   readonly order_index?: number;
+
+  /** How many bank questions each student receives from this section. */
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  readonly draw_count?: number;
 }
 
 const QUESTION_TYPES = [
@@ -87,6 +94,8 @@ const QUESTION_TYPES = [
   'true_false',
   'fill_blank',
   'listening_choice',
+  'writing',
+  'speaking',
 ] as const;
 
 export class CreatePlacementQuestionDto {
@@ -108,6 +117,13 @@ export class CreatePlacementQuestionDto {
   @IsString()
   @IsNotEmpty()
   readonly correct_answer!: string;
+
+  /** Difficulty band 1 (Starter/A1.1) .. 4 (A2.2+). Used to balance each student's random draw. */
+  @IsInt()
+  @Min(1)
+  @Max(4)
+  @IsOptional()
+  readonly difficulty?: number;
 }
 
 export class UpdatePlacementQuestionDto {
@@ -133,6 +149,17 @@ export class UpdatePlacementQuestionDto {
   @IsNotEmpty()
   @IsOptional()
   readonly correct_answer?: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(4)
+  @IsOptional()
+  readonly difficulty?: number;
+
+  /** false retires the question from future draws without deleting its answers. */
+  @IsBoolean()
+  @IsOptional()
+  readonly is_active?: boolean;
 }
 
 export class AddPlacementQuestionSkillDto {

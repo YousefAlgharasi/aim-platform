@@ -24,6 +24,17 @@ void main() {
     expect(course.needsPayment, isFalse);
   });
 
+  test('a course the student has not enrolled in needs enrolling; the lessons stay hidden', () {
+    Map<String, dynamic> course(Map<String, dynamic> access) => {
+          'courseId': 'c1', 'title': 'Starter', 'lessonCount': 1, 'completedLessonCount': 0,
+          'percent': 0, 'status': 'not_started', 'locked': false, 'access': access,
+        };
+    expect(StudentCourseModel.fromJson(course({'status': 'free', 'hasAccess': true, 'enrolled': false})).needsEnroll, isTrue);
+    expect(StudentCourseModel.fromJson(course({'status': 'active', 'hasAccess': true, 'enrolled': true})).needsEnroll, isFalse);
+    // An older backend does not send the flag: treated as enrolled so nothing breaks.
+    expect(StudentCourseModel.fromJson(course({'status': 'free', 'hasAccess': true})).needsEnroll, isFalse);
+  });
+
   test('active access keeps the deadline', () {
     final access = CourseAccess.fromJson({
       'status': 'active', 'hasAccess': true, 'expiresAt': '2026-11-30T00:00:00Z', 'daysLeft': 4,

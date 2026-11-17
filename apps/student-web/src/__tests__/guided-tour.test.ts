@@ -35,12 +35,27 @@ describe('guided tour config', () => {
     for (const tour of TOURS) for (const s of tour.steps) expect(s.body.length).toBeLessThanOrEqual(110);
   });
 
-  it('only the dashboard starts by itself, and each page maps to one tour', () => {
-    expect(TOURS.filter((t) => t.autoStart).map((t) => t.id)).toEqual(['dashboard']);
+  it('only the dashboard and the live voice teacher start by themselves, and each page maps to one tour', () => {
+    expect(TOURS.filter((t) => t.autoStart).map((t) => t.id)).toEqual(['dashboard', 'voice-teacher']);
     expect(tourForPath('/')?.id).toBe('dashboard');
     expect(tourForPath('/curriculum')?.id).toBe('courses');
     expect(tourForPath('/curriculum/abc')?.id).toBe('course');
     expect(tourForPath('/practice')?.id).toBe('practice');
+  });
+
+  it('guides the live AI teacher voice room and the pages that had no guide', () => {
+    expect(tourForPath('/voice-teacher')?.id).toBe('voice-teacher');
+    expect(tourForPath('/voice-teacher/s1')?.id).toBe('voice-teacher');
+    const voice = TOURS.find((t) => t.id === 'voice-teacher')!;
+    expect(voice.steps.map((s) => s.target)).toEqual([
+      '[data-tour="voice-stage"]', '[data-tour="voice-mic"]', '[data-tour="voice-text"]', '[data-tour="voice-mute"]', '[data-tour="voice-chat"]',
+    ]);
+    const expected: Record<string, string> = {
+      '/improve': 'improve', '/practice/speaking': 'speaking-writing', '/practice/writing': 'speaking-writing',
+      '/assessments': 'assessments', '/achievements': 'achievements', '/certificates': 'certificates',
+      '/leaderboard': 'leaderboard', '/notifications': 'notifications', '/settings': 'settings', '/support': 'support',
+    };
+    for (const [p, id] of Object.entries(expected)) expect(tourForPath(p)?.id).toBe(id);
   });
 
   it('has no tour on lessons, running practice sessions or assessment attempts', () => {

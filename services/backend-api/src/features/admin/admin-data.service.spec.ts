@@ -1,4 +1,4 @@
-import { AdminDataService } from './admin-data.service';
+import { AdminDataService, buildSkillScores } from './admin-data.service';
 
 function createDb(results: Array<{ rows: Record<string, unknown>[] }>) {
   const queue = [...results];
@@ -12,6 +12,17 @@ function createDb(results: Array<{ rows: Record<string, unknown>[] }>) {
     }),
   };
 }
+
+describe('buildSkillScores (six-skill placement view)', () => {
+  it('returns all six skills as percentages and their equal-weight average', () => {
+    const r = buildSkillScores({
+      grammar: { mastery_score: 0.9 }, vocabulary: { mastery_score: 0.6 }, reading: { mastery_score: 0.6 },
+      listening: { mastery_score: 0.3 }, writing: { mastery_score: 0.9 }, speaking: { mastery_score: 0.3 },
+    });
+    expect(r.skillScores.map((s) => s.percent)).toEqual([90, 60, 60, 30, 90, 30]);
+    expect(r.overallPercent).toBe(60);
+  });
+});
 
 describe('AdminDataService', () => {
   it('listAssessments returns paginated data with camelCase fields', async () => {
@@ -238,6 +249,15 @@ describe('AdminDataService', () => {
           estimatedLevel: 'B1',
           skillMasteryMap: { reading: 0.7 },
           skillSummary: [{ skillCode: 'reading', skillName: 'Reading', signal: 'developing' }],
+          skillScores: [
+            { skillCode: 'grammar', percent: null },
+            { skillCode: 'vocabulary', percent: null },
+            { skillCode: 'reading', percent: 70 },
+            { skillCode: 'listening', percent: null },
+            { skillCode: 'writing', percent: null },
+            { skillCode: 'speaking', percent: null },
+          ],
+          overallPercent: 70,
           weaknessMap: { grammar: true },
           initialPathId: 'p1',
           createdAt: '2026-01-01',

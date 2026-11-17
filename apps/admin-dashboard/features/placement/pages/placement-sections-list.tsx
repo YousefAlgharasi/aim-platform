@@ -19,6 +19,8 @@ const SKILL_CODE_LABELS: Record<string, string> = {
   vocabulary: 'Vocabulary',
   reading: 'Reading',
   listening: 'Listening',
+  writing: 'Writing',
+  speaking: 'Speaking',
 };
 
 type AdminPlacementSectionsListProps = {
@@ -58,7 +60,8 @@ export function AdminPlacementSectionsList({ sections }: AdminPlacementSectionsL
           <th scope="col">Order</th>
           <th scope="col">Title</th>
           <th scope="col">Skill Area</th>
-          <th scope="col">Questions</th>
+          <th scope="col">Bank size</th>
+          <th scope="col">Drawn per student</th>
           <th scope="col">Created</th>
         </tr>
       </thead>
@@ -72,7 +75,13 @@ export function AdminPlacementSectionsList({ sections }: AdminPlacementSectionsL
                 {SKILL_CODE_LABELS[section.skillCode] ?? section.skillCode}
               </span>
             </td>
-            <td>{section.questionCount}</td>
+            <td>
+              {section.questionCount}
+              {section.activeQuestionCount !== section.questionCount && (
+                <span style={{ color: 'var(--text-muted)' }}> ({section.activeQuestionCount} active)</span>
+              )}
+            </td>
+            <td>{section.drawCount ?? 'all'}</td>
             <td>{formatDate(section.createdAt)}</td>
           </tr>
         ))}

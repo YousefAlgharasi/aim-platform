@@ -81,6 +81,7 @@ export function VoiceComposer({
             type="button"
             onClick={onMicToggle}
             disabled={micState === 'starting' || micState === 'blocked'}
+            data-tour="voice-mic"
             aria-pressed={live}
             aria-label={micLabel}
             title={micLabel}
@@ -101,6 +102,7 @@ export function VoiceComposer({
             type="button"
             onClick={onToggleMute}
             aria-pressed={muted}
+            data-tour="voice-mute"
             aria-label={muted ? t('Turn the teacher’s voice on') : t('Mute the teacher’s voice')}
             title={muted ? t('Turn the teacher’s voice on') : t('Mute the teacher’s voice')}
             className={`${ROUND} ${muted ? 'bg-surface-strong text-ink' : 'bg-transparent text-ink-soft ring-1 ring-line-strong hover:bg-surface-strong'}`}
@@ -121,6 +123,7 @@ export function VoiceComposer({
               }
             }}
             placeholder={live ? t('Just talk, or type here') : t('Type or talk to your teacher')}
+            data-tour="voice-text"
             aria-label={t('Message your teacher')}
             className="max-h-28 min-h-10 min-w-0 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-base leading-snug text-ink outline-none placeholder:text-ink-muted disabled:opacity-60"
           />

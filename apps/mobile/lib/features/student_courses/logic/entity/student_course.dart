@@ -81,4 +81,7 @@ class StudentCourse {
 
   /// True when the student has to pay (or wait for approval) first.
   bool get needsPayment => access?.needsPayment ?? false;
+
+  /// Not enrolled yet: ask "Do you want to enroll?" (coupon for a paid course) before opening it.
+  bool get needsEnroll => access?.needsEnroll ?? false;
 }

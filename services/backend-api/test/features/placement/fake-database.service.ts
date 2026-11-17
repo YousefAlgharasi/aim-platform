@@ -224,6 +224,24 @@ export class FakeDatabaseService {
       ]);
     }
 
+    // ---- per-attempt random draw (placement_attempt_questions) -----------
+    // This fake keeps every question of the test (no draw), like an attempt started before the random bank.
+    if (sql.startsWith('SELECT COUNT(*)::text AS n FROM placement_attempt_questions')) {
+      return toQueryResult([{ n: '0' } as unknown as T]);
+    }
+    if (sql.startsWith('SELECT pa.id FROM placement_attempts pa') && sql.includes('placement_attempt_questions')) {
+      return toQueryResult([]); // no drawn set: deliver the whole section
+    }
+    if (sql.includes('AS in_draw')) {
+      return toQueryResult([{ in_draw: false, has_draw: false } as unknown as T]);
+    }
+    if (sql.includes('FROM placement_attempt_questions paq') && sql.includes('GROUP BY ps.skill_code')) {
+      return toQueryResult([]);
+    }
+    if (sql.startsWith('SELECT id, draw_count FROM placement_sections')) {
+      return toQueryResult([]); // nothing to draw: the fake serves the whole test
+    }
+
     // ---- placement_tests -------------------------------------------------
     if (sql.includes('FROM placement_tests') && sql.includes("status = 'published'")) {
       const test = this.tests.find((t) => t.status === 'published');
@@ -479,12 +497,17 @@ export class FakeDatabaseService {
       sql.includes('pa.skill_code') &&
       sql.includes('pa.is_correct') &&
       sql.includes('FROM placement_answers pa') &&
-      !sql.includes('JOIN')
+      sql.includes('pq.question_type')
     ) {
       const [attemptId] = params as [string];
       const rows = this.answers
         .filter((a) => a.placement_attempt_id === attemptId)
-        .map((a) => ({ skill_code: a.skill_code, is_correct: a.is_correct }));
+        .map((a) => ({
+          skill_code: a.skill_code,
+          is_correct: a.is_correct,
+          ai_score: null,
+          question_type: this.questions.find((q) => q.id === a.placement_question_id)?.question_type ?? 'multiple_choice',
+        }));
       return toQueryResult(rows as unknown as T[]);
     }
 
@@ -702,7 +725,7 @@ export class FakeDatabaseService {
       sql.startsWith('SELECT') &&
       sql.includes('FROM placement_questions pq') &&
       sql.includes('pq.placement_section_id = $1') &&
-      sql.includes('ORDER BY pq.order_index')
+      (sql.includes('ORDER BY pq.order_index') || sql.includes('ORDER BY pq.difficulty ASC, pq.order_index ASC'))
     ) {
       const [sectionId] = params as [string];
       const section = this.sections.find((s) => s.id === sectionId);

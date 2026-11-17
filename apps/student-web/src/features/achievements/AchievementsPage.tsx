@@ -93,7 +93,7 @@ export function AchievementsPage() {
         <EmptyState title={t('No achievements yet')} message={t('Achievements will appear here as they become available.')} />
       ) : (
         <>
-          <div className="hero-panel">
+          <div data-tour="ach-summary" className="hero-panel">
             <div className="relative z-10 flex items-center gap-4">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
@@ -136,7 +136,7 @@ export function AchievementsPage() {
               }
             />
           ) : (
-            <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 lg:grid-cols-3">
+            <ul data-tour="ach-list" className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 lg:grid-cols-3">
               {visible.map((a) => (
                 <li key={a.key}>
                   <Card className={`h-full ${fresh.includes(a.key) ? 'ix-reveal ix-sheen !ring-gold' : ''}`}>

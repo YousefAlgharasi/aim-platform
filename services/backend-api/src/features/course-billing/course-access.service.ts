@@ -27,6 +27,7 @@ import { computeUnlockFrontier, isRankUnlocked } from './course-unlock.util';
 
 export const COURSE_PAYMENT_REQUIRED = 'COURSE_PAYMENT_REQUIRED';
 export const COURSE_LOCKED = 'COURSE_LOCKED';
+export const COURSE_NOT_ENROLLED = 'COURSE_NOT_ENROLLED';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -186,6 +187,7 @@ export class CourseAccessService {
     now: Date,
   ): CourseAccessState {
     const base = {
+      enrolled: false,
       startsAt: null,
       expiresAt: null,
       daysLeft: null,
@@ -197,6 +199,7 @@ export class CourseAccessService {
       const expires = new Date(access.expires_at);
       return {
         ...base,
+        enrolled: true,
         status: 'active',
         hasAccess: true,
         startsAt: new Date(access.starts_at).toISOString(),
@@ -205,7 +208,7 @@ export class CourseAccessService {
       };
     }
     if (access?.status === 'completed') {
-      return { ...base, status: 'completed', hasAccess: true, startsAt: new Date(access.starts_at).toISOString(), expiresAt: new Date(access.expires_at).toISOString() };
+      return { ...base, enrolled: true, status: 'completed', hasAccess: true, startsAt: new Date(access.starts_at).toISOString(), expiresAt: new Date(access.expires_at).toISOString() };
     }
     if (isFree) {
       return { ...base, status: 'free', hasAccess: true };
@@ -322,6 +325,21 @@ export class CourseAccessService {
   async assertCanView(studentId: string, courseId: string | null): Promise<void> {
     if (!courseId) return;
     await this.assertCourseUnlocked(studentId, courseId);
+    await this.assertEnrolled(studentId, courseId);
+  }
+
+  /** Throws COURSE_NOT_ENROLLED (403) until the student has enrolled in [courseId] (free enroll, coupon or paid). */
+  async assertEnrolled(studentId: string, courseId: string | null): Promise<void> {
+    if (!courseId) return;
+    const billing = await this.getBilling(studentId, courseId);
+    if (!billing.access.enrolled) {
+      throw new AppError({
+        code: COURSE_NOT_ENROLLED,
+        message: 'Enroll in this course to open its content.',
+        statusCode: HttpStatus.FORBIDDEN,
+        details: { courseId, isFree: billing.price.isFree },
+      });
+    }
   }
 
   /** Throws COURSE_LOCKED (403) / COURSE_PAYMENT_REQUIRED (402) unless the student may use [courseId]. */
@@ -329,6 +347,10 @@ export class CourseAccessService {
     if (!courseId) return;
     await this.assertCourseUnlocked(studentId, courseId);
     const billing = await this.getBilling(studentId, courseId);
+    if (!billing.access.enrolled && (billing.access.status === 'free' || billing.access.status === 'none')) {
+      // Not enrolled yet (free course not started, or paid course without a coupon).
+      await this.assertEnrolled(studentId, courseId);
+    }
     if (!billing.access.hasAccess) {
       throw new AppError({
         code: COURSE_PAYMENT_REQUIRED,

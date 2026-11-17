@@ -7,6 +7,7 @@ import {
   fetchCourseLevels,
   fetchStudentChapters,
   fetchStudentCourses,
+  needsEnroll,
   type FinalExamSummary,
   type StudentChapter,
   type StudentCourse,
@@ -66,7 +67,7 @@ export function useCurrentChapter(
     (async () => {
       const courses = knownCourses && knownCourses.length > 0 ? knownCourses : await fetchStudentCourses();
       const course = courses.find((c) => c.courseId === courseId);
-      if (!course || course.locked) return null;
+      if (!course || course.locked || needsEnroll(course)) return null;
 
       const levels = await fetchCourseLevels(courseId);
       const perLevel = await Promise.all(levels.map((l) => fetchStudentChapters(l.id)));
