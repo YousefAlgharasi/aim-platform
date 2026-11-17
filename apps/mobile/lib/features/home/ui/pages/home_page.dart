@@ -27,6 +27,7 @@ import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/features/home/logic/provider/dashboard_extras_provider.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_courses_provider.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_target.dart';
 import '../widgets/dashboard_sections.dart';
 import '../widgets/home_course_path_section.dart';
 import '../widgets/home_page_skeleton.dart';
@@ -181,6 +182,9 @@ class _HomeContent extends ConsumerWidget {
         await onRefresh();
       },
       child: ListView(
+        // Build the whole dashboard so the guided tour can find every card,
+        // even those below the fold.
+        cacheExtent: 4000,
         padding: const EdgeInsets.symmetric(
           horizontal: AimSpacing.screenPaddingMobile,
           vertical: AimSpacing.space16,
@@ -192,20 +196,32 @@ class _HomeContent extends ConsumerWidget {
             hasFailedSections: data.hasFailedSections,
             onRetry: onRefresh,
           ),
-          const WordOfDayCard(),
+          const TourTarget(id: 'word-of-day', child: WordOfDayCard()),
           gap,
-          const HomeCoursePathSection(),
+          const TourTarget(
+            id: 'course-lessons',
+            child: HomeCoursePathSection(),
+          ),
           gap,
-          StatsGrid(stats: data.engagementStats),
+          TourTarget(
+            id: 'xp-stats',
+            child: StatsGrid(stats: data.engagementStats),
+          ),
           gap,
           const LeaderboardCard(),
           gap,
-          DailyGoalCard(
-            goal: data.goal,
-            xpToday: data.engagementStats?.xpToday,
+          TourTarget(
+            id: 'daily-goal',
+            child: DailyGoalCard(
+              goal: data.goal,
+              xpToday: data.engagementStats?.xpToday,
+            ),
           ),
           gap,
-          ChallengesCard(fallback: data.dailyChallenge),
+          TourTarget(
+            id: 'daily-challenges',
+            child: ChallengesCard(fallback: data.dailyChallenge),
+          ),
           if (data.dailyChallenge != null) gap,
           WeeklyActivityCard(stats: data.engagementStats),
           gap,

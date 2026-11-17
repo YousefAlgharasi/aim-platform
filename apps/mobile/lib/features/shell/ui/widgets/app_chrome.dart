@@ -11,6 +11,9 @@ import '../../../../core/state/app_async_state.dart';
 import '../../../../core/widgets/widgets.dart';
 import '../../../auth/logic/provider/auth_context_provider.dart';
 import '../../../auth/logic/provider/auth_flow_provider.dart';
+import '../../../guided_tour/ui/guided_tour_overlay.dart';
+import '../../../guided_tour/ui/tour_help_button.dart';
+import '../../../guided_tour/ui/tour_target.dart';
 import '../../../notifications/logic/provider/notification_providers.dart';
 import '../../logic/main_shell_tab_provider.dart';
 import '../../logic/shell_providers.dart';
@@ -96,7 +99,7 @@ class _AppChromeState extends ConsumerState<AppChrome> with WidgetsBindingObserv
     final mode = chromeModeFor(widget.location);
     final hasBottomBar = mode != ChromeBarMode.detail;
 
-    return Scaffold(
+    final frame = Scaffold(
       backgroundColor: surfaces.background,
       drawer: const AppMenuDrawer(),
       // The bar's real height is whatever it draws (0 when a page has not
@@ -105,7 +108,11 @@ class _AppChromeState extends ConsumerState<AppChrome> with WidgetsBindingObserv
         preferredSize: const Size.fromHeight(56),
         child: ListenableBuilder(
           listenable: _bar,
-          builder: (context, _) => _AppTopBar(mode: mode, spec: _bar.active),
+          builder: (context, _) => _AppTopBar(
+            mode: mode,
+            spec: _bar.active,
+            location: widget.location,
+          ),
         ),
       ),
       body: ListenableBuilder(
@@ -126,6 +133,15 @@ class _AppChromeState extends ConsumerState<AppChrome> with WidgetsBindingObserv
       // Screens you drill into have no tab bar, like a full-screen page.
       bottomNavigationBar:
           hasBottomBar ? _BottomTabBar(location: widget.location) : null,
+    );
+
+    // The guided tour is drawn above the whole frame (top bar, page, tab bar).
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        frame,
+        GuidedTourOverlay(location: widget.location),
+      ],
     );
   }
 }
@@ -191,7 +207,9 @@ class _StreakAndBell extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (streak != null) ...[
-            Semantics(
+            TourTarget(
+              id: 'streak',
+              child: Semantics(
               label: '$streak ${context.tr('Day streak', 'أيام متتالية')}',
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(start: 12, end: 10),
@@ -210,6 +228,7 @@ class _StreakAndBell extends ConsumerWidget {
                   ],
                 ),
               ),
+            ),
             ),
             Container(width: 1, height: 20, color: surfaces.divider),
           ],
@@ -307,10 +326,15 @@ class _ProfileAvatar extends ConsumerWidget {
 /// menu and detail screens get back + the page's title (+ the page's actions),
 /// and menu screens keep the streak and bell on the right.
 class _AppTopBar extends ConsumerWidget {
-  const _AppTopBar({required this.mode, required this.spec});
+  const _AppTopBar({
+    required this.mode,
+    required this.spec,
+    required this.location,
+  });
 
   final ChromeBarMode mode;
   final ChromeBarSpec? spec;
+  final String location;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -355,6 +379,7 @@ class _AppTopBar extends ConsumerWidget {
             ),
           ),
           const Spacer(),
+          TourHelpButton(location: location),
           const _StreakAndBell(),
           const SizedBox(width: 10),
           const _ProfileAvatar(),
@@ -407,6 +432,7 @@ class _AppTopBar extends ConsumerWidget {
                 ),
           ),
           for (final a in s.actions) a,
+          TourHelpButton(location: location),
           if (mode == ChromeBarMode.section) ...const [_StreakAndBell(), SizedBox(width: 4)],
         ],
       );
@@ -501,7 +527,9 @@ class _BottomTabBar extends ConsumerWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 12, 10),
-          child: DecoratedBox(
+          child: TourTarget(
+            id: 'nav',
+            child: DecoratedBox(
             decoration: BoxDecoration(
               color: dark ? const Color(0xFF111A2E) : Colors.white,
               borderRadius: BorderRadius.circular(26),
@@ -551,6 +579,7 @@ class _BottomTabBar extends ConsumerWidget {
               ),
               ],
             ),
+          ),
           ),
         ),
       ),
