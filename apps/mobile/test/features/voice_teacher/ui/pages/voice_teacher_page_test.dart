@@ -22,6 +22,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_context_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+import 'package:aim_mobile/features/guided_tour/data/guided_tour_store.dart';
+import 'package:aim_mobile/features/guided_tour/logic/guided_tour_provider.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -53,7 +60,7 @@ void _tallPhone(WidgetTester tester) {
 /// The robot and its bubble show the status on screen; screen readers get it as one label.
 Finder _status(String text) => find.bySemanticsLabel(RegExp(RegExp.escape(text)));
 
-Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
+Widget _wrap(Widget child, {List<Override> overrides = const [], Locale? locale}) =>
     ProviderScope(
       overrides: [
         authFlowProvider.overrideWith((ref) => _SignedInAuthFlowNotifier()),
@@ -61,6 +68,7 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
       ],
       child: MaterialApp(
         theme: AppTheme.light,
+        locale: locale,
         localizationsDelegates: AppLocale.delegates,
         supportedLocales: AppLocale.supportedLocales,
         home: child,
@@ -116,6 +124,26 @@ class _FakeLiveVoiceClient implements LiveVoiceClient {
 
   void quiet(int ms) => feed(0.003, ms);
   void talk(int ms) => feed(0.2, ms);
+}
+
+/// Remembers which tours were seen, in memory (no secure storage in tests).
+class _MemoryTourStore extends GuidedTourStore {
+  final Set<String> seen = {};
+
+  @override
+  Future<bool?> hasSeen(String userId, String tourId) async => seen.contains(GuidedTourStore.key(userId, tourId));
+
+  @override
+  Future<bool> markSeen(String userId, String tourId) async {
+    seen.add(GuidedTourStore.key(userId, tourId));
+    return true;
+  }
+}
+
+/// The page never calls the auth repository; a signed-in user is all the tips need.
+class _NoAuthRepo implements AuthRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 /// Fake [VoicePlayerClient] — the real `audioplayers` AudioPlayer calls a
@@ -214,10 +242,9 @@ void main() {
     });
 
     testWidgets(
-      'opens the live microphone as soon as the conversation is open',
+      'the microphone stays closed until the student taps it, then records',
       (tester) async {
         final semantics = tester.ensureSemantics();
-        // The student chose to start the live lesson, so the mic opens on its own and listens.
         final fakeLive = _FakeLiveVoiceClient();
         await tester.pumpWidget(_wrap(
           VoiceTeacherPage(
@@ -237,8 +264,14 @@ void main() {
         await tester.pump();
         await tester.pump();
 
+        expect(fakeLive.started, isFalse, reason: 'nothing is recorded until the student taps the mic');
+        expect(_status('Type your answer, or tap the mic'), findsOneWidget);
+        expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.mic_none_rounded));
+        await tester.pump();
+        await tester.pump();
         expect(fakeLive.started, isTrue);
-        expect(_status("I'm listening. Just talk."), findsOneWidget);
         expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
         semantics.dispose();
       },
@@ -415,7 +448,7 @@ void main() {
 
     testWidgets(
       'once the auto-played greeting finishes, the call view is shown '
-      'with the live microphone listening',
+      'with the microphone ready to tap',
       (tester) async {
         _tallPhone(tester);
         final semantics = tester.ensureSemantics();
@@ -467,12 +500,11 @@ void main() {
         // shown automatically — but the call view (with the live mic
         // listening) must be showing in its place.
         expect(_status('Your teacher is speaking…'), findsNothing);
-        expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
         expect(
           fakeLive.started,
-          isTrue,
-          reason: 'the live mic is open and listening, so the student can '
-              'simply answer by talking',
+          isFalse,
+          reason: 'the mic opens only when the student taps it',
         );
 
         // The greeting is still reachable via the opt-in transcript.
@@ -521,7 +553,7 @@ void main() {
         await tester.pump();
 
         expect(find.text('Your teacher is speaking…'), findsNothing);
-        expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
 
         // The greeting is still reachable via the opt-in transcript.
         await tester.tap(find.textContaining('Messages'));
@@ -534,10 +566,9 @@ void main() {
       },
     );
 
-    // P21-018: talking over the teacher while its audio is playing must stop the
-    // audio immediately (barge-in), so the student can interrupt naturally.
+    // Tapping the mic while the teacher's audio is playing stops the teacher and starts recording.
     testWidgets(
-      'talking over the teacher stops the teacher (barge-in) and the student is heard',
+      'tapping the mic while the teacher speaks stops the teacher and records',
       (tester) async {
         final playbackNotifier = VoicePlaybackNotifier(player: _FakeVoicePlayerClient());
         // Drive it into a "playing" state without a real audio backend.
@@ -565,24 +596,19 @@ void main() {
         ));
         await tester.pump();
         await tester.pump();
-
-        // Nothing stops the teacher while the room is quiet.
-        fakeLive.quiet(800);
         expect(playbackNotifier.state, PlaybackState.playing);
 
-        // The student starts talking over the playing audio.
-        fakeLive.talk(1000);
+        await tester.tap(find.byIcon(Icons.mic_none_rounded));
         await tester.pump();
-        expect(
-          playbackNotifier.state,
-          isNot(PlaybackState.playing),
-          reason: 'talking over the teacher must stop the teacher right away',
-        );
+        await tester.pump();
+        expect(playbackNotifier.state, isNot(PlaybackState.playing),
+            reason: 'tapping the mic must stop the teacher right away');
+        expect(fakeLive.started, isTrue);
       },
     );
 
     testWidgets(
-      'a finished spoken sentence is sent on its own, as a WAV file',
+      'tap the mic to record, tap again: what was said is sent as one WAV file',
       (tester) async {
         final notifier = _FakeVoiceTeacherSessionNotifier(
           const AppAsyncState.success(VoiceTeacherSessionState(
@@ -607,26 +633,135 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        fakeLive.quiet(800);
+        await tester.tap(find.byIcon(Icons.mic_none_rounded));
+        await tester.pump();
+        await tester.pump();
         fakeLive.talk(2000);
         await tester.pump();
-        expect(submitted, isNull, reason: 'nothing is sent while the student is still talking');
-        fakeLive.quiet(1300);
+        expect(submitted, isNull, reason: 'nothing is sent until the student taps the mic again');
+
+        await tester.tap(find.byIcon(Icons.mic_rounded));
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
         await tester.pump();
         await tester.pump();
 
+        expect(fakeLive.stopped, isTrue, reason: 'the microphone is closed after sending');
+        expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
         expect(submitted, isNotNull);
         expect(String.fromCharCodes(submitted!.sublist(0, 4)), 'RIFF');
         expect(String.fromCharCodes(submitted!.sublist(8, 12)), 'WAVE');
       },
     );
 
-    testWidgets('the mic button mutes and unmutes the microphone, and a muted mic sends nothing',
-        (tester) async {
+    testWidgets('a hint under the mic says where to tap, and what the next tap does while recording', (tester) async {
+      final fakeLive = _FakeLiveVoiceClient();
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: fakeLive),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+        ],
+      ));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Tap here to talk'), findsOneWidget);
+      expect(find.textContaining('Recording'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Tap here to talk'), findsNothing);
+      expect(find.text('Recording… tap again to stop and send'), findsOneWidget);
+    });
+
+    testWidgets('the first visit shows the tips on the real controls (mic first), and they are remembered', (tester) async {
+      final tourStore = _MemoryTourStore();
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: _FakeLiveVoiceClient()),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+          authContextProvider.overrideWith((ref) {
+            final n = AuthContextNotifier(repository: _NoAuthRepo(), ref: ref);
+            n.state = const AppAsyncState.success(AuthContextModel(
+              user: CurrentUserModel(id: 'usr_1', email: 'a@example.com', userType: 'student', status: 'active'),
+              roles: [],
+              permissions: [],
+            ));
+            return n;
+          }),
+          guidedTourStoreProvider.overrideWithValue(tourStore),
+        ],
+      ));
+      // Let the page load, then let the tour wait for the controls and start.
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+
+      expect(find.text('1 of 4'), findsOneWidget);
+      expect(find.text('Tap the mic and say your answer. Tap it again to stop and send.'), findsOneWidget);
+      // The "?" replay button is in the header.
+      expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
+
+      // Next goes through the text box, the speaker and the messages button.
+      for (final title in ['Or type your answer', 'Your teacher’s voice', 'Your conversation']) {
+        await tester.tap(find.text('Next'));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.text(title), findsOneWidget);
+      }
+      await tester.tap(find.text('Done'));
+      await tester.pump();
+      expect(tourStore.seen, contains(GuidedTourStore.key('usr_1', 'voice-teacher')));
+    });
+
+    testWidgets('Arabic on a narrow phone: the mic hint reads right to left and nothing overflows', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: _FakeLiveVoiceClient()),
+        locale: const Locale('ar'),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+        ],
+      ));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('اضغط هنا للتحدث'), findsOneWidget);
+      expect(Directionality.of(tester.element(find.text('اضغط هنا للتحدث'))), TextDirection.rtl);
+
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('جارٍ التسجيل… اضغط مرة أخرى للإيقاف والإرسال'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a very short tap is an accidental one: nothing is sent', (tester) async {
       final notifier = _FakeVoiceTeacherSessionNotifier(
         const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
       );
-      final semantics = tester.ensureSemantics();
       var sends = 0;
       notifier.onSubmitTurn = (_) => sends++;
       final fakeLive = _FakeLiveVoiceClient();
@@ -643,22 +778,17 @@ void main() {
       await tester.pump();
       await tester.pump();
 
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pump();
+      await tester.pump();
+      fakeLive.talk(160);
       await tester.tap(find.byIcon(Icons.mic_rounded));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
       await tester.pump();
-      expect(find.byIcon(Icons.mic_off_rounded), findsOneWidget);
-      expect(_status('Your microphone is muted'), findsOneWidget);
+      await tester.pump();
 
-      fakeLive.quiet(800);
-      fakeLive.talk(2000);
-      fakeLive.quiet(1500);
-      await tester.pump();
-      await tester.pump();
-      expect(sends, 0, reason: 'a muted microphone must not send anything');
-
-      await tester.tap(find.byIcon(Icons.mic_off_rounded));
-      await tester.pump();
-      expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
-      semantics.dispose();
+      expect(sends, 0);
+      expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
     });
 
     testWidgets('shows the microphone error state when microphone permission is denied',
@@ -679,6 +809,9 @@ void main() {
           ),
         ],
       ));
+      await tester.pump();
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
       await tester.pump();
       await tester.pump();
 
@@ -705,6 +838,9 @@ void main() {
           ),
         ],
       ));
+      await tester.pump();
+      await tester.pump();
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
       await tester.pump();
       await tester.pump();
 
@@ -751,12 +887,12 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
       expect(find.text('Type or talk to your teacher'), findsOneWidget);
       // The microphone, the teacher's voice and send are all inside the box, typing or not.
-      expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
       expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'Hello');
       await tester.pump();
       expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.mic_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.mic_none_rounded), findsOneWidget);
       expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
       // The robot's bubble writes the teacher's words out; after a moment they are all there.
       await tester.pump(const Duration(seconds: 3));

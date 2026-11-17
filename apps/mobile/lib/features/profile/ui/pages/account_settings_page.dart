@@ -23,10 +23,13 @@ import 'package:aim_mobile/features/auth/logic/entity/auth_context.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
 import 'package:aim_mobile/features/auth/logic/provider/logout_provider.dart';
+import 'package:aim_mobile/features/guided_tour/data/tour_definitions.dart';
+import 'package:aim_mobile/features/guided_tour/logic/guided_tour_provider.dart';
 import 'package:aim_mobile/features/home/logic/entity/home_data.dart';
 import 'package:aim_mobile/features/home/logic/provider/home_provider.dart';
 import 'package:aim_mobile/features/profile/data/models/profile_update_payload_models.dart';
 import 'package:aim_mobile/features/profile/logic/provider/profile_provider.dart';
+import 'package:aim_mobile/features/shell/logic/main_shell_tab_provider.dart';
 import 'package:aim_mobile/l10n/app_localizations.dart';
 
 /// Daily goal choices, in lessons per day.
@@ -172,6 +175,19 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
         _showSnack(l10n.profilePasswordResetFailed('$e'), error: true);
       }
     }
+  }
+
+  /// Replay the dashboard tour: go to the dashboard, then ask for the tour.
+  /// The tour waits for the dashboard to show its cards before it starts.
+  void _startDashboardTour() {
+    final userId = switch (ref.read(authContextProvider)) {
+      AppAsyncSuccess(:final data) => data.user.id,
+      _ => null,
+    };
+    if (userId == null) return;
+    ref.read(mainShellTabIndexProvider.notifier).state = 0;
+    context.go(AppRoutePaths.mainShell);
+    ref.read(guidedTourProvider(userId).notifier).start(dashboardTourId);
   }
 
   Future<void> _signOut() async {
@@ -425,6 +441,34 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                           label: l10n.settingsStudyReminders,
                           onTap: () =>
                               context.push(AppRoutePaths.reminderSettings),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Guided tour ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _SectionCard(
+                    title: TourStrings.settingsTitle.of(context.isArabic),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space4,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          TourStrings.settingsBody.of(context.isArabic),
+                          textAlign: TextAlign.start,
+                          style: AimTextStyles.bodySm
+                              .copyWith(color: surfaces.textMuted, height: 1.5),
+                        ),
+                        _SettingsRow(
+                          icon: Icons.help_outline_rounded,
+                          label: TourStrings.settingsAction.of(context.isArabic),
+                          onTap: _startDashboardTour,
                         ),
                       ],
                     ),

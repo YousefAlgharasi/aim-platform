@@ -39,3 +39,20 @@ scripts/create-superadmin-supabase.js
 .vite/
 
 
+
+# Stray / generated / local-only files (not source)
+node_modules.rootold/
+**/node_modules.rootold/
+build-ix/
+.next/
+coverage/
+.dart_tool/
+*.dump
+*.sql.gz
+*.bak
+*.bak-*
+services/backend-api/groq_*.wav
+apps/mobile/analyze_output.txt
+tsconfig.check.json
+jest.check.config.js
+.env.*.local

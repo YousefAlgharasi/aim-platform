@@ -62,6 +62,9 @@ class _FakeLiveVoiceClient implements LiveVoiceClient {
 
   @override
   void dispose() => disposed = true;
+
+  /// One buffer of audio from the (fake) microphone.
+  void emit(Uint8List frame) => _frames.add(frame);
 }
 
 void main() {
@@ -121,6 +124,15 @@ void main() {
       _feed(vad, _quiet, 1000);
       expect(vad.threshold(false), lessThan(0.03));
       expect(_feed(vad, _loud, 800).single, isA<SpeechStart>());
+    });
+
+    test('learns the room from quiet moments even while the teacher speaks, so the student can interrupt', () {
+      final vad = Vad()..startCalibration();
+      // A long greeting plays right as the mic opens; the room itself is quiet.
+      expect(_feed(vad, _quiet, 1000, aiSpeaking: true), isEmpty);
+      final events = _feed(vad, _loud, 1000, aiSpeaking: true);
+      expect(events, hasLength(1));
+      expect((events.single as SpeechStart).bargeIn, isTrue);
     });
 
     test('never assumes a room louder than the cap', () {
@@ -201,6 +213,66 @@ void main() {
       expect(c.status, LiveStatus.listening);
       expect(c.isLive, isTrue);
       c.dispose();
+    });
+
+    group('tap to talk', () {
+      Future<void> hear(_FakeLiveVoiceClient client, double amp, int ms) async {
+        for (var t = 0.0; t < ms; t += _frame) {
+          client.emit(_pcm(amp));
+        }
+        await pumpEventQueue();
+      }
+
+      test('records everything until it is finished, then sends one WAV file and closes the mic', () async {
+        final client = _FakeLiveVoiceClient();
+        final c = make(client);
+        await c.startRecording();
+        expect(c.isRecording, isTrue);
+        expect(c.status, LiveStatus.hearing);
+
+        // Even audio far too quiet for speech detection is kept: nothing depends on the room's noise level.
+        await hear(client, 0.004, 2000);
+        expect(utterances, isEmpty, reason: 'nothing is sent until the recording is finished');
+
+        await c.finishRecording();
+        expect(utterances, hasLength(1));
+        expect(utterances.single.ms, closeTo(2000, 100));
+        expect(String.fromCharCodes(utterances.single.wav.sublist(0, 4)), 'RIFF');
+        expect(client.stopped, isTrue);
+        expect(c.isRecording, isFalse);
+        expect(c.status, LiveStatus.off);
+        c.dispose();
+      });
+
+      test('an accidental tap (a very short recording) sends nothing', () async {
+        final client = _FakeLiveVoiceClient();
+        final c = make(client);
+        await c.startRecording();
+        await hear(client, 0.2, 160);
+        await c.finishRecording();
+        expect(utterances, isEmpty);
+        expect(c.status, LiveStatus.off);
+        c.dispose();
+      });
+
+      test('a recording that reaches the maximum length is sent by itself', () async {
+        final client = _FakeLiveVoiceClient();
+        final c = make(client);
+        await c.startRecording();
+        await hear(client, 0.2, LiveVoiceController.maxRecordingMs + 400);
+        await pumpEventQueue();
+        expect(utterances, hasLength(1));
+        expect(c.isRecording, isFalse);
+        c.dispose();
+      });
+
+      test('says so when permission is refused', () async {
+        final c = make(_FakeLiveVoiceClient(permission: false));
+        await c.startRecording();
+        expect(c.status, LiveStatus.denied);
+        expect(c.isRecording, isFalse);
+        c.dispose();
+      });
     });
 
     test('says so when permission is refused, and when the mic cannot start', () async {
