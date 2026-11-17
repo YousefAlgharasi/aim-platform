@@ -123,6 +123,15 @@ void main() {
       expect(_feed(vad, _loud, 800).single, isA<SpeechStart>());
     });
 
+    test('learns the room from quiet moments even while the teacher speaks, so the student can interrupt', () {
+      final vad = Vad()..startCalibration();
+      // A long greeting plays right as the mic opens; the room itself is quiet.
+      expect(_feed(vad, _quiet, 1000, aiSpeaking: true), isEmpty);
+      final events = _feed(vad, _loud, 1000, aiSpeaking: true);
+      expect(events, hasLength(1));
+      expect((events.single as SpeechStart).bargeIn, isTrue);
+    });
+
     test('never assumes a room louder than the cap', () {
       final vad = Vad()..startCalibration();
       _feed(vad, 0.5, 8000);
