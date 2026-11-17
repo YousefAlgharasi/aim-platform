@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:aim_mobile/core/localization/app_locale.dart';
+import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/localization/locale_provider.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/state/app_async_state.dart';
@@ -380,6 +381,23 @@ class _AccountSettingsPageState extends ConsumerState<AccountSettingsPage> {
                               .setLocale(Locale(code)),
                         ),
                       ],
+                    ),
+                  ),
+
+                  // ── Teacher voice ──
+                  const SizedBox(height: AimSpacing.space16),
+                  _SectionCard(
+                    title: context.tr('Teacher voice', 'صوت المعلّم'),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space16,
+                      AimSpacing.space4,
+                    ),
+                    child: _SettingsRow(
+                      icon: Icons.record_voice_over_outlined,
+                      label: context.tr('Choose your teacher’s voice', 'اختر صوت معلّمك'),
+                      onTap: () => context.push(AppRoutePaths.voicePreferences),
                     ),
                   ),
 

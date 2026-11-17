@@ -121,6 +121,9 @@ class AppRoutePaths {
   static const String liveAiLesson = '/lessons/live-ai-voice';
   static const String accountSettings = '/profile/settings';
 
+  /// The student picks the AI Teacher's voice (English + Arabic, male or female).
+  static const String voicePreferences = '/profile/voice';
+
   // Certificates routes
   static const String certificates = '/certificates';
 

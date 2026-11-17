@@ -18,6 +18,7 @@ import { DisplayPrefs } from './DisplayPrefs';
 import { DailyGoalSetting } from './DailyGoalSetting';
 import { SoundSwitch } from '../../interaction';
 import { requestTour } from '../tour/tourStore';
+import { buttonClasses } from '../../components/common/buttonStyles';
 
 // Mirrors Flutter features/profile/ui/pages/account_settings_page.dart:
 // language (profile.preferredLanguage), notification preferences, password reset
@@ -107,7 +108,7 @@ export function SettingsPage() {
         <span className="flex shrink-0 items-center gap-2"><LevelBadge /><span className="text-sm font-bold text-brand-ink">{t('Edit profile')}</span></span>
       </Link>
 
-      <section className="flex flex-col gap-3" aria-label={t('Preferences')}>
+      <section data-tour="settings-prefs" className="flex flex-col gap-3" aria-label={t('Preferences')}>
         <h2 className="m-0 px-1 text-xl font-semibold tracking-tight text-ink">{t('Preferences')}</h2>
         <Card>
           <DailyGoalSetting />
@@ -130,6 +131,14 @@ export function SettingsPage() {
             <SectionTitle hint={t('Switch between the light and dark look. Saved on this device.')}>{t('Appearance')}</SectionTitle>
             <ThemeSwitch />
             <DisplayPrefs />
+          </div>
+        </Card>
+        <Card>
+          <div className="flex flex-col gap-3.5">
+            <SectionTitle hint={t('Choose a man or a woman, in English and in Arabic, and listen to a sample first.')}>{t('Teacher voice')}</SectionTitle>
+            <div>
+              <Link to="/settings/voice" className={buttonClasses('secondary', 'md')}>{t('Choose your teacher’s voice')}</Link>
+            </div>
           </div>
         </Card>
         <Card>

@@ -289,4 +289,43 @@ describe('TtsAudioGenerationService', () => {
     expect(callArg.raw?.durationMs).toBe(1000);
     fetchSpy.mockRestore();
   });
+
+  describe("a student's chosen voice", () => {
+    const settings = { allowedLanguages: ['en', 'ar'], ttsDefaultLanguage: 'en', ttsArModel: 'canopylabs/orpheus-arabic-saudi', ttsArVoice: 'lulwa' };
+    const withVoices = (chosen: { en: string | null; ar: string | null }) => {
+      // the shared mapper mock always returns the same text; here it must echo the request.
+      requestMapper.mapRequest.mockImplementation((r: any) => ({
+        model: 'canopylabs/orpheus-v1-english', text: r.text, languageCode: r.languageCode,
+        sessionId: r.sessionId, studentId: r.studentId, voice: 'hannah',
+      }));
+      return new TtsAudioGenerationService(
+        configService, requestMapper, responseMapper, audioStorage,
+        { resolveTts: jest.fn().mockResolvedValue({ language: 'en', settings }) } as any,
+        { resolveForStudent: jest.fn().mockResolvedValue(chosen) } as any,
+      );
+    };
+    const bodies = (spy: jest.SpyInstance) => spy.mock.calls.map((c) => JSON.parse((c[1] as any).body));
+
+    it('speaks English with the English voice the student picked, and Arabic with the Arabic one', async () => {
+      const spy = mockSuccessfulFetch();
+      const svc = withVoices({ en: 'austin', ar: 'fahad' });
+      await svc.synthesize({ ...mockRequest, text: 'Hello there' });
+      await svc.synthesize({ ...mockRequest, text: 'مرحبا بك' });
+      const sent = bodies(spy);
+      expect(sent.some((b) => b.voice === 'austin' && b.model === 'canopylabs/orpheus-v1-english')).toBe(true);
+      expect(sent.some((b) => b.voice === 'fahad' && b.model === 'canopylabs/orpheus-arabic-saudi')).toBe(true);
+      spy.mockRestore();
+    });
+
+    it('falls back to the platform default voices when the student has not chosen', async () => {
+      const spy = mockSuccessfulFetch();
+      const svc = withVoices({ en: null, ar: null });
+      await svc.synthesize({ ...mockRequest, text: 'Hello there' });
+      await svc.synthesize({ ...mockRequest, text: 'مرحبا بك' });
+      const sent = bodies(spy);
+      expect(sent.some((b) => b.voice === 'hannah')).toBe(true);
+      expect(sent.some((b) => b.voice === 'lulwa')).toBe(true);
+      spy.mockRestore();
+    });
+  });
 });

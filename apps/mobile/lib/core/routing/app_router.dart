@@ -1,3 +1,4 @@
+import 'package:aim_mobile/features/voice_teacher/ui/pages/voice_preferences_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -481,6 +482,10 @@ class AppRouter {
             builder: (context, state) => const AccountSettingsPage(),
           ),
           GoRoute(
+            path: AppRoutePaths.voicePreferences,
+            builder: (context, state) => const VoicePreferencesPage(),
+          ),
+          GoRoute(
             path: AppRoutePaths.improve,
             builder: (context, state) => const ImprovePage(),
           ),
@@ -934,5 +939,6 @@ class AppRouter {
     AppRoutePaths.designSystemPreview,
     AppRoutePaths.liveAiLesson,
     AppRoutePaths.accountSettings,
+    AppRoutePaths.voicePreferences,
   };
 }

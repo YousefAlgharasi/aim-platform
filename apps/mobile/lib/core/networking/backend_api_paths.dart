@@ -114,6 +114,13 @@ class BackendApiPaths {
   /// transitions to 'switched').
   static String courseEnroll(String courseId) => '/courses/$courseId/enroll';
 
+  /// GET/PUT /student/voice-preferences — the student's AI Teacher voice choice.
+  static const String studentVoicePreferences = '/student/voice-preferences';
+
+  /// GET /student/voice-preferences/preview — a short audio sample of one voice.
+  static String studentVoicePreview(String language, String voice) =>
+      '/student/voice-preferences/preview?language=$language&voice=${Uri.encodeQueryComponent(voice)}';
+
   // Course billing — wallet payments for paid courses.
   static const String studentBillingWallets = '/student/billing/wallets';
   static const String studentPaymentRequests = '/student/payment-requests';

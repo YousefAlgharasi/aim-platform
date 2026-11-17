@@ -10,6 +10,11 @@ import { TtsAudioStorageService } from './tts-audio-storage.service';
 import { TtsAudioGenerationService } from './tts-audio-generation.service';
 import { VoiceLanguageSettingsModule } from '../language-settings/voice-language-settings.module';
 import { DatabaseModule } from '../../../database/database.module';
+import { AuthModule } from '../../../auth/auth.module';
+import { RolesModule } from '../../roles';
+import { UsersModule } from '../../users';
+import { StudentVoicePreferencesService } from './voice-preferences/student-voice-preferences.service';
+import { StudentVoicePreferencesController } from './voice-preferences/student-voice-preferences.controller';
 import { TtsAudioAssetRepository } from './persistent/tts-audio-asset.repository';
 import { SupabaseAudioObjectStore } from './persistent/supabase-audio-object-store.service';
 import { PersistentTtsAudioService } from './persistent/persistent-tts-audio.service';
@@ -17,8 +22,10 @@ import { AudioTranscoderService } from './persistent/audio-transcoder.service';
 import { TtsAudioDeliveryService } from './persistent/tts-audio-delivery.service';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, VoiceLanguageSettingsModule],
+  imports: [ConfigModule, DatabaseModule, VoiceLanguageSettingsModule, AuthModule, RolesModule, UsersModule],
+  controllers: [StudentVoicePreferencesController],
   providers: [
+    StudentVoicePreferencesService,
     TtsGatewayConfigService,
     TtsRequestMapperService,
     TtsResponseMapperService,
@@ -39,6 +46,7 @@ import { TtsAudioDeliveryService } from './persistent/tts-audio-delivery.service
     TtsAudioGenerationService,
     PersistentTtsAudioService,
     TtsAudioDeliveryService,
+    StudentVoicePreferencesService,
   ],
 })
 export class TtsGatewayModule {}
