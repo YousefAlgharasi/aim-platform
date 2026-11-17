@@ -37,6 +37,7 @@ const StoryReaderPage = lazy(() => import('../features/stories/StoryReaderPage')
 const SkillPracticePage = lazy(() => import('../features/practice/SkillPracticePage').then((m) => ({ default: m.SkillPracticePage })));
 const RecoveryRetryPage = lazy(() => import('../features/improve/RecoveryRetryPage').then((m) => ({ default: m.RecoveryRetryPage })));
 const ImprovePage = lazy(() => import('../features/improve/ImprovePage').then((m) => ({ default: m.ImprovePage })));
+const VoicePage = lazy(() => import('../features/settings/VoicePage').then((m) => ({ default: m.VoicePage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const ProgressSummary = lazy(() => import('../features/progress/ProgressSummary').then((m) => ({ default: m.ProgressSummary })));
 const LeaderboardPage = lazy(() => import('../features/leaderboard/LeaderboardPage').then((m) => ({ default: m.LeaderboardPage })));
@@ -314,6 +315,14 @@ export function AppRoutes() {
           }
         />
         <Route path="/journey" element={<Navigate to="/curriculum" replace />} />
+        <Route
+          path="/settings/voice"
+          element={
+            <Suspense fallback={<AppShellSkeleton />}>
+              <VoicePage />
+            </Suspense>
+          }
+        />
         <Route
           path="/settings"
           element={

@@ -1,6 +1,8 @@
 import { Injectable, Logger, BadGatewayException, Optional } from '@nestjs/common';
 
 import { VoiceLanguageSettingsService } from '../language-settings/voice-language-settings.service';
+import { StudentVoicePreferencesService } from './voice-preferences/student-voice-preferences.service';
+import { VoiceLang } from './voice-preferences/voice-catalog';
 import { TtsGatewayConfigService } from './tts-gateway.config';
 import { TtsGateway } from './tts-gateway.interface';
 import { TtsProviderRequest, TtsProviderResponse } from './tts-gateway.types';
@@ -40,6 +42,7 @@ export class TtsAudioGenerationService extends TtsGateway {
     private readonly responseMapper: TtsResponseMapperService,
     private readonly audioStorage: TtsAudioStorageService,
     @Optional() private readonly voiceLanguages?: VoiceLanguageSettingsService,
+    @Optional() private readonly studentVoices?: StudentVoicePreferencesService,
   ) {
     super();
   }
@@ -51,11 +54,16 @@ export class TtsAudioGenerationService extends TtsGateway {
     if (this.voiceLanguages) {
       const { language, settings } = await this.voiceLanguages.resolveTts(request.languageCode);
       const arabicAllowed = settings.allowedLanguages.includes('ar');
+      // The student's own voice choice (Settings > Voice) wins over the platform default for each language.
+      const chosen = request.studentId && this.studentVoices
+        ? await this.studentVoices.resolveForStudent(request.studentId)
+        : { en: null, ar: null };
       completionRequest = {
         ...completionRequest,
+        voice: chosen.en ?? completionRequest.voice,
         languageCode: language,
         arModel: arabicAllowed ? settings.ttsArModel : null,
-        arVoice: arabicAllowed ? settings.ttsArVoice : null,
+        arVoice: arabicAllowed ? chosen.ar ?? settings.ttsArVoice : null,
       };
     }
     // resultsUrl is unused by Groq's synchronous endpoint — kept in the
@@ -77,6 +85,21 @@ export class TtsAudioGenerationService extends TtsGateway {
     }
 
     return this.responseMapper.mapResponse({ raw, errorCategory });
+  }
+
+  /** One short sample of [voice] for the voice picker (the caller stores it, so each voice is generated once). */
+  async synthesizePreview(language: VoiceLang, voice: string, text: string): Promise<Buffer> {
+    const { apiKey, baseUrl, model } = this.configService.getConfig();
+    const settings = this.voiceLanguages ? await this.voiceLanguages.get() : null;
+    const useModel = language === 'ar' ? settings?.ttsArModel : model;
+    if (!useModel) throw new BadGatewayException('Arabic speech is not configured.');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TTS_TIMEOUT_MS);
+    try {
+      return await this.synthesizeChunk(apiKey, baseUrl, useModel, voice, text, controller.signal);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   /**
