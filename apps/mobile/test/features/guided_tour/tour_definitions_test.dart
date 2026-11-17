@@ -23,11 +23,22 @@ void main() {
       }
     });
 
-    test('only the dashboard starts by itself', () {
+    test('only the dashboard and the Voice Teacher start by themselves', () {
       expect(
         tourDefinitions.where((t) => t.autoStart).map((t) => t.id).toList(),
+        [dashboardTourId, voiceTeacherTourId],
+      );
+      // Only the dashboard (the first screen under the welcome walkthrough) waits for it to be closed.
+      expect(
+        tourDefinitions.where((t) => t.afterWelcome).map((t) => t.id).toList(),
         [dashboardTourId],
       );
+    });
+
+    test('the Voice Teacher tour points at the mic first, then the text box, the speaker and the messages', () {
+      expect(tourById(voiceTeacherTourId)!.steps.map((s) => s.target).toList(),
+          ['voice-mic', 'voice-text', 'voice-speaker', 'voice-messages']);
+      expect(tourById(voiceTeacherTourId)!.steps.first.title.ar, 'اضغط هنا للتحدث');
     });
 
     test('tour ids and step targets are unique', () {
@@ -62,6 +73,7 @@ void main() {
 
     test('menu pages', () {
       expect(tourIdForScreen(location: '/practice', mainTab: 0), 'practice');
+      expect(tourIdForScreen(location: '/voice-teacher', mainTab: 0), 'voice-teacher');
       expect(tourIdForScreen(location: '/vocabulary', mainTab: 0), 'my-words');
       expect(tourIdForScreen(location: '/vocabulary-library', mainTab: 0),
           'vocabulary-library');

@@ -1,9 +1,11 @@
 // GuidedTourOverlay — decides when a guided tour runs and shows it.
 //
-// Lives inside the app frame (AppChrome), above the page. A tour starts when:
+// Lives above a page: inside the app frame (AppChrome) or on a full-screen page such as the Voice Teacher. A tour
+// starts when:
 //  - the "?" button or Settings asks for it, or
-//  - it is the dashboard tour, this student has never seen it, and the
-//    first-time welcome walkthrough has just been closed in this session.
+//  - it is a tour that starts by itself (the dashboard and the Voice Teacher),
+//    this student has never seen it, and, for the dashboard, the first-time
+//    welcome walkthrough has just been closed in this session.
 //
 // Like the web app, a tour never starts by itself if the device cannot
 // remember that it was shown, and students who already got past the welcome
@@ -143,8 +145,7 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay> {
         state.loaded &&
         state.canRemember &&
         !state.isSeen(tour.id) &&
-        walkthroughSeen == true &&
-        _sawWalkthroughOpen) {
+        (!tour.afterWelcome || (walkthroughSeen == true && _sawWalkthroughOpen))) {
       _begin(tour);
     }
   }
@@ -153,9 +154,12 @@ class _GuidedTourOverlayState extends ConsumerState<GuidedTourOverlay> {
   Widget build(BuildContext context) {
     final userId = _userId();
     final state = userId == null ? null : ref.watch(guidedTourProvider(userId));
-    final walkthroughSeen = ref.watch(onboardingWalkthroughProvider);
     // Also rebuild when the student switches tab, so a tour left behind ends.
     ref.watch(mainShellTabIndexProvider);
+    // Only the dashboard tour waits for the welcome walkthrough, so only then is its state read.
+    final waitsForWelcome = tourById(_currentTourId() ?? '')?.afterWelcome ?? false;
+    final bool? walkthroughSeen =
+        waitsForWelcome ? ref.watch(onboardingWalkthroughProvider) : null;
     if (walkthroughSeen == false) _sawWalkthroughOpen = true;
 
     WidgetsBinding.instance

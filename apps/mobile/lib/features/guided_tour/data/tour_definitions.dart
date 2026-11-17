@@ -8,6 +8,9 @@
 // `TourTarget` widget on that screen. A step whose element is not on screen
 // is skipped, exactly like the web tour.
 //
+// The Voice Teacher tour is written for the app (the web has no tour on its voice
+// screen), in the same short style as the web copy.
+//
 // The tours the web has but this app does not (course detail, AI Teacher, and
 // the web "Remember and fix" step) are left out on purpose: the mobile screens
 // have no matching element to point at.
@@ -42,14 +45,20 @@ class TourDefinition {
     required this.id,
     required this.steps,
     this.autoStart = false,
+    this.afterWelcome = false,
   });
 
   final String id;
   final List<TourStep> steps;
 
-  /// Offered automatically on the first visit. Only the dashboard does this;
-  /// the others wait for the "?" button.
+  /// Offered automatically on the first visit. Only the dashboard and the
+  /// Voice Teacher do this; the others wait for the "?" button.
   final bool autoStart;
+
+  /// With [autoStart]: wait until the first-time welcome walkthrough has been
+  /// closed in this session (the dashboard is the first screen a new student
+  /// sees, under that walkthrough).
+  final bool afterWelcome;
 }
 
 /// Controls and Settings copy (web: the "Controls" and "Settings" groups).
@@ -74,11 +83,13 @@ class TourStrings {
 }
 
 const String dashboardTourId = 'dashboard';
+const String voiceTeacherTourId = 'voice-teacher';
 
 const List<TourDefinition> tourDefinitions = [
   TourDefinition(
     id: dashboardTourId,
     autoStart: true,
+    afterWelcome: true,
     steps: [
       TourStep(
         target: 'course-lessons',
@@ -204,6 +215,44 @@ const List<TourDefinition> tourDefinitions = [
     ],
   ),
   TourDefinition(
+    id: voiceTeacherTourId,
+    autoStart: true,
+    steps: [
+      TourStep(
+        target: 'voice-mic',
+        title: TourText('Tap here to talk', 'اضغط هنا للتحدث'),
+        body: TourText(
+          'Tap the mic and say your answer. Tap it again to stop and send.',
+          'اضغط على المايك وقل إجابتك. اضغط عليه مرة أخرى لتتوقف وترسل.',
+        ),
+      ),
+      TourStep(
+        target: 'voice-text',
+        title: TourText('Or type your answer', 'أو اكتب إجابتك'),
+        body: TourText(
+          'Prefer typing? Write your answer here and tap the arrow.',
+          'تفضّل الكتابة؟ اكتب إجابتك هنا ثم اضغط على السهم.',
+        ),
+      ),
+      TourStep(
+        target: 'voice-speaker',
+        title: TourText('Your teacher’s voice', 'صوت معلّمك'),
+        body: TourText(
+          'Tap the speaker to turn the voice off or on. You can still read the replies.',
+          'اضغط على السماعة لتُوقف الصوت أو تُشغّله. وتبقى الردود مكتوبة لتقرأها.',
+        ),
+      ),
+      TourStep(
+        target: 'voice-messages',
+        title: TourText('Your conversation', 'محادثتك'),
+        body: TourText(
+          'Open Messages to read everything you and your teacher said.',
+          'افتح الرسائل لتقرأ كل ما قلتَه أنت ومعلّمك.',
+        ),
+      ),
+    ],
+  ),
+  TourDefinition(
     id: 'vocabulary-library',
     steps: [
       TourStep(
@@ -278,6 +327,7 @@ String? tourIdForScreen({required String location, required int mainTab}) {
       _ => null,
     };
   }
+  if (location == AppRoutePaths.voiceTeacher) return voiceTeacherTourId;
   if (location == AppRoutePaths.practiceHub) return 'practice';
   if (location == AppRoutePaths.vocabularyLibrary) return 'vocabulary-library';
   if (location == AppRoutePaths.vocabulary) return 'my-words';

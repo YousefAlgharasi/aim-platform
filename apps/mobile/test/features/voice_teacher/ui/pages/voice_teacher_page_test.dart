@@ -22,6 +22,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:aim_mobile/core/state/app_async_state.dart';
 import 'package:aim_mobile/core/theme/app_theme.dart';
+import 'package:aim_mobile/features/auth/data/models/auth_context_model.dart';
+import 'package:aim_mobile/features/auth/data/models/current_user_model.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_context_notifier.dart';
+import 'package:aim_mobile/features/auth/logic/provider/auth_context_provider.dart';
+import 'package:aim_mobile/features/auth/logic/repository/auth_repository.dart';
+import 'package:aim_mobile/features/guided_tour/data/guided_tour_store.dart';
+import 'package:aim_mobile/features/guided_tour/logic/guided_tour_provider.dart';
 import 'package:aim_mobile/features/auth/logic/entity/auth_flow_state.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_notifier.dart';
 import 'package:aim_mobile/features/auth/logic/provider/auth_flow_provider.dart';
@@ -53,7 +60,7 @@ void _tallPhone(WidgetTester tester) {
 /// The robot and its bubble show the status on screen; screen readers get it as one label.
 Finder _status(String text) => find.bySemanticsLabel(RegExp(RegExp.escape(text)));
 
-Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
+Widget _wrap(Widget child, {List<Override> overrides = const [], Locale? locale}) =>
     ProviderScope(
       overrides: [
         authFlowProvider.overrideWith((ref) => _SignedInAuthFlowNotifier()),
@@ -61,6 +68,7 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
       ],
       child: MaterialApp(
         theme: AppTheme.light,
+        locale: locale,
         localizationsDelegates: AppLocale.delegates,
         supportedLocales: AppLocale.supportedLocales,
         home: child,
@@ -116,6 +124,26 @@ class _FakeLiveVoiceClient implements LiveVoiceClient {
 
   void quiet(int ms) => feed(0.003, ms);
   void talk(int ms) => feed(0.2, ms);
+}
+
+/// Remembers which tours were seen, in memory (no secure storage in tests).
+class _MemoryTourStore extends GuidedTourStore {
+  final Set<String> seen = {};
+
+  @override
+  Future<bool?> hasSeen(String userId, String tourId) async => seen.contains(GuidedTourStore.key(userId, tourId));
+
+  @override
+  Future<bool> markSeen(String userId, String tourId) async {
+    seen.add(GuidedTourStore.key(userId, tourId));
+    return true;
+  }
+}
+
+/// The page never calls the auth repository; a signed-in user is all the tips need.
+class _NoAuthRepo implements AuthRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 /// Fake [VoicePlayerClient] — the real `audioplayers` AudioPlayer calls a
@@ -624,6 +652,111 @@ void main() {
         expect(String.fromCharCodes(submitted!.sublist(8, 12)), 'WAVE');
       },
     );
+
+    testWidgets('a hint under the mic says where to tap, and what the next tap does while recording', (tester) async {
+      final fakeLive = _FakeLiveVoiceClient();
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: fakeLive),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+        ],
+      ));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Tap here to talk'), findsOneWidget);
+      expect(find.textContaining('Recording'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Tap here to talk'), findsNothing);
+      expect(find.text('Recording… tap again to stop and send'), findsOneWidget);
+    });
+
+    testWidgets('the first visit shows the tips on the real controls (mic first), and they are remembered', (tester) async {
+      final tourStore = _MemoryTourStore();
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: _FakeLiveVoiceClient()),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+          authContextProvider.overrideWith((ref) {
+            final n = AuthContextNotifier(repository: _NoAuthRepo(), ref: ref);
+            n.state = const AppAsyncState.success(AuthContextModel(
+              user: CurrentUserModel(id: 'usr_1', email: 'a@example.com', userType: 'student', status: 'active'),
+              roles: [],
+              permissions: [],
+            ));
+            return n;
+          }),
+          guidedTourStoreProvider.overrideWithValue(tourStore),
+        ],
+      ));
+      // Let the page load, then let the tour wait for the controls and start.
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+
+      expect(find.text('1 of 4'), findsOneWidget);
+      expect(find.text('Tap the mic and say your answer. Tap it again to stop and send.'), findsOneWidget);
+      // The "?" replay button is in the header.
+      expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
+
+      // Next goes through the text box, the speaker and the messages button.
+      for (final title in ['Or type your answer', 'Your teacher’s voice', 'Your conversation']) {
+        await tester.tap(find.text('Next'));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.text(title), findsOneWidget);
+      }
+      await tester.tap(find.text('Done'));
+      await tester.pump();
+      expect(tourStore.seen, contains(GuidedTourStore.key('usr_1', 'voice-teacher')));
+    });
+
+    testWidgets('Arabic on a narrow phone: the mic hint reads right to left and nothing overflows', (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_wrap(
+        VoiceTeacherPage(contextRef: 'lesson-1', liveClient: _FakeLiveVoiceClient()),
+        locale: const Locale('ar'),
+        overrides: [
+          voiceTeacherSessionProvider.overrideWith(
+            (ref) => _FakeVoiceTeacherSessionNotifier(
+              const AppAsyncState.success(VoiceTeacherSessionState(sessionId: 'session-1', history: _history)),
+            ),
+          ),
+          voicePlaybackProvider.overrideWith(
+            (ref) => VoicePlaybackNotifier(player: _FakeVoicePlayerClient()),
+          ),
+        ],
+      ));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('اضغط هنا للتحدث'), findsOneWidget);
+      expect(Directionality.of(tester.element(find.text('اضغط هنا للتحدث'))), TextDirection.rtl);
+
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('جارٍ التسجيل… اضغط مرة أخرى للإيقاف والإرسال'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('a very short tap is an accidental one: nothing is sent', (tester) async {
       final notifier = _FakeVoiceTeacherSessionNotifier(

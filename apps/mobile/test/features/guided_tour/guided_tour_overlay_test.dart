@@ -123,7 +123,12 @@ ProviderContainer _container({
   return c;
 }
 
-Widget _app(ProviderContainer container, {Locale locale = const Locale('en')}) {
+Widget _app(
+  ProviderContainer container, {
+  Locale locale = const Locale('en'),
+  String location = '/main',
+  String tourId = dashboardTourId,
+}) {
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
@@ -135,14 +140,14 @@ Widget _app(ProviderContainer container, {Locale locale = const Locale('en')}) {
           children: [
             ListView(
               children: [
-                for (final step in tourById(dashboardTourId)!.steps)
+                for (final step in tourById(tourId)!.steps)
                   TourTarget(
                     id: step.target,
                     child: SizedBox(height: 60, child: Text(step.target)),
                   ),
               ],
             ),
-            const GuidedTourOverlay(location: '/main'),
+            GuidedTourOverlay(location: location),
           ],
         ),
       ),
@@ -212,6 +217,32 @@ void main() {
     await _settle(tester);
     expect(find.text('أكمل دروسك'), findsOneWidget);
     expect(find.text('1 من 7'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the Voice Teacher tips start on the first visit, even with no welcome walkthrough', (tester) async {
+    final c = _container(walkthroughSeen: true);
+    await tester.pumpWidget(_app(c, location: '/voice-teacher', tourId: voiceTeacherTourId));
+    await _settle(tester);
+
+    expect(find.text('Tap here to talk'), findsOneWidget);
+    expect(find.text('1 of 4'), findsOneWidget);
+
+    await tester.tap(find.text('Skip tour'));
+    await tester.pump();
+    expect(c.read(guidedTourProvider('usr_1')).isSeen(voiceTeacherTourId), isTrue);
+  });
+
+  testWidgets('the Voice Teacher tips do not start again once seen, and can be replayed, in Arabic', (tester) async {
+    final c = _container(walkthroughSeen: true, seenTours: {'aim.tour.v1.usr_1.voice-teacher'});
+    await tester.pumpWidget(_app(c, locale: const Locale('ar'), location: '/voice-teacher', tourId: voiceTeacherTourId));
+    await _settle(tester);
+    expect(find.text('تخطي الجولة'), findsNothing);
+
+    c.read(guidedTourProvider('usr_1').notifier).start(voiceTeacherTourId);
+    await _settle(tester);
+    expect(find.text('اضغط هنا للتحدث'), findsOneWidget);
+    expect(find.text('1 من 4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
