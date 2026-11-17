@@ -45,6 +45,8 @@
 // allow-list, voice-audio-submit.controller.ts); nothing is written to disk.
 import 'package:aim_mobile/core/widgets/guide/page_guide.dart';
 import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
+import 'package:aim_mobile/features/guided_tour/ui/guided_tour_overlay.dart';
+import 'package:aim_mobile/features/guided_tour/ui/tour_help_button.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -149,21 +151,23 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
   /// Retry after a microphone problem (or a failed spoken turn).
   Future<void> _retryMic() async {
     ref.read(voiceRecordSubmitProvider).reset();
-    _live.setMuted(false);
-    await _live.start();
+    await _live.startRecording();
   }
 
-  /// Turns the live mic on, or mutes / unmutes it (the conversation itself is hands-free).
+  /// Tap to talk: the first tap starts recording (the teacher stops talking), the next tap stops and sends it.
   void _toggleMic() {
     final status = _live.status;
     if (status == LiveStatus.starting) return; // the microphone is still opening
-    if (status == LiveStatus.off || status == LiveStatus.denied || status == LiveStatus.error) {
-      ref.read(voiceRecordSubmitProvider).reset();
-      _live.setMuted(false);
-      unawaited(_live.start());
+    if (_live.isRecording) {
+      unawaited(_live.finishRecording());
       return;
     }
-    _live.setMuted(!_live.muted);
+    // One turn at a time: wait while the previous answer is still on its way.
+    if (_stoppingTurn || _sendingText) return;
+    if (ref.read(voiceRecordSubmitProvider).state == RecordSubmitState.submitting) return;
+    ref.read(voicePlaybackProvider).stop();
+    ref.read(voiceRecordSubmitProvider).reset();
+    unawaited(_live.startRecording());
   }
 
   Future<void> _start() async {
@@ -186,14 +190,11 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     }
 
     _handleInitialGreeting();
-    // The student chose to start the live lesson, so the microphone opens now (the teacher can be interrupted).
-    unawaited(_live.start());
   }
 
   /// The session starts with exactly one message — the auto-generated
   /// greeting — before the student has said anything. Play it
-  /// automatically (no tap). The live mic is already listening, so the student
-  /// can answer by simply talking (or interrupt the greeting by talking over it).
+  /// automatically (no tap). The student answers by tapping the mic (which also stops the greeting) or by typing.
   void _handleInitialGreeting() {
     if (!mounted) return;
     final state = ref.read(voiceTeacherSessionProvider);
@@ -431,7 +432,7 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
     final recordState = ref.watch(voiceRecordSubmitProvider);
     final playbackState = ref.watch(voicePlaybackProvider);
 
-    return Scaffold(
+    final screen = Scaffold(
       extendBodyBehindAppBar: true,
       appBar: const _VoiceTeacherHeader(),
       bottomNavigationBar:
@@ -481,6 +482,15 @@ class _VoiceTeacherPageState extends ConsumerState<VoiceTeacherPage> {
           },
         ),
       ),
+    );
+
+    // The first-visit tips and the "?" replay (a full-screen page, so it hosts its own tour overlay).
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        screen,
+        const GuidedTourOverlay(location: AppRoutePaths.voiceTeacher),
+      ],
     );
   }
 }

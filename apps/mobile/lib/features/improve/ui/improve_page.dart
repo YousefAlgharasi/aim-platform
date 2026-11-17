@@ -6,6 +6,7 @@ import '../../../core/localization/inline_tr.dart';
 import '../../../core/routing/app_route_paths.dart';
 import '../../../core/state/app_async_state.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../aim_results/data/models/aim_weakness_record_model.dart';
 import '../../aim_results/logic/entity/aim_results_data.dart';
 import '../../aim_results/logic/provider/aim_results_provider.dart';
 import '../../auth/logic/provider/auth_context_provider.dart';
@@ -237,11 +238,15 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
     final top = allSpots.isEmpty ? null : allSpots.first;
     final mistakeCount = mistakes?.total ?? 0;
 
+    final fixedItems = collapseFixedSkills(fixed, titles);
+    const gap = SizedBox(height: AimSpacing.sectionGap);
+
     return RefreshIndicator(
       onRefresh: _refresh,
       child: ListView(
         padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
         children: [
+          // 1. What to do first, and the quickest way to start.
           _Hero(
             top: top,
             topName: top == null ? '' : skillName(titles, top.skillId),
@@ -249,6 +254,20 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
             onPractice: () => top?.lessonId != null
                 ? _practice(top!.lessonId!)
                 : _findLesson(),
+          ),
+          if (mistakeCount > 0 || dueReviews.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.componentGap),
+            _FixSessionCard(
+              hasMistakes: mistakeCount > 0,
+              onTap: () => context.push('${AppRoutePaths.mistakes}?quick=1'),
+            ),
+          ],
+
+          // 2. The numbers at a glance.
+          gap,
+          _SectionHeader(
+            icon: Icons.insights_rounded,
+            title: context.tr('Overview', 'نظرة عامة'),
           ),
           const SizedBox(height: AimSpacing.componentGap),
           _StatGrid(
@@ -277,20 +296,29 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               _StatTile(
                 icon: Icons.check_circle_rounded,
                 tone: const Color(0xFF7C5CF0),
-                value: '${fixed.length}',
+                value: '${fixedItems.length}',
                 label: context.tr('Already fixed', 'تم إصلاحها'),
               ),
             ],
           ),
-          if (mistakeCount > 0 || dueReviews.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            _FixSessionCard(
-              hasMistakes: mistakeCount > 0,
-              onTap: () => context.push('${AppRoutePaths.mistakes}?quick=1'),
-            ),
-          ],
+
+          // 3. Pick a skill, then see its weak spots.
           if (allSpots.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
+            gap,
+            _SectionHeader(
+              icon: Icons.grid_view_rounded,
+              title: context.tr('Skills', 'المهارات'),
+            ),
+            const SizedBox(height: AimSpacing.space4),
+            Text(
+              context.tr(
+                'Tap a skill to see only its weak spots.',
+                'اضغط على مهارة لترى نقاط ضعفها فقط.',
+              ),
+              textAlign: TextAlign.start,
+              style: AimTextStyles.bodySm.copyWith(color: surfaces.textMuted),
+            ),
+            const SizedBox(height: AimSpacing.componentGap),
             _GroupGrid(
               stats: groupStats,
               selected: _group,
@@ -300,28 +328,23 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               }),
             ),
           ],
-          const SizedBox(height: AimSpacing.sectionGap),
-          Row(
-            children: [
-              const Icon(Icons.track_changes_rounded, size: 22, color: AimColors.primary500),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  context.tr('Weak spots', 'نقاط الضعف'),
-                  style: AimTextStyles.h3.copyWith(
-                    color: surfaces.textPrimary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              if (spots.length > 3 && _group == null)
-                TextButton(
-                  onPressed: () => setState(() => _showAll = !_showAll),
-                  child: Text(_showAll
-                      ? context.tr('Show less', 'عرض أقل')
-                      : context.tr('See all', 'عرض الكل')),
-                ),
-            ],
+
+          // 4. Weak spots (filtered by the skill above).
+          gap,
+          _SectionHeader(
+            icon: Icons.flag_rounded,
+            title: context.tr('Weak spots', 'نقاط الضعف'),
+            count: spots.isEmpty ? null : spots.length,
+            actionLabel: _group != null
+                ? context.tr('Show all skills', 'كل المهارات')
+                : spots.length > 3
+                    ? (_showAll
+                        ? context.tr('Show less', 'عرض أقل')
+                        : context.tr('See all', 'عرض الكل'))
+                    : null,
+            onAction: _group != null
+                ? () => setState(() => _group = null)
+                : () => setState(() => _showAll = !_showAll),
           ),
           const SizedBox(height: AimSpacing.componentGap),
           if (spots.isEmpty)
@@ -351,21 +374,18 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               ),
               const SizedBox(height: AimSpacing.componentGap),
             ],
+
+          // 5. Reviews that are due.
           if (dueReviews.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.space12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  context.tr('Reviews due', 'مراجعات مستحقة'),
-                  style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
-                ),
-                TextButton(
-                  onPressed: () => context.push(AppRoutePaths.reviewSchedule),
-                  child: Text(context.tr('View all', 'عرض الكل')),
-                ),
-              ],
+            const SizedBox(height: AimSpacing.space4),
+            _SectionHeader(
+              icon: Icons.replay_rounded,
+              title: context.tr('Reviews due', 'مراجعات مستحقة'),
+              count: dueReviews.length,
+              actionLabel: context.tr('View all', 'عرض الكل'),
+              onAction: () => context.push(AppRoutePaths.reviewSchedule),
             ),
+            const SizedBox(height: AimSpacing.componentGap),
             for (final r in dueReviews.take(4)) ...[
               DueReviewTile(
                 name: dueReviewName(r, titles),
@@ -376,24 +396,17 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
               const SizedBox(height: AimSpacing.componentGap),
             ],
           ],
-          if (fixed.isNotEmpty) ...[
-            const SizedBox(height: AimSpacing.sectionGap),
-            Text(
-              context.tr('Already fixed', 'تم إصلاحها'),
-              style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
+
+          // 6. Done: what was already fixed.
+          if (fixedItems.isNotEmpty) ...[
+            const SizedBox(height: AimSpacing.space4),
+            _SectionHeader(
+              icon: Icons.check_circle_outline_rounded,
+              title: context.tr('Already fixed', 'تم إصلاحها'),
+              count: fixedItems.length,
             ),
             const SizedBox(height: AimSpacing.componentGap),
-            Wrap(
-              spacing: AimSpacing.space8,
-              runSpacing: AimSpacing.space8,
-              children: [
-                for (final w in fixed.take(12))
-                  Chip(
-                    avatar: const Icon(Icons.check_rounded, size: 16, color: AimColors.success500),
-                    label: Text(skillName(titles, w.skillId)),
-                  ),
-              ],
-            ),
+            FixedSkillsList(items: fixedItems),
           ],
           const SizedBox(height: 72),
         ],
@@ -415,6 +428,214 @@ class _ImprovePageState extends ConsumerState<ImprovePage> {
   void _findLesson() {
     ref.read(mainShellTabIndexProvider.notifier).state = 1;
     context.go(AppRoutePaths.mainShell);
+  }
+}
+
+/// One line of "Already fixed": a skill (by its name) and how many times it
+/// was fixed. Several records for the same skill collapse into one line.
+class FixedSkillItem {
+  const FixedSkillItem({required this.name, required this.count});
+
+  final String name;
+  final int count;
+}
+
+/// Groups the resolved records by skill name and puts the most recently
+/// fixed first. Display only; the records come from the server.
+List<FixedSkillItem> collapseFixedSkills(
+  List<AimWeaknessRecordModel> records,
+  Map<String, String> titles,
+) {
+  DateTime when(AimWeaknessRecordModel w) =>
+      DateTime.tryParse(w.resolvedAt ?? w.updatedAt) ??
+      DateTime.fromMillisecondsSinceEpoch(0);
+
+  final byName = <String, ({int count, DateTime latest})>{};
+  for (final w in records) {
+    final name = skillName(titles, w.skillId).trim();
+    final at = when(w);
+    final prev = byName[name];
+    byName[name] = prev == null
+        ? (count: 1, latest: at)
+        : (count: prev.count + 1, latest: at.isAfter(prev.latest) ? at : prev.latest);
+  }
+  final names = byName.keys.toList()
+    ..sort((a, b) {
+      final byDate = byName[b]!.latest.compareTo(byName[a]!.latest);
+      return byDate != 0 ? byDate : a.compareTo(b);
+    });
+  return [for (final n in names) FixedSkillItem(name: n, count: byName[n]!.count)];
+}
+
+/// The "Already fixed" list: one tidy card, one skill per row, newest first,
+/// with a "Show all" toggle when there are many.
+class FixedSkillsList extends StatefulWidget {
+  const FixedSkillsList({super.key, required this.items});
+
+  final List<FixedSkillItem> items;
+
+  @override
+  State<FixedSkillsList> createState() => _FixedSkillsListState();
+}
+
+class _FixedSkillsListState extends State<FixedSkillsList> {
+  static const _collapsedCount = 5;
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    final items = widget.items;
+    final canToggle = items.length > _collapsedCount;
+    final shown = _expanded || !canToggle ? items : items.take(_collapsedCount).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaces.surface,
+        borderRadius: AimRadius.borderLg,
+        border: Border.all(color: surfaces.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < shown.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: surfaces.divider),
+            Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.space16,
+                vertical: AimSpacing.space12,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AimColors.success500.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_rounded, size: 16, color: AimColors.success500),
+                  ),
+                  const SizedBox(width: AimSpacing.componentGap),
+                  Expanded(
+                    child: Text(
+                      shown[i].name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.start,
+                      style: AimTextStyles.bodyMd.copyWith(color: surfaces.textPrimary),
+                    ),
+                  ),
+                  if (shown[i].count > 1) ...[
+                    const SizedBox(width: AimSpacing.space8),
+                    Container(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: AimSpacing.space8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: surfaces.surfaceSunken,
+                        borderRadius: AimRadius.borderPill,
+                      ),
+                      child: Text(
+                        '\u00d7${shown[i].count}',
+                        textDirection: TextDirection.ltr,
+                        style: AimTextStyles.caption.copyWith(
+                          color: surfaces.textMuted,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          if (canToggle) ...[
+            Divider(height: 1, color: surfaces.divider),
+            TextButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              child: Text(
+                _expanded
+                    ? context.tr('Show less', 'عرض أقل')
+                    : fill(
+                        context.tr('Show all ({n})', 'عرض الكل ({n})'),
+                        {'n': items.length},
+                      ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The heading of one block of the screen: an icon, the title, an optional
+/// count and an optional action. Every block uses it, so they all line up.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+    this.count,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final IconData icon;
+  final String title;
+  final int? count;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final surfaces = aimSurfacesOf(context);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 40),
+      child: Row(
+        children: [
+          Icon(icon, size: 22, color: AimColors.primary500),
+          const SizedBox(width: AimSpacing.space8),
+          Flexible(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.start,
+              style: AimTextStyles.h3.copyWith(
+                color: surfaces.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          if (count != null) ...[
+            const SizedBox(width: AimSpacing.space8),
+            Container(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AimSpacing.space8,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: surfaces.surfaceSunken,
+                borderRadius: AimRadius.borderPill,
+              ),
+              child: Text(
+                '$count',
+                textDirection: TextDirection.ltr,
+                style: AimTextStyles.caption.copyWith(
+                  color: surfaces.textMuted,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+          const Spacer(),
+          if (actionLabel != null && onAction != null)
+            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+        ],
+      ),
+    );
   }
 }
 

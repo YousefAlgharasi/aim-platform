@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/localization/inline_tr.dart';
 import '../../../core/routing/app_route_paths.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../guided_tour/ui/tour_target.dart';
 import '../../learner_tools/data/learner_tools_api.dart';
 import 'widgets/practice_widgets.dart';
 
@@ -108,7 +109,9 @@ class PracticeHubPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AimSpacing.space16),
-              PracticePlanBanner(
+              TourTarget(
+                id: 'practice-plan',
+                child: PracticePlanBanner(
                 title: waiting > 0
                     ? context.tr('Your 5-minute plan', 'خطتك لخمس دقائق')
                     : context.tr('You are all caught up', 'أنهيت كل شيء'),
@@ -119,6 +122,7 @@ class PracticeHubPage extends ConsumerWidget {
                         'تدريب سريع لتقدّم ثابت',
                       ),
                 onStart: startNow,
+              ),
               ),
               const SizedBox(height: AimSpacing.sectionGap),
               Row(
@@ -139,7 +143,9 @@ class PracticeHubPage extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: AimSpacing.componentGap),
-              IntrinsicHeight(
+              TourTarget(
+                id: 'practice-speak',
+                child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -148,6 +154,7 @@ class PracticeHubPage extends ConsumerWidget {
                     Expanded(child: skills[1]),
                   ],
                 ),
+              ),
               ),
               const SizedBox(height: AimSpacing.componentGap),
               IntrinsicHeight(

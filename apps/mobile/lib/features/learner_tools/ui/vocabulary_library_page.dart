@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/inline_tr.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../guided_tour/ui/tour_target.dart';
 import '../data/learner_tools_api.dart';
 
 /// Vocabulary — browse the word library: the word, the Arabic translation of
@@ -201,12 +202,15 @@ class _VocabularyLibraryPageState extends ConsumerState<VocabularyLibraryPage> {
                 AimSpacing.screenPaddingMobile,
                 AimSpacing.space8,
               ),
-              child: TextField(
-                onChanged: _onSearchChanged,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  hintText: context.tr('Search words', 'ابحث عن كلمة'),
+              child: TourTarget(
+                id: 'vocab-search',
+                child: TextField(
+                  onChanged: _onSearchChanged,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    hintText: context.tr('Search words', 'ابحث عن كلمة'),
+                  ),
                 ),
               ),
             ),
@@ -217,6 +221,10 @@ class _VocabularyLibraryPageState extends ConsumerState<VocabularyLibraryPage> {
       ),
     );
   }
+
+  /// The first word is what the guided tour points at.
+  Widget _tourFirst(bool first, String id, Widget card) =>
+      first ? TourTarget(id: id, child: card) : card;
 
   Widget _content(BuildContext context) {
     final surfaces = aimSurfacesOf(context);
@@ -241,13 +249,17 @@ class _VocabularyLibraryPageState extends ConsumerState<VocabularyLibraryPage> {
         padding: const EdgeInsetsDirectional.all(AimSpacing.screenPaddingMobile),
         children: [
           for (final w in _words) ...[
-            _WordCard(
-              word: w,
-              playing: _playingId == w.id,
-              loadingAudio: _loadingAudioId == w.id,
-              saving: _busy.contains(w.id),
-              onListen: () => _listen(w),
-              onToggleSave: () => _toggleSave(w),
+            _tourFirst(
+              w == _words.first,
+              'vocab-list',
+              _WordCard(
+                word: w,
+                playing: _playingId == w.id,
+                loadingAudio: _loadingAudioId == w.id,
+                saving: _busy.contains(w.id),
+                onListen: () => _listen(w),
+                onToggleSave: () => _toggleSave(w),
+              ),
             ),
             const SizedBox(height: AimSpacing.componentGap),
           ],

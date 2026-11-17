@@ -15,6 +15,7 @@ class VadOptions {
     this.noiseFactor = 2.2,
     this.bargeInFactor = 1.8,
     this.calibrationMs = 600,
+    this.calibrationQuietLevel = 0.012,
   });
 
   /// A burst this long (ms) counts as the student starting to talk.
@@ -44,6 +45,11 @@ class VadOptions {
 
   /// After the mic opens, this long (ms) is spent only learning the room's background noise level.
   final int calibrationMs;
+
+  /// While the teacher is speaking, only frames quieter than this (0..1 RMS) count towards learning the room. A quiet
+  /// frame proves the teacher's voice is not coming back into the mic loudly, so it is safe to learn from; a loud one
+  /// could be the teacher's voice or the student's, so it is skipped.
+  final double calibrationQuietLevel;
 }
 
 sealed class VadEvent {
@@ -96,8 +102,10 @@ class Vad {
   VadEvent? process(double rms, double frameMs, bool aiSpeaking) {
     if (_calibratedMs < options.calibrationMs) {
       // The teacher's own voice coming out of the speaker is not the room's noise: learning it would set the bar so
-      // high that the student's voice never counts. Wait for a quiet moment instead.
-      if (aiSpeaking) return null;
+      // high that the student's voice never counts. So while the teacher speaks, only quiet frames are learned from.
+      // (Waiting for the teacher to finish instead meant the student could not interrupt a long greeting or reply at
+      // all, because the room was never learned while the teacher talked.)
+      if (aiSpeaking && rms > options.calibrationQuietLevel) return null;
       _calibratedMs += frameMs;
       noiseFloor = _clamp(noiseFloor * 0.7 + rms * 0.3, 0.002, maxNoiseFloor);
       return null;
