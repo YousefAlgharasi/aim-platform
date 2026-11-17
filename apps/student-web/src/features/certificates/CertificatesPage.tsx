@@ -46,7 +46,7 @@ export function CertificatesPage() {
           message={t('Complete a course and pass its final exam to earn your first certificate.')}
         />
       ) : (
-        <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
+        <ul data-tour="cert-list" className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
           {items.map((c) => {
             const pct = overallPercent(c);
             const pts = totalPoints(c);

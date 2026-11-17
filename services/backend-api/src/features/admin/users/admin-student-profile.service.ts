@@ -23,6 +23,7 @@ import { PlacementResultReadService } from '../../placement/placement-result-rea
 import { SubscriptionService } from '../../billing/subscription.service';
 import { CertificateService } from '../../certificates/certificate.service';
 import { computeCourseScorePercent, toScorePercent } from '../../certificates/course-score.util';
+import { buildSkillScores } from '../admin-data.service';
 
 interface StudentRow {
   id: string;
@@ -133,6 +134,7 @@ export interface AdminStudentProfile {
     readonly estimatedLevel: string;
     readonly completedAt: string;
     readonly skillSummary: Array<{ skillCode: string; signal: string }>;
+    readonly skillScores: Array<{ skillCode: string; percent: number | null }>;
     /** Average of the backend-computed per-skill mastery scores, as a 0-100 percent. Never a raw/recomputed value — a straight rollup of what's already stored. */
     readonly scorePercent: number | null;
     readonly recommendedCourseId: string | null;
@@ -244,20 +246,11 @@ export class AdminStudentProfileService {
       skillCode,
       signal: (entry as { signal?: string })?.signal ?? 'emerging',
     }));
+    const { skillScores } = buildSkillScores(result.skill_mastery_map);
 
     // Straight average of the mastery scores the backend already computed and
     // persisted per skill — not a new calculation, just a rollup for display.
-    const scorePercent =
-      masteryEntries.length > 0
-        ? Math.round(
-            (masteryEntries.reduce(
-              (sum, [, entry]) => sum + ((entry as { mastery_score?: number })?.mastery_score ?? 0),
-              0,
-            ) /
-              masteryEntries.length) *
-              100,
-          )
-        : null;
+    const scorePercent = masteryEntries.length > 0 ? buildSkillScores(result.skill_mastery_map).overallPercent : null;
 
     const recommendedCourseTitle = result.recommended_course_id
       ? await this.getCourseTitle(result.recommended_course_id)
@@ -267,6 +260,7 @@ export class AdminStudentProfileService {
       estimatedLevel: result.estimated_level,
       completedAt: result.created_at,
       skillSummary,
+      skillScores,
       scorePercent,
       recommendedCourseId: result.recommended_course_id,
       recommendedCourseTitle,

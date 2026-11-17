@@ -15,6 +15,52 @@ export const tips: Record<string, string> = {
   'You earn XP for every lesson. XP raises your level and unlocks badges.': 'تحصل على نقاط XP مع كل درس. ترفع النقاط مستواك وتفتح لك الشارات.',
   'Find your way around': 'تنقّل بسهولة',
   'Use the menu to move between Learn, Practice, Progress and your account.': 'استخدم القائمة للتنقل بين التعلّم والتدريب والتقدّم وحسابك.',
+  // Live voice teacher
+  'Your live teacher': 'معلّمك المباشر',
+  'The robot shows what your teacher is doing: listening, thinking or speaking. Talk to it like a real teacher.': 'يوضح الروبوت ما يفعله معلّمك: يستمع أو يفكر أو يتحدث. تحدّث معه كما تتحدث مع معلّم حقيقي.',
+  'Talk with your voice': 'تحدّث بصوتك',
+  'Tap the microphone and start speaking. Tap it again to pause. Speak slowly and clearly.': 'اضغط على الميكروفون وابدأ الحديث. اضغط عليه مرة أخرى للإيقاف المؤقت. تحدّث ببطء ووضوح.',
+  'Or type': 'أو اكتب',
+  'Cannot speak right now? Type your message here and press send.': 'لا تستطيع التحدث الآن؟ اكتب رسالتك هنا ثم اضغط إرسال.',
+  'The teacher’s voice': 'صوت المعلّم',
+  'Turn the teacher’s voice off if you only want to read, and on again to listen.': 'أوقف صوت المعلّم إذا أردت القراءة فقط، وأعد تشغيله عندما تريد الاستماع.',
+  'Your conversation': 'محادثتك',
+  'Everything you and the teacher say is written here, so you can read it again.': 'كل ما تقوله أنت والمعلّم مكتوب هنا لتقرأه مرة أخرى.',
+  // Improve
+  'Start with this': 'ابدأ بهذا',
+  'This is your most important weak spot right now. Practice it first.': 'هذه أهم نقطة ضعف لديك الآن. تدرّب عليها أولاً.',
+  'Your numbers': 'أرقامك',
+  'See how many skills need work, how many mistakes you can retry, and what you have already fixed.': 'اعرف كم مهارة تحتاج إلى عمل، وكم خطأ يمكنك إعادة محاولته، وما الذي أصلحته بالفعل.',
+  'Weak spots': 'نقاط الضعف',
+  'Each card is a skill to improve. Retry opens a few days later, because spacing helps you remember.': 'كل بطاقة تمثل مهارة لتحسينها. تفتح إعادة المحاولة بعد أيام قليلة لأن التباعد يساعدك على التذكر.',
+  // Speaking / writing
+  'Pick a topic': 'اختر موضوعًا',
+  'Choose a topic, then speak or write about it. Your teacher gives you feedback on what to fix.': 'اختر موضوعًا ثم تحدّث أو اكتب عنه. يعطيك معلّمك ملاحظات عمّا يجب إصلاحه.',
+  // Assessments
+  'Up next': 'التالي',
+  'Your next quiz or exam is here. Tap Take it when you are ready.': 'اختبارك القصير أو امتحانك التالي هنا. اضغط على خذه عندما تكون مستعدًا.',
+  'Quizzes and exams': 'الاختبارات والامتحانات',
+  'Quizzes come at the end of chapters. The final exam comes at the end of the course.': 'تأتي الاختبارات القصيرة في نهاية الفصول، ويأتي الامتحان النهائي في نهاية الدورة.',
+  // Achievements
+  'Your badges': 'شاراتك',
+  'See how many badges you have unlocked and your level.': 'اعرف كم شارة فتحتها ومستواك.',
+  'Unlock more': 'افتح المزيد',
+  'Finish lessons and keep your streak to unlock each badge.': 'أنهِ الدروس وحافظ على أيامك المتتالية لتفتح كل شارة.',
+  // Certificates
+  'Your certificates': 'شهاداتك',
+  'Finish a course and pass its final exam to earn a certificate. Tap one to view and print it.': 'أنهِ دورة واجتز امتحانها النهائي لتحصل على شهادة. اضغط على شهادة لعرضها وطباعتها.',
+  // Leaderboard
+  'The leaderboard': 'لوحة المتصدرين',
+  'See how your XP compares with other learners. Switch between this week and all time.': 'قارن نقاط XP لديك بغيرك من المتعلّمين. بدّل بين هذا الأسبوع وكل الأوقات.',
+  // Notifications
+  'Your notifications': 'إشعاراتك',
+  'Show only unread messages, or mark them all as read.': 'اعرض غير المقروء فقط، أو علّم الكل كمقروء.',
+  // Settings
+  'Make it yours': 'اجعلها لك',
+  'Choose your language, theme and daily goal here.': 'اختر لغتك ومظهرك وهدفك اليومي من هنا.',
+  // Support
+  'Need help?': 'تحتاج مساعدة؟',
+  'Send us a message and follow the answer here under My Tickets.': 'أرسل لنا رسالة وتابع الرد هنا ضمن تذاكري.',
   // Courses
   'Your level': 'مستواك',
   'Courses are matched to your level.': 'الدورات مناسبة لمستواك.',

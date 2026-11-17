@@ -24,6 +24,15 @@ const TYPE_LABELS: Record<PlacementQuestionType, string> = {
   true_false: 'True / False',
   fill_blank: 'Fill blank',
   listening_choice: 'Listening',
+  writing: 'Writing (AI-graded)',
+  speaking: 'Speaking (AI-graded)',
+};
+
+const DIFFICULTY_LABELS: Record<number, string> = {
+  1: '1 · Starter / A1.1',
+  2: '2 · A1.2 / A2.1',
+  3: '3 · A2.2',
+  4: '4 · A2.2+',
 };
 
 const TYPE_BADGE_CLASSES: Record<PlacementQuestionType, string> = {
@@ -31,6 +40,8 @@ const TYPE_BADGE_CLASSES: Record<PlacementQuestionType, string> = {
   true_false: 'status-draft',
   fill_blank: 'domain-reading',
   listening_choice: 'domain-grammar',
+  writing: 'status-published',
+  speaking: 'status-published',
 };
 
 type AdminPlacementQuestionsListProps = {
@@ -67,6 +78,8 @@ export function AdminPlacementQuestionsList({
         <tr>
           <th scope="col">#</th>
           <th scope="col">Type</th>
+          <th scope="col">Level band</th>
+          <th scope="col">In draw</th>
           <th scope="col">Prompt</th>
           <th scope="col">Audio</th>
           <th scope="col">Skill</th>
@@ -82,6 +95,8 @@ export function AdminPlacementQuestionsList({
                 {TYPE_LABELS[q.questionType] ?? q.questionType}
               </span>
             </td>
+            <td>{DIFFICULTY_LABELS[q.difficulty] ?? q.difficulty}</td>
+            <td>{q.isActive ? 'Yes' : 'Retired'}</td>
             <td className="admin-table-primary admin-table-prompt">
               {truncatePrompt(q.prompt)}
             </td>

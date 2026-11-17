@@ -32,6 +32,23 @@ class CourseBillingDatasource {
     return envelope.data!;
   }
 
+  /// Enrolls the student in a free course (paid courses are refused by the backend).
+  Future<void> enrollFree(String courseId) async {
+    await _apiClient.post<Object?>(
+      BackendApiPaths.studentCourseEnrollFree(courseId),
+      decodeData: (json) => json,
+    );
+  }
+
+  /// Redeems a coupon code for [courseId]: the student gets the course for good.
+  Future<void> redeemCoupon({required String code, required String courseId}) async {
+    await _apiClient.post<Object?>(
+      BackendApiPaths.studentCouponRedeem,
+      body: {'code': code, 'courseId': courseId},
+      decodeData: (json) => json,
+    );
+  }
+
   Future<List<CoursePaymentRequest>> getMyPayments() async {
     final envelope = await _apiClient.get<List<CoursePaymentRequest>>(
       BackendApiPaths.studentPaymentRequests,

@@ -33,6 +33,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/features/course_billing/data/course_billing_models.dart';
 import 'package:aim_mobile/features/course_billing/ui/widgets/course_billing_chip.dart';
+import 'package:aim_mobile/features/course_billing/ui/widgets/enroll_flow.dart';
 import 'package:aim_mobile/core/localization/inline_tr.dart';
 import 'package:aim_mobile/core/routing/app_route_paths.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
@@ -125,7 +126,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
         return;
       }
 
-      if (course.needsPayment) {
+      if (course.needsPayment || course.needsEnroll) {
         if (!mounted) return;
         setState(() {
           _courseTitle = course.title;
@@ -271,6 +272,12 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   }
 
   Future<void> _openClaim(StudentCourseModel course) async {
+    // Not enrolled yet: the "Do you want to enroll?" pop-up (coupon for a paid course).
+    if (course.needsEnroll) {
+      await showEnrollFlow(context, ref, course);
+      if (mounted) ref.invalidate(homeCoursesProvider);
+      return;
+    }
     await context.push(
       AppRoutePaths.courseClaim,
       extra: {'courseId': course.courseId, 'courseTitle': course.title},
@@ -281,7 +288,7 @@ class _HomeCoursePathSectionState extends ConsumerState<HomeCoursePathSection> {
   Future<void> _startNextCourse(StudentCourseModel next) async {
     final token = ref.read(authFlowProvider).accessToken;
     if (token == null || token.isEmpty || _startingNext) return;
-    if (next.needsPayment) {
+    if (next.needsPayment || next.needsEnroll) {
       await _openClaim(next);
       return;
     }

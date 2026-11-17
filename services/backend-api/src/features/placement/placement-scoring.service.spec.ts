@@ -20,23 +20,41 @@ import { PlacementScoringService } from './placement-scoring.service';
 // Test helpers
 // ---------------------------------------------------------------------------
 
+type AnswerIn = { skill_code: string; is_correct?: boolean | null; ai_score?: string | null; question_type?: string };
+
 function makeDb(
-  answerRows: Array<{ skill_code: string; is_correct: boolean | null }>,
+  answerRows: AnswerIn[],
   skillRows: Array<{ skill_id: string; skill_key: string; skill_name: string; is_correct: boolean | null }>,
+  drawnRows: Array<{ skill_code: string; n: string }> = [],
 ): jest.Mocked<Pick<DatabaseService, 'query'>> {
-  let callCount = 0;
   return {
-    query: jest.fn().mockImplementation(async () => {
-      callCount += 1;
-      if (callCount === 1) {
-        return { rows: answerRows, rowCount: answerRows.length } as unknown as QueryResult;
+    query: jest.fn().mockImplementation(async (sql: string) => {
+      let rows: unknown[];
+      if (sql.includes('FROM placement_attempt_questions')) {
+        rows = drawnRows;
+      } else if (sql.includes('placement_question_skills')) {
+        rows = skillRows;
+      } else if (sql.includes("question_type IN ('writing', 'speaking')")) {
+        rows = [];
+      } else {
+        rows = answerRows.map((r) => ({
+          is_correct: null,
+          ai_score: null,
+          question_type: 'multiple_choice',
+          ...r,
+        }));
       }
-      return { rows: skillRows, rowCount: skillRows.length } as unknown as QueryResult;
+      return { rows, rowCount: rows.length } as unknown as QueryResult;
     }),
   };
 }
 
-function grammarAnswers(correct: number, total: number) {
+/** One AI-graded answer (writing/speaking), score 0-10. */
+function aiAnswer(skill: 'writing' | 'speaking', score: number): AnswerIn {
+  return { skill_code: skill, question_type: skill, ai_score: String(score) };
+}
+
+function grammarAnswers(correct: number, total: number): AnswerIn[] {
   return Array.from({ length: total }, (_, i) => ({
     skill_code: 'grammar',
     is_correct: i < correct,
@@ -93,6 +111,8 @@ describe('PlacementScoringService', () => {
         ...vocabAnswers(10, 10),
         ...readingAnswers(10, 10),
         ...listeningAnswers(10, 10),
+        aiAnswer('writing', 10),
+        aiAnswer('speaking', 10),
       ];
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
@@ -101,24 +121,16 @@ describe('PlacementScoringService', () => {
     });
 
     it('maps score >= 0.70 and < 0.85 to upper_intermediate', async () => {
-      // grammar 8/10=0.8 (×0.30=0.24), vocab 7/10=0.7 (×0.30=0.21), listening 8/10=0.8 (×0.15=0.12)
-      // total ≈ 0.57 — listening + grammar/vocab weighting without reading
-      // Need total ≈ 0.72: grammar 9/10 (0.27), vocab 8/10 (0.24), listening 8/10 (0.12) = 0.63
-      // Reading not in seed; use full answers with partial grammar
+      // five skills at 0.8, speaking 0.7 → (0.8*5 + 0.7) / 6 = 0.783
       const answers = [
-        ...grammarAnswers(9, 10),  // 0.9 × 0.30 = 0.27
-        ...vocabAnswers(9, 10),    // 0.9 × 0.30 = 0.27
-        ...listeningAnswers(9, 10), // 0.9 × 0.15 = 0.135
-        // no reading section — score = 0.675 (below upper_intermediate boundary)
+        ...grammarAnswers(8, 10),
+        ...vocabAnswers(8, 10),
+        ...readingAnswers(8, 10),
+        ...listeningAnswers(8, 10),
+        aiAnswer('writing', 8),
+        aiAnswer('speaking', 7),
       ];
-      // Force score into upper_intermediate band (≥0.70 < 0.85) by getting 10/10 grammar+vocab
-      const answers2 = [
-        ...grammarAnswers(10, 10),  // 1.0 × 0.30 = 0.30
-        ...vocabAnswers(10, 10),    // 1.0 × 0.30 = 0.30
-        ...listeningAnswers(9, 10), // 0.9 × 0.15 = 0.135
-        // total = 0.735 — upper_intermediate
-      ];
-      const db = makeDb(answers2, []);
+      const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
       const result = await svc.scoreAttempt(attemptId);
       expect(result.estimatedLevel).toBe('upper_intermediate');
@@ -127,13 +139,14 @@ describe('PlacementScoringService', () => {
     });
 
     it('maps score >= 0.55 and < 0.70 to intermediate', async () => {
-      // grammar 7/10=0.7 (×0.30=0.21), vocab 7/10=0.7 (×0.30=0.21), listening 7/10=0.7 (×0.15=0.105)
-      // total = 0.525 — just below intermediate
-      // grammar 8/10 (0.24) + vocab 7/10 (0.21) + listening 8/10 (0.12) = 0.57 — intermediate
+      // every skill at 0.6
       const answers = [
-        ...grammarAnswers(8, 10),
-        ...vocabAnswers(7, 10),
-        ...listeningAnswers(8, 10),
+        ...grammarAnswers(6, 10),
+        ...vocabAnswers(6, 10),
+        ...readingAnswers(6, 10),
+        ...listeningAnswers(6, 10),
+        aiAnswer('writing', 6),
+        aiAnswer('speaking', 6),
       ];
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
@@ -144,12 +157,14 @@ describe('PlacementScoringService', () => {
     });
 
     it('maps score >= 0.40 and < 0.55 to elementary', async () => {
-      // grammar 5/10=0.5 (0.15) + vocab 5/10=0.5 (0.15) + listening 5/10=0.5 (0.075) = 0.375
-      // grammar 6/10=0.6 (0.18) + vocab 5/10=0.5 (0.15) + listening 6/10=0.6 (0.09) = 0.42 — elementary
+      // 0.4, 0.5, 0.5, 0.4, 0.5, 0.5 → 0.467
       const answers = [
-        ...grammarAnswers(6, 10),
+        ...grammarAnswers(4, 10),
         ...vocabAnswers(5, 10),
-        ...listeningAnswers(6, 10),
+        ...readingAnswers(5, 10),
+        ...listeningAnswers(4, 10),
+        aiAnswer('writing', 5),
+        aiAnswer('speaking', 5),
       ];
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
@@ -254,13 +269,15 @@ describe('PlacementScoringService', () => {
   // -------------------------------------------------------------------------
 
   describe('weighted overall score', () => {
-    it('applies section weights: grammar 30%, vocab 30%, reading 25%, listening 15%', async () => {
+    it('counts all six skills equally (1/6 each)', async () => {
       // All sections perfect — total must be 1.0
       const answers = [
         ...grammarAnswers(10, 10),
         ...vocabAnswers(10, 10),
         ...readingAnswers(10, 10),
         ...listeningAnswers(10, 10),
+        aiAnswer('writing', 10),
+        aiAnswer('speaking', 10),
       ];
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
@@ -269,7 +286,7 @@ describe('PlacementScoringService', () => {
     });
 
     it('correctly weights partial section scores', async () => {
-      // grammar 10/10 (0.30) + vocab 0/10 (0.00) + listening 10/10 (0.15) = 0.45
+      // grammar 10/10 + listening 10/10, everything else 0 → 2/6
       const answers = [
         ...grammarAnswers(10, 10),
         ...vocabAnswers(0, 10),
@@ -278,7 +295,31 @@ describe('PlacementScoringService', () => {
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);
       const result = await svc.scoreAttempt(attemptId);
-      expect(result.overallScore).toBeCloseTo(0.45);
+      expect(result.overallScore).toBeCloseTo(2 / 6);
+    });
+
+    it('writing and speaking AI scores (0-10) count like any other skill', async () => {
+      const answers = [aiAnswer('writing', 9), aiAnswer('speaking', 3)];
+      const db = makeDb(answers, []);
+      const svc = new PlacementScoringService(db as unknown as DatabaseService);
+      const result = await svc.scoreAttempt(attemptId);
+      const writing = result.sectionScores.find((x) => x.skillCode === 'writing');
+      const speaking = result.sectionScores.find((x) => x.skillCode === 'speaking');
+      expect(writing?.masteryScore).toBeCloseTo(0.9);
+      expect(speaking?.masteryScore).toBeCloseTo(0.3);
+      expect(speaking?.isWeakness).toBe(true);
+      expect(result.overallScore).toBeCloseTo((0.9 + 0.3) / 6);
+      expect(result.sectionScores).toHaveLength(6);
+    });
+
+    it('skipped questions count as wrong (scored out of the questions drawn)', async () => {
+      // 9 questions drawn for grammar, only 3 answered (all correct) → 3/9
+      const db = makeDb(grammarAnswers(3, 3), [], [{ skill_code: 'grammar', n: '9' }]);
+      const svc = new PlacementScoringService(db as unknown as DatabaseService);
+      const result = await svc.scoreAttempt(attemptId);
+      const grammar = result.sectionScores.find((x) => x.skillCode === 'grammar');
+      expect(grammar?.totalQuestions).toBe(9);
+      expect(grammar?.masteryScore).toBeCloseTo(3 / 9);
     });
   });
 
@@ -406,12 +447,14 @@ describe('PlacementScoringService', () => {
 
   describe('weakness map', () => {
     it('returns empty weakness map when all sections pass thresholds', async () => {
-      // All 4 sections must be provided — missing sections default to 0 mastery (weakness)
+      // All 6 sections must be provided — missing sections default to 0 mastery (weakness)
       const answers = [
         ...grammarAnswers(8, 10),    // 0.8 >= 0.60 ✓
         ...vocabAnswers(8, 10),      // 0.8 >= 0.60 ✓
         ...readingAnswers(8, 10),    // 0.8 >= 0.55 ✓
         ...listeningAnswers(8, 10),  // 0.8 >= 0.55 ✓
+        aiAnswer('writing', 8),      // 0.8 >= 0.50 ✓
+        aiAnswer('speaking', 8),     // 0.8 >= 0.50 ✓
       ];
       const db = makeDb(answers, []);
       const svc = new PlacementScoringService(db as unknown as DatabaseService);

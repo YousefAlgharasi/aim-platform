@@ -47,6 +47,35 @@ function buildSkillSummary(
   });
 }
 
+const PLACEMENT_SKILLS = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'] as const;
+
+/** Per-skill percentage (0-100) for the six placement skills + their plain average. */
+export function buildSkillScores(skillMasteryMap: unknown): {
+  skillScores: Array<{ skillCode: string; percent: number | null }>;
+  overallPercent: number | null;
+} {
+  const map = skillMasteryMap && typeof skillMasteryMap === 'object' ? (skillMasteryMap as Record<string, unknown>) : {};
+  const skillScores = PLACEMENT_SKILLS.map((skillCode) => {
+    const entry = map[skillCode];
+    if (entry === undefined || entry === null) return { skillCode, percent: null };
+    const raw = typeof entry === 'object' ? Number((entry as Record<string, unknown>).mastery_score ?? 0) : Number(entry);
+    return { skillCode, percent: Math.round((Number.isFinite(raw) ? raw : 0) * 100) };
+  });
+  // Equal weights: the overall score is the plain average of the skills the student took. New
+  // results have all six; older 4-skill results simply average the four they have.
+  const present = skillScores.filter((s) => s.percent !== null);
+  if (present.length > 0) {
+    const overallPercent = Math.round(present.reduce((sum, s) => sum + (s.percent ?? 0), 0) / present.length);
+    return { skillScores, overallPercent };
+  }
+  // Legacy maps keyed by curriculum skill codes: average whatever mastery scores exist.
+  const legacy = Object.values(map).map((e) =>
+    Number(e && typeof e === 'object' ? (e as Record<string, unknown>).mastery_score ?? 0 : e ?? 0),
+  );
+  const overallPercent = legacy.length ? Math.round((legacy.reduce((a, b) => a + b, 0) / legacy.length) * 100) : null;
+  return { skillScores, overallPercent };
+}
+
 function safePagination(page: number, limit: number) {
   const safePage = Math.max(page, DEFAULT_PAGE);
   const safeLimit = Math.min(Math.max(limit, 1), MAX_LIMIT);
@@ -336,6 +365,8 @@ export class AdminDataService {
         // Categorical signal only (strong/developing/emerging) — never the raw
         // mastery_score/percentage, per this codebase's placement scoring rules.
         skillSummary: buildSkillSummary(r.skill_mastery_map),
+        // All six skills as percentages (admin-only view) + the equal-weight overall score.
+        ...buildSkillScores(r.skill_mastery_map),
         weaknessMap: r.weakness_map,
         initialPathId: r.initial_path_id,
         createdAt: r.created_at,

@@ -16,6 +16,8 @@ export type AdminStudentProfilePlacement = {
   readonly estimatedLevel: string;
   readonly completedAt: string;
   readonly skillSummary: readonly AdminStudentProfileSkillSummary[];
+  /** The six placement skills as percentages (null = not taken). */
+  readonly skillScores: readonly { readonly skillCode: string; readonly percent: number | null }[];
   readonly scorePercent: number | null;
   readonly recommendedCourseId: string | null;
   readonly recommendedCourseTitle: string | null;
@@ -135,6 +137,10 @@ function decodePlacement(raw: unknown): AdminStudentProfilePlacement | null {
     skillSummary: rawSkills.filter(isObject).map((s) => ({
       skillCode: String(s.skillCode ?? ''),
       signal: decodeSkillSignal(s.signal),
+    })),
+    skillScores: (Array.isArray(raw.skillScores) ? raw.skillScores : []).filter(isObject).map((s) => ({
+      skillCode: String(s.skillCode ?? ''),
+      percent: typeof s.percent === 'number' ? s.percent : null,
     })),
     scorePercent: typeof raw.scorePercent === 'number' ? raw.scorePercent : null,
     recommendedCourseId: typeof raw.recommendedCourseId === 'string' ? raw.recommendedCourseId : null,

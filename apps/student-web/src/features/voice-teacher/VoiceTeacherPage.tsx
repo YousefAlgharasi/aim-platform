@@ -570,7 +570,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
           )}
         </div>
 
-        <section className={`${col} flex flex-1 flex-col items-center justify-end gap-4 py-2 text-center`} aria-label={t('Voice conversation')}>
+        <section data-tour="voice-stage" className={`${col} flex flex-1 flex-col items-center justify-end gap-4 py-2 text-center`} aria-label={t('Voice conversation')}>
           {/* The robot and the heading say it on screen; this is for screen readers. */}
           <span className="sr-only" role="status" aria-live="polite">
             {t('Status: {status}', { status: status.label })} {status.heading}
@@ -619,7 +619,7 @@ function VoiceConversation({ sessionId }: { sessionId: string }) {
               <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
             </button>
           </div>
-          <div ref={listRef} role="log" aria-label={t('Voice conversation messages')} className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-4 text-start">
+          <div ref={listRef} data-tour="voice-chat" role="log" aria-label={t('Voice conversation messages')} className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-4 text-start">
             {messages.length === 0 && (
               <p className="m-0 text-center text-sm text-ink-muted">{t('No messages yet. Tap the microphone or type to start.')}</p>
             )}

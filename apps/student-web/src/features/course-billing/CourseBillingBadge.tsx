@@ -14,6 +14,11 @@ export function CourseBillingBadge({ price, access }: { price?: CoursePriceQuote
     case 'rejected':
       label = formatMoney(price.amount, price.currency);
       break;
+    case 'free':
+      // A free course still has to be enrolled in before its lessons open.
+      if (access.enrolled !== false) return null;
+      label = t('Free · Enroll');
+      break;
     case 'pending':
       label = t('Payment pending');
       tone = 'text-warning-ink bg-warning-soft';

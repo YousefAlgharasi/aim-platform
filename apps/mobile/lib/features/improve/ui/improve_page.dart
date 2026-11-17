@@ -509,6 +509,8 @@ class _Hero extends StatelessWidget {
                   size: 44, color: Colors.white.withValues(alpha: 0.85)),
             ],
           ),
+          // No "Find a lesson" button: with no lesson to practice, there is nothing to offer here.
+          if (top?.lessonId != null) ...[
           const SizedBox(height: AimSpacing.space12),
           Material(
             color: Colors.white,
@@ -524,9 +526,7 @@ class _Hero extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        top?.lessonId != null
-                            ? context.tr('Practice now', 'تدرّب الآن')
-                            : context.tr('Find a lesson', 'ابحث عن درس'),
+                        context.tr('Practice now', 'تدرّب الآن'),
                         textAlign: TextAlign.center,
                         style: AimTextStyles.bodyMd.copyWith(
                           color: AimColors.primary500,
@@ -540,6 +540,7 @@ class _Hero extends StatelessWidget {
               ),
             ),
           ),
+          ],
         ],
       ),
     );
@@ -996,13 +997,12 @@ class _SpotCardState extends State<_SpotCard> {
                     spacing: AimSpacing.space8,
                     runSpacing: AimSpacing.space8,
                     children: [
-                      AIMButton(
-                        size: AIMButtonSize.small,
-                        onPressed: widget.onPractice,
-                        child: Text(spot.lessonId != null
-                            ? context.tr('Practice now', 'تدرّب الآن')
-                            : context.tr('Find a lesson', 'ابحث عن درس')),
-                      ),
+                      if (spot.lessonId != null)
+                        AIMButton(
+                          size: AIMButtonSize.small,
+                          onPressed: widget.onPractice,
+                          child: Text(context.tr('Practice now', 'تدرّب الآن')),
+                        ),
                       if (widget.onReread != null)
                         AIMButton(
                           size: AIMButtonSize.small,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { DetailSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
@@ -14,6 +14,7 @@ import {
   type LessonDetail,
   type StudentLessonSummary,
 } from './lessonsApi';
+import { notEnrolledCourseId } from '../curriculum/curriculumApi';
 import { useI18n } from '../../i18n/I18nContext';
 
 /** Navigation state accepted by /lessons/:lessonId and /practice/lesson/:lessonId. */
@@ -51,6 +52,7 @@ function computePosition(lessons: StudentLessonSummary[], lessonId: string): Les
 export function LessonPlayerShell() {
   const { lessonId = '' } = useParams<{ lessonId: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const navState = (location.state ?? {}) as LessonRouteState;
   const { t } = useI18n();
   const courseId = navState.courseId;
@@ -79,9 +81,17 @@ export function LessonPlayerShell() {
           setPosition({ self: null, prev: null, next: null, locked: false });
         }
       })
-      .catch((err) => setError(getErrorMessage(err, t('Failed to load lesson'))))
+      .catch((err) => {
+        // Not enrolled (e.g. a saved link): send the student to the course page to enroll first.
+        const notEnrolled = notEnrolledCourseId(err);
+        if (notEnrolled) {
+          navigate(`/curriculum/${encodeURIComponent(notEnrolled)}`, { replace: true });
+          return;
+        }
+        setError(getErrorMessage(err, t('Failed to load lesson')));
+      })
       .finally(() => setLoading(false));
-  }, [lessonId, t]);
+  }, [lessonId, t, navigate]);
 
   useEffect(() => { load(); }, [load]);
   // A different lesson (same page, new id) starts at the start screen again.

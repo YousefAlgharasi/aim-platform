@@ -314,7 +314,7 @@ export function SupportPage() {
         </Card>
       )}
 
-      <section className="flex flex-col gap-3">
+      <section data-tour="support-tickets" className="flex flex-col gap-3">
         <h2 className={h2Cls}>{t('My Tickets')}</h2>
         {loading ? (
           <ListSkeleton bare rows={3} />

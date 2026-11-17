@@ -56,7 +56,8 @@ export class EnrollmentController {
     @CurrentUser() user: AuthenticatedUser,
     @RequestLocale() localeCtx: LocaleContext,
   ): Promise<EnrollResponse> {
-    await this.courseAccess.assertAccess(user.id, courseId);
+    await this.courseAccess.assertCourseUnlocked(user.id, courseId);
+    await this.courseAccess.assertEnrolled(user.id, courseId);
     const locale = await this.localeResolver.resolve(localeCtx);
     return this.enrollmentService.enroll(user.id, courseId, locale);
   }

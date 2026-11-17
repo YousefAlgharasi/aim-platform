@@ -49,6 +49,7 @@ interface PlacementSectionRow {
   readonly skill_code: string;
   readonly order_index: number;
   readonly total_questions: number;
+  readonly draw_count: number | null;
   readonly created_at: string;
   readonly updated_at: string;
 }
@@ -61,6 +62,8 @@ interface PlacementQuestionRow {
   readonly media_url: string | null;
   readonly order_index: number;
   readonly correct_answer: string;
+  readonly difficulty: number;
+  readonly is_active: boolean;
   readonly created_at: string;
   readonly updated_at: string;
 }
@@ -90,6 +93,8 @@ export interface AdminPlacementSection {
   readonly skillCode: string;
   readonly orderIndex: number;
   readonly totalQuestions: number;
+  /** Bank questions each student receives from this section (null = the whole bank). */
+  readonly drawCount: number | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -102,6 +107,8 @@ export interface AdminPlacementQuestion {
   readonly mediaUrl: string | null;
   readonly orderIndex: number;
   readonly correctAnswer: string;
+  readonly difficulty: number;
+  readonly isActive: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -134,6 +141,7 @@ function mapSection(row: PlacementSectionRow): AdminPlacementSection {
     skillCode: row.skill_code,
     orderIndex: row.order_index,
     totalQuestions: row.total_questions,
+    drawCount: row.draw_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -148,6 +156,8 @@ function mapQuestion(row: PlacementQuestionRow): AdminPlacementQuestion {
     mediaUrl: row.media_url,
     orderIndex: row.order_index,
     correctAnswer: row.correct_answer,
+    difficulty: row.difficulty,
+    isActive: row.is_active,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -325,7 +335,7 @@ export class PlacementAdminWriteService {
       const insertResult = await client.query<PlacementSectionRow>(
         `INSERT INTO placement_sections (placement_test_id, title, skill_code, order_index)
          VALUES ($1, $2, $3, $4)
-         RETURNING id, placement_test_id, title, skill_code, order_index, total_questions,
+         RETURNING id, placement_test_id, title, skill_code, order_index, total_questions, draw_count,
                    created_at, updated_at`,
         [testId, dto.title, dto.skill_code, dto.order_index],
       );
@@ -353,15 +363,17 @@ export class PlacementAdminWriteService {
           SET title = $1,
               skill_code = $2,
               order_index = $3,
+              draw_count = $5,
               updated_at = now()
         WHERE id = $4
-        RETURNING id, placement_test_id, title, skill_code, order_index, total_questions,
+        RETURNING id, placement_test_id, title, skill_code, order_index, total_questions, draw_count,
                   created_at, updated_at`,
       [
         dto.title ?? existing.title,
         dto.skill_code ?? existing.skill_code,
         dto.order_index ?? existing.order_index,
         sectionId,
+        dto.draw_count ?? existing.draw_count,
       ],
     );
 
@@ -406,7 +418,7 @@ export class PlacementAdminWriteService {
     sectionId: string,
   ): Promise<PlacementSectionRow> {
     const result = await this.db.query<PlacementSectionRow>(
-      `SELECT id, placement_test_id, title, skill_code, order_index, total_questions,
+      `SELECT id, placement_test_id, title, skill_code, order_index, total_questions, draw_count,
               created_at, updated_at
          FROM placement_sections
         WHERE id = $1`,
@@ -437,10 +449,10 @@ export class PlacementAdminWriteService {
     return this.db.withClient(async (client) => {
       const insertResult = await client.query<PlacementQuestionRow>(
         `INSERT INTO placement_questions
-           (placement_section_id, question_type, prompt, media_url, order_index, correct_answer)
-         VALUES ($1, $2, $3, $4, $5, $6)
+           (placement_section_id, question_type, prompt, media_url, order_index, correct_answer, difficulty)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING id, placement_section_id, question_type, prompt, media_url, order_index,
-                   correct_answer, created_at, updated_at`,
+                   correct_answer, difficulty, is_active, created_at, updated_at`,
         [
           sectionId,
           dto.question_type,
@@ -448,6 +460,7 @@ export class PlacementAdminWriteService {
           dto.media_url ?? null,
           dto.order_index,
           dto.correct_answer,
+          dto.difficulty ?? 2,
         ],
       );
 
@@ -476,10 +489,12 @@ export class PlacementAdminWriteService {
               media_url = $3,
               order_index = $4,
               correct_answer = $5,
+              difficulty = $7,
+              is_active = $8,
               updated_at = now()
         WHERE id = $6
         RETURNING id, placement_section_id, question_type, prompt, media_url, order_index,
-                  correct_answer, created_at, updated_at`,
+                  correct_answer, difficulty, is_active, created_at, updated_at`,
       [
         dto.question_type ?? existing.question_type,
         dto.prompt ?? existing.prompt,
@@ -487,6 +502,8 @@ export class PlacementAdminWriteService {
         dto.order_index ?? existing.order_index,
         dto.correct_answer ?? existing.correct_answer,
         questionId,
+        dto.difficulty ?? existing.difficulty,
+        dto.is_active ?? existing.is_active,
       ],
     );
 
@@ -529,7 +546,7 @@ export class PlacementAdminWriteService {
   ): Promise<PlacementQuestionRow> {
     const result = await this.db.query<PlacementQuestionRow>(
       `SELECT id, placement_section_id, question_type, prompt, media_url, order_index,
-              correct_answer, created_at, updated_at
+              correct_answer, difficulty, is_active, created_at, updated_at
          FROM placement_questions
         WHERE id = $1`,
       [questionId],

@@ -106,8 +106,6 @@ class _AppMenuDrawerState
           item(Icons.notifications_none_rounded, 'Notifications', 'الإشعارات',
               onTap: () => _navigateTo(AppRoutePaths.notificationInbox),
               trailing: unread > 0 ? _UnreadBadge(count: unread) : null),
-          item(Icons.credit_card_outlined, 'Billing', 'الفواتير',
-              onTap: () => _navigateTo(AppRoutePaths.subscription)),
           item(Icons.support_agent_outlined, 'Support', 'الدعم',
               onTap: () => _navigateTo(AppRoutePaths.helpCenter)),
           item(Icons.settings_outlined, 'Settings', 'الإعدادات',

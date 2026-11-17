@@ -27,7 +27,9 @@ export type PlacementQuestionType =
   | 'multiple_choice'
   | 'true_false'
   | 'fill_blank'
-  | 'listening_choice';
+  | 'listening_choice'
+  | 'writing'
+  | 'speaking';
 
 export type AdminPlacementQuestionSummary = {
   readonly id: string;
@@ -37,6 +39,10 @@ export type AdminPlacementQuestionSummary = {
   readonly mediaUrl: string | null;
   readonly orderIndex: number;
   readonly skillCode: string;
+  /** Difficulty band 1 (Starter/A1.1) .. 4 (A2.2+). */
+  readonly difficulty: number;
+  /** false = retired from the random draw. */
+  readonly isActive: boolean;
   readonly createdAt: string;
   // correct_answer intentionally absent — never returned to the admin UI
 };
@@ -54,6 +60,8 @@ const ALLOWED_TYPES = new Set<string>([
   'true_false',
   'fill_blank',
   'listening_choice',
+  'writing',
+  'speaking',
 ]);
 
 function decodeQuestionType(raw: unknown): PlacementQuestionType {
@@ -73,6 +81,8 @@ function decodeQuestionSummary(raw: unknown): AdminPlacementQuestionSummary {
     mediaUrl: typeof r['mediaUrl'] === 'string' ? r['mediaUrl'] : null,
     orderIndex: typeof r['orderIndex'] === 'number' ? r['orderIndex'] : 0,
     skillCode: typeof r['skillCode'] === 'string' ? r['skillCode'] : '',
+    difficulty: typeof r['difficulty'] === 'number' ? r['difficulty'] : 2,
+    isActive: r['isActive'] !== false,
     createdAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
   };
 }

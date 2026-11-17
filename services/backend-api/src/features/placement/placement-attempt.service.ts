@@ -18,7 +18,7 @@
 //   - No AIM Engine runtime, lesson delivery, AI Teacher, or progress dashboard logic.
 //   - No secrets, service-role keys, database credentials, or privileged config here.
 
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Optional } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { AppError } from '../../common/errors/app-error';
 import { PlacementErrorCode } from './placement-error-codes';
@@ -30,13 +30,14 @@ import {
 import { PlacementAuditService } from './placement-audit.service';
 import { PlacementAnalyticsService } from './placement-analytics.service';
 import { PlacementRetakePolicyService } from './placement-retake-policy.service';
+import { PlacementQuestionSelectionService } from './placement-question-selection.service';
 
 /**
- * Total time budget for the whole placement attempt, in seconds (45 minutes).
+ * Total time budget for the whole placement attempt, in seconds (60 minutes — about 38 questions across six skills).
  * Matches the placement_attempts.duration_seconds column default. Kept as a
  * backend constant (not client-configurable) — P4-052 timer enforcement.
  */
-export const PLACEMENT_ATTEMPT_DURATION_SECONDS = 2700;
+export const PLACEMENT_ATTEMPT_DURATION_SECONDS = 3600;
 
 @Injectable()
 export class PlacementAttemptService {
@@ -45,6 +46,7 @@ export class PlacementAttemptService {
     private readonly audit: PlacementAuditService,
     private readonly analytics: PlacementAnalyticsService,
     private readonly retakePolicy: PlacementRetakePolicyService,
+    @Optional() private readonly selection?: PlacementQuestionSelectionService,
   ) {}
 
   /**
@@ -122,6 +124,9 @@ export class PlacementAttemptService {
     );
 
     const attempt = insertResult.rows[0];
+
+    // 4b. Draw this student's own random, level-balanced question set from the bank.
+    await this.selection?.drawForAttempt(attempt.id, test.id);
 
     void this.audit.logAttemptStarted(studentId, attempt.id, test.id).catch(() => {});
     void this.analytics.recordAttemptStarted(studentId, attempt.id, test.id).catch(() => {});

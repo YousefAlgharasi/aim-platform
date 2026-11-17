@@ -38,7 +38,7 @@ export function LeaderboardPage() {
       ) : error ? (
         <ErrorState message={error} onRetry={() => load()} />
       ) : board ? (
-        <section className="rounded-2xl bg-surface p-3 ring-1 ring-line sm:p-4">
+        <section data-tour="board-list" className="rounded-2xl bg-surface p-3 ring-1 ring-line sm:p-4">
           <LeaderboardList board={board} emptyText={emptyBoardText(period, t)} />
         </section>
       ) : null}

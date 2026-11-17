@@ -25,6 +25,8 @@ export interface CoursePriceQuote {
 export interface CourseAccess {
   status: CourseAccessStatus;
   hasAccess: boolean;
+  /** The student enrolled (free enroll, coupon or paid). Course content stays hidden until then. */
+  enrolled?: boolean;
   startsAt: string | null;
   expiresAt: string | null;
   daysLeft: number | null;

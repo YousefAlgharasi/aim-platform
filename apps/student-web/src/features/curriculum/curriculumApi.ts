@@ -38,6 +38,21 @@ export function needsPayment(course: StudentCourse): boolean {
   return course.access ? !course.access.hasAccess : false;
 }
 
+/**
+ * The student has not enrolled yet — the course content (chapters, lessons) is hidden until they
+ * do. Older backends do not send `enrolled`, so a missing flag counts as enrolled.
+ */
+export function needsEnroll(course: StudentCourse): boolean {
+  return course.access?.enrolled === false;
+}
+
+/** The course id carried by a 403 COURSE_NOT_ENROLLED error, if that is what `err` is. */
+export function notEnrolledCourseId(err: unknown): string | null {
+  const e = err as { code?: string; details?: { courseId?: unknown } } | null;
+  if (e?.code !== 'COURSE_NOT_ENROLLED') return null;
+  return typeof e.details?.courseId === 'string' ? e.details.courseId : null;
+}
+
 export interface CurrentEnrollment {
   found: boolean;
   courseId: string | null;

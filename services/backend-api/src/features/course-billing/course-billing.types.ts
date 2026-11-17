@@ -57,6 +57,8 @@ export interface CourseAccessState {
   readonly status: CourseAccessStatus;
   /** True when the student can open lessons and assessments. */
   readonly hasAccess: boolean;
+  /** True once the student has enrolled (free enroll, coupon or approved payment). Content stays hidden until then. */
+  readonly enrolled: boolean;
   readonly startsAt: string | null;
   readonly expiresAt: string | null;
   readonly daysLeft: number | null;

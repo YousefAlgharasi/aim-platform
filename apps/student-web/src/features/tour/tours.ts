@@ -96,6 +96,96 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    id: 'voice-teacher',
+    path: /^\/voice-teacher(\/[^/]+)?\/?$/,
+    home: '/ai-teacher',
+    // The live voice room is new to most students: offer its tour the first time they open it.
+    autoStart: true,
+    steps: [
+      { target: at('voice-stage'), title: 'Your live teacher', body: 'The robot shows what your teacher is doing: listening, thinking or speaking. Talk to it like a real teacher.' },
+      { target: at('voice-mic'), title: 'Talk with your voice', body: 'Tap the microphone and start speaking. Tap it again to pause. Speak slowly and clearly.' },
+      { target: at('voice-text'), title: 'Or type', body: 'Cannot speak right now? Type your message here and press send.' },
+      { target: at('voice-mute'), title: 'The teacher’s voice', body: 'Turn the teacher’s voice off if you only want to read, and on again to listen.' },
+      { target: at('voice-chat'), title: 'Your conversation', body: 'Everything you and the teacher say is written here, so you can read it again.' },
+    ],
+  },
+  {
+    id: 'improve',
+    path: /^\/improve\/?$/,
+    home: '/improve',
+    steps: [
+      { target: at('improve-start'), title: 'Start with this', body: 'This is your most important weak spot right now. Practice it first.' },
+      { target: at('improve-stats'), title: 'Your numbers', body: 'See how many skills need work, how many mistakes you can retry, and what you have already fixed.' },
+      { target: at('improve-spots'), title: 'Weak spots', body: 'Each card is a skill to improve. Retry opens a few days later, because spacing helps you remember.' },
+    ],
+  },
+  {
+    id: 'speaking-writing',
+    path: /^\/practice\/(speaking|writing)\/?$/,
+    home: '/practice',
+    steps: [
+      { target: at('topics-list'), title: 'Pick a topic', body: 'Choose a topic, then speak or write about it. Your teacher gives you feedback on what to fix.' },
+    ],
+  },
+  {
+    id: 'assessments',
+    path: /^\/assessments\/?$/,
+    home: '/assessments',
+    steps: [
+      { target: at('assess-next'), title: 'Up next', body: 'Your next quiz or exam is here. Tap Take it when you are ready.' },
+      { target: at('assess-list'), title: 'Quizzes and exams', body: 'Quizzes come at the end of chapters. The final exam comes at the end of the course.' },
+    ],
+  },
+  {
+    id: 'achievements',
+    path: /^\/achievements\/?$/,
+    home: '/achievements',
+    steps: [
+      { target: at('ach-summary'), title: 'Your badges', body: 'See how many badges you have unlocked and your level.' },
+      { target: at('ach-list'), title: 'Unlock more', body: 'Finish lessons and keep your streak to unlock each badge.' },
+    ],
+  },
+  {
+    id: 'certificates',
+    path: /^\/certificates\/?$/,
+    home: '/certificates',
+    steps: [
+      { target: at('cert-list'), title: 'Your certificates', body: 'Finish a course and pass its final exam to earn a certificate. Tap one to view and print it.' },
+    ],
+  },
+  {
+    id: 'leaderboard',
+    path: /^\/leaderboard\/?$/,
+    home: '/leaderboard',
+    steps: [
+      { target: at('board-list'), title: 'The leaderboard', body: 'See how your XP compares with other learners. Switch between this week and all time.' },
+    ],
+  },
+  {
+    id: 'notifications',
+    path: /^\/notifications\/?$/,
+    home: '/notifications',
+    steps: [
+      { target: at('notif-filter'), title: 'Your notifications', body: 'Show only unread messages, or mark them all as read.' },
+    ],
+  },
+  {
+    id: 'settings',
+    path: /^\/settings\/?$/,
+    home: '/settings',
+    steps: [
+      { target: at('settings-prefs'), title: 'Make it yours', body: 'Choose your language, theme and daily goal here.' },
+    ],
+  },
+  {
+    id: 'support',
+    path: /^\/support\/?$/,
+    home: '/support',
+    steps: [
+      { target: at('support-tickets'), title: 'Need help?', body: 'Send us a message and follow the answer here under My Tickets.' },
+    ],
+  },
+  {
     id: 'progress',
     path: /^\/progress\/?$/,
     home: '/progress',

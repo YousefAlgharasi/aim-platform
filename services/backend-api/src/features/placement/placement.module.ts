@@ -26,6 +26,7 @@ import { PlacementAdminTestReadService } from './placement-admin-test-read.servi
 import { PlacementAdminWriteService } from './placement-admin-write.service';
 import { PlacementQuestionDeliveryService } from './placement-question-delivery.service';
 import { PlacementAttemptService } from './placement-attempt.service';
+import { PlacementQuestionSelectionService } from './placement-question-selection.service';
 import { PlacementAnswerSubmitService } from './placement-answer-submit.service';
 import { PlacementAttemptCompleteService } from './placement-attempt-complete.service';
 import { PlacementAnswerValidationService } from './placement-answer-validation.service';
@@ -68,6 +69,7 @@ import { PlacementDecisionService } from './placement-decision.service';
     PlacementQuestionDeliveryService,
     PlacementQuestionAudioService,
     PlacementAttemptService,
+    PlacementQuestionSelectionService,
     PlacementRetakePolicyService,
     PlacementAnswerSubmitService,
     PlacementAttemptCompleteService,
@@ -91,6 +93,7 @@ import { PlacementDecisionService } from './placement-decision.service';
     PlacementSectionsService,
     PlacementQuestionDeliveryService,
     PlacementAttemptService,
+    PlacementQuestionSelectionService,
     PlacementRetakePolicyService,
     PlacementAnswerSubmitService,
     PlacementAttemptCompleteService,

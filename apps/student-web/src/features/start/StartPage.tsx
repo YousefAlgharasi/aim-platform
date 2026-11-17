@@ -11,7 +11,6 @@ import { StartCardSkeleton } from '../../components/common/Skeleton';
 import { studyPlanApi, type PlanGoal } from '../learner/learnerApi';
 import { setPlacementDecision, type PlacementDecision } from '../placement/placementApi';
 import { cacheSetupDone, fetchSetupStatus, type SetupStatus } from './setupStatus';
-import { ensureStartingCourse } from './enrollStart';
 import { ED_BODY, ED_BTN, EdProgress, edRow } from '../placement/ed';
 import '../landing/landing.css';
 
@@ -88,8 +87,6 @@ export function StartPage() {
     setBusy(true); setError('');
     try {
       await setPlacementDecision(decision);
-      // "Start from zero" goes straight to the dashboard, so give them the beginner course to follow there.
-      if (decision === 'start_from_scratch') await ensureStartingCourse();
       // Only "start from zero" unlocks the dashboard now; the placement test must be completed first.
       if (decision === 'start_from_scratch' && user) cacheSetupDone(user.id);
       navigate(decision === 'take_placement' ? '/placement' : '/dashboard', { replace: true });

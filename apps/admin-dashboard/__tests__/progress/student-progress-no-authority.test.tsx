@@ -23,6 +23,7 @@ const baseProfile: AdminStudentProfile = {
     estimatedLevel: 'intermediate',
     completedAt: '2026-01-05T00:00:00Z',
     skillSummary: [{ skillCode: 'grammar', signal: 'strong' }],
+    skillScores: [{ skillCode: 'grammar', percent: 90 }, { skillCode: 'speaking', percent: 40 }],
     scorePercent: 85,
     recommendedCourseId: 'course-1',
     recommendedCourseTitle: 'English Foundations',

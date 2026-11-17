@@ -84,7 +84,6 @@ void main() {
       'Achievements',
       'Certificates',
       'Notifications',
-      'Billing',
       'Support',
       'Settings',
     ]) {
@@ -92,7 +91,7 @@ void main() {
     }
 
     expect(inDrawer('Reports'), findsNothing); // Reports was removed.
-    for (final removed in const ['AI Teacher', 'My mistakes', 'Review']) {
+    for (final removed in const ['AI Teacher', 'My mistakes', 'Review', 'Billing']) {
       expect(inDrawer(removed), findsNothing, reason: removed);
     }
 

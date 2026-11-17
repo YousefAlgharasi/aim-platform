@@ -28,7 +28,11 @@ export type AdminPlacementSectionSummary = {
   readonly title: string;
   readonly skillCode: string;
   readonly order: number;
+  /** Size of the question bank in this section. */
   readonly questionCount: number;
+  readonly activeQuestionCount: number;
+  /** How many bank questions each student gets, picked at random (null = whole bank). */
+  readonly drawCount: number | null;
   readonly createdAt: string;
 };
 
@@ -49,6 +53,8 @@ function decodeSectionSummary(raw: unknown): AdminPlacementSectionSummary {
     skillCode: typeof r['skillCode'] === 'string' ? r['skillCode'] : '',
     order: typeof r['order'] === 'number' ? r['order'] : 0,
     questionCount: typeof r['questionCount'] === 'number' ? r['questionCount'] : 0,
+    activeQuestionCount: typeof r['activeQuestionCount'] === 'number' ? r['activeQuestionCount'] : 0,
+    drawCount: typeof r['drawCount'] === 'number' ? r['drawCount'] : null,
     createdAt: typeof r['createdAt'] === 'string' ? r['createdAt'] : '',
   };
 }

@@ -22,7 +22,7 @@ export class PracticeAccessService {
     );
     const courseId = enrollment.rows[0]?.course_id;
     const hasAccess = courseId
-      ? (await this.courseAccess.getBilling(student.userId, courseId)).access.hasAccess
+      ? (await this.courseAccess.getBilling(student.userId, courseId)).access.enrolled
       : false;
     if (!hasAccess) {
       throw new AppError({

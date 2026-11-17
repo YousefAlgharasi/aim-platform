@@ -121,6 +121,13 @@ class BackendApiPaths {
   static String studentVoicePreview(String language, String voice) =>
       '/student/voice-preferences/preview?language=$language&voice=${Uri.encodeQueryComponent(voice)}';
 
+  /// POST /student/coupons/redeem — enroll in a paid course with a coupon code.
+  static const String studentCouponRedeem = '/student/coupons/redeem';
+
+  /// POST /student/courses/:id/enroll-free — enroll in a free course.
+  static String studentCourseEnrollFree(String courseId) =>
+      '/student/courses/$courseId/enroll-free';
+
   // Course billing — wallet payments for paid courses.
   static const String studentBillingWallets = '/student/billing/wallets';
   static const String studentPaymentRequests = '/student/payment-requests';

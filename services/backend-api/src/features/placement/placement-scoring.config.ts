@@ -5,11 +5,15 @@
 
 export const PlacementScoringConfig = {
   /** Section weights per P4-031 §2. Must sum to 1.0. */
+  // All six skills count the same (1/6 each): grammar, vocabulary, reading, listening,
+  // writing and speaking. Writing/speaking are AI-graded (score 0-10 → 0-1).
   sectionWeights: {
-    grammar: 0.30,
-    vocabulary: 0.30,
-    reading: 0.25,
-    listening: 0.15,
+    grammar: 1 / 6,
+    vocabulary: 1 / 6,
+    reading: 1 / 6,
+    listening: 1 / 6,
+    writing: 1 / 6,
+    speaking: 1 / 6,
   } as Record<string, number>,
 
   /** Section weakness thresholds per P4-031 §3. */
@@ -18,6 +22,8 @@ export const PlacementScoringConfig = {
     vocabulary: 0.60,
     reading: 0.55,
     listening: 0.55,
+    writing: 0.50,
+    speaking: 0.50,
   } as Record<string, number>,
 
   /** Skill signal thresholds per P4-032 §4.2. */

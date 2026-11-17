@@ -211,17 +211,13 @@ export function SpotCard({ spot, mistakes, recovery }: { spot: WeakSpot; mistake
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          {spot.lessonId ? (
-            <>
-              <Link to={`/practice/lesson/${encodeURIComponent(spot.lessonId)}`} className={buttonClasses('primary', 'sm')}>{t('Practice now')}</Link>
-              <Link to={`/lessons/${encodeURIComponent(spot.lessonId)}`} className={secondary}>{t('Re-read the lesson')}</Link>
-              <Link to={`/ai-teacher?lessonId=${encodeURIComponent(spot.lessonId)}`} className={secondary}>{t('Ask AI Teacher')}</Link>
-            </>
-          ) : (
-            <Link to="/curriculum" className={buttonClasses('primary', 'sm')}>{t('Find a lesson')}</Link>
-          )}
-        </div>
+        {spot.lessonId && (
+          <div className="flex flex-wrap gap-2">
+            <Link to={`/practice/lesson/${encodeURIComponent(spot.lessonId)}`} className={buttonClasses('primary', 'sm')}>{t('Practice now')}</Link>
+            <Link to={`/lessons/${encodeURIComponent(spot.lessonId)}`} className={secondary}>{t('Re-read the lesson')}</Link>
+            <Link to={`/ai-teacher?lessonId=${encodeURIComponent(spot.lessonId)}`} className={secondary}>{t('Ask AI Teacher')}</Link>
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -275,7 +271,7 @@ export function ImprovePage() {
 
       <FixedCelebration records={data.weaknessRecords} />
 
-      <div className="hero-panel">
+      <div data-tour="improve-start" className="hero-panel">
         <div className="relative z-10 flex flex-col gap-4">
           {top ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -283,17 +279,19 @@ export function ImprovePage() {
                 <p className="m-0 text-xs font-bold text-on-brand">{t('Start with this')}</p>
                 <p className="m-0 mt-0.5 text-xl font-semibold leading-snug [overflow-wrap:anywhere] [unicode-bidi:plaintext] sm:text-2xl">{prettifySkillId(top.skillId)}</p>
               </div>
-              <Link
-                to={topLesson ? `/practice/lesson/${encodeURIComponent(topLesson)}` : '/curriculum'}
-                className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
-              >
-                {topLesson ? t('Practice now') : t('Find a lesson')}
-              </Link>
+              {topLesson && (
+                <Link
+                  to={`/practice/lesson/${encodeURIComponent(topLesson)}`}
+                  className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl hero-cta px-6 text-[15px] font-bold no-underline transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+                >
+                  {t('Practice now')}
+                </Link>
+              )}
             </div>
           ) : (
             <p className="m-0 text-lg font-semibold">{t('No weak spots right now. Keep learning to stay sharp.')}</p>
           )}
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div data-tour="improve-stats" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Stat value={spots.length} label={t('To work on')} />
             <Stat value={mistakes ?? '—'} label={t('Mistakes to retry')} />
             <Stat value={dueReviews.length} label={t('Reviews due')} />
@@ -318,7 +316,7 @@ export function ImprovePage() {
         </Card>
       )}
 
-      <section className="flex flex-col gap-3" aria-label={t('Weak spots')}>
+      <section data-tour="improve-spots" className="flex flex-col gap-3" aria-label={t('Weak spots')}>
         <h2 className={`${ui.sectionTitle} px-1`}>{t('Weak spots')}</h2>
         {spots.length === 0 ? (
           <EmptyState title={t('No weaknesses detected')} message={t('Great work — no areas to improve have been detected yet.')} />

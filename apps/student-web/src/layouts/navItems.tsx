@@ -76,7 +76,6 @@ export const navSections: NavSection[] = [
       { to: '/', label: 'Dashboard', icon: icon(HomeIcon) },
       { to: '/curriculum', label: 'Courses', icon: icon(BookIcon) },
       { to: '/vocabulary-library', label: 'Vocabulary', icon: icon(BookIcon) },
-      { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
     ],
   },
   {
@@ -85,7 +84,6 @@ export const navSections: NavSection[] = [
       { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
       { to: '/improve', label: 'Improve', icon: icon(TargetIcon) },
       { to: '/vocabulary', label: 'My words', icon: icon(LightbulbIcon) },
-      { to: '/mistakes', label: 'My mistakes', icon: icon(RetryIcon) },
     ],
   },
   {
@@ -101,7 +99,6 @@ export const navSections: NavSection[] = [
     title: 'Account',
     items: [
       { to: '/notifications', label: 'Notifications', icon: icon(BellIcon) },
-      { to: '/billing', label: 'Billing', icon: icon(CreditCardIcon) },
       { to: '/support', label: 'Support', icon: icon(LifeBuoyIcon) },
       { to: '/settings', label: 'Settings', icon: icon(UserIcon) },
     ],
@@ -116,5 +113,16 @@ export const tabItems: NavItem[] = [
   { to: '/practice', label: 'Practice', icon: icon(ZapNavIcon) },
 ];
 
-/** Flat list (used for page-title lookup). */
-export const navItems: NavItem[] = navSections.flatMap((s) => s.items);
+/**
+ * Pages that are no longer listed in the menu (AI Teacher, My mistakes, Billing) but still
+ * exist and are reached from links inside the app. Kept here so page titles and the
+ * "top-level page" back-button logic keep working for them.
+ */
+const unlistedItems: NavItem[] = [
+  { to: '/ai-teacher', label: 'AI Teacher', icon: icon(ChatIcon) },
+  { to: '/mistakes', label: 'My mistakes', icon: icon(RetryIcon) },
+  { to: '/billing', label: 'Billing', icon: icon(CreditCardIcon) },
+];
+
+/** Flat list (used for page-title lookup). Includes pages that are not shown in the menu. */
+export const navItems: NavItem[] = [...navSections.flatMap((s) => s.items), ...unlistedItems];

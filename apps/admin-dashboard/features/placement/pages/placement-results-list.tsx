@@ -46,6 +46,28 @@ const SIGNAL_VARIANT: Record<SkillSignal, 'success' | 'primary' | 'warning'> = {
   emerging: 'warning',
 };
 
+const SIX_SKILLS: ReadonlyArray<{ code: string; label: string }> = [
+  { code: 'grammar', label: 'Grammar' },
+  { code: 'vocabulary', label: 'Vocabulary' },
+  { code: 'reading', label: 'Reading' },
+  { code: 'listening', label: 'Listening' },
+  { code: 'writing', label: 'Writing' },
+  { code: 'speaking', label: 'Speaking' },
+];
+
+function percentFor(row: AdminPlacementResultSummary, code: string): number | null {
+  return row.skillScores.find((s) => s.skillCode === code)?.percent ?? null;
+}
+
+const skillColumns: AdminTableColumn<AdminPlacementResultSummary>[] = SIX_SKILLS.map(({ code, label }) => ({
+  key: `score-${code}`,
+  header: label,
+  render: (row: AdminPlacementResultSummary) => {
+    const p = percentFor(row, code);
+    return p === null ? <span style={{ color: 'var(--text-muted)' }}>—</span> : <span>{p}%</span>;
+  },
+}));
+
 const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
   {
     key: 'studentName',
@@ -67,6 +89,17 @@ const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
     ),
   },
   {
+    key: 'overallPercent',
+    header: 'Overall (6 skills)',
+    render: (row) =>
+      row.overallPercent === null ? (
+        <span style={{ color: 'var(--text-muted)' }}>—</span>
+      ) : (
+        <strong>{row.overallPercent}%</strong>
+      ),
+  },
+  ...skillColumns,
+  {
     key: 'initialPathReady',
     header: 'Initial Path',
     render: (row) => (
@@ -74,22 +107,6 @@ const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
         {row.initialPathReady ? 'Ready' : 'Pending'}
       </AdminBadge>
     ),
-  },
-  {
-    key: 'skillSummary',
-    header: 'Skill Signals',
-    render: (row) =>
-      row.skillSummary.length === 0 ? (
-        <span style={{ color: 'var(--text-muted)' }}>—</span>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4, 4px)' }}>
-          {row.skillSummary.map((skill) => (
-            <AdminBadge key={skill.skillCode} variant={SIGNAL_VARIANT[skill.signal]}>
-              {skill.skillName}
-            </AdminBadge>
-          ))}
-        </div>
-      ),
   },
   {
     key: 'completedAt',

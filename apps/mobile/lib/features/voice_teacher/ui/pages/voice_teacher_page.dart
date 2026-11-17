@@ -43,6 +43,7 @@
 // talk over the teacher to interrupt, mute the mic with one tap, or type instead — typed and spoken turns share one
 // conversation. Audio is captured as 16 kHz PCM and sent as WAV (audio/wav is in the backend's ALLOWED_AUDIO_TYPES
 // allow-list, voice-audio-submit.controller.ts); nothing is written to disk.
+import 'package:aim_mobile/core/widgets/guide/page_guide.dart';
 import 'package:aim_mobile/features/practice_topics/ui/practice_session_bar.dart';
 import 'dart:async';
 import 'dart:typed_data';
@@ -557,6 +558,13 @@ class _VoiceTeacherHeader extends StatelessWidget
                   maxLines: 1,
                   style: AimTextStyles.h3.copyWith(color: surfaces.textPrimary),
                 ),
+              ),
+              // How the live voice room works (same tips as the web app's guide).
+              PageGuideButton(
+                titleEn: 'How to talk with your teacher',
+                titleAr: 'كيف تتحدث مع معلّمك',
+                steps: voiceTeacherGuideSteps,
+                color: surfaces.textPrimary,
               ),
             ],
           ),

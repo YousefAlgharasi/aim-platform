@@ -54,6 +54,7 @@ class CourseAccess {
   const CourseAccess({
     required this.status,
     required this.hasAccess,
+    this.enrolled = true,
     this.startsAt,
     this.expiresAt,
     this.daysLeft,
@@ -62,6 +63,10 @@ class CourseAccess {
 
   final CourseAccessStatus status;
   final bool hasAccess;
+
+  /// The student enrolled (free enroll, coupon or paid). The course content stays hidden until then.
+  /// Older backends do not send this: treated as enrolled.
+  final bool enrolled;
   final DateTime? startsAt;
   final DateTime? expiresAt;
   final int? daysLeft;
@@ -70,10 +75,14 @@ class CourseAccess {
   /// The student must pay (or is waiting for approval) before opening it.
   bool get needsPayment => !hasAccess;
 
+  /// The student has not enrolled yet: the lessons open only after they enroll.
+  bool get needsEnroll => !enrolled;
+
   factory CourseAccess.fromJson(Map<String, dynamic> json) {
     return CourseAccess(
       status: _accessStatus(json['status']),
       hasAccess: json['hasAccess'] as bool? ?? true,
+      enrolled: json['enrolled'] as bool? ?? true,
       startsAt: _date(json['startsAt']),
       expiresAt: _date(json['expiresAt']),
       daysLeft: (json['daysLeft'] as num?)?.toInt(),

@@ -41,6 +41,7 @@ export class PlacementQuestionDeliveryService {
    */
   async getQuestionsForSection(
     sectionId: string,
+    studentId?: string,
   ): Promise<PlacementQuestionSafeResponse[]> {
     // Verify section exists.
     const sectionCheck = await this.db.query<{ id: string }>(
@@ -61,7 +62,23 @@ export class PlacementQuestionDeliveryService {
     //
     // SECURITY: correct_answer is selected here for the type assertion but is
     // purposely excluded from the safe response shape built in toSafeResponse().
-    const result = await this.db.query<PlacementQuestionWithSkillRow>(
+    // When the student has an active attempt with a drawn question set, deliver ONLY that
+    // student's random questions (in the drawn order). Otherwise (admin preview / legacy
+    // attempt) deliver the whole active section.
+    const attemptId = studentId ? await this.findActiveAttemptWithDraw(studentId) : null;
+    const result = attemptId
+      ? await this.db.query<PlacementQuestionWithSkillRow>(
+          `SELECT pq.id, pq.placement_section_id, pq.question_type, pq.prompt, pq.media_url,
+                  pq.listening_script, paq.position AS order_index, pq.correct_answer,
+                  pq.created_at, pq.updated_at, ps.skill_code
+             FROM placement_attempt_questions paq
+             JOIN placement_questions pq ON pq.id = paq.placement_question_id
+             JOIN placement_sections ps ON ps.id = pq.placement_section_id
+            WHERE paq.placement_attempt_id = $1 AND paq.placement_section_id = $2
+            ORDER BY paq.position ASC`,
+          [attemptId, sectionId],
+        )
+      : await this.db.query<PlacementQuestionWithSkillRow>(
       `SELECT
          pq.id,
          pq.placement_section_id,
@@ -77,12 +94,26 @@ export class PlacementQuestionDeliveryService {
        FROM placement_questions pq
        JOIN placement_sections ps
          ON ps.id = pq.placement_section_id
-       WHERE pq.placement_section_id = $1
-       ORDER BY pq.order_index ASC`,
+       WHERE pq.placement_section_id = $1 AND pq.is_active = true
+       ORDER BY pq.difficulty ASC, pq.order_index ASC`,
       [sectionId],
     );
 
-    return result.rows.map((row) => this.toSafeResponse(row));
+    return result.rows.map((row, index) => this.toSafeResponse({ ...row, order_index: index + 1 }));
+  }
+
+  /** The student's newest active attempt, if it has a drawn question set. */
+  private async findActiveAttemptWithDraw(studentId: string): Promise<string | null> {
+    const r = await this.db.query<{ id: string }>(
+      `SELECT pa.id
+         FROM placement_attempts pa
+        WHERE pa.student_id = $1 AND pa.status = 'active'
+          AND EXISTS (SELECT 1 FROM placement_attempt_questions q WHERE q.placement_attempt_id = pa.id)
+        ORDER BY pa.started_at DESC
+        LIMIT 1`,
+      [studentId],
+    );
+    return r.rows[0]?.id ?? null;
   }
 
   /**

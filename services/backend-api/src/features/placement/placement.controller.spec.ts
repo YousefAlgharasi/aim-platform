@@ -136,8 +136,8 @@ describe('PlacementController', () => {
 
   describe('getQuestions (P4-040)', () => {
     it('delegates to PlacementQuestionDeliveryService.getQuestionsForSection', async () => {
-      await controller.getQuestions('section-1');
-      expect(questionDelivery.getQuestionsForSection).toHaveBeenCalledWith('section-1');
+      await controller.getQuestions('section-1', 'student-1');
+      expect(questionDelivery.getQuestionsForSection).toHaveBeenCalledWith('section-1', 'student-1');
     });
   });
 

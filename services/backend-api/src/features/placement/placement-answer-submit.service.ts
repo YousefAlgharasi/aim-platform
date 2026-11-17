@@ -139,6 +139,23 @@ export class PlacementAnswerSubmitService {
 
     const question = questionResult.rows[0];
 
+    // 2b. The question must be one of the questions drawn for THIS attempt (attempts started
+    //     before the random bank have no draw and keep accepting any question of the test).
+    const drawn = await this.db.query<{ in_draw: boolean; has_draw: boolean }>(
+      `SELECT EXISTS (SELECT 1 FROM placement_attempt_questions
+                       WHERE placement_attempt_id = $1 AND placement_question_id = $2) AS in_draw,
+              EXISTS (SELECT 1 FROM placement_attempt_questions
+                       WHERE placement_attempt_id = $1) AS has_draw`,
+      [attemptId, input.placement_question_id],
+    );
+    if (drawn.rows[0]?.has_draw && !drawn.rows[0].in_draw) {
+      throw new AppError({
+        code: PlacementErrorCode.QUESTION_NOT_FOUND,
+        message: 'Question is not part of this placement attempt.',
+        statusCode: HttpStatus.NOT_FOUND,
+      });
+    }
+
     // -----------------------------------------------------------------------
     // 3. Reject duplicate answers (one answer per question per attempt).
     //    The DB partial unique index (placement_answers_attempt_question_unique_idx)
@@ -263,7 +280,11 @@ export class PlacementAnswerSubmitService {
       answered_questions: string;
     }>(
       `SELECT
-         (SELECT COUNT(*) FROM placement_questions WHERE placement_section_id = $1)::text AS total_questions,
+         (SELECT CASE WHEN EXISTS (SELECT 1 FROM placement_attempt_questions WHERE placement_attempt_id = $2)
+                      THEN (SELECT COUNT(*) FROM placement_attempt_questions
+                             WHERE placement_attempt_id = $2 AND placement_section_id = $1)
+                      ELSE (SELECT COUNT(*) FROM placement_questions WHERE placement_section_id = $1)
+                 END)::text AS total_questions,
          (SELECT COUNT(*)
             FROM placement_answers pa
             JOIN placement_questions pq ON pq.id = pa.placement_question_id

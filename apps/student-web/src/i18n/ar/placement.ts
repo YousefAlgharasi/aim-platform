@@ -184,4 +184,5 @@ export const placement: Record<string, string> = {
   'Tap to record again': 'اضغط لإعادة التسجيل',
   'Tap to start recording': 'اضغط لبدء التسجيل',
   'Recording {time} / 01:00': 'التسجيل {time} / 01:00',
+  'Open Courses and enroll in a course to start learning. Courses open in order, one after the other.': 'افتح الدورات وسجّل في دورة لتبدأ التعلم. تُفتح الدورات بالترتيب، واحدة بعد الأخرى.',
 };
