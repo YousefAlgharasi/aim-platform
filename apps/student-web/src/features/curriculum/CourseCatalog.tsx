@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import {
   fetchCurrentEnrollment,
   fetchStudentCourses,
+  needsPayment,
   type CurrentEnrollment,
   type StudentCourse,
 } from './curriculumApi';
@@ -122,6 +123,15 @@ export function CourseCatalog() {
           )}
         </div>
       </section>
+
+      {courses.some((c) => !c.locked && needsPayment(c) && c.price && !c.price.isFree) && (
+        <Banner variant="info">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>{t('Some courses open with a coupon. Buy one once and the course is yours for good — no deadline.')}</span>
+            <Link to="/welcome#courses" className="text-sm font-semibold text-ink underline decoration-line-strong underline-offset-4">{t('See courses & prices')}</Link>
+          </div>
+        </Banner>
+      )}
 
       {!hasPlacement && !levelLoading && (
         <Banner variant="info">

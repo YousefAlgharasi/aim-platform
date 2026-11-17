@@ -14,9 +14,11 @@ import { learner } from './learner';
 import { skills } from './skills';
 import { interaction } from './interaction';
 import { tips } from './tips';
+import { coupons } from './coupons';
 
 export const ar: Record<string, string> = {
   ...common,
+  ...coupons,
   ...auth,
   ...learning,
   ...placement,

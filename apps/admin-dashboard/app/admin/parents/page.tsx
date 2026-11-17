@@ -181,9 +181,9 @@ export default function AdminParentsPage() {
       render: (item) => (
         <div className="flex flex-col">
           <span className="font-medium text-sm text-[var(--text-primary)]">
-            {item.parentEmail ?? 'Unknown'}
+            <AdminIdCell id={item.parentId} fallbackLabel={item.parentEmail ?? 'Unknown'} />
           </span>
-          <AdminIdCell id={item.parentId} />
+          {item.parentEmail && <span className="text-xs text-[var(--text-muted)]">{item.parentEmail}</span>}
         </div>
       ),
     },
@@ -193,9 +193,9 @@ export default function AdminParentsPage() {
       render: (item) => (
         <div className="flex flex-col">
           <span className="font-medium text-sm text-[var(--text-primary)]">
-            {item.childEmail ?? 'Unknown'}
+            <AdminIdCell id={item.childId} fallbackLabel={item.childEmail ?? 'Unknown'} />
           </span>
-          <AdminIdCell id={item.childId} />
+          {item.childEmail && <span className="text-xs text-[var(--text-muted)]">{item.childEmail}</span>}
         </div>
       ),
     },

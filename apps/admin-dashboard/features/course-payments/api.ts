@@ -153,6 +153,42 @@ export type CoursePaymentsOverview = {
   recent: RecentPayment[];
 };
 
+export type CouponPurchase = {
+  readonly id: string;
+  readonly courseId: string;
+  readonly courseTitle: string;
+  readonly buyerName: string;
+  readonly buyerContact: string;
+  readonly buyerUserId: string | null;
+  readonly walletName: string;
+  readonly transactionNumber: string;
+  readonly amount: number;
+  readonly originalAmount: number;
+  readonly discountAmount: number;
+  readonly currency: Currency;
+  readonly status: PaymentStatus;
+  readonly adminNote: string | null;
+  readonly couponCode: string | null;
+  readonly createdAt: string;
+  readonly reviewedAt: string | null;
+};
+
+export type CouponStatus = 'issued' | 'redeemed' | 'void';
+export type Coupon = {
+  readonly id: string;
+  readonly code: string;
+  readonly courseId: string;
+  readonly courseTitle: string;
+  readonly status: CouponStatus;
+  readonly source: 'purchase' | 'admin';
+  readonly note: string | null;
+  readonly buyerName: string | null;
+  readonly redeemedByName: string | null;
+  readonly redeemedByEmail: string | null;
+  readonly redeemedAt: string | null;
+  readonly createdAt: string;
+};
+
 const BASE = '/admin/course-billing';
 
 export const coursePaymentsApi = {
@@ -205,12 +241,45 @@ export const coursePaymentsApi = {
       'Failed to reject',
     ),
 
+  listPurchases: async (status?: PaymentStatus) =>
+    unwrap<CouponPurchase[]>(
+      await backendFetch(`${BASE}/coupon-purchases${status ? `?status=${status}` : ''}`),
+      'Failed to load coupon purchases',
+    ),
+  approvePurchase: async (id: string, note?: string) =>
+    unwrap<CouponPurchase>(
+      await backendFetch(`${BASE}/coupon-purchases/${id}/approve`, { method: 'POST', body: JSON.stringify({ note }) }),
+      'Failed to approve',
+    ),
+  rejectPurchase: async (id: string, note: string) =>
+    unwrap<CouponPurchase>(
+      await backendFetch(`${BASE}/coupon-purchases/${id}/reject`, { method: 'POST', body: JSON.stringify({ note }) }),
+      'Failed to reject',
+    ),
+  listCoupons: async (status?: CouponStatus, courseId?: string) => {
+    const qs = new URLSearchParams();
+    if (status) qs.set('status', status);
+    if (courseId) qs.set('courseId', courseId);
+    return unwrap<Coupon[]>(await backendFetch(`${BASE}/coupons${qs.size ? `?${qs}` : ''}`), 'Failed to load coupons');
+  },
+  generateCoupons: async (courseId: string, count: number, note?: string) =>
+    unwrap<Coupon[]>(
+      await backendFetch(`${BASE}/coupons`, { method: 'POST', body: JSON.stringify({ courseId, count, note }) }),
+      'Failed to create coupons',
+    ),
+  voidCoupon: async (id: string) =>
+    unwrap<{ ok: true }>(await backendFetch(`${BASE}/coupons/${id}/void`, { method: 'POST' }), 'Failed to cancel coupon'),
+
   listAccess: async (status?: string) =>
     unwrap<AccessWindow[]>(
       await backendFetch(`${BASE}/access${status ? `?status=${status}` : ''}`),
       'Failed to load access',
     ),
 };
+
+export function purchaseReceiptUrl(purchaseId: string): string {
+  return backendAssetUrl(`${BASE}/coupon-purchases/${purchaseId}/receipt`);
+}
 
 export function receiptUrl(paymentId: string): string {
   return backendAssetUrl(`${BASE}/payment-requests/${paymentId}/receipt`);

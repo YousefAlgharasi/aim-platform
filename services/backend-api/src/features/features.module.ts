@@ -5,6 +5,7 @@ import { AssessmentsModule } from './assessments/assessments.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { AdminModule } from './admin/admin.module';
 import { AiTeacherModule } from './ai-teacher/ai-teacher.module';
+import { AdminLookupModule } from './admin-lookup/admin-lookup.module';
 import { AimModule } from './aim/aim.module';
 import { CurriculumModule } from './curriculum/curriculum.module';
 import { EngagementModule } from './engagement/engagement.module';
@@ -45,6 +46,7 @@ import { VocabularyLibraryModule } from './vocabulary-library/vocabulary-library
     SessionsModule,
     AimModule,
     AiTeacherModule,
+    AdminLookupModule,
     VoiceTeacherModule,
     AdminModule,
     ParentsModule,

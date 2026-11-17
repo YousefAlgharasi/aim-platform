@@ -126,9 +126,8 @@ export default function CoursePricesPage() {
                   </select>
                 </div>
                 <div className="cp-field">
-                  <label className="cp-label" htmlFor={`days-${course.courseId}`}>Days to finish</label>
-                  <input id={`days-${course.courseId}`} className="cp-input" type="number" min="1" max="365" step="1"
-                    value={d.accessDays} onChange={(e) => update(course.courseId, 'accessDays', e.target.value)} disabled={isSaving} />
+                  <span className="cp-label">Access</span>
+                  <span className="cp-muted" style={{ paddingTop: 8 }}>Lifetime — no deadline once bought</span>
                 </div>
                 <div className="cp-field">
                   <label className="cp-label" htmlFor={`dtype-${course.courseId}`}>Discount</label>

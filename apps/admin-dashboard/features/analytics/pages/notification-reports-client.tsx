@@ -1,5 +1,7 @@
 'use client';
 
+import { AdminIdCell } from '../../../shared/components/Table/admin-id-cell';
+
 import { useState } from 'react';
 import type { NotificationAuditLog, NotificationTemplate } from '../api/admin-notification-analytics-api';
 
@@ -45,7 +47,7 @@ export function NotificationReportsClient({ auditLogs, templates }: Props) {
                     <th className="nrc-th">Event Type</th>
                     <th className="nrc-th nrc-th--channel">Channel</th>
                     <th className="nrc-th nrc-th--status">Status</th>
-                    <th className="nrc-th nrc-th--user">User ID</th>
+                    <th className="nrc-th nrc-th--user">User</th>
                     <th className="nrc-th nrc-th--date">Date</th>
                   </tr>
                 </thead>
@@ -61,7 +63,7 @@ export function NotificationReportsClient({ auditLogs, templates }: Props) {
                         </span>
                       </td>
                       <td className="nrc-td nrc-td--user">
-                        {log.userId ? <code className="nrc-uid">{log.userId.slice(0, 8)}…</code> : <span className="nrc-muted">--</span>}
+                        {log.userId ? <AdminIdCell id={log.userId} /> : <span className="nrc-muted">--</span>}
                       </td>
                       <td className="nrc-td nrc-td--date">{fmtDate(log.createdAt)}</td>
                     </tr>

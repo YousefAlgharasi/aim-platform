@@ -1,5 +1,6 @@
-import { Injectable, Logger, BadGatewayException } from '@nestjs/common';
+import { Injectable, Logger, BadGatewayException, Optional } from '@nestjs/common';
 
+import { VoiceLanguageSettingsService } from '../language-settings/voice-language-settings.service';
 import { TtsGatewayConfigService } from './tts-gateway.config';
 import { TtsGateway } from './tts-gateway.interface';
 import { TtsProviderRequest, TtsProviderResponse } from './tts-gateway.types';
@@ -38,12 +39,25 @@ export class TtsAudioGenerationService extends TtsGateway {
     private readonly requestMapper: TtsRequestMapperService,
     private readonly responseMapper: TtsResponseMapperService,
     private readonly audioStorage: TtsAudioStorageService,
+    @Optional() private readonly voiceLanguages?: VoiceLanguageSettingsService,
   ) {
     super();
   }
 
   async synthesize(request: TtsProviderRequest): Promise<TtsProviderResponse> {
-    const completionRequest = this.requestMapper.mapRequest(request);
+    let completionRequest = this.requestMapper.mapRequest(request);
+    // Only Arabic and English are spoken. Replies are mixed-language, so each chunk is voiced by the model for its
+    // script: chunks with Arabic letters use the Arabic model/voice (Admin > Voice Languages); the rest use English.
+    if (this.voiceLanguages) {
+      const { language, settings } = await this.voiceLanguages.resolveTts(request.languageCode);
+      const arabicAllowed = settings.allowedLanguages.includes('ar');
+      completionRequest = {
+        ...completionRequest,
+        languageCode: language,
+        arModel: arabicAllowed ? settings.ttsArModel : null,
+        arVoice: arabicAllowed ? settings.ttsArVoice : null,
+      };
+    }
     // resultsUrl is unused by Groq's synchronous endpoint — kept in the
     // config shape only for a future provider that needs it.
     const { apiKey, baseUrl } = this.configService.getConfig();
@@ -90,9 +104,20 @@ export class TtsAudioGenerationService extends TtsGateway {
 
       // Chunks are independent, so synthesize a few at a time instead of one after another; a long
       // script otherwise takes (number of chunks) x the provider latency. Order is preserved.
-      const wavBuffers = await this.mapWithConcurrency(chunks, TTS_CHUNK_CONCURRENCY, (chunk) =>
-        this.synthesizeChunk(apiKey, baseUrl, request.model, request.voice, chunk, controller.signal),
-      );
+      const ARABIC_LETTERS = /[\u0600-\u06FF]/;
+      const synthesized = await this.mapWithConcurrency(chunks, TTS_CHUNK_CONCURRENCY, async (chunk) => {
+        if (ARABIC_LETTERS.test(chunk)) {
+          // No Arabic voice configured (or Arabic disabled): never feed Arabic to the English model — skip the chunk
+          // so the clip contains only speech the model can actually say (the full text is still shown to the student).
+          if (!request.arModel) return null;
+          return this.synthesizeChunk(apiKey, baseUrl, request.arModel, request.arVoice || request.voice, chunk, controller.signal);
+        }
+        return this.synthesizeChunk(apiKey, baseUrl, request.model, request.voice, chunk, controller.signal);
+      });
+      const wavBuffers = synthesized.filter((b): b is Buffer => b !== null);
+      if (wavBuffers.length === 0) {
+        throw new BadGatewayException(ERROR_CATEGORY_EMPTY_TEXT);
+      }
 
       const audioBuffer = concatWavBuffers(wavBuffers);
       const audioRef = this.generateAudioRef();

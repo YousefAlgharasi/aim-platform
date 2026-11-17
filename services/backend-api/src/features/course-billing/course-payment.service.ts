@@ -11,6 +11,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { DatabaseService } from '../../database/database.service';
 import { AdminPaymentRequestView, PaymentRequestStatus, PaymentRequestView, UploadedImage } from './course-billing.types';
 import { CourseAccessService } from './course-access.service';
+import { LIFETIME_DAYS } from './course-coupon.service';
 import { quoteCoursePrice } from './course-pricing.util';
 import { PaymentImageService } from './payment-image.service';
 import { PaymentWalletService } from './payment-wallet.service';
@@ -238,9 +239,8 @@ export class CoursePaymentService {
     );
     if (!updated.rowCount) throw new ConflictException('This payment was already reviewed');
 
-    const priceRows = await this.access.getPriceRows([row.course_id]);
-    const accessDays = quoteCoursePrice(priceRows.get(row.course_id), now).accessDays;
-    await this.access.grantAccess(row.student_id, row.course_id, accessDays, row.id, now);
+    // Courses are owned for good once paid: no deadline.
+    await this.access.grantAccess(row.student_id, row.course_id, LIFETIME_DAYS, row.id, now);
     return toAdminView(await this.getAdminRow(row.id));
   }
 

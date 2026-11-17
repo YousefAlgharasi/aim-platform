@@ -7,7 +7,7 @@
  * filled in by later tasks (P8-042..P8-049); this skeleton only defines
  * assembly order and the fixed system instructions.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
 import { AiTeacherContextSnapshot } from '../context-builder/context-builder.types';
 import {
@@ -16,11 +16,14 @@ import {
   buildPracticeInstructions,
   buildStudentIdentityInstructions,
 } from './prompt-builder.constants';
+import { AiTeacherPromptSettingsService } from './prompt-settings.service';
 import { AiTeacherPrompt, BuildPromptInput, PromptSection } from './prompt-builder.types';
 
 @Injectable()
 export class PromptBuilderService {
   private readonly logger = new Logger(PromptBuilderService.name);
+
+  constructor(@Optional() private readonly settings?: AiTeacherPromptSettingsService) {}
 
   buildPrompt(input: BuildPromptInput): AiTeacherPrompt {
     this.logger.log(`Building AI Teacher prompt for session ${input.context.sessionId}`);
@@ -34,9 +37,15 @@ export class PromptBuilderService {
       sections.push(historySection);
     }
 
-    const systemInstructions = input.context.practiceTopic
-      ? buildPracticeInstructions()
-      : [buildStudentIdentityInstructions(), buildLessonStageInstructions(input.lessonStage)].join(' ');
+    // Admin overrides (Admin > AI Teacher) win over the built-in defaults; admin rules are appended to every prompt.
+    const s = this.settings;
+    const stage = input.lessonStage ?? 'teaching';
+    const base = input.context.practiceTopic
+      ? s ? s.part('practice') : buildPracticeInstructions()
+      : s
+        ? [s.part('identity'), s.part(stage)].join(' ')
+        : [buildStudentIdentityInstructions(), buildLessonStageInstructions(input.lessonStage)].join(' ');
+    const systemInstructions = [base, s?.rulesBlock((input.context.currentLesson as { courseTitle?: string | null } | null | undefined)?.courseTitle)].filter(Boolean).join(' ');
 
     return {
       systemInstructions,

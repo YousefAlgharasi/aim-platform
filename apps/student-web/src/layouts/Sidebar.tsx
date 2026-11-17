@@ -1,3 +1,4 @@
+import { MyCoursesMenu } from '../features/coupons/MyCoursesMenu';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -105,6 +106,8 @@ export function SidebarContent({
           </Link>
         )}
       </div>
+
+      {!collapsed && <MyCoursesMenu onNavigate={onNavigate} />}
 
       <nav
         className={`flex-1 min-h-0 overflow-y-auto -mx-2 px-2 flex flex-col [scrollbar-width:thin] ${collapsed ? 'gap-2' : 'gap-5'}`}

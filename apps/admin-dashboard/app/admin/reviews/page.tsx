@@ -36,12 +36,6 @@ type Props = {
 
 const columns: AdminTableColumn<AdminAssessmentResultItem>[] = [
   {
-    key: 'id',
-    header: 'Result ID',
-    width: '120px',
-    render: (item) => <AdminIdCell id={item.id} />,
-  },
-  {
     key: 'studentId',
     header: 'Student',
     width: '120px',

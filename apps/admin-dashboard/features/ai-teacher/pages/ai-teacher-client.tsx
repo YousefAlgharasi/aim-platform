@@ -16,9 +16,11 @@ import type {
   AdminAiSafetyEventItem,
   AdminAiUsageCostItem,
   AdminAiAuditLogItem,
+  AdminAiSystemPrompt,
   CreatePromptTemplateDraftPayload,
 } from '../../../core/api/admin-ai-teacher-api';
 import dynamic from 'next/dynamic';
+import { SystemPromptEditor, type SystemPromptActions } from '../components/system-prompt-editor';
 import { AdminLoadingSkeleton } from '../../../shared/layouts/DashboardLayout/admin-loading-skeleton';
 
 const PromptDraftForm = dynamic(
@@ -26,14 +28,12 @@ const PromptDraftForm = dynamic(
   { loading: () => <AdminLoadingSkeleton rows={3} /> },
 );
 
-export type AiTeacherSection = 'prompts' | 'model-configs' | 'safety' | 'usage' | 'audit-logs';
+export type AiTeacherSection = 'system-prompt' | 'prompts' | 'model-configs' | 'safety' | 'usage' | 'audit-logs';
 
 const TABS: { key: AiTeacherSection; label: string }[] = [
-  { key: 'prompts', label: 'Prompt Templates' },
-  { key: 'model-configs', label: 'Model Configuration' },
-  { key: 'safety', label: 'Safety & Content Filtering' },
-  { key: 'usage', label: 'Usage & Cost Tracking' },
-  { key: 'audit-logs', label: 'AI Audit Logs' },
+  { key: 'system-prompt', label: 'System Prompt & Rules' },
+  { key: 'usage', label: 'Usage & Cost' },
+  { key: 'safety', label: 'Safety Events' },
 ];
 
 type Props = {
@@ -42,6 +42,7 @@ type Props = {
   readonly onCreateDraft: (payload: CreatePromptTemplateDraftPayload) => Promise<{ error?: string }>;
   readonly onPublish: (id: string) => Promise<{ error?: string }>;
   readonly onRetire: (id: string) => Promise<{ error?: string }>;
+  readonly systemPromptActions?: SystemPromptActions;
 };
 
 function buildPromptColumns(
@@ -87,18 +88,16 @@ const modelConfigColumns: AdminTableColumn<AdminAiModelConfigItem>[] = [
 ];
 
 const safetyColumns: AdminTableColumn<AdminAiSafetyEventItem>[] = [
-  { key: 'id', header: 'Event ID', render: (row) => <AdminIdCell id={row.id} /> },
+  { key: 'category', header: 'Event', render: (row) => <span>{row.category.replace(/_/g, ' ')}</span> },
   { key: 'targetType', header: 'Target Type', render: (row) => <span>{row.targetType}</span> },
-  { key: 'category', header: 'Category', render: (row) => <AdminBadge variant="default">{row.category.replace(/_/g, ' ')}</AdminBadge> },
   { key: 'severity', header: 'Severity', render: (row) => <AdminBadge variant={row.severity === 'high' || row.severity === 'critical' ? 'error' : 'default'}>{row.severity}</AdminBadge> },
   { key: 'action', header: 'Action', render: (row) => <AdminBadge variant="default">{row.action}</AdminBadge> },
   { key: 'createdAt', header: 'Time', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
 
 const usageColumns: AdminTableColumn<AdminAiUsageCostItem>[] = [
-  { key: 'id', header: 'Event ID', render: (row) => <AdminIdCell id={row.id} /> },
+  { key: 'eventType', header: 'Event', render: (row) => <span>{row.eventType.replace(/_/g, ' ')}</span> },
   { key: 'studentId', header: 'Student', render: (row) => <AdminIdCell id={row.studentId} /> },
-  { key: 'eventType', header: 'Event Type', render: (row) => <AdminBadge variant="default">{row.eventType.replace(/_/g, ' ')}</AdminBadge> },
   { key: 'tokensUsed', header: 'Tokens', render: (row) => <span>{row.tokensUsed ?? '—'}</span> },
   { key: 'costEstimate', header: 'Cost (USD)', render: (row) => <span>{row.costEstimate}</span> },
   { key: 'quotaPeriod', header: 'Quota Period', render: (row) => <span>{row.quotaPeriod}</span> },
@@ -106,15 +105,14 @@ const usageColumns: AdminTableColumn<AdminAiUsageCostItem>[] = [
 ];
 
 const auditColumns: AdminTableColumn<AdminAiAuditLogItem>[] = [
-  { key: 'id', header: 'Log ID', render: (row) => <AdminIdCell id={row.id} /> },
   { key: 'actorId', header: 'Actor', render: (row) => row.actorId ? <AdminIdCell id={row.actorId} /> : <span>—</span> },
   { key: 'action', header: 'Action', render: (row) => <AdminBadge variant="default">{row.action.replace(/_/g, ' ')}</AdminBadge> },
   { key: 'resourceType', header: 'Resource Type', render: (row) => <span className="text-xs">{row.resourceType}</span> },
-  { key: 'resourceId', header: 'Resource ID', render: (row) => row.resourceId ? <AdminIdCell id={row.resourceId} /> : <span>—</span> },
+  { key: 'resourceId', header: 'Resource', render: (row) => row.resourceId ? <AdminIdCell id={row.resourceId} /> : <span>—</span> },
   { key: 'createdAt', header: 'Time', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
 
-export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRetire }: Props) {
+export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRetire, systemPromptActions }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -181,7 +179,7 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
         <div className="ait-uh-left">
           <p className="ait-uh-eyebrow">Admin — AI Management</p>
           <h1 className="ait-uh-title">AI Teacher</h1>
-          <p className="ait-uh-sub">{rows.length} {currentTab?.label.toLowerCase()} entr{rows.length !== 1 ? 'ies' : 'y'}</p>
+          <p className="ait-uh-sub">{section === 'system-prompt' ? 'The exact instructions the AI Teacher follows — edit them or add your own rules' : `${rows.length} ${currentTab?.label.toLowerCase()} entr${rows.length !== 1 ? 'ies' : 'y'}`}</p>
         </div>
         {section === 'prompts' && !showCreate && (
           <button type="button" className="ait-add-btn" onClick={() => setShowCreate(true)}>
@@ -240,7 +238,9 @@ export function AiTeacherClient({ section, rows, onCreateDraft, onPublish, onRet
         <p className="admin-error-banner" role="alert">{actionError}</p>
       )}
 
-      {filteredRows.length === 0 ? (
+      {section === 'system-prompt' ? (
+        rows[0] && systemPromptActions ? <SystemPromptEditor data={rows[0] as AdminAiSystemPrompt} actions={systemPromptActions} /> : <p className="text-sm text-[var(--text-muted)]">System prompt unavailable.</p>
+      ) : filteredRows.length === 0 ? (
         <p className="text-sm text-[var(--text-muted)]">No entries to display for this section.</p>
       ) : (
         <>
@@ -392,3 +392,5 @@ function countByStatus(rows: readonly { status: string }[]): Record<string, numb
     return acc;
   }, {});
 }
+
+

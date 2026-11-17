@@ -70,7 +70,6 @@ export function AdminPlacementQuestionsList({
           <th scope="col">Prompt</th>
           <th scope="col">Audio</th>
           <th scope="col">Skill</th>
-          <th scope="col">ID</th>
           <th scope="col">Actions</th>
         </tr>
       </thead>
@@ -98,7 +97,6 @@ export function AdminPlacementQuestionsList({
             <td>
               <span className="skill-badge">{q.skillCode}</span>
             </td>
-            <td className="admin-table-mono">{truncateId(q.id)}</td>
             <td>
               <Link
                 href={`/admin/placement/tests/${testId}/sections/${sectionId}/questions/${q.id}/skills`}

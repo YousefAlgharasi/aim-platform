@@ -26,11 +26,6 @@ type Props = {
 
 const columns: AdminTableColumn<SessionRow>[] = [
   {
-    key: 'id',
-    header: 'Session ID',
-    render: (row) => <AdminIdCell id={row.id} />,
-  },
-  {
     key: 'startedAt',
     header: 'Started',
     render: (row) => <AdminDateCell date={row.startedAt} />,

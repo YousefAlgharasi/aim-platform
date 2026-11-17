@@ -1,8 +1,10 @@
 import { CheckIcon } from '../../components/common/Icons';
+import { Link } from 'react-router-dom';
 import { CourseInfoPopover } from './CourseInfoPopover';
 import { useI18n } from '../../i18n/I18nContext';
 import { LockIcon } from './CurriculumIcons';
-import type { StudentCourse } from './curriculumApi';
+import { needsPayment, type StudentCourse } from './curriculumApi';
+import { formatPrice } from '../coupons/couponApi';
 import type { Relation } from '../level/bands';
 import type { CourseChapterInfo } from './useCourseChapterInfo';
 
@@ -23,6 +25,9 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, r
   const { t } = useI18n();
   const completed = course.status === 'completed';
   const chapterCount = chapters?.count;
+  // Paid course the student does not own yet: it opens with a coupon.
+  const needsCoupon = !course.locked && needsPayment(course) && !!course.price && !course.price.isFree;
+  const owned = !course.locked && course.access?.status === 'active' && (course.access.daysLeft ?? 0) > 36500;
 
   return (
     <div
@@ -59,6 +64,13 @@ export function LearningPathCard({ course, index, isCurrent, chapters, onOpen, r
                 <CheckIcon className="size-4" /> {t('Completed')}
               </span>
             )}
+            {needsCoupon && course.price && (
+              <span className="inline-flex items-center gap-2 text-sm">
+                <span className="rounded-full bg-warning-soft px-2.5 py-0.5 text-xs font-semibold text-warning-ink">{t('Needs a coupon')} · {formatPrice(course.price.amount, course.price.currency)}</span>
+                <Link to={`/buy/${course.courseId}`} onClick={(e) => e.stopPropagation()} className="font-semibold text-ink underline underline-offset-4">{t('Buy coupon')}</Link>
+              </span>
+            )}
+            {owned && <span className="rounded-full bg-success-soft px-2.5 py-0.5 text-xs font-semibold text-success-ink">{t('Yours for good')}</span>}
             {course.locked && (
               <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
                 <LockIcon className="size-3" /> {t('Locked')}

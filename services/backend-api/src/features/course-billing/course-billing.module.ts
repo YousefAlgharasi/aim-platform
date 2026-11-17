@@ -6,6 +6,8 @@ import { OperationsAdminGuard } from '../operations/operations.guards';
 import { RolesModule } from '../roles/roles.module';
 import { UsersModule } from '../users/users.module';
 import { AdminCourseBillingController } from './admin-course-billing.controller';
+import { CourseCouponService } from './course-coupon.service';
+import { PublicCourseCouponController, StudentCourseCouponController } from './course-coupon.controller';
 import { CourseAccessService } from './course-access.service';
 import { CourseBillingOverviewService } from './course-billing-overview.service';
 import { CoursePaymentService } from './course-payment.service';
@@ -17,9 +19,10 @@ import { StudentCourseBillingController } from './student-course-billing.control
 
 @Module({
   imports: [LocaleModule, DatabaseModule, AuthModule, UsersModule, RolesModule],
-  controllers: [StudentCourseBillingController, PublicWalletImageController, AdminCourseBillingController],
+  controllers: [StudentCourseBillingController, PublicWalletImageController, AdminCourseBillingController, PublicCourseCouponController, StudentCourseCouponController],
   providers: [
     CourseAccessService,
+    CourseCouponService,
     CourseBillingOverviewService,
     CoursePaymentService,
     CoursePriceService,

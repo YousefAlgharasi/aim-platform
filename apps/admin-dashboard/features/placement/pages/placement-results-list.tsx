@@ -48,11 +48,6 @@ const SIGNAL_VARIANT: Record<SkillSignal, 'success' | 'primary' | 'warning'> = {
 
 const columns: AdminTableColumn<AdminPlacementResultSummary>[] = [
   {
-    key: 'resultId',
-    header: 'Result ID',
-    render: (row) => <AdminIdCell id={row.resultId} />,
-  },
-  {
     key: 'studentName',
     header: 'Student',
     render: (row) =>

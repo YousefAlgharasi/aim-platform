@@ -31,13 +31,8 @@ type Props = {
 
 const columns: AdminTableColumn<SessionSummaryRow>[] = [
   {
-    key: 'id',
-    header: 'ID',
-    render: (row) => <AdminIdCell id={row.id} />,
-  },
-  {
     key: 'studentId',
-    header: 'Student ID',
+    header: 'Student',
     render: (row) => <AdminIdCell id={row.studentId} />,
   },
   {

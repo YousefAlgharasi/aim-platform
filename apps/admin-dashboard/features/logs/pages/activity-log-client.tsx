@@ -32,13 +32,8 @@ type Props = {
 
 const columns: AdminTableColumn<ActivityLogRow>[] = [
   {
-    key: 'id',
-    header: 'Log ID',
-    render: (row) => <AdminIdCell id={row.id} />,
-  },
-  {
     key: 'userId',
-    header: 'User ID',
+    header: 'User',
     render: (row) => <AdminIdCell id={row.userId} />,
   },
   {

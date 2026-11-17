@@ -409,7 +409,7 @@ export class PlacementResultReadService {
 
     const resolvedTrack = await this.resolveStudentTrackSlug(studentId) ?? 'general_english';
     const stateRes = await this.db.query<{ max_unlocked_cefr_rank: number }>(
-      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id IN (SELECT id FROM student_profiles WHERE id = $1 OR user_id = $1) AND track_slug = $2`,
       [studentId, resolvedTrack],
     );
     const maxUnlocked = stateRes.rows[0]?.max_unlocked_cefr_rank ?? 1;
@@ -478,7 +478,7 @@ export class PlacementResultReadService {
     }
 
     const stateResult = await this.db.query<LevelStateRankRow>(
-      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id = $1 AND track_slug = $2`,
+      `SELECT max_unlocked_cefr_rank FROM student_level_state WHERE student_id IN (SELECT id FROM student_profiles WHERE id = $1 OR user_id = $1) AND track_slug = $2`,
       [studentId, trackSlug],
     );
     // No student_level_state row yet -> only rank-1 courses unlocked, same

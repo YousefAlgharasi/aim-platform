@@ -249,10 +249,11 @@ export class LessonsService {
   async updateLesson(id: string, input: UpdateLessonInput): Promise<LessonSummary> {
     const existing = await this.getLesson(id);
 
-    if (existing.status !== 'draft') {
+    // Admins may edit published lessons (content fixes); archived lessons stay read-only.
+    if (existing.status === 'archived') {
       throw new AppError({
         code: ApiErrorCode.FORBIDDEN,
-        message: 'Only draft lessons can be updated',
+        message: 'Archived lessons cannot be updated',
         statusCode: HttpStatus.FORBIDDEN,
       });
     }

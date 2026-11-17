@@ -66,6 +66,8 @@ const NotificationCenterPage = lazy(() => import('../features/notifications/Noti
 const NotificationPreferencesPage = lazy(() => import('../features/notifications/NotificationPreferencesPage').then((m) => ({ default: m.NotificationPreferencesPage })));
 const BillingPage = lazy(() => import('../features/billing/BillingPage').then((m) => ({ default: m.BillingPage })));
 const CheckoutPage = lazy(() => import('../features/billing/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
+const BuyCouponPage = lazy(() => import('../features/coupons/BuyCouponPage').then((m) => ({ default: m.BuyCouponPage })));
+const CouponStatusPage = lazy(() => import('../features/coupons/CouponStatusPage').then((m) => ({ default: m.CouponStatusPage })));
 const SupportPage = lazy(() => import('../features/support/SupportPage').then((m) => ({ default: m.SupportPage })));
 const TicketDetailPage = lazy(() => import('../features/support/TicketDetailPage').then((m) => ({ default: m.TicketDetailPage })));
 
@@ -117,6 +119,22 @@ export function AppRoutes() {
           element={
             <Suspense fallback={<FlowPageSkeleton />}>
               <ResetPasswordPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/buy/:courseId"
+          element={
+            <Suspense fallback={<FlowPageSkeleton />}>
+              <BuyCouponPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/coupon/:token"
+          element={
+            <Suspense fallback={<FlowPageSkeleton />}>
+              <CouponStatusPage />
             </Suspense>
           }
         />

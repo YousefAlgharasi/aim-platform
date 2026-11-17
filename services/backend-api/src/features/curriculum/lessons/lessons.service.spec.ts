@@ -214,9 +214,9 @@ describe('LessonsService.updateLesson', () => {
     updated_at: '2026-01-01T00:00:00Z',
   };
 
-  it('throws FORBIDDEN when lesson is not draft', async () => {
+  it('throws FORBIDDEN when lesson is archived', async () => {
     (mockDb.query as jest.Mock).mockResolvedValueOnce({
-      rows: [{ ...draftLesson, status: 'published' }],
+      rows: [{ ...draftLesson, status: 'archived' }],
     });
 
     await expect(

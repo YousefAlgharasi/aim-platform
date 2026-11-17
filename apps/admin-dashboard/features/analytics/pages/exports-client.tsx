@@ -85,8 +85,7 @@ export function ExportsClient() {
             <table className="exc-table">
               <thead>
                 <tr>
-                  <th className="exc-th">Job ID</th>
-                  <th className="exc-th exc-th--format">Format</th>
+                                    <th className="exc-th exc-th--format">Format</th>
                   <th className="exc-th exc-th--status">Status</th>
                   <th className="exc-th exc-th--date">Requested</th>
                   <th className="exc-th exc-th--file">File</th>
@@ -95,7 +94,6 @@ export function ExportsClient() {
               <tbody>
                 {jobs.map((job) => (
                   <tr key={job.id} className="exc-row">
-                    <td className="exc-td"><code className="exc-id">{job.id.slice(0, 12)}…</code></td>
                     <td className="exc-td exc-td--format">
                       <span className="exc-format-pill">{job.exportType.toUpperCase()}</span>
                     </td>

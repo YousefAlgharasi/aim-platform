@@ -23,7 +23,7 @@ const STATE_VARIANT: Record<string, 'success' | 'warning' | 'neutral' | 'info'> 
 const columns: AdminTableColumn<AdminSkillStateItem>[] = [
   {
     key: 'skillId',
-    header: 'Skill ID',
+    header: 'Skill',
     render: (row) => <AdminIdCell id={row.skillId} />,
   },
   {

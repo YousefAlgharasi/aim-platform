@@ -66,17 +66,20 @@ const templateColumns: AdminTableColumn<AdminNotificationTemplateItem>[] = [
   { key: 'updatedAt', header: 'Updated', render: (row) => <AdminDateCell date={row.updatedAt} /> },
 ];
 
+function humanize(v: string): string {
+  const t = (v ?? '').replace(/[_-]+/g, ' ').trim();
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : '—';
+}
+
 const queueColumns: AdminTableColumn<AdminNotificationEventItem>[] = [
-  { key: 'id', header: 'Event ID', render: (row) => <AdminIdCell id={row.id} /> },
+  { key: 'event', header: 'Event', render: (row) => <span>{humanize(row.category)}</span> },
   { key: 'recipientId', header: 'Recipient', render: (row) => <AdminIdCell id={row.recipientId} /> },
-  { key: 'category', header: 'Category', render: (row) => <span>{row.category}</span> },
   { key: 'channel', header: 'Channel', render: (row) => <AdminBadge variant="default">{row.channel}</AdminBadge> },
   { key: 'state', header: 'State', render: (row) => <AdminBadge variant="default">{row.state}</AdminBadge> },
   { key: 'createdAt', header: 'Created', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
 
 const scheduleColumns: AdminTableColumn<AdminReminderScheduleItem>[] = [
-  { key: 'id', header: 'Schedule ID', render: (row) => <AdminIdCell id={row.id} /> },
   { key: 'ownerId', header: 'Owner', render: (row) => <AdminIdCell id={row.ownerId} /> },
   { key: 'kind', header: 'Kind', render: (row) => <AdminBadge variant="default">{row.kind.replace(/_/g, ' ')}</AdminBadge> },
   { key: 'cadence', header: 'Cadence', render: (row) => <span style={{ fontSize: '12px' }}>{row.cadence}</span> },
@@ -85,7 +88,7 @@ const scheduleColumns: AdminTableColumn<AdminReminderScheduleItem>[] = [
 ];
 
 const preferenceColumns: AdminTableColumn<AdminNotificationPreferenceItem>[] = [
-  { key: 'userId', header: 'User ID', render: (row) => <AdminIdCell id={row.userId} /> },
+  { key: 'userId', header: 'User', render: (row) => <AdminIdCell id={row.userId} /> },
   { key: 'userType', header: 'User Type', render: (row) => <span>{row.userType}</span> },
   { key: 'channel', header: 'Channel', render: (row) => <AdminBadge variant="default">{row.channel}</AdminBadge> },
   { key: 'category', header: 'Category', render: (row) => <span>{row.category}</span> },
@@ -97,11 +100,10 @@ const preferenceColumns: AdminTableColumn<AdminNotificationPreferenceItem>[] = [
 ];
 
 const auditColumns: AdminTableColumn<AdminNotificationAuditLogItem>[] = [
-  { key: 'id', header: 'Log ID', render: (row) => <AdminIdCell id={row.id} /> },
   { key: 'actorId', header: 'Actor', render: (row) => row.actorId ? <AdminIdCell id={row.actorId} /> : <span>—</span> },
   { key: 'action', header: 'Action', render: (row) => <AdminBadge variant="default">{row.action.replace(/_/g, ' ')}</AdminBadge> },
   { key: 'entityType', header: 'Entity Type', render: (row) => <span style={{ fontSize: '13px' }}>{row.entityType}</span> },
-  { key: 'entityId', header: 'Entity ID', render: (row) => <AdminIdCell id={row.entityId} /> },
+  { key: 'entityId', header: 'Entity', render: (row) => <AdminIdCell id={row.entityId} /> },
   { key: 'createdAt', header: 'Time', render: (row) => <AdminDateCell date={row.createdAt} /> },
 ];
 

@@ -11,7 +11,9 @@
  * logged, persisted, or echoed back in the response
  * (docs/phase-9/voice-privacy-policy.md).
  */
-import { Injectable, Logger, BadGatewayException } from '@nestjs/common';
+import { Injectable, Logger, BadGatewayException, Optional } from '@nestjs/common';
+
+import { toVoiceLanguage, VoiceLanguage, VoiceLanguageSettingsService } from '../language-settings/voice-language-settings.service';
 
 import { SttGatewayConfigService } from './stt-gateway.config';
 import { SttGateway } from './stt-gateway.interface';
@@ -57,6 +59,7 @@ export class SttTranscriptionService extends SttGateway {
     private readonly configService: SttGatewayConfigService,
     private readonly requestMapper: SttRequestMapperService,
     private readonly responseMapper: SttResponseMapperService,
+    @Optional() private readonly voiceLanguages?: VoiceLanguageSettingsService,
   ) {
     super();
   }
@@ -70,7 +73,8 @@ export class SttTranscriptionService extends SttGateway {
     let errorCategory: string | null = null;
 
     try {
-      raw = await this.callProvider(apiKey, baseUrl, completionRequest);
+      const lang = this.voiceLanguages ? await this.voiceLanguages.resolveStt(request.languageCode) : null;
+      raw = await this.callProvider(apiKey, baseUrl, completionRequest, lang?.forced ?? null, lang?.settings.allowedLanguages ?? null, lang?.settings.sttDefaultLanguage ?? 'en');
     } catch (error: unknown) {
       errorCategory = this.classifyError(error);
       this.logger.warn(
@@ -89,6 +93,9 @@ export class SttTranscriptionService extends SttGateway {
     apiKey: string,
     baseUrl: string,
     request: SttCompletionRequest,
+    forced: VoiceLanguage | null = null,
+    allowed: readonly VoiceLanguage[] | null = null,
+    fallback: VoiceLanguage = 'en',
   ): Promise<SttCompletionResponse> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), STT_TIMEOUT_MS);
@@ -97,41 +104,44 @@ export class SttTranscriptionService extends SttGateway {
       // OpenAI-compatible multipart transcription contract (OpenAI Whisper,
       // Groq Whisper): multipart/form-data with `file` + `model`, JSON
       // `{ text }` response.
-      const form = new FormData();
-      const audioBytes = new Uint8Array(request.audio);
       const extension =
         CONTENT_TYPE_TO_FILE_EXTENSION[request.contentType] ?? DEFAULT_FILE_EXTENSION;
-      form.append(
-        'file',
-        new Blob([audioBytes], { type: request.contentType }),
-        `audio.${extension}`,
-      );
-      form.append('model', request.model);
+      const audioBytes = new Uint8Array(request.audio);
 
-      const response = await fetch(baseUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: form,
-        signal: controller.signal,
-      });
+      // Only Arabic and English are ever transcribed (admin: Voice languages). With a forced language Whisper is
+      // told which one to use; otherwise it detects, and a result in any other language is redone in the fallback.
+      const post = async (language: VoiceLanguage | null, verbose: boolean) => {
+        const form = new FormData();
+        form.append('file', new Blob([audioBytes], { type: request.contentType }), `audio.${extension}`);
+        form.append('model', request.model);
+        if (language) form.append('language', language);
+        if (verbose) form.append('response_format', 'verbose_json');
+        const response = await fetch(baseUrl, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${apiKey}` },
+          body: form,
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          // The provider's own error message never contains audio content or our credentials, so it is safe to
+          // log (truncated defensively).
+          const bodyText = await response.text().catch(() => '');
+          this.logger.error(
+            `SttTranscriptionService.callProvider: STT provider returned HTTP ${response.status}: ${bodyText.slice(0, 500)}`,
+          );
+          throw new BadGatewayException(`STT provider returned HTTP ${response.status}`);
+        }
+        return (await response.json()) as { text?: string; language?: string };
+      };
 
-      if (!response.ok) {
-        // Bugfix: this previously discarded the provider's error body,
-        // logging only an HTTP status — made a real STT provider failure
-        // (e.g. invalid API key, unsupported model, unsupported audio
-        // format) indistinguishable from any other failure in the logs.
-        // The provider's own error message never contains audio content or
-        // our credentials, so it's safe to log (truncated defensively).
-        const bodyText = await response.text().catch(() => '');
-        this.logger.error(
-          `SttTranscriptionService.callProvider: STT provider returned HTTP ${response.status}: ${bodyText.slice(0, 500)}`,
-        );
-        throw new BadGatewayException(`STT provider returned HTTP ${response.status}`);
+      let json = await post(forced, !forced && allowed !== null);
+      if (!forced && allowed !== null) {
+        const detected = toVoiceLanguage(json.language);
+        if (!detected || !allowed.includes(detected)) {
+          this.logger.warn(`STT detected unsupported language "${json.language ?? 'unknown'}"; retrying as ${fallback}`);
+          json = await post(fallback, false);
+        }
       }
-
-      const json = (await response.json()) as { text?: string };
 
       return {
         text: json.text ?? null,
