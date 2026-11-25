@@ -3,7 +3,7 @@
 //   GET  /student/voice-preferences          catalog + current choice
 //   PUT  /student/voice-preferences          { en?: string|null, ar?: string|null }  (null = default)
 //   GET  /student/voice-preferences/preview  ?language=en|ar&voice=<id>  -> audio/wav sample
-import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpStatus, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpException, HttpStatus, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
@@ -74,7 +74,19 @@ export class StudentVoicePreferencesController {
     if (!settings.allowedLanguages.includes(language)) throw new BadRequestException(`${language} speech is not enabled.`);
     let audio = await this.prefs.getPreview(language, voice);
     if (!audio) {
-      audio = await this.tts.synthesizePreview(language, voice, PREVIEW_TEXT[language]);
+      try {
+        audio = await this.tts.synthesizePreview(language, voice, PREVIEW_TEXT[language]);
+      } catch (error) {
+        // The provider refusing (most often Groq's small daily Arabic quota) is not a server fault: say so clearly.
+        const msg = error instanceof Error ? error.message : String(error);
+        const limited = /429|rate limit/i.test(msg);
+        throw new HttpException(
+          limited
+            ? 'This voice sample is not available right now (the daily speech limit was reached). Please try again later.'
+            : 'This voice sample could not be created. Please try again.',
+          limited ? HttpStatus.TOO_MANY_REQUESTS : HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
       await this.prefs.savePreview(language, voice, audio);
     }
     res.set({ 'Content-Type': 'audio/wav', 'Content-Length': String(audio.length) });

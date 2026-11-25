@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:aim_mobile/core/localization/inline_tr.dart';
+import 'package:aim_mobile/core/networking/api_client_exception.dart';
 import 'package:aim_mobile/core/widgets/widgets.dart';
 import 'package:aim_mobile/features/voice_teacher/data/voice_preferences_api.dart';
 
@@ -75,10 +76,13 @@ class _VoicePreferencesPageState extends ConsumerState<VoicePreferencesPage> {
       });
       await player.play(BytesSource(Uint8List.fromList(bytes)));
       if (mounted) setState(() => _playing = key);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
+        // A refused sample (the daily speech limit) comes with its own clear message from the server.
+        final server = e is ApiClientException && e.statusCode == 429 ? e.message : null;
         setState(() {
-          _message = context.tr('Could not play this sample. Try again.', 'تعذّر تشغيل هذه العينة. حاول مجددًا.');
+          _message = server ??
+              context.tr('Could not play this sample. Try again.', 'تعذّر تشغيل هذه العينة. حاول مجددًا.');
           _messageIsError = true;
         });
       }

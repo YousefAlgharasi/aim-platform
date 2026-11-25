@@ -90,6 +90,17 @@ describe('StudentVoicePreferencesController', () => {
   });
 });
 
+describe('voice sample when the provider refuses', () => {
+  it('answers 429 with a clear message for the daily limit, 503 for other failures', async () => {
+    const { controller, tts } = setup();
+    const res = { set: jest.fn(), end: jest.fn() };
+    tts.synthesizePreview.mockRejectedValueOnce(new Error('TTS provider returned HTTP 429: Rate limit reached'));
+    await expect(controller.preview('ar', 'aisha', res as never)).rejects.toMatchObject({ status: 429 });
+    tts.synthesizePreview.mockRejectedValueOnce(new Error('boom'));
+    await expect(controller.preview('ar', 'aisha', res as never)).rejects.toMatchObject({ status: 503 });
+  });
+});
+
 describe('student voice used for speech', () => {
   it('resolveForStudent returns only valid voices and never throws', async () => {
     const good = new StudentVoicePreferencesService({ query: async () => ({ rows: [{ en_voice: 'daniel', ar_voice: 'bogus' }] }) } as never);
