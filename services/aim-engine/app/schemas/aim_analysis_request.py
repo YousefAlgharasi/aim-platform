@@ -467,8 +467,8 @@ class AimAttemptInput(AimCamelCaseModel):
 # Skill mastery context — prior history per skill (P20-007)
 # ---------------------------------------------------------------------------
 #
-# MasteryCalculator (ported from services/api/src/aim/domain/services/
-# mastery_calculator.py in P20-007) needs the student's *prior* mastery and a
+# MasteryCalculator (in app/domain/services/mastery_calculator.py, wired in
+# P20-007) needs the student's *prior* mastery and a
 # window of *prior* attempts per skill to compute consistency/reliability —
 # not just the single new attempt this analysis call is triggered by. The AIM
 # Engine stays side-effect-free (it never queries a database itself, per this

@@ -1,2 +1,0 @@
-"""AIM application package."""
-

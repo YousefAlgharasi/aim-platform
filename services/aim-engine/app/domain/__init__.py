@@ -1,6 +1,7 @@
-"""Domain placeholders for future AIM Engine concepts.
+"""AIM Engine domain algorithms and skill graph.
 
-Do not implement mastery, retention, weakness, difficulty, or recommendation
-logic in P1-026. Future tasks will add explicit contracts and pipeline
-interfaces before algorithm behavior is wired.
+Core adaptive-learning domain services (mastery, retention, weakness,
+difficulty, emotional state, recommendation cascade, and supporting engines)
+live directly under ``app.domain.services``, and the curriculum skill graph
+lives under ``app.domain.skill_graph``.
 """

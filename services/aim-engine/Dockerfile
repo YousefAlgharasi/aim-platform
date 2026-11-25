@@ -23,9 +23,6 @@ COPY --from=builder /install /usr/local
 
 # Copy application source
 COPY --chown=aim:aim services/aim-engine/app ./app
-COPY --chown=aim:aim services/api/src/aim ./api/src/aim
-
-ENV PYTHONPATH=/app/api/src
 
 USER aim
 

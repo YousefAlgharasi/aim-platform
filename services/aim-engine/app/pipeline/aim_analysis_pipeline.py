@@ -11,7 +11,7 @@ Responsibility:
 Phase 5 scope:
   The pipeline coordinates stages and enforces the authority rules defined in
   the contract documents.  Concrete adaptive-learning algorithms live in the
-  domain services under ``app/domain/`` and ``packages/ai_core/``; they are
+  domain services under ``app/domain/services/``; they are
   called through the stage interfaces defined here.
 
   This entrypoint intentionally does NOT:
@@ -38,48 +38,40 @@ from __future__ import annotations
 
 import logging
 import math
-import os
-import sys
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
-# Add the API domain services to the import path so aim.domain.services is importable.
-_API_SRC = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src"))
-if _API_SRC not in sys.path:
-    sys.path.insert(0, _API_SRC)
-
-from aim.domain.services.difficulty_adapter import DifficultyAction, DifficultyAdapter  # noqa: E402
-from aim.domain.services.emotional_state_detector import (  # noqa: E402
+from app.domain.services.difficulty_adapter import DifficultyAction, DifficultyAdapter
+from app.domain.services.emotional_state_detector import (
     EmotionalAttempt,
     EmotionalStateDetector,
 )
-from aim.domain.services.mastery_calculator import (  # noqa: E402
+from app.domain.services.mastery_calculator import (
     AttemptSnapshot,
     MasteryCalculator,
     MasteryResult,
     SkillState,
 )
-from aim.domain.services.recommendation_engine import (  # noqa: E402
+from app.domain.services.recommendation_engine import (
     RecommendationActionType,
     RecommendationAttempt,
     RecommendationContext,
     RecommendationEngine,
     RecommendationSkillState,
 )
-from aim.domain.services.retention_tracker import (  # noqa: E402
+from app.domain.services.retention_tracker import (
     RetentionSkillState,
     RetentionTracker,
 )
-from aim.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector  # noqa: E402
-
-from app.schemas.aim_analysis_request import (  # noqa: E402
+from app.domain.services.weakness_detector import WeaknessAttempt, WeaknessDetector
+from app.schemas.aim_analysis_request import (
     AimAnalysisRequest,
     AimAttemptInput,
     AimSessionInput,
     AimSkillMasteryContext,
 )
-from app.schemas.aim_analysis_response import (  # noqa: E402
+from app.schemas.aim_analysis_response import (
     AimAnalysisResponse,
     AimDifficultyDecisionOutput,
     AimDifficultyLevel,
@@ -101,7 +93,7 @@ from app.schemas.aim_analysis_response import (  # noqa: E402
     AimWeaknessSeverity,
     AimWeaknessStatus,
 )
-from app.validation.aim_request_validator import (  # noqa: E402
+from app.validation.aim_request_validator import (
     AimRequestValidationError,
     AimRequestValidator,
 )
@@ -298,15 +290,6 @@ class _RequestRecommendationContextProvider:
 
     def get_context(self, student_id: object) -> RecommendationContext:
         return self._context
-
-
-def _ensure_domain_services_importable() -> None:
-    """Add the API domain services source tree to sys.path once."""
-    api_src = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "..", "api", "src")
-    )
-    if api_src not in sys.path:
-        sys.path.insert(0, api_src)
 
 
 # ---------------------------------------------------------------------------
@@ -610,8 +593,8 @@ class AimAnalysisPipelineEntrypoint:
         mastery_results: dict[str, MasteryResult],
     ) -> list[AimSkillStateOutput] | None:
         """Compute skill-state updates (P5-012) from the real weighted
-        mastery formula (P20-007), ported from
-        ``services/api/src/aim/domain/services/mastery_calculator.py``:
+        mastery formula (P20-007) in
+        ``app/domain/services/mastery_calculator.py``:
         ``accuracy*0.40 + consistency*0.20 + retention*0.15 +
         difficulty*0.20 + evidence_quality*0.05``, blended against previous
         mastery by a reliability factor and capped for one-session movement.
@@ -814,8 +797,8 @@ class AimAnalysisPipelineEntrypoint:
         weakness_records: list[AimWeaknessRecordOutput] | None,
     ) -> list[AimRecommendationOutput] | None:
         """Generate the highest-priority recommendation (P5-015) using the
-        real 12-action recommendation cascade (P20-009), ported from
-        ``services/api/src/aim/domain/services/recommendation_engine.py``.
+        real 12-action recommendation cascade (P20-009) in
+        ``app/domain/services/recommendation_engine.py``.
 
         Recommendations reference existing curriculum content only; they
         never generate new content and never embed AI Teacher framing.

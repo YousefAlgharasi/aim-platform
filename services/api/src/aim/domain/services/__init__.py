@@ -1,2 +1,0 @@
-"""Pure AIM domain services."""
-
